@@ -4,8 +4,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.Stone;
+import oscrabble.server.ScrabbleServer;
+import oscrabble.server.ScrabbleServerTest;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import java.awt.*;
 
 public class SwingClientTest
@@ -22,7 +25,7 @@ public class SwingClientTest
 
 	public static void showGrid(final Grid grid)
 	{
-		final SwingClient.JGrid JGrid = new SwingClient.JGrid(grid);
+		final SwingClient.JGrid JGrid = new SwingClient.JGrid(grid, null);
 		final JFrame f = new JFrame();
 		f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		f.add(JGrid);
@@ -50,6 +53,15 @@ public class SwingClientTest
 		});
 		th.setDaemon(true);
 		th.start();
+	}
+
+	@Test
+	public void display() throws BadLocationException
+	{
+		final ScrabbleServer server = ScrabbleServerTest.getTestServer();
+		final SwingClient client = new SwingClient(server, "Test Client");
+		server.register(client);
+		client.setCommandPrompt("A1 ALBA");
 	}
 
 	@AfterAll

@@ -17,18 +17,14 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.Normalizer;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,6 +40,7 @@ public class SwingClient extends AbstractPlayer
 	private final ScrabbleServer server;
 	private final JRack jRack;
 	private final JScoreboard jScoreboard;
+	private final Map<Grid.Square, Stone> setStones = new LinkedHashMap<>();
 
 	private boolean isObserver;
 
@@ -52,7 +49,7 @@ public class SwingClient extends AbstractPlayer
 		super(name);
 		this.server = server;
 
-		this.jGrid = new JGrid(server.getGrid());
+		this.jGrid = new JGrid(server.getGrid(), this);
 		this.jRack = new JRack();
 		this.jScoreboard = new JScoreboard();
 		this.commandPrompt = new JTextField();
@@ -63,7 +60,6 @@ public class SwingClient extends AbstractPlayer
 		document.addDocumentListener(promptListener);
 		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
 		display();
-//		setObserver();
 	}
 
 	/**
@@ -116,7 +112,7 @@ public class SwingClient extends AbstractPlayer
 		gridFrame.setResizable(false);
 		gridFrame.setVisible(true);
 
-			final Window rackFrame = new JDialog(gridFrame);
+		final Window rackFrame = new JDialog(gridFrame);
 		rackFrame.setLayout(new BorderLayout());
 		rackFrame.add(this.jRack);
 		rackFrame.pack();
@@ -133,6 +129,12 @@ public class SwingClient extends AbstractPlayer
 			this.commandPrompt.requestFocusInWindow();
 			this.commandPrompt.grabFocus();
 		});
+	}
+
+	void setCommandPrompt(final String text) throws BadLocationException
+	{
+		this.commandPrompt.setText(text);
+		this.commandPrompt.postActionEvent();
 	}
 
 	@Override
@@ -184,16 +186,19 @@ public class SwingClient extends AbstractPlayer
 	}
 
 
-	private static final Color STONE_COLOR = Color.decode("0xF3E5AB");
+	private static final Color STONE_BACKGROUND_COLOR = Color.decode("0xF3E5AB");
 	private static final int ARC_WIDTH = 14;
-	private static void drawStone(final Graphics2D g2, final JComponent component, final Stone stone)
+	private static void drawStone(final Graphics2D g2,
+								  final JComponent component,
+								  final Stone stone,
+								  final Color foregroundColor)
 	{
 		if (stone == null)
 		{
 			return;
 		}
 
-		g2.setPaint(STONE_COLOR);
+		g2.setPaint(STONE_BACKGROUND_COLOR);
 		final Insets insets = component.getInsets();
 		//noinspection SuspiciousNameCombination
 		g2.fillRoundRect(
@@ -209,7 +214,7 @@ public class SwingClient extends AbstractPlayer
 			final float characterSize = getCharacterSize(component);
 
 			// Draw the letter
-			g2.setColor(stone.isWhiteStone() ? Color.GRAY : Color.BLACK);
+			g2.setColor(stone.isWhiteStone() ? Color.GRAY : foregroundColor);
 			final Font font = g2.getFont().deriveFont(characterSize).deriveFont(Font.BOLD);
 			g2.setFont(font);
 			final String letter = Character.toString(stone.getChar());
@@ -320,14 +325,16 @@ public class SwingClient extends AbstractPlayer
 		private final int numberOfRows;
 
 		private final Grid grid;
+		private final SwingClient client;
 
 		private Move preparedMove;
 
 		/** Spielfeld des Scrabbles */
-		public JGrid(final Grid grid)
+		public JGrid(final Grid grid, final SwingClient client)
 		{
 			this.grid = grid;
 			this.numberOfRows = grid.getSize() + 2;
+			this.client = client;
 
 			this.setLayout(new BorderLayout());
 			this.background = new JPanel();
@@ -517,9 +524,16 @@ public class SwingClient extends AbstractPlayer
 					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
 				}
 
+				Stone stone;
 				if (this.square.stone != null)
 				{
-					drawStone(g2, this, this.square.stone);
+					drawStone(g2, this, this.square.stone, Color.black);
+				}
+				else if (
+						JGrid.this.client != null
+						&& (stone = JGrid.this.client.setStones.get(this.square)) != null)
+				{
+					drawStone(g2, this, stone, Color.blue);
 				}
 
 				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);
@@ -609,6 +623,7 @@ public class SwingClient extends AbstractPlayer
 
 		private Move getPreparedMove()
 		{
+			SwingClient.this.setStones.clear();
 			String command = SwingClient.this.commandPrompt.getText();
 			final StringBuilder sb = new StringBuilder();
 			boolean joker = false;
@@ -634,6 +649,11 @@ public class SwingClient extends AbstractPlayer
 				try
 				{
 					move = Move.parseMove(SwingClient.this.server.getGrid(), matcher.group(1));
+					SwingClient.this.setStones.putAll(move.getStones(
+							SwingClient.this.server.getGrid(),
+							SwingClient.this.server.getDictionary()
+							)
+					);
 				}
 				catch (ParseException e)
 				{
@@ -677,7 +697,7 @@ public class SwingClient extends AbstractPlayer
 		protected void paintComponent(final Graphics g)
 		{
 			super.paintComponent(g);
-			drawStone((Graphics2D) g, this, this.stone);
+			drawStone((Graphics2D) g, this, this.stone, Color.black);
 		}
 
 		@Override

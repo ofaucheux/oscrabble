@@ -1,11 +1,10 @@
 package oscrabble;
 
+import oscrabble.dictionary.Dictionary;
 import oscrabble.server.IAction;
 
 import java.text.ParseException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +41,28 @@ public class Move implements IAction
 		return
 				HORIZONTAL_COORDINATE_PATTERN.matcher(description).matches()
 				|| VERTICAL_COORDINATE_PATTERN.matcher(description).matches();
+	}
+
+	public Map<Grid.Square, Stone> getStones(final Grid grid, final Dictionary dictionary)
+	{
+		final LinkedHashMap<Grid.Square, Stone> stones = new LinkedHashMap<>();
+		int x = this.startSquare.getX();
+		int y = this.startSquare.getY();
+		for (int i = 0; i < this.word.length(); i++)
+		{
+			char c = this.word.charAt(i);
+			stones.put(grid.getSquare(x, y), dictionary.generateStone(c));
+			if (this.direction == Direction.HORIZONTAL)
+			{
+				x += 1;
+			}
+			else
+			{
+				y += 1;
+			}
+		}
+
+		return stones;
 	}
 
 	/**
