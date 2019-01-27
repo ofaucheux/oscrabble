@@ -131,7 +131,7 @@ public class SwingClient extends AbstractPlayer
 		});
 	}
 
-	void setCommandPrompt(final String text) throws BadLocationException
+	void setCommandPrompt(final String text)
 	{
 		this.commandPrompt.setText(text);
 		this.commandPrompt.postActionEvent();
@@ -406,40 +406,25 @@ public class SwingClient extends AbstractPlayer
 				final int INSET = 4;
 				final Color preparedMoveColor = Color.RED;
 				final boolean isHorizontal = this.preparedMove.getDirection() == Move.Direction.HORIZONTAL;
-				Grid.Square borderedSquare = this.preparedMove.startSquare;
-				for (int i = 0; i < this.preparedMove.word.length(); i++)
+				if (this.client != null)
 				{
-					MatteBorder border;
-					if (borderedSquare == this.preparedMove.startSquare)
+					final ArrayList<Grid.Square> squares = new ArrayList<>(this.client.setStones.keySet());
+					for (int i = 0; i < squares.size(); i++)
 					{
-						border = new MatteBorder(
-								INSET,
-								INSET,
-								isHorizontal ? INSET : 0,
-								isHorizontal ? 0 : INSET,
-								preparedMoveColor
-						);
-					}
-					else
-					{
-						border = new MatteBorder(
-								isHorizontal ? INSET : 0,
-								isHorizontal ? 0 : INSET,
-								isHorizontal ? INSET : 0,
-								isHorizontal ? 0 : INSET,
-								preparedMoveColor
-						);
-					}
+						final int top = (isHorizontal || i == 0) ? INSET : 0;
+						final int left = (!isHorizontal || i == 0) ? INSET : 0;
+						final int bottom = (isHorizontal || i == squares.size() - 1) ? INSET : 0;
+						final int right = (!isHorizontal || i == squares.size() - 1) ? INSET : 0;
 
-					this.specialBorders.put(
-							borderedSquare,
-							border
-					);
+						final MatteBorder border = new MatteBorder(
+								top, left, bottom, right, preparedMoveColor
+						);
 
-					borderedSquare = borderedSquare.getFollowing(this.preparedMove.getDirection());
-					if (borderedSquare.isBorder())
-					{
-						break;
+						this.specialBorders.put(
+								squares.get(i),
+								border
+						);
+
 					}
 				}
 			}
