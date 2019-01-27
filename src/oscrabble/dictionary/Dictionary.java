@@ -292,7 +292,8 @@ public class Dictionary implements Stone.Generator
 	public enum Language
 	{
 		FRENCH("french"),
-		GERMAN("german")
+		GERMAN("german"),
+		TEST("test")
 		;
 		final String directoryName;
 

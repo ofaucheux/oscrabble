@@ -1,26 +1,12 @@
 package oscrabble.server;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.RootLogger;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import oscrabble.Move;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.client.SwingClient;
-import oscrabble.player.AbstractPlayer;
-import oscrabble.player.BruteForceMethod;
-import oscrabble.player.ConsolePlayer;
+import oscrabble.dictionary.DictionaryTest;
 
-class ScrabbleServerTest
+public class ScrabbleServerTest
 {
-	@BeforeAll
-	public static void log4j()
-	{
-		BasicConfigurator.configure();
-		RootLogger.getRootLogger().setLevel(Level.ALL);
-	}
-
 	@Test
 	void markAsIllegal()
 	{
@@ -64,6 +50,11 @@ class ScrabbleServerTest
 
 		server.startGame();
 		playerA.setNextMove(new Move(server.getGrid().getSquare(7,7), Move.Direction.HORIZONTAL, "ORCHIDEE"));
+	}
+
+	public static ScrabbleServer getTestServer()
+	{
+		return new ScrabbleServer(DictionaryTest.getTestDictionary());
 	}
 
 }
