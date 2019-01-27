@@ -116,15 +116,23 @@ public class SwingClient extends AbstractPlayer
 		gridFrame.setResizable(false);
 		gridFrame.setVisible(true);
 
-		final Window rackFrame = new JDialog(gridFrame);
+			final Window rackFrame = new JDialog(gridFrame);
 		rackFrame.setLayout(new BorderLayout());
 		rackFrame.add(this.jRack);
 		rackFrame.pack();
 		rackFrame.setVisible(true);
 		rackFrame.setLocation(
-				gridFrame.getX() + gridFrame.getWidth(),
-				gridFrame.getY() + gridFrame.getHeight() / 2
-		);
+					gridFrame.getX() + gridFrame.getWidth(),
+					gridFrame.getY() + gridFrame.getHeight() / 2
+			);
+		rackFrame.setFocusableWindowState(false);
+		rackFrame.setFocusable(false);
+
+		SwingUtilities.invokeLater(() -> {
+			gridFrame.requestFocus();
+			this.commandPrompt.requestFocusInWindow();
+			this.commandPrompt.grabFocus();
+		});
 	}
 
 	@Override
@@ -315,6 +323,7 @@ public class SwingClient extends AbstractPlayer
 
 		private Move preparedMove;
 
+		/** Spielfeld des Scrabbles */
 		public JGrid(final Grid grid)
 		{
 			this.grid = grid;
