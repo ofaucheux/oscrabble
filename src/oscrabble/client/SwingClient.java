@@ -72,10 +72,11 @@ public class SwingClient extends AbstractPlayer
 		gridFrame.setLayout(new BorderLayout());
 		gridFrame.add(this.jGrid);
 
-		final JButton butHelp = new JButton("help");
+		final JButton butHelp = new JButton();
 		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.server.getDictionary());
-		butHelp.setAction(new AbstractAction()
+		butHelp.setAction(new AbstractAction("Help")
 		{
+
 			@Override
 			public void actionPerformed(final ActionEvent e)
 			{
@@ -101,11 +102,12 @@ public class SwingClient extends AbstractPlayer
 			}
 		});
 
-		final JPanel lineEndFrame = new JPanel();
-		lineEndFrame.setLayout(new BoxLayout(lineEndFrame, BoxLayout.PAGE_AXIS));
-		lineEndFrame.add(this.jScoreboard);
-		lineEndFrame.add(butHelp);
-		gridFrame.add(lineEndFrame, BorderLayout.LINE_END);
+		final JPanel eastPanel = new JPanel(new BorderLayout());
+		final JPanel panel1 = new JPanel(new BorderLayout());
+		panel1.add(this.jScoreboard, BorderLayout.NORTH);
+		eastPanel.add(panel1, BorderLayout.CENTER);
+		eastPanel.add(butHelp, BorderLayout.SOUTH);
+		gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
 		gridFrame.add(this.commandPrompt, BorderLayout.SOUTH);
 		gridFrame.pack();
