@@ -6,7 +6,7 @@ public class ScrabbleException extends Exception
 
 	public ScrabbleException(final ERROR_CODE code, final Throwable cause, final String details)
 	{
-		super(code.message + (details == null | details.isEmpty() ? "" : "\n" + details), cause);
+		super(code.message + (details == null || details.isEmpty() ? "" : "\n" + details), cause);
 		this.code = code;
 	}
 

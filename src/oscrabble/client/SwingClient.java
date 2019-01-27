@@ -17,6 +17,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -40,7 +42,6 @@ public class SwingClient extends AbstractPlayer
 	private final ScrabbleServer server;
 	private final JRack jRack;
 	private final JScoreboard jScoreboard;
-	private final Map<Grid.Square, Stone> setStones = new LinkedHashMap<>();
 
 	private boolean isObserver;
 
@@ -49,7 +50,7 @@ public class SwingClient extends AbstractPlayer
 		super(name);
 		this.server = server;
 
-		this.jGrid = new JGrid(server.getGrid(), this);
+		this.jGrid = new JGrid(server.getGrid(), server.getDictionary());
 		this.jRack = new JRack();
 		this.jScoreboard = new JScoreboard();
 		this.commandPrompt = new JTextField();
@@ -87,7 +88,22 @@ public class SwingClient extends AbstractPlayer
 									SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey)));
 					Move.sort(legalMoves, SwingClient.this.server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR.reversed());
 					final ScrollPane sp = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-					sp.add(new JList<>(legalMoves.toArray(new Move[0])));
+					final JList<Move> moveList = new JList<>(legalMoves.toArray(new Move[0]));
+					sp.add(moveList);
+					moveList.addListSelectionListener(event -> {
+						Move move = null;
+						for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
+						{
+							if (moveList.isSelectedIndex(i))
+							{
+								move = moveList.getModel().getElementAt(i);
+								break;
+							}
+						}
+						SwingClient.this.jGrid.setPreparedMove(move);
+
+					});
+
 					final JFrame jFrame = new JFrame("Moves");
 					jFrame.add(sp);
 					jFrame.setMaximumSize(new Dimension(200, Integer.MAX_VALUE));
@@ -323,20 +339,20 @@ public class SwingClient extends AbstractPlayer
 	{
 		private final HashMap<Grid.Square, MatteBorder> specialBorders = new HashMap<>();
 
-		final JComponent background;
 		private final int numberOfRows;
 
 		private final Grid grid;
-		private final SwingClient client;
+		private final Dictionary dictionary;
+		private final Map<Grid.Square, Stone> preparedMoveStones;
 
-		private Move preparedMove;
+		final JComponent background;
 
 		/** Spielfeld des Scrabbles */
-		public JGrid(final Grid grid, final SwingClient client)
+		public JGrid(final Grid grid, final Dictionary dictionary)
 		{
 			this.grid = grid;
 			this.numberOfRows = grid.getSize() + 2;
-			this.client = client;
+			this.dictionary = dictionary;
 
 			this.setLayout(new BorderLayout());
 			this.background = new JPanel();
@@ -396,38 +412,37 @@ public class SwingClient extends AbstractPlayer
 			final int size = this.numberOfRows * CELL_SIZE;
 			this.setPreferredSize(new Dimension(size, size));
 			this.add(this.background);
+			this.preparedMoveStones = new LinkedHashMap<>();
 		}
 
 		void setPreparedMove(final Move move)
 		{
-			this.preparedMove = move;
+			this.preparedMoveStones.clear();
 			// Calculate the border for prepared word
 			this.specialBorders.clear();
-			if (this.preparedMove != null)
+			if (move != null)
 			{
+				this.preparedMoveStones.putAll(move.getStones(this.grid, this.dictionary));
 				final int INSET = 4;
 				final Color preparedMoveColor = Color.RED;
-				final boolean isHorizontal = this.preparedMove.getDirection() == Move.Direction.HORIZONTAL;
-				if (this.client != null)
+				final boolean isHorizontal = move.getDirection() == Move.Direction.HORIZONTAL;
+				final ArrayList<Grid.Square> squares = new ArrayList<>(this.preparedMoveStones.keySet());
+				for (int i = 0; i < squares.size(); i++)
 				{
-					final ArrayList<Grid.Square> squares = new ArrayList<>(this.client.setStones.keySet());
-					for (int i = 0; i < squares.size(); i++)
-					{
-						final int top = (isHorizontal || i == 0) ? INSET : 0;
-						final int left = (!isHorizontal || i == 0) ? INSET : 0;
-						final int bottom = (isHorizontal || i == squares.size() - 1) ? INSET : 0;
-						final int right = (!isHorizontal || i == squares.size() - 1) ? INSET : 0;
+					final int top = (isHorizontal || i == 0) ? INSET : 0;
+					final int left = (!isHorizontal || i == 0) ? INSET : 0;
+					final int bottom = (isHorizontal || i == squares.size() - 1) ? INSET : 0;
+					final int right = (!isHorizontal || i == squares.size() - 1) ? INSET : 0;
 
-						final MatteBorder border = new MatteBorder(
-								top, left, bottom, right, preparedMoveColor
-						);
+					final MatteBorder border = new MatteBorder(
+							top, left, bottom, right, preparedMoveColor
+					);
 
-						this.specialBorders.put(
-								squares.get(i),
-								border
-						);
+					this.specialBorders.put(
+							squares.get(i),
+							border
+					);
 
-					}
 				}
 			}
 
@@ -516,9 +531,7 @@ public class SwingClient extends AbstractPlayer
 				{
 					drawStone(g2, this, this.square.stone, Color.black);
 				}
-				else if (
-						JGrid.this.client != null
-						&& (stone = JGrid.this.client.setStones.get(this.square)) != null)
+				else if ((stone = JGrid.this.preparedMoveStones.get(this.square)) != null)
 				{
 					drawStone(g2, this, stone, Color.blue);
 				}
@@ -610,7 +623,6 @@ public class SwingClient extends AbstractPlayer
 
 		private Move getPreparedMove()
 		{
-			SwingClient.this.setStones.clear();
 			String command = SwingClient.this.commandPrompt.getText();
 			final StringBuilder sb = new StringBuilder();
 			boolean joker = false;
@@ -636,11 +648,7 @@ public class SwingClient extends AbstractPlayer
 				try
 				{
 					move = Move.parseMove(SwingClient.this.server.getGrid(), matcher.group(1));
-					SwingClient.this.setStones.putAll(move.getStones(
-							SwingClient.this.server.getGrid(),
-							SwingClient.this.server.getDictionary()
-							)
-					);
+					SwingClient.this.jGrid.setPreparedMove(move);
 				}
 				catch (ParseException e)
 				{

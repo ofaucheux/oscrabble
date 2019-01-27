@@ -43,7 +43,7 @@ public class Move implements IAction
 				|| VERTICAL_COORDINATE_PATTERN.matcher(description).matches();
 	}
 
-	public Map<Grid.Square, Stone> getStones(final Grid grid, final Dictionary dictionary)
+	public LinkedHashMap<Grid.Square, Stone> getStones(final Grid grid, final Dictionary dictionary)
 	{
 		final LinkedHashMap<Grid.Square, Stone> stones = new LinkedHashMap<>();
 		int x = this.startSquare.getX();

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.Stone;
+import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.DictionaryTest;
 import oscrabble.server.ScrabbleServer;
 import oscrabble.server.ScrabbleServerTest;
 
@@ -25,30 +27,25 @@ public class SwingClientTest
 
 	public static void showGrid(final Grid grid)
 	{
-		final SwingClient.JGrid JGrid = new SwingClient.JGrid(grid, null);
+		final SwingClient.JGrid JGrid = new SwingClient.JGrid(grid, DictionaryTest.getTestDictionary());
 		final JFrame f = new JFrame();
 		f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		f.add(JGrid);
 		f.setVisible(true);
 		f.setSize(800,800);
 
-		final Thread th = new Thread(new Runnable()
-		{
-			@Override
-			public void run()
+		final Thread th = new Thread(() -> {
+			try
 			{
-				try
+				while (true)
 				{
-					while (true)
-					{
-						Thread.sleep(100);
-						JGrid.repaint();
-					}
+					Thread.sleep(100);
+					JGrid.repaint();
 				}
-				catch (InterruptedException e)
-				{
-					throw new Error();
-				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new Error();
 			}
 		});
 		th.setDaemon(true);
