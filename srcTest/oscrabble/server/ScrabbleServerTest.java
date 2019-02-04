@@ -5,6 +5,8 @@ import oscrabble.Move;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryTest;
 
+import java.util.Random;
+
 public class ScrabbleServerTest
 {
 	@Test
@@ -52,9 +54,13 @@ public class ScrabbleServerTest
 		playerA.setNextMove(new Move(server.getGrid().getSquare(7,7), Move.Direction.HORIZONTAL, "ORCHIDEE"));
 	}
 
+	/**
+	 * Baut einen Test-Server. Der erste Player bekommt die Buchstaben {@code EIUBO S}.
+	 * @return
+	 */
 	public static ScrabbleServer getTestServer()
 	{
-		return new ScrabbleServer(DictionaryTest.getTestDictionary());
+		return new ScrabbleServer(DictionaryTest.getTestDictionary(), new Random(0));
 	}
 
 }

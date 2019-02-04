@@ -4,7 +4,7 @@ public class Stone
 {
 	public final static Generator SIMPLE_GENERATOR = new SimpleGenerator();
 
-	private final boolean isWhiteStone;
+	private final boolean isJoker;
 	private Character c;
 	private final int points;
 
@@ -12,13 +12,13 @@ public class Stone
 	{
 		this.c = c;
 		this.points = point;
-		this.isWhiteStone = c == null;
+		this.isJoker = c == null;
 	}
 
 	@Override
 	public String toString()
 	{
-		return this.isWhiteStone ? " - blank - " : Character.toString(this.c);
+		return this.isJoker ? " - joker - " : Character.toString(this.c);
 	}
 
 	/**
@@ -26,7 +26,7 @@ public class Stone
 	 */
 	public char getChar()
 	{
-		if (this.isWhiteStone && this.c == null)
+		if (this.isJoker && this.c == null)
 		{
 			throw new AssertionError("White stone not set");
 		}
@@ -38,9 +38,9 @@ public class Stone
 		return this.points;
 	}
 
-	public boolean isWhiteStone()
+	public boolean isJoker()
 	{
-		return this.isWhiteStone;
+		return this.isJoker;
 	}
 
 	public boolean hasCharacterSet()
@@ -50,7 +50,7 @@ public class Stone
 
 	public void setCharacter(final char c)
 	{
-		if (!this.isWhiteStone)
+		if (!this.isJoker)
 		{
 			throw new AssertionError("Cannot exchange character of no blank tile");
 		}

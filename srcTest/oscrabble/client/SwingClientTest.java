@@ -53,12 +53,13 @@ public class SwingClientTest
 	}
 
 	@Test
-	public void display() throws BadLocationException
+	public void display()
 	{
 		final ScrabbleServer server = ScrabbleServerTest.getTestServer();
 		final SwingClient client = new SwingClient(server, "Test Client");
 		server.register(client);
-		client.setCommandPrompt("A1 ALBA");
+		server.prepareGame();
+		client.setCommandPrompt("H8 BISOU");
 	}
 
 	@AfterAll

@@ -1,10 +1,8 @@
 package oscrabble.client;
 
+import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.log4j.Logger;
-import oscrabble.Grid;
-import oscrabble.Move;
-import oscrabble.ScrabbleException;
-import oscrabble.Stone;
+import oscrabble.*;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
@@ -17,8 +15,6 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -152,7 +148,6 @@ public class SwingClient extends AbstractPlayer
 	void setCommandPrompt(final String text)
 	{
 		this.commandPrompt.setText(text);
-		this.commandPrompt.postActionEvent();
 	}
 
 	@Override
@@ -189,6 +184,7 @@ public class SwingClient extends AbstractPlayer
 	public void beforeGameStart()
 	{
 		this.jScoreboard.prepareBoard();
+		this.jRack.update();
 	}
 
 	@Override
@@ -232,7 +228,7 @@ public class SwingClient extends AbstractPlayer
 			final float characterSize = getCharacterSize(component);
 
 			// Draw the letter
-			g2.setColor(stone.isWhiteStone() ? Color.GRAY : foregroundColor);
+			g2.setColor(stone.isJoker() ? Color.GRAY : foregroundColor);
 			final Font font = g2.getFont().deriveFont(characterSize).deriveFont(Font.BOLD);
 			g2.setFont(font);
 			final String letter = Character.toString(stone.getChar());
@@ -597,34 +593,45 @@ public class SwingClient extends AbstractPlayer
 				return;
 			}
 
-			final Move preparedMove = getPreparedMove();
-
-			final Matcher m;
-			if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
+			final Move preparedMove;
+			try
 			{
-				final ArrayList<Character> chars = new ArrayList<>();
-				for (final char c : m.group(1).toCharArray())
+				preparedMove = getPreparedMove();
+				final Matcher m;
+				if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
 				{
-					chars.add(c);
+					final ArrayList<Character> chars = new ArrayList<>();
+					for (final char c : m.group(1).toCharArray())
+					{
+						chars.add(c);
+					}
+					SwingClient.this.server.play(SwingClient.this, new Exchange(chars));
+					SwingClient.this.commandPrompt.setText("");
 				}
-				SwingClient.this.server.play(SwingClient.this, new Exchange(chars));
-				SwingClient.this.commandPrompt.setText("");
+				else if (preparedMove == null)
+				{
+					onDispatchMessage("Not a coordinate: " + SwingClient.this.commandPrompt.getText());
+				}
+				else
+				{
+					SwingClient.this.server.play(SwingClient.this, preparedMove);
+					SwingClient.this.commandPrompt.setText("");
+				}
 			}
-			else if (preparedMove == null)
+			catch (JokerPlacementException e1)
 			{
-				onDispatchMessage("Not a coordinate: " + SwingClient.this.commandPrompt.getText());
+				onDispatchMessage("Cannot place the jokers: " + e1);
 			}
-			else
-			{
-				SwingClient.this.server.play(SwingClient.this, preparedMove);
-				SwingClient.this.commandPrompt.setText("");
-			}
+
+
 		}
 
-		private Move getPreparedMove()
+		private Move getPreparedMove() throws JokerPlacementException
 		{
 			String command = SwingClient.this.commandPrompt.getText();
 			final StringBuilder sb = new StringBuilder();
+
+
 			boolean joker = false;
 			for (final char c : command.toCharArray())
 			{
@@ -638,16 +645,81 @@ public class SwingClient extends AbstractPlayer
 					joker = false;
 				}
 			}
-			command = sb.toString();
 
 			final Pattern playCommandPattern = Pattern.compile("(?:play\\s+)?(.*)", Pattern.CASE_INSENSITIVE);
 			Matcher matcher;
-			final Move move;
-			if ((matcher = playCommandPattern.matcher(command)).matches())
+			Move move;
+			if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
 			{
 				try
 				{
-					move = Move.parseMove(SwingClient.this.server.getGrid(), matcher.group(1));
+					final Rack rack;
+					try
+					{
+						rack = SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey);
+					}
+					catch (ScrabbleException e)
+					{
+						throw new JokerPlacementException("Error", e);
+					}
+					final StringBuilder inputWord = new StringBuilder(matcher.group(1));
+					move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString());
+
+					//
+					// Check if jokers are needed and try to position them
+					//
+
+					LOGGER.debug("Word before positioning jokers: " + move.word);
+					int remainingJokers = rack.countJoker();
+					final HashSetValuedHashMap<Character, Integer> requiredLetters = new HashSetValuedHashMap<>();
+					int i = inputWord.indexOf(" ") + 1;
+					for (final Map.Entry<Grid.Square, Character> square : move.getSquares().entrySet())
+					{
+						if (square.getKey().isEmpty())
+						{
+							if (Character.isLowerCase(inputWord.charAt(i)))
+							{
+								remainingJokers--;
+							}
+							else
+							{
+								requiredLetters.put(square.getValue(), i);
+							}
+						}
+						i++;
+					}
+
+					for (final Character letter : requiredLetters.keys())
+					{
+						final int inRack = rack.countLetter(letter);
+						final int required = requiredLetters.get(letter).size();
+						final int missing = required - inRack;
+						if (missing > 0)
+						{
+							if (remainingJokers < missing)
+							{
+								throw new JokerPlacementException("No enough jokers", null);
+							}
+
+							if (missing == required)
+							{
+								for (final Integer pos : requiredLetters.get(letter))
+								{
+									inputWord.replace(pos, pos + 1, Character.toString(Character.toLowerCase(letter)));
+								}
+								remainingJokers -= missing;
+							}
+							else
+							{
+								throw new JokerPlacementException(
+										"Cannot place the jokers: several emplacement possible. Use the *A notation.",
+										null);
+							}
+						}
+					}
+					move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString());
+					LOGGER.debug("Word after having positioned white tiles: " + inputWord);
+
 					SwingClient.this.jGrid.setPreparedMove(move);
 				}
 				catch (ParseException e)
@@ -678,9 +750,16 @@ public class SwingClient extends AbstractPlayer
 		@Override
 		public void changedUpdate(final DocumentEvent e)
 		{
-			final Move move = getPreparedMove();
-			SwingClient.this.jGrid.setPreparedMove(move);
-			SwingClient.this.jGrid.repaint();
+			try
+			{
+				final Move move = getPreparedMove();
+				SwingClient.this.jGrid.setPreparedMove(move);
+				SwingClient.this.jGrid.repaint();
+			}
+			catch (JokerPlacementException e1)
+			{
+				LOGGER.warn(e1.getMessage());
+			}
 		}
 	}
 
@@ -738,4 +817,15 @@ public class SwingClient extends AbstractPlayer
 			return text.toUpperCase();
 		}
 	};
+
+	/**
+	 * Problem while placing joker.
+	 */
+	private class JokerPlacementException extends Throwable
+	{
+		JokerPlacementException(final String message, final ScrabbleException e)
+		{
+			super(message, e);
+		}
+	}
 }

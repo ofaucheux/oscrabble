@@ -25,14 +25,21 @@ public class ScrabbleServer implements IScrabbleServer
 	private final LinkedHashMap<AbstractPlayer, PlayerInfo> players = new LinkedHashMap<>();
 	private final LinkedList<AbstractPlayer> toPlay = new LinkedList<>();
 	private final Grid grid;
+	private final Random random;
 	private CountDownLatch waitingForPlay;
 	final LinkedList<Stone> bag = new LinkedList<>();
 	private final Dictionary dictionary;
 
-	public ScrabbleServer(final Dictionary dictionary)
+	ScrabbleServer(final Dictionary dictionary, final Random random)
 	{
 		this.dictionary = dictionary;
 		this.grid = new Grid(this.dictionary);
+		this.random = random;
+	}
+
+	public ScrabbleServer(final Dictionary dictionary)
+	{
+		this (dictionary, new Random());
 	}
 
 
@@ -102,7 +109,7 @@ public class ScrabbleServer implements IScrabbleServer
 				final Grid.MoveMetaInformation moveMI = this.grid.getMetaInformation(move);
 				final TreeBag<Character> rackLetters = new TreeBag<>();
 				playerInfo.rack.forEach(stone -> {
-					if (!stone.isWhiteStone())
+					if (!stone.isJoker())
 					{
 						rackLetters.add(stone.getChar(), 1);
 					}
@@ -111,33 +118,11 @@ public class ScrabbleServer implements IScrabbleServer
 				final Bag<Character> requiredLetters = moveMI.getRequiredLetters();
 				final Bag<Character> missingLetters = new HashBag<>(requiredLetters);
 				missingLetters.removeAll(rackLetters);
-				if (missingLetters.size() > playerInfo.rack.getCountBlank())
+				if (missingLetters.size() > playerInfo.rack.countJoker())
 				{
 					final String details = "<html>Rack with " + rackLetters + "<br>has not the required stones " + requiredLetters;
 					player.onDispatchMessage(details);
 					throw new ScrabbleException(ScrabbleException.ERROR_CODE.MISSING_LETTER);
-				}
-
-				// position blanks for missing letters
-				if (!missingLetters.isEmpty())
-				{
-					LOGGER.debug("Word before positioning white tiles: " + move.word);
-					for (int i = 0; i < move.word.length(); i++)
-					{
-						final char c = move.word.charAt(i);
-						if (Character.isUpperCase(c) && missingLetters.contains(c))
-						{
-							if (missingLetters.getCount(c) == requiredLetters.getCount(c))
-							{
-								move.word = move.word.replaceAll(Character.toString(c), Character.toString(Character.toLowerCase(c)));
-							}
-							else
-							{
-								throw new ScrabbleException(ScrabbleException.ERROR_CODE.WHITE_POSITION_REQUIRED);
-							}
-						}
-					}
-					LOGGER.debug("Word after having positioned white tiles: " + move.word);
 				}
 
 				// check dictionary
@@ -157,23 +142,11 @@ public class ScrabbleServer implements IScrabbleServer
 				if (this.grid.isEmpty())
 				{
 					final Grid.Square center = this.grid.getCenter();
-					Grid.Square square = move.startSquare;
-					boolean onCenter = false;
-					for (int i = 0; i < move.word.length(); i++)
-					{
-						if (square == center)
-						{
-							onCenter = true;
-							break;
-						}
-						square = square.getFollowing(move.getDirection());
-					}
-					if (!onCenter)
+					if (!move.getSquares().keySet().contains(center))
 					{
 						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
 								"The first word must be on the center square");
 					}
-
 				}
 
 				Grid.Square square = move.startSquare;
@@ -186,7 +159,7 @@ public class ScrabbleServer implements IScrabbleServer
 								playerInfo.rack.removeStones(
 										Collections.singletonList(move.isPlayedByBlank(i) ? ' ' : c)
 								).get(0);
-						if (stone.isWhiteStone())
+						if (stone.isJoker())
 						{
 							stone.setCharacter(c);
 						}
@@ -206,7 +179,7 @@ public class ScrabbleServer implements IScrabbleServer
 			{
 				final List<Stone> stones1 = playerInfo.rack.removeStones(((Exchange) action).getChars());
 				this.bag.addAll(stones1);
-				Collections.shuffle(this.bag);
+				Collections.shuffle(this.bag, this.random);
 			}
 			else
 			{
@@ -216,7 +189,10 @@ public class ScrabbleServer implements IScrabbleServer
 			refillRack(player);
 			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
 
-			this.waitingForPlay.countDown();
+			if (this.waitingForPlay != null)
+			{
+				this.waitingForPlay.countDown();
+			}
 
 			LOGGER.debug("Grid after play\n" + this.grid.asASCIIArt());
 
@@ -280,19 +256,7 @@ public class ScrabbleServer implements IScrabbleServer
 
 	public void startGame()
 	{
-		assert !this.toPlay.isEmpty();
-
-		fillBag();
-		sortPlayers();
-
-		// Fill racks
-		for (final AbstractPlayer player : this.toPlay)
-		{
-			refillRack(player);
-		}
-
-		dispatch(player -> player.beforeGameStart());
-
+		prepareGame();
 
 		try
 		{
@@ -319,6 +283,22 @@ public class ScrabbleServer implements IScrabbleServer
 		}
 
 		informClients("done!");
+	}
+
+	public void prepareGame()
+	{
+		assert !this.toPlay.isEmpty();
+
+		fillBag();
+		sortPlayers();
+
+		// Fill racks
+		for (final AbstractPlayer player : this.toPlay)
+		{
+			refillRack(player);
+		}
+
+		dispatch(player -> player.beforeGameStart());
 	}
 
 	/**
@@ -348,7 +328,7 @@ public class ScrabbleServer implements IScrabbleServer
 		{
 			this.bag.add(dictionary.generateStone(null));
 		}
-		Collections.shuffle(this.bag);
+		Collections.shuffle(this.bag, this.random);
 	}
 
 	/**

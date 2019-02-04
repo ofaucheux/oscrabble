@@ -50,8 +50,8 @@ public class Move implements IAction
 		int y = this.startSquare.getY();
 		for (int i = 0; i < this.word.length(); i++)
 		{
-			char c = this.word.charAt(i);
-			stones.put(grid.getSquare(x, y), dictionary.generateStone(c));
+			char c = this.originalWord.charAt(i);
+			stones.put(grid.getSquare(x, y), dictionary.generateStone(Character.isLowerCase(c) ? null : c));
 			if (this.direction == Direction.HORIZONTAL)
 			{
 				x += 1;
@@ -63,6 +63,25 @@ public class Move implements IAction
 		}
 
 		return stones;
+	}
+
+	/**
+	 *
+	 * @return Liste der belegten Zellen.
+	 */
+	public	LinkedHashMap<Grid.Square, Character> getSquares()
+	{
+		final LinkedHashMap<Grid.Square, Character> squares = new LinkedHashMap<>(this.word.length());
+		Grid.Square square = this.startSquare;
+		for (int i = 0; i < word.length(); i++)
+		{
+			squares.put(square, word.charAt(i));
+			if (i != word.length() - 1)
+			{
+				square = square.getFollowing(this.direction);
+			}
+		}
+		return squares;
 	}
 
 	/**

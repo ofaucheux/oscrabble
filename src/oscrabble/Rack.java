@@ -1,12 +1,8 @@
 package oscrabble;
 
 
-import org.apache.commons.collections4.Bag;
-import org.apache.commons.collections4.bag.HashBag;
-
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 public class Rack extends HashSet<Stone>
@@ -57,27 +53,19 @@ public class Rack extends HashSet<Stone>
 			}
 		}
 	}
-//
-//	/**
-//	 * @throws ScrabbleException  wenn nicht alle Characters im Rack sind.
-//	 */
-//	public void assertContains(final Bag<Character> characters) throws ScrabbleException
-//	{
-//		final ArrayList<Stone> found = new ArrayList<>();
-//		try
-//		{
-//			for (final Character c : characters)
-//			{
-//				found.add(removeStones(c));
-//			}
-//		}
-//		finally
-//		{
-//			this.addAll(found);
-//		}
-//	}
 
-
+	public int countLetter(final Character letter)
+	{
+		int i = 0;
+		for (final Stone stone : this)
+		{
+			if (!stone.isJoker() && stone.getChar() == letter)
+			{
+				i++;
+			}
+		}
+		return i;
+	}
 
 	/**
 	 * Findet ein Stein mit einer besonderen Buchstabe
@@ -91,13 +79,13 @@ public class Rack extends HashSet<Stone>
 		{
 			if (c == ' ')
 			{
-				if (stone.isWhiteStone())
+				if (stone.isJoker())
 				{
 					found = stone;
 					break;
 				}
 			}
-			else if (!stone.isWhiteStone() && stone.getChar() == c)
+			else if (!stone.isJoker() && stone.getChar() == c)
 			{
 				found = stone;
 				break;
@@ -106,12 +94,12 @@ public class Rack extends HashSet<Stone>
 		return found;
 	}
 
-	public int getCountBlank()
+	public int countJoker()
 	{
 		int counter = 0;
 		for (final Stone stone : this)
 		{
-			if (stone.isWhiteStone())
+			if (stone.isJoker())
 			{
 				counter++;
 			}
