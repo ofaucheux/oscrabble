@@ -35,6 +35,7 @@ public class ScrabbleServer implements IScrabbleServer
 		this.dictionary = dictionary;
 		this.grid = new Grid(this.dictionary);
 		this.random = random;
+		this.waitingForPlay = new CountDownLatch(1);
 	}
 
 	public ScrabbleServer(final Dictionary dictionary)
@@ -97,6 +98,7 @@ public class ScrabbleServer implements IScrabbleServer
 	{
 		assertIsCurrentlyPlaying(player);
 
+		boolean done = false;
 		try
 		{
 			int score = 0;
@@ -189,13 +191,9 @@ public class ScrabbleServer implements IScrabbleServer
 			refillRack(player);
 			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
 
-			if (this.waitingForPlay != null)
-			{
-				this.waitingForPlay.countDown();
-			}
-
 			LOGGER.debug("Grid after play\n" + this.grid.asASCIIArt());
 
+			done = true;
 			return score;
 		}
 		catch (final ScrabbleException e)
@@ -203,20 +201,25 @@ public class ScrabbleServer implements IScrabbleServer
 			if (e.acceptRetry())
 			{
 				player.onDispatchMessage(e.toString());
-				this.toPlay.addFirst(player);
-				return 0;
+				done = false;
 			}
 			else
 			{
 				dispatch(p -> p.onDispatchMessage(
 						"Player " + player + " would have play an illegal move: " + e + ". Skip its turn"));
-				return 0;
+				done = true;
 			}
+			return 0;
 		}
 		finally
 		{
-			this.toPlay.pop();
-			this.toPlay.add(player);
+			if (done)
+			{
+				this.toPlay.pop();
+				this.toPlay.add(player);
+			}
+			this.waitingForPlay.countDown();
+
 		}
 	}
 
