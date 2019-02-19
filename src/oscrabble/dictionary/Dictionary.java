@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import oscrabble.Stone;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.*;

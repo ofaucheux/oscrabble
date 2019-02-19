@@ -1,6 +1,7 @@
 package oscrabble.client;
 
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import oscrabble.*;
 import oscrabble.dictionary.Dictionary;
@@ -11,6 +12,7 @@ import oscrabble.server.IPlayerInfo;
 import oscrabble.server.ScrabbleServer;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
@@ -24,6 +26,7 @@ import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +43,7 @@ public class SwingClient extends AbstractPlayer
 	private final JScoreboard jScoreboard;
 
 	private boolean isObserver;
+	private final TelnetFrame telnetFrame;
 
 	public SwingClient(final ScrabbleServer server, final String name)
 	{
@@ -56,6 +60,8 @@ public class SwingClient extends AbstractPlayer
 		final AbstractDocument document = (AbstractDocument) this.commandPrompt.getDocument();
 		document.addDocumentListener(promptListener);
 		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
+		this.telnetFrame = new TelnetFrame("Help");
+
 		display();
 	}
 
@@ -106,6 +112,8 @@ public class SwingClient extends AbstractPlayer
 					jFrame.setSize(new Dimension(200, 200));
 					jFrame.setVisible(true);
 					jFrame.pack();
+					jFrame.setLocation(
+							SwingClient.this.jRack.getX(), SwingClient.this.jRack.getY() + SwingClient.this.jRack.getHeight());
 				}
 				catch (ScrabbleException e1)
 				{
@@ -137,6 +145,11 @@ public class SwingClient extends AbstractPlayer
 			);
 		rackFrame.setFocusableWindowState(false);
 		rackFrame.setFocusable(false);
+
+		this.telnetFrame.frame.setVisible(false);
+		this.telnetFrame.frame.setSize(new Dimension(300, 300));
+		this.telnetFrame.frame.setLocationRelativeTo(rackFrame);
+		this.telnetFrame.frame.setLocation(rackFrame.getX(), rackFrame.getY() + rackFrame.getHeight());
 
 		SwingUtilities.invokeLater(() -> {
 			gridFrame.requestFocus();
@@ -584,12 +597,56 @@ public class SwingClient extends AbstractPlayer
 	private class CommandPromptAction extends AbstractAction implements DocumentListener
 	{
 
+		public static final String KEYWORD_HELP = "?";
+		private Map<String, Command> commands = new LinkedHashMap<>();
+
+		CommandPromptAction()
+		{
+			this.commands.put(KEYWORD_HELP, new Command("display help", (args -> {
+				final StringBuffer sb = new StringBuffer();
+				sb.append("<table border=1>");
+				CommandPromptAction.this.commands.forEach(
+						(k, c) -> sb.append("<tr><td>").append(k).append("</td><td>").append(c.description).append("</td></tr>"));
+				sb.setLength(sb.length() - 1);
+				sb.append("</table>");
+				SwingClient.this.telnetFrame.appendConsoleText("blue", sb.toString(), false);
+						return null;
+					}))
+			);
+
+			this.commands.put("isvalid", new Command( "check if a word is valid", ( args -> {
+				final String word = args[0];
+				final Collection<String> mutations = SwingClient.this.server.getDictionary().getMutations(
+						word.toUpperCase());
+				final boolean isValid = mutations != null && !mutations.isEmpty();
+				SwingClient.this.telnetFrame.appendConsoleText(
+						isValid ? "blue" : "red",
+						word + (isValid ? (" is valid " + mutations) : " is not valid"),
+						true);
+				return null;
+			})));
+		}
+
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			final String command = SwingClient.this.commandPrompt.getText();
+			String command = SwingClient.this.commandPrompt.getText();
 			if (command.isEmpty())
 			{
+				return;
+			}
+
+			if (command.startsWith("/"))
+			{
+				final String[] splits = command.split("\\s+");
+				String keyword = splits[0].substring(1).toLowerCase();
+				if (!this.commands.containsKey(keyword))
+				{
+					keyword = KEYWORD_HELP;
+				}
+				Command c = this.commands.get(keyword);
+				telnetFrame.appendConsoleText("black", "> " + command, false);
+				c.action.apply(Arrays.copyOfRange(splits, 1, splits.length));
 				return;
 			}
 
@@ -761,6 +818,22 @@ public class SwingClient extends AbstractPlayer
 				LOGGER.warn(e1.getMessage());
 			}
 		}
+
+		/**
+		 * Ein Befehl und seine Antwort
+		 */
+		private class Command
+		{
+			final String description;
+			final Function<String[], Void> action;
+
+			private Command(final String description,
+							final Function<String[], Void> action)
+			{
+				this.description = description;
+				this.action = action;
+			}
+		}
 	}
 
 	private class RackCell extends JComponent
@@ -827,5 +900,33 @@ public class SwingClient extends AbstractPlayer
 		{
 			super(message, e);
 		}
+	}
+
+	/**
+	 * Eine Frame, die wie eine Telnet-Console sich immer erweiterndes Text anzeigt.
+	 */
+	private class TelnetFrame
+	{
+
+		private final JLabel label;
+		private final JFrame frame;
+
+		TelnetFrame(final String title)
+		{
+			this.frame = new JFrame(title);
+			this.label = new JLabel("<html>");
+			this.label.setBorder(new BevelBorder(BevelBorder.LOWERED));
+			this.frame.add(new JScrollPane(this.label, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+		}
+
+		private void appendConsoleText(final String color, String text, final boolean escapeHtml)
+		{
+			this.label.setText(this.label.getText() + "\n<br><font color='" + color + "'>"
+					+ (escapeHtml ? StringEscapeUtils.escapeHtml4(text) : text)
+					+ "</font>");
+			this.frame.setVisible(true);
+		}
+
 	}
 }
