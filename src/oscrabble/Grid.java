@@ -157,6 +157,7 @@ public class Grid
 		public static final Comparator<Grid.MoveMetaInformation> WORD_LENGTH_COMPARATOR = (meta1, meta2) -> meta1.getRequiredLetters().size() - meta2.getRequiredLetters().size();
 		public List<String> crosswords = new ArrayList<>();
 		final Move move;
+		public boolean isScrabble;
 		int score;
 		private int requiredBlanks;
 		private final Bag<Character> requiredLetter = new TreeBag<>();
@@ -272,6 +273,7 @@ public class Grid
 		// scrabble-bonus
 		if (mmi.requiredLetter.size() == ScrabbleServer.RACK_SIZE)
 		{
+			mmi.isScrabble = true;
 			mmi.score += 50;
 		}
 

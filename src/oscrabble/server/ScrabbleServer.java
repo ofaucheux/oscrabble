@@ -21,6 +21,7 @@ public class ScrabbleServer implements IScrabbleServer
 
 
 	public final static int RACK_SIZE = 7;
+	static final String SCRABBLE_MESSAGE = "Scrabble!";
 
 	private final LinkedHashMap<AbstractPlayer, PlayerInfo> players = new LinkedHashMap<>();
 	private final LinkedList<AbstractPlayer> toPlay = new LinkedList<>();
@@ -181,6 +182,10 @@ public class ScrabbleServer implements IScrabbleServer
 				}
 
 				score = moveMI.getScore();
+				if (moveMI.isScrabble)
+				{
+					dispatchMessage(SCRABBLE_MESSAGE);
+				}
 				playerInfo.score += score;
 			}
 			else if (action instanceof Exchange)
@@ -208,13 +213,12 @@ public class ScrabbleServer implements IScrabbleServer
 			player.onDispatchMessage(e.toString());
 			if (this.acceptNewAttemptAfterForbiddenMove || e.acceptRetry())
 			{
-				dispatch(p -> p.onDispatchMessage("Retry accepted"));
+				player.onDispatchMessage("Retry accepted");
 				done = false;
 			}
 			else
 			{
-				dispatch(p -> p.onDispatchMessage(
-						"Player " + player + " would have play an illegal move: " + e + ". Skip its turn"));
+				dispatchMessage("Player " + player + " would have play an illegal move: " + e + ". Skip its turn");
 				done = true;
 			}
 			return 0;
@@ -231,6 +235,14 @@ public class ScrabbleServer implements IScrabbleServer
 		}
 	}
 
+	/**
+	 * Send a message to all the clients.
+	 * @param message message to dispatch
+	 */
+	private void dispatchMessage(final String message)
+	{
+		this.players.keySet().forEach(p -> p.onDispatchMessage(message));
+	}
 
 	private void assertIsCurrentlyPlaying(final AbstractPlayer player)
 	{
@@ -271,7 +283,7 @@ public class ScrabbleServer implements IScrabbleServer
 
 		try
 		{
-			while (!this.bag.isEmpty())  // TODO: andere Möglichkeiten fürs Ende des Spieles
+			do
 			{
 				final AbstractPlayer player = this.toPlay.peekFirst();
 				LOGGER.info("Let's play " + player);
@@ -286,14 +298,14 @@ public class ScrabbleServer implements IScrabbleServer
 					// TODO: timeout
 				}
 				Thread.sleep(500);
-			}
+			} while (!this.bag.isEmpty());  // TODO: andere Möglichkeiten fürs Ende des Spieles
 		}
 		catch (InterruptedException e)
 		{
 			LOGGER.error(e, e);
 		}
 
-		informClients("done!");
+		dispatch(AbstractPlayer::afterGameEnd);
 	}
 
 	public void prepareGame()
@@ -315,7 +327,7 @@ public class ScrabbleServer implements IScrabbleServer
 	/**
 	 * Sortiert (oder mischt) die Spieler, um eine Spielreihenfolge zu definieren.
 	 */
-	protected void sortPlayers()
+	private void sortPlayers()
 	{
 		// select the player playing the first
 		Collections.shuffle(this.toPlay);
@@ -340,15 +352,6 @@ public class ScrabbleServer implements IScrabbleServer
 			this.bag.add(dictionary.generateStone(null));
 		}
 		Collections.shuffle(this.bag, this.random);
-	}
-
-	/**
-	 *
-	 * @param message
-	 */
-	private void informClients(final String message)
-	{
-		dispatch(player -> player.onDispatchMessage(message));
 	}
 
 	/**

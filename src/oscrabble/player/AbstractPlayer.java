@@ -29,8 +29,12 @@ public abstract class AbstractPlayer
 	public abstract void onPlayRequired();
 	public abstract void onDictionaryChange();
 	public abstract void onDispatchMessage(String msg);
+
 	public abstract void afterPlay(IPlayerInfo info, IAction action, int score);
-	public abstract void beforeGameStart();
+
+	public void beforeGameStart() {}
+
+	public void afterGameEnd() {}
 
 	public abstract boolean isObserver();
 
