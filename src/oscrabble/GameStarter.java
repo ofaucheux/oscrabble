@@ -18,6 +18,7 @@ public class GameStarter
 		try
 		{
 			final ScrabbleServer server = new ScrabbleServer(Dictionary.getDictionary(Dictionary.Language.FRENCH));
+			server.setAcceptNewAttemptAfterForbiddenMove(true);
 			final Dictionary dictionary = server.getDictionary();
 			final BruteForceMethod method = new BruteForceMethod(dictionary);
 			server.register(method.new Player(server, "Computer", new MostLetterSetFilter(server.getGrid())));

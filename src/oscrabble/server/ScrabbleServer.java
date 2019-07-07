@@ -30,6 +30,9 @@ public class ScrabbleServer implements IScrabbleServer
 	final LinkedList<Stone> bag = new LinkedList<>();
 	private final Dictionary dictionary;
 
+	/** Accept a new attempt after a player has tried a forbidden move */
+	private boolean acceptNewAttemptAfterForbiddenMove = false;
+
 	ScrabbleServer(final Dictionary dictionary, final Random random)
 	{
 		this.dictionary = dictionary;
@@ -43,6 +46,10 @@ public class ScrabbleServer implements IScrabbleServer
 		this (dictionary, new Random());
 	}
 
+	public void setAcceptNewAttemptAfterForbiddenMove(final boolean acceptNewAttemptAfterForbiddenMove)
+	{
+		this.acceptNewAttemptAfterForbiddenMove = acceptNewAttemptAfterForbiddenMove;
+	}
 
 	@Override
 	public synchronized void register(final AbstractPlayer newPlayer)
@@ -136,7 +143,6 @@ public class ScrabbleServer implements IScrabbleServer
 					if (!this.dictionary.containUpperCaseWord(crossword.toUpperCase()))
 					{
 						final String details = "Word \"" + crossword + "\" is not allowed";
-						player.onDispatchMessage(details);
 						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, details);
 					}
 				}
@@ -198,9 +204,11 @@ public class ScrabbleServer implements IScrabbleServer
 		}
 		catch (final ScrabbleException e)
 		{
-			if (e.acceptRetry())
+			LOGGER.info("Refuse play: " + e);
+			player.onDispatchMessage(e.toString());
+			if (this.acceptNewAttemptAfterForbiddenMove || e.acceptRetry())
 			{
-				player.onDispatchMessage(e.toString());
+				dispatch(p -> p.onDispatchMessage("Retry accepted"));
 				done = false;
 			}
 			else
