@@ -301,7 +301,7 @@ public class SwingClient extends AbstractPlayer
 	/**
 	 * Darstellung der Spielfläche
 	 */
-	public static class JGrid extends JPanel
+	static class JGrid extends JPanel
 	{
 		private final HashMap<Grid.Square, MatteBorder> specialBorders = new HashMap<>();
 
@@ -314,7 +314,7 @@ public class SwingClient extends AbstractPlayer
 		final JComponent background;
 
 		/** Spielfeld des Scrabbles */
-		public JGrid(final Grid grid, final Dictionary dictionary)
+		JGrid(final Grid grid, final Dictionary dictionary)
 		{
 			this.grid = grid;
 			this.numberOfRows = grid.getSize() + 2;
@@ -554,7 +554,7 @@ public class SwingClient extends AbstractPlayer
 	private class CommandPromptAction extends AbstractAction implements DocumentListener
 	{
 
-		public static final String KEYWORD_HELP = "?";
+		static final String KEYWORD_HELP = "?";
 		private Map<String, Command> commands = new LinkedHashMap<>();
 
 		CommandPromptAction()
@@ -898,16 +898,17 @@ public class SwingClient extends AbstractPlayer
 		private final ButtonGroup orderButGroup;
 
 		/** List of legal moves */
-		private ArrayList<Move> legalMoves;
+		private ArrayList<Grid.MoveMetaInformation> legalMoves;
 
 		/** Swing list of sorted possible moves */
-		private JList<Move> moveList;
+		private final JList<Grid.MoveMetaInformation> moveList;
 
-		public PossibleMoveDisplayer(final BruteForceMethod bruteForceMethod)
+		PossibleMoveDisplayer(final BruteForceMethod bruteForceMethod)
 		{
 			super("Help");
 			this.bruteForceMethod = bruteForceMethod;
 			this.orderButGroup = new ButtonGroup();
+			this.moveList = new JList<>();
 		}
 
 		@Override
@@ -915,12 +916,29 @@ public class SwingClient extends AbstractPlayer
 		{
 			try
 			{
-				this.legalMoves = new ArrayList<>(
-						this.bruteForceMethod.getLegalMoves(SwingClient.this.server.getGrid(),
-								SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey)));
-				Move.sort(this.legalMoves, SwingClient.this.server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR.reversed());
+				final Set<Move> moves = this.bruteForceMethod.getLegalMoves(SwingClient.this.server.getGrid(),
+						SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey));
+				this.legalMoves = new ArrayList<>();
+				this.moveList.setCellRenderer(new DefaultListCellRenderer() {
+					@Override
+					public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
+					{
+						final Component label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+						if (value instanceof Grid.MoveMetaInformation)
+						{
+							final Grid.MoveMetaInformation mmi = (Grid.MoveMetaInformation) value;
+							this.setText(mmi.getMove().toString() + "  " + mmi.getScore()  + " pts");
+						}
+						return label;
+					}
+				});
+
+				for (final Move move : moves)
+				{
+					this.legalMoves.add(SwingClient.this.server.getGrid().getMetaInformation(move));
+				}
+
 				final ScrollPane sp = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-				this.moveList = new JList<>(this.legalMoves.toArray(new Move[0]));
 				sp.add(this.moveList);
 				this.moveList.addListSelectionListener(event -> {
 					Move move = null;
@@ -928,7 +946,7 @@ public class SwingClient extends AbstractPlayer
 					{
 						if (this.moveList.isSelectedIndex(i))
 						{
-							move = this.moveList.getModel().getElementAt(i);
+							move = this.moveList.getModel().getElementAt(i).getMove();
 							break;
 						}
 					}
@@ -977,16 +995,8 @@ public class SwingClient extends AbstractPlayer
 					@Override
 					public void actionPerformed(final ActionEvent e)
 					{
-						try
-						{
-							Move.sort(PossibleMoveDisplayer.this.legalMoves, SwingClient.this.server.getGrid(), OrderButton.this.comparator.reversed());
-							PossibleMoveDisplayer.this.moveList.setListData(new Vector<>(PossibleMoveDisplayer.this.legalMoves));
-						}
-						catch (ScrabbleException ex)
-						{
-							LOGGER.error("Error while sorting the list", ex);
-							JOptionPane.showMessageDialog(PossibleMoveDisplayer.this.moveList, ex.toString());
-						}
+						PossibleMoveDisplayer.this.legalMoves.sort(OrderButton.this.comparator.reversed());
+						PossibleMoveDisplayer.this.moveList.setListData(new Vector<>(PossibleMoveDisplayer.this.legalMoves));
 					}
 				});
 			}
