@@ -77,50 +77,7 @@ public class SwingClient extends AbstractPlayer
 
 		final JButton butHelp = new JButton();
 		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.server.getDictionary());
-		butHelp.setAction(new AbstractAction("Help")
-		{
-
-			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
-				try
-				{
-					final ArrayList<Move> legalMoves = new ArrayList<>(
-							bruteForceMethod.getLegalMoves(SwingClient.this.server.getGrid(),
-									SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey)));
-					Move.sort(legalMoves, SwingClient.this.server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR.reversed());
-					final ScrollPane sp = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-					final JList<Move> moveList = new JList<>(legalMoves.toArray(new Move[0]));
-					sp.add(moveList);
-					moveList.addListSelectionListener(event -> {
-						Move move = null;
-						for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
-						{
-							if (moveList.isSelectedIndex(i))
-							{
-								move = moveList.getModel().getElementAt(i);
-								break;
-							}
-						}
-						SwingClient.this.jGrid.setPreparedMove(move);
-
-					});
-
-					final JFrame jFrame = new JFrame("Moves");
-					jFrame.add(sp);
-					jFrame.setMaximumSize(new Dimension(200, Integer.MAX_VALUE));
-					jFrame.setSize(new Dimension(200, 200));
-					jFrame.setVisible(true);
-					jFrame.pack();
-					jFrame.setLocation(
-							SwingClient.this.jRack.getX(), SwingClient.this.jRack.getY() + SwingClient.this.jRack.getHeight());
-				}
-				catch (ScrabbleException e1)
-				{
-					e1.printStackTrace();
-				}
-			}
-		});
+		butHelp.setAction(new PossibleMoveDisplayer(bruteForceMethod));
 
 		final JPanel eastPanel = new JPanel(new BorderLayout());
 		final JPanel panel1 = new JPanel(new BorderLayout());
@@ -645,7 +602,7 @@ public class SwingClient extends AbstractPlayer
 					keyword = KEYWORD_HELP;
 				}
 				Command c = this.commands.get(keyword);
-				telnetFrame.appendConsoleText("black", "> " + command, false);
+				SwingClient.this.telnetFrame.appendConsoleText("black", "> " + command, false);
 				c.action.apply(Arrays.copyOfRange(splits, 1, splits.length));
 				return;
 			}
@@ -928,5 +885,111 @@ public class SwingClient extends AbstractPlayer
 			this.frame.setVisible(true);
 		}
 
+	}
+
+	/**
+	 * This action display the list of possible and authorized moves.
+	 */
+	private class PossibleMoveDisplayer extends AbstractAction
+	{
+		private final BruteForceMethod bruteForceMethod;
+
+		/** Group of buttons for the order */
+		private final ButtonGroup orderButGroup;
+
+		/** List of legal moves */
+		private ArrayList<Move> legalMoves;
+
+		/** Swing list of sorted possible moves */
+		private JList<Move> moveList;
+
+		public PossibleMoveDisplayer(final BruteForceMethod bruteForceMethod)
+		{
+			super("Help");
+			this.bruteForceMethod = bruteForceMethod;
+			this.orderButGroup = new ButtonGroup();
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e)
+		{
+			try
+			{
+				this.legalMoves = new ArrayList<>(
+						this.bruteForceMethod.getLegalMoves(SwingClient.this.server.getGrid(),
+								SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey)));
+				Move.sort(this.legalMoves, SwingClient.this.server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR.reversed());
+				final ScrollPane sp = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+				this.moveList = new JList<>(this.legalMoves.toArray(new Move[0]));
+				sp.add(this.moveList);
+				this.moveList.addListSelectionListener(event -> {
+					Move move = null;
+					for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
+					{
+						if (this.moveList.isSelectedIndex(i))
+						{
+							move = this.moveList.getModel().getElementAt(i);
+							break;
+						}
+					}
+					SwingClient.this.jGrid.setPreparedMove(move);
+
+				});
+
+				final JFrame jFrame = new JFrame("Moves");
+				jFrame.setLayout(new BorderLayout());
+
+				final JPanel orderMethodPanel = new JPanel();
+				jFrame.add(orderMethodPanel, BorderLayout.NORTH);
+				orderMethodPanel.add(new OrderButton("Score", Grid.MoveMetaInformation.SCORE_COMPARATOR));
+				orderMethodPanel.add(new OrderButton("Length", Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
+				this.orderButGroup.getElements().asIterator().next().doClick();
+
+				jFrame.add(sp);
+				jFrame.setMaximumSize(new Dimension(200, Integer.MAX_VALUE));
+				jFrame.setSize(new Dimension(200, 200));
+				jFrame.setVisible(true);
+				jFrame.pack();
+				jFrame.setLocation(
+						SwingClient.this.jRack.getX(), SwingClient.this.jRack.getY() + SwingClient.this.jRack.getHeight());
+			}
+			catch (ScrabbleException e1)
+			{
+				e1.printStackTrace();
+			}
+		}
+
+		/**
+		 * Radio button for the selection of the order of the word list.
+		 */
+		private class OrderButton extends JRadioButton
+		{
+			final Comparator<Grid.MoveMetaInformation> comparator;
+
+			private OrderButton(final String label, final Comparator<Grid.MoveMetaInformation> comparator)
+			{
+				super();
+				this.comparator = comparator;
+
+				PossibleMoveDisplayer.this.orderButGroup.add(this);
+				setAction(new AbstractAction(label)
+				{
+					@Override
+					public void actionPerformed(final ActionEvent e)
+					{
+						try
+						{
+							Move.sort(PossibleMoveDisplayer.this.legalMoves, SwingClient.this.server.getGrid(), OrderButton.this.comparator.reversed());
+							PossibleMoveDisplayer.this.moveList.setListData(new Vector<>(PossibleMoveDisplayer.this.legalMoves));
+						}
+						catch (ScrabbleException ex)
+						{
+							LOGGER.error("Error while sorting the list", ex);
+							JOptionPane.showMessageDialog(PossibleMoveDisplayer.this.moveList, ex.toString());
+						}
+					}
+				});
+			}
+		}
 	}
 }

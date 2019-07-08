@@ -155,6 +155,8 @@ public class Grid
 	public static class MoveMetaInformation
 	{
 		public static final Comparator<Grid.MoveMetaInformation> WORD_LENGTH_COMPARATOR = (meta1, meta2) -> meta1.getRequiredLetters().size() - meta2.getRequiredLetters().size();
+		public static final Comparator<Grid.MoveMetaInformation> SCORE_COMPARATOR = (meta1, meta2) -> meta1.score - meta2.score;
+
 		public List<String> crosswords = new ArrayList<>();
 		final Move move;
 		public boolean isScrabble;

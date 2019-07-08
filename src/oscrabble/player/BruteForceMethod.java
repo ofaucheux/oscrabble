@@ -81,6 +81,13 @@ public class BruteForceMethod
 		return anchors;
 	}
 
+	/**
+	 * Get all authorized moves.
+	 *
+	 * @param grid Grid
+	 * @param rack Rack
+	 * @return all the moves
+	 */
 	public Set<Move> getLegalMoves(final Grid grid, final Rack rack)
 	{
 
