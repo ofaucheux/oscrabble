@@ -15,6 +15,7 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
@@ -80,8 +81,13 @@ public class SwingClient extends AbstractPlayer
 		butHelp.setAction(new PossibleMoveDisplayer(bruteForceMethod));
 
 		final JPanel eastPanel = new JPanel(new BorderLayout());
-		final JPanel panel1 = new JPanel(new BorderLayout());
-		panel1.add(this.jScoreboard, BorderLayout.NORTH);
+		final JPanel panel1 = new JPanel();
+		panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
+		panel1.add(this.jScoreboard);
+		panel1.add(Box.createVerticalGlue());
+		final JPanel configPanel = this.server.getParameters().createPanel();
+		panel1.add(configPanel);
+		configPanel.setBorder(new TitledBorder("Server configuration"));
 		eastPanel.add(panel1, BorderLayout.CENTER);
 		eastPanel.add(butHelp, BorderLayout.SOUTH);
 		gridFrame.add(eastPanel, BorderLayout.LINE_END);

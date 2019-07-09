@@ -8,6 +8,8 @@ import oscrabble.*;
 import oscrabble.client.Exchange;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
+import oscrabble.properties.Parameter;
+import oscrabble.properties.ParameterSet;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -31,8 +33,11 @@ public class ScrabbleServer implements IScrabbleServer
 	final LinkedList<Stone> bag = new LinkedList<>();
 	private final Dictionary dictionary;
 
+	/** Parameter of the server */
+	private final ParameterSet parameters;
+
 	/** Accept a new attempt after a player has tried a forbidden move */
-	private boolean acceptNewAttemptAfterForbiddenMove = false;
+	private final Parameter.Boolean acceptNewAttemptAfterForbiddenMove;
 
 	ScrabbleServer(final Dictionary dictionary, final Random random)
 	{
@@ -40,16 +45,18 @@ public class ScrabbleServer implements IScrabbleServer
 		this.grid = new Grid(this.dictionary);
 		this.random = random;
 		this.waitingForPlay = new CountDownLatch(1);
+
+		this.acceptNewAttemptAfterForbiddenMove = new Parameter.Boolean("Retry on error", "Accept a new attempt after a player has tried a forbidden move", true);
+
+		this.parameters = new ParameterSet(
+				this.acceptNewAttemptAfterForbiddenMove
+		);
+
 	}
 
 	public ScrabbleServer(final Dictionary dictionary)
 	{
 		this (dictionary, new Random());
-	}
-
-	public void setAcceptNewAttemptAfterForbiddenMove(final boolean acceptNewAttemptAfterForbiddenMove)
-	{
-		this.acceptNewAttemptAfterForbiddenMove = acceptNewAttemptAfterForbiddenMove;
 	}
 
 	@Override
@@ -211,7 +218,7 @@ public class ScrabbleServer implements IScrabbleServer
 		{
 			LOGGER.info("Refuse play: " + e);
 			player.onDispatchMessage(e.toString());
-			if (this.acceptNewAttemptAfterForbiddenMove || e.acceptRetry())
+			if (this.acceptNewAttemptAfterForbiddenMove.getValue() || e.acceptRetry())
 			{
 				player.onDispatchMessage("Retry accepted");
 				done = false;
@@ -393,6 +400,14 @@ public class ScrabbleServer implements IScrabbleServer
 	public int getScore(final AbstractPlayer player)
 	{
 		return this.players.get(player).getScore();
+	}
+
+	/**
+	 * @return the parameter of the server. TODO: made them editable only by master of game.
+	 */
+	public ParameterSet getParameters()
+	{
+		return this.parameters;
 	}
 
 	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
