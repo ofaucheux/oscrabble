@@ -44,7 +44,13 @@ public abstract class Parameter <T>
 		this.value = value;
 		if (change)
 		{
-			this.listeners.forEach(l -> l.get().valueChanged(this));
+			this.listeners.forEach(l -> {
+				final Listener listener = l.get();
+				if (listener != null)
+				{
+					listener.valueChanged(this);
+				}
+			});
 		}
 	}
 
