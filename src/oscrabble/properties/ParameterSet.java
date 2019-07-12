@@ -2,9 +2,11 @@ package oscrabble.properties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Set of parameters and possibility to represent them in a Swing form.
@@ -67,10 +69,22 @@ public class ParameterSet
 			cb.setSelectedIcon(trueIcon);
 			cb.setIcon(falseIcon);
 			cb.setSelected(((Parameter.Boolean) opt).getValue());
-			cb.addActionListener(e -> opt.setValue(cb.isSelected()));
-			opt.addListener(source -> cb.setSelected(((Parameter.Boolean) opt).getValue()));
-//			}
 
+			final AtomicBoolean isActionEnabled = new AtomicBoolean(true);
+			final ActionListener actionListener = e -> {
+				if (!isActionEnabled.get())
+				{
+					return;
+				}
+				opt.setValue(cb.isSelected(), cb);
+			};
+			cb.addActionListener(actionListener);
+
+			opt.addListener((parameter, sourceOfChange) -> {
+				isActionEnabled.set(sourceOfChange != opt);
+				cb.setSelected(((Parameter.Boolean) parameter).getValue());
+				isActionEnabled.set(true);
+			});
 
 			panel.add(cb);
 			cb.setToolTipText(opt.description);

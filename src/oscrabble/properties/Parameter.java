@@ -38,7 +38,7 @@ public abstract class Parameter <T>
 	 *
 	 * @param value the new value
 	 */
-	void setValue(final T value)
+	void setValue(final T value, final Object sourceOfChange)
 	{
 		final boolean change = !value.equals(this.value);
 		this.value = value;
@@ -48,7 +48,7 @@ public abstract class Parameter <T>
 				final Listener listener = l.get();
 				if (listener != null)
 				{
-					listener.valueChanged(this);
+					listener.valueChanged(this, sourceOfChange);
 				}
 			});
 		}
@@ -61,6 +61,12 @@ public abstract class Parameter <T>
 	public void addListener(final Listener listener)
 	{
 		this.listeners.add(new WeakReference<>(listener));
+	}
+
+	@Override
+	public String toString()
+	{
+		return this.name + ": " + this.value;
 	}
 
 	/**
@@ -79,6 +85,6 @@ public abstract class Parameter <T>
 	 */
 	public interface Listener
 	{
-		void valueChanged(Parameter source);
+		void valueChanged(Parameter parameter, Object sourceOfChange);
 	}
 }

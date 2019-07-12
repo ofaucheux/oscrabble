@@ -1,6 +1,7 @@
 package oscrabble.properties;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Test class
@@ -20,7 +21,10 @@ class ParameterSetTest
 		System.out.println(options.toString());
 
 		final JFrame frame = new JFrame();
+		frame.setLayout(new FlowLayout());
 		frame.add(options.createPanel());
+		frame.add(options.createPanel());
+
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.pack();
@@ -28,7 +32,7 @@ class ParameterSetTest
 
 		while (frame.isDisplayable())
 		{
-			jaune.setValue(!jaune.getValue());
+			jaune.setValue(!jaune.getValue(), null);
 			Thread.sleep(3000);
 		}
 
