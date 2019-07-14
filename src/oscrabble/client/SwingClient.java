@@ -634,8 +634,7 @@ public class SwingClient extends AbstractPlayer
 				}
 				else
 				{
-					SwingClient.this.server.play(SwingClient.this, preparedMove);
-					SwingClient.this.commandPrompt.setText("");
+					play(preparedMove);
 				}
 			}
 			catch (JokerPlacementException e1)
@@ -957,7 +956,35 @@ public class SwingClient extends AbstractPlayer
 						}
 					}
 					SwingClient.this.jGrid.setPreparedMove(move);
+				});
 
+				this.moveList.addMouseListener(new MouseAdapter()
+				{
+					@Override
+					public void mouseClicked(final MouseEvent e)
+					{
+						if (e.getClickCount() >= 2)
+						{
+							new SwingWorker<>()
+							{
+								@Override
+								protected Object doInBackground() throws Exception
+								{
+									Thread.sleep(100);  // let time to object to be selected by other listener
+									final List<Grid.MoveMetaInformation> selection = PossibleMoveDisplayer.this.moveList.getSelectedValuesList();
+									if (selection.size() != 1)
+									{
+										return null;
+									}
+
+									final Move move = selection.get(0).getMove();
+									play(move);
+
+									return null;
+								}
+							}.execute();
+						}
+					}
 				});
 
 				final JFrame jFrame = new JFrame("Moves");
@@ -1007,5 +1034,15 @@ public class SwingClient extends AbstractPlayer
 				});
 			}
 		}
+	}
+
+	/**
+	 * Play the move: inform the server about it and clear the client input field.
+	 * @param move move to play
+	 */
+	private void play(final Move move)
+	{
+		SwingClient.this.server.play(SwingClient.this, move);
+		SwingClient.this.commandPrompt.setText("");
 	}
 }

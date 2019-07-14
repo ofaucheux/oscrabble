@@ -13,6 +13,7 @@ public class Move implements IAction
 	public final Grid.Square startSquare;
 	final Direction direction;
 
+	/** The word created by this move, incl. already set tiles and where blanks are represented by their value letters. */
 	public String word;
 	private final String originalWord;
 
