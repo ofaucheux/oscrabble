@@ -74,10 +74,10 @@ public class Move implements IAction
 	{
 		final LinkedHashMap<Grid.Square, Character> squares = new LinkedHashMap<>(this.word.length());
 		Grid.Square square = this.startSquare;
-		for (int i = 0; i < word.length(); i++)
+		for (int i = 0; i < this.word.length(); i++)
 		{
-			squares.put(square, word.charAt(i));
-			if (i != word.length() - 1)
+			squares.put(square, this.word.charAt(i));
+			if (i != this.word.length() - 1)
 			{
 				square = square.getFollowing(this.direction);
 			}
@@ -162,7 +162,12 @@ public class Move implements IAction
 	@Override
 	public String toString()
 	{
-		return String.format("%s (%d,%d) %s", this.direction, this.startSquare.getX(), this.startSquare.getY(), this.originalWord);
+		final String column = Character.toString((char) ('A' - 1 + this.startSquare.getX()));
+		final String line = Integer.toString(this.startSquare.getY());
+		return String.format("%3s  %s",
+				(this.direction == Direction.HORIZONTAL) ? line + column : column + line,
+				this.originalWord
+		);
 	}
 
 	/**
