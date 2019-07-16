@@ -921,6 +921,9 @@ public class SwingClient extends AbstractPlayer
 	 */
 	private class PossibleMoveDisplayer extends AbstractAction
 	{
+		static final String LABEL_DISPLAY = "Display";
+		static final String LABEL_HIDE = "Hide";
+
 		private final BruteForceMethod bruteForceMethod;
 
 		/** Group of buttons for the order */
@@ -934,7 +937,7 @@ public class SwingClient extends AbstractPlayer
 
 		PossibleMoveDisplayer(final BruteForceMethod bruteForceMethod)
 		{
-			super("Display");
+			super(LABEL_DISPLAY);
 			this.bruteForceMethod = bruteForceMethod;
 			this.orderButGroup = new ButtonGroup();
 			this.moveList = new JList<>();
@@ -1003,6 +1006,7 @@ public class SwingClient extends AbstractPlayer
 				if (this.moveList.isDisplayable())
 				{
 					resetPossibleMovesPanel();
+					SwingClient.this.showPossibilitiesButton.setText(LABEL_DISPLAY);
 					return;
 				}
 
@@ -1030,6 +1034,8 @@ public class SwingClient extends AbstractPlayer
 			{
 				e1.printStackTrace();
 			}
+
+			SwingClient.this.showPossibilitiesButton.setText(LABEL_HIDE);
 		}
 
 		/**
