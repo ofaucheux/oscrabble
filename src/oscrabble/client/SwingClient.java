@@ -46,6 +46,12 @@ public class SwingClient extends AbstractPlayer
 	private boolean isObserver;
 	private final TelnetFrame telnetFrame;
 
+	/** Panel for the display of possible moves and corresponding buttons */
+	private JPanel possibleMovePanel;
+
+	/** Button to display / hide the possible moves */
+	private JButton showPossibilitiesButton;
+
 	public SwingClient(final ScrabbleServer server, final String name)
 	{
 		super(name);
@@ -76,20 +82,27 @@ public class SwingClient extends AbstractPlayer
 		gridFrame.setLayout(new BorderLayout());
 		gridFrame.add(this.jGrid);
 
-		final JButton butHelp = new JButton();
-		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.server.getDictionary());
-		butHelp.setAction(new PossibleMoveDisplayer(bruteForceMethod));
-
 		final JPanel eastPanel = new JPanel(new BorderLayout());
 		final JPanel panel1 = new JPanel();
 		panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
 		panel1.add(this.jScoreboard);
 		panel1.add(Box.createVerticalGlue());
+
+		this.possibleMovePanel = new JPanel();
+		this.possibleMovePanel.setBorder(new TitledBorder("Possible moves"));
+		this.possibleMovePanel.setSize(new Dimension(200, 300));
+		this.possibleMovePanel.setLayout(new BorderLayout());
+		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.server.getDictionary());
+		this.showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(bruteForceMethod));
+		resetPossibleMovesPanel();
+
+		panel1.add(this.possibleMovePanel);
+		panel1.add(Box.createVerticalGlue());
+
 		final JPanel configPanel = this.server.getParameters().createPanel();
 		panel1.add(configPanel);
 		configPanel.setBorder(new TitledBorder("Server configuration"));
 		eastPanel.add(panel1, BorderLayout.CENTER);
-		eastPanel.add(butHelp, BorderLayout.SOUTH);
 		gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
 		gridFrame.add(this.commandPrompt, BorderLayout.SOUTH);
@@ -119,6 +132,14 @@ public class SwingClient extends AbstractPlayer
 			this.commandPrompt.requestFocusInWindow();
 			this.commandPrompt.grabFocus();
 		});
+	}
+
+	private void resetPossibleMovesPanel()
+	{
+		SwingClient.this.possibleMovePanel.removeAll();
+		SwingClient.this.possibleMovePanel.invalidate();
+		SwingClient.this.possibleMovePanel.repaint();
+		this.possibleMovePanel.add(this.showPossibilitiesButton, BorderLayout.SOUTH);
 	}
 
 	void setCommandPrompt(final String text)
@@ -910,10 +931,65 @@ public class SwingClient extends AbstractPlayer
 
 		PossibleMoveDisplayer(final BruteForceMethod bruteForceMethod)
 		{
-			super("Help");
+			super("Display");
 			this.bruteForceMethod = bruteForceMethod;
 			this.orderButGroup = new ButtonGroup();
 			this.moveList = new JList<>();
+			this.moveList.setCellRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
+				{
+					final Component label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					if (value instanceof Grid.MoveMetaInformation)
+					{
+						final Grid.MoveMetaInformation mmi = (Grid.MoveMetaInformation) value;
+						this.setText(mmi.getMove().toString() + "  " + mmi.getScore()  + " pts");
+					}
+					return label;
+				}
+			});
+
+			this.moveList.addListSelectionListener(event -> {
+				Move move = null;
+				for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
+				{
+					if (this.moveList.isSelectedIndex(i))
+					{
+						move = this.moveList.getModel().getElementAt(i).getMove();
+						break;
+					}
+				}
+				SwingClient.this.jGrid.setPreparedMove(move);
+			});
+
+			this.moveList.addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseClicked(final MouseEvent e)
+				{
+					if (e.getClickCount() >= 2)
+					{
+						new SwingWorker<>()
+						{
+							@Override
+							protected Object doInBackground() throws Exception
+							{
+								Thread.sleep(100);  // let time to object to be selected by other listener
+								final List<Grid.MoveMetaInformation> selection = PossibleMoveDisplayer.this.moveList.getSelectedValuesList();
+								if (selection.size() != 1)
+								{
+									return null;
+								}
+
+								final Move move = selection.get(0).getMove();
+								play(move);
+
+								return null;
+							}
+						}.execute();
+					}
+				}
+			});
 		}
 
 		@Override
@@ -921,88 +997,31 @@ public class SwingClient extends AbstractPlayer
 		{
 			try
 			{
+				if (this.moveList.isDisplayable())
+				{
+					resetPossibleMovesPanel();
+					return;
+				}
+
 				final Set<Move> moves = this.bruteForceMethod.getLegalMoves(SwingClient.this.server.getGrid(),
 						SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey));
 				this.legalMoves = new ArrayList<>();
-				this.moveList.setCellRenderer(new DefaultListCellRenderer() {
-					@Override
-					public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
-					{
-						final Component label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-						if (value instanceof Grid.MoveMetaInformation)
-						{
-							final Grid.MoveMetaInformation mmi = (Grid.MoveMetaInformation) value;
-							this.setText(mmi.getMove().toString() + "  " + mmi.getScore()  + " pts");
-						}
-						return label;
-					}
-				});
 
 				for (final Move move : moves)
 				{
 					this.legalMoves.add(SwingClient.this.server.getGrid().getMetaInformation(move));
 				}
 
-				final ScrollPane sp = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-				sp.add(this.moveList);
-				this.moveList.addListSelectionListener(event -> {
-					Move move = null;
-					for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
-					{
-						if (this.moveList.isSelectedIndex(i))
-						{
-							move = this.moveList.getModel().getElementAt(i).getMove();
-							break;
-						}
-					}
-					SwingClient.this.jGrid.setPreparedMove(move);
-				});
-
-				this.moveList.addMouseListener(new MouseAdapter()
-				{
-					@Override
-					public void mouseClicked(final MouseEvent e)
-					{
-						if (e.getClickCount() >= 2)
-						{
-							new SwingWorker<>()
-							{
-								@Override
-								protected Object doInBackground() throws Exception
-								{
-									Thread.sleep(100);  // let time to object to be selected by other listener
-									final List<Grid.MoveMetaInformation> selection = PossibleMoveDisplayer.this.moveList.getSelectedValuesList();
-									if (selection.size() != 1)
-									{
-										return null;
-									}
-
-									final Move move = selection.get(0).getMove();
-									play(move);
-
-									return null;
-								}
-							}.execute();
-						}
-					}
-				});
-
-				final JFrame jFrame = new JFrame("Moves");
-				jFrame.setLayout(new BorderLayout());
+				SwingClient.this.possibleMovePanel.add(
+						new JScrollPane(this.moveList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+				);
 
 				final JPanel orderMethodPanel = new JPanel();
-				jFrame.add(orderMethodPanel, BorderLayout.NORTH);
+				SwingClient.this.possibleMovePanel.add(orderMethodPanel, BorderLayout.NORTH);
 				orderMethodPanel.add(new OrderButton("Score", Grid.MoveMetaInformation.SCORE_COMPARATOR));
 				orderMethodPanel.add(new OrderButton("Length", Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
 				this.orderButGroup.getElements().asIterator().next().doClick();
-
-				jFrame.add(sp);
-				jFrame.setMaximumSize(new Dimension(200, Integer.MAX_VALUE));
-				jFrame.setSize(new Dimension(200, 200));
-				jFrame.setVisible(true);
-				jFrame.pack();
-				jFrame.setLocation(
-						SwingClient.this.jRack.getX(), SwingClient.this.jRack.getY() + SwingClient.this.jRack.getHeight());
+				SwingClient.this.possibleMovePanel.validate();
 			}
 			catch (ScrabbleException e1)
 			{
@@ -1042,7 +1061,8 @@ public class SwingClient extends AbstractPlayer
 	 */
 	private void play(final Move move)
 	{
-		SwingClient.this.server.play(SwingClient.this, move);
-		SwingClient.this.commandPrompt.setText("");
+		this.server.play(SwingClient.this, move);
+		this.commandPrompt.setText("");
+		resetPossibleMovesPanel();
 	}
 }
