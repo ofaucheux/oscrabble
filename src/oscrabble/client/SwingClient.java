@@ -254,7 +254,9 @@ public class SwingClient extends AbstractPlayer
 		return cell.getWidth() * 18 / 32f;
 	}
 
-
+	/**
+	 * Panel for the display of the actual score.
+	 */
 	private class JScoreboard extends JPanel
 	{
 
@@ -264,6 +266,7 @@ public class SwingClient extends AbstractPlayer
 		{
 			setPreferredSize(new Dimension(200, 0));
 			setLayout(new GridLayout(0, 2));
+			setBorder(new TitledBorder("Score"));
 		}
 
 		void refreshDisplay(final IPlayerInfo playerInfo)
