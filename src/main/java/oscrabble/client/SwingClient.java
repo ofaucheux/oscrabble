@@ -96,6 +96,7 @@ public class SwingClient extends AbstractPlayer
 		this.possibleMovePanel.setLayout(new BorderLayout());
 		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.server.getDictionary());
 		this.showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(bruteForceMethod));
+		this.showPossibilitiesButton.setFocusable(false);
 		resetPossibleMovesPanel();
 
 		panel1.add(this.possibleMovePanel);
@@ -138,9 +139,10 @@ public class SwingClient extends AbstractPlayer
 
 	private void resetPossibleMovesPanel()
 	{
-		SwingClient.this.possibleMovePanel.removeAll();
-		SwingClient.this.possibleMovePanel.invalidate();
-		SwingClient.this.possibleMovePanel.repaint();
+		this.possibleMovePanel.removeAll();
+		this.possibleMovePanel.invalidate();
+		this.possibleMovePanel.repaint();
+		this.showPossibilitiesButton.setText(PossibleMoveDisplayer.LABEL_DISPLAY);
 		this.possibleMovePanel.add(this.showPossibilitiesButton, BorderLayout.SOUTH);
 	}
 
