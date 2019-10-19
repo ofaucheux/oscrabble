@@ -414,6 +414,10 @@ public class SwingClient extends AbstractPlayer
 			this.preparedMoveStones = new LinkedHashMap<>();
 		}
 
+		/**
+		 * Zeigt den vorbereiteten Spielzug auf dem Grid
+		 * @param move der Zug zu zeigen. {@code null} für gar keinen Zug.
+		 */
 		void setPreparedMove(final Move move)
 		{
 			this.preparedMoveStones.clear();
@@ -748,16 +752,11 @@ public class SwingClient extends AbstractPlayer
 					play(preparedMove);
 				}
 			}
-			catch (JokerPlacementException e1)
-			{
-				onDispatchMessage("Cannot place the jokers: " + e1);
-			}
-			catch (ParseException ex)
+			catch (final JokerPlacementException | ParseException ex)
 			{
 				onDispatchMessage(ex.getMessage());
+				SwingClient.this.commandPrompt.setText("");
 			}
-
-
 		}
 
 		private Move getPreparedMove() throws JokerPlacementException, ParseException
@@ -792,7 +791,8 @@ public class SwingClient extends AbstractPlayer
 				}
 				catch (ScrabbleException e)
 				{
-					throw new JokerPlacementException("Error", e);
+					LOGGER.error(e);
+					throw new JokerPlacementException("Error placing Joker", e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
 				move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString(), false);
@@ -877,16 +877,19 @@ public class SwingClient extends AbstractPlayer
 		@Override
 		public void changedUpdate(final DocumentEvent e)
 		{
+			Move move;
 			try
 			{
-				final Move move = getPreparedMove();
-				SwingClient.this.jGrid.setPreparedMove(move);
-				SwingClient.this.jGrid.repaint();
+				move = getPreparedMove();
 			}
 			catch (JokerPlacementException | ParseException e1)
 			{
-				LOGGER.warn(e1.getMessage());
+				LOGGER.debug(e1.getMessage());
+				move = null;
 			}
+
+			SwingClient.this.jGrid.setPreparedMove(move);
+			SwingClient.this.jGrid.repaint();
 		}
 
 		/**
