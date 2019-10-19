@@ -3,9 +3,9 @@ package oscrabble.dictionary;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 
 public class Wikitionary implements WordMetainformationProvider
 {
@@ -20,7 +20,7 @@ public class Wikitionary implements WordMetainformationProvider
 	}
 
 	@Override
-	public String getDescription(final String word)
+	public Iterable<String> getDefinitions(final String word) throws DictionaryException
 	{
 		// https://en.wiktionary.org/w/index.php?title=test&printable=yes
 		try
@@ -36,12 +36,13 @@ public class Wikitionary implements WordMetainformationProvider
 				content = content.replaceFirst("<body ", "<body style='width: " + width + "px'");
 			}
 
-			return content;
+			return Collections.singleton(content);
 		}
 		catch (IOException e)
 		{
-			LOGGER.error("Cannot find " + word, e);
-			return "";
+			final String msg = "Cannot find " + word;
+			LOGGER.error(msg, e);
+			throw new DictionaryException(msg);
 		}
 	}
 

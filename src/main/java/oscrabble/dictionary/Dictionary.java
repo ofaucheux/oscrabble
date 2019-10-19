@@ -220,13 +220,14 @@ public class Dictionary implements Stone.Generator
 	}
 
 	/**
-	 * Liefert die Beschreibung eines Wortes. Darf {@code null} sein.
+	 * Liefert die Definitionen eines Wortes.
+	 * @return die gefundenen Definitionen, {@code null} wenn keine gefunden.
 	 */
-	public String getDescription(final String word)
+	public Iterable<String> getDescriptions(final String word) throws DictionaryException
 	{
 		if (this.metainformationProvider != null)
 		{
-			return this.metainformationProvider.getDescription(word);
+			return this.metainformationProvider.getDefinitions(word);
 		}
 		else
 		{

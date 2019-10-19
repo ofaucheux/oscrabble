@@ -1,68 +1,44 @@
 package oscrabble.dictionary;
 
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import java.awt.*;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
+import java.util.Locale;
 
 public class UnMotDotNet implements WordMetainformationProvider
 {
 	private static final Logger LOGGER = Logger.getLogger(UnMotDotNet.class);
-	public static final Pattern PATTERN_PARTICIPE_PASSE = Pattern.compile("(.*)ée?s?");
 
 	@Override
-	public String getDescription(final String word)
+	public List<String> getDefinitions(String word) throws DictionaryException
 	{
-		final ArrayList<String> searchWords = new ArrayList<>();
-		searchWords.add(word);
-		final Matcher m = PATTERN_PARTICIPE_PASSE.matcher(word);
-		if (m.matches())
-		{
-			searchWords.add(m.group(1) + "er");
-		}
-
 		try
 		{
-			URL url = null;
-			assert searchWords.size() > 0;
-			for (final String searchWord : searchWords)
+			word = word.toLowerCase(Locale.FRANCE);
+			word = word.replaceAll("[éèê]", "e");
+			final Document doc  = Jsoup.connect("http://1mot.net/" + word).get();
+			final Elements els = doc.getElementsByAttributeValue("class", "md");
+			final ArrayList<String> definitions = new ArrayList<>(4);
+			for (final Element el : els)
 			{
-				url = new URL("https://1mot.net/" + searchWord);
-				HttpURLConnection connection = null;
-				try
+				String text = el.text();
+				if (text.startsWith("•"))
 				{
-					connection = (HttpURLConnection) url.openConnection();
-					connection.setRequestMethod("GET");
-					connection.connect();
-					if (connection.getResponseCode() != HttpURLConnection.HTTP_NOT_FOUND)
-					{
-						break;
-					}
-				}
-				finally
-				{
-					if (connection != null)
-					{
-						connection.disconnect();
-					}
+					definitions.add("<html>" + text);
 				}
 			}
-
-			if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-			{
-				Desktop.getDesktop().browse(url.toURI());
-			}
+			return definitions;
 		}
-		catch (final URISyntaxException | IOException e)
+		catch (final Throwable e)
 		{
-			LOGGER.error("Cannot find " + word, e);
+			final String message = "No definition found for " + word;
+			LOGGER.error(message, e);
+			throw new DictionaryException(message);
 		}
-		return null;
 	}
 }

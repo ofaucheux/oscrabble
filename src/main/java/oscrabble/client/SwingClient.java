@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import oscrabble.*;
 import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.DictionaryException;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 import oscrabble.server.IAction;
@@ -450,7 +451,7 @@ public class SwingClient extends AbstractPlayer
 		private JTabbedPane descriptionTabPanel;
 
 		/**
-		 * Holt und zeigt die Definiton eines Wortes
+		 * Holt und zeigt die Definitionen eines Wortes
 		 * @param word Wort
 		 */
 		private void showDefinition(final String word)
@@ -466,14 +467,47 @@ public class SwingClient extends AbstractPlayer
 			}
 
 			final Dictionary dictionary = this.grid.getDictionary();
+			mutation:
 			for (final String mutation : dictionary.getMutations(word))
 			{
-				final String description = dictionary.getDescription(mutation);
-				if (description != null)
+				// tests if definition already displayed
+				final int tabCount = this.descriptionTabPanel.getTabCount();
+				for (int i = 0; i < tabCount; i++)
 				{
-					this.descriptionTabPanel.addTab(mutation, new JScrollPane(new JLabel(description)));
-					this.descriptionFrame.setVisible(true);
+					if (this.descriptionTabPanel.getTitleAt(i).equals(mutation))
+					{
+						this.descriptionTabPanel.setSelectedIndex(i);
+						continue mutation;
+					}
 				}
+
+				Iterable<String> descriptions;
+				try
+				{
+					descriptions = dictionary.getDescriptions(mutation);
+				}
+				catch (DictionaryException e)
+				{
+					descriptions = null;
+				}
+
+				final JPanel panel = new JPanel();
+				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+				if (descriptions == null)
+				{
+					panel.add(new JLabel(mutation + ": no definition found"));
+				}
+				else
+				{
+					descriptions.forEach(description -> panel.add(new JLabel(String.valueOf(description))));
+				}
+
+				final JScrollPane sp = new JScrollPane(panel);
+				this.descriptionTabPanel.addTab(mutation, sp);
+				this.descriptionTabPanel.setSelectedComponent(sp);
+
+				this.descriptionFrame.setVisible(true);
 			}
 		}
 
