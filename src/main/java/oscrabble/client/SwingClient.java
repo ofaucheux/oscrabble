@@ -506,6 +506,7 @@ public class SwingClient extends AbstractPlayer
 				this.descriptionTabPanel.setSelectedComponent(sp);
 
 				this.descriptionFrame.setVisible(true);
+				this.descriptionFrame.toFront();
 			}
 		}
 
