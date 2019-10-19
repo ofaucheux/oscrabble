@@ -336,8 +336,6 @@ public class SwingClient extends AbstractPlayer
 	{
 		private final HashMap<Grid.Square, MatteBorder> specialBorders = new HashMap<>();
 
-		private final int numberOfRows;
-
 		private final Grid grid;
 		private final Dictionary dictionary;
 		private final Map<Grid.Square, Stone> preparedMoveStones;
@@ -348,18 +346,18 @@ public class SwingClient extends AbstractPlayer
 		JGrid(final Grid grid, final Dictionary dictionary)
 		{
 			this.grid = grid;
-			this.numberOfRows = grid.getSize() + 2;
+			final int numberOfRows = grid.getSize() + 2;
 			this.dictionary = dictionary;
 
 			this.setLayout(new BorderLayout());
 			this.background = new JPanel();
-			this.background.setLayout(new GridLayout(this.numberOfRows, this.numberOfRows));
+			this.background.setLayout(new GridLayout(numberOfRows, numberOfRows));
 
 			// Draw each Cell
-			final int borderColumn = this.numberOfRows - 1;
-			for (int y = 0; y < this.numberOfRows; y++)
+			final int borderColumn = numberOfRows - 1;
+			for (int y = 0; y < numberOfRows; y++)
 			{
-				for (int x = 0; x < this.numberOfRows; x++)
+				for (int x = 0; x < numberOfRows; x++)
 				{
 					if (x == 0 || x == borderColumn)
 					{
@@ -406,7 +404,7 @@ public class SwingClient extends AbstractPlayer
 					}
 				}
 			}
-			final int size = this.numberOfRows * CELL_SIZE;
+			final int size = numberOfRows * CELL_SIZE;
 			this.setPreferredSize(new Dimension(size, size));
 			this.add(this.background);
 			this.preparedMoveStones = new LinkedHashMap<>();
@@ -573,7 +571,7 @@ public class SwingClient extends AbstractPlayer
 
 		}
 
-		private class BorderCell extends JComponent
+		private static class BorderCell extends JComponent
 		{
 
 			private final String label;
@@ -852,7 +850,7 @@ public class SwingClient extends AbstractPlayer
 		}
 	}
 
-	private class RackCell extends JComponent
+	private static class RackCell extends JComponent
 	{
 		private Stone stone;
 
@@ -910,7 +908,7 @@ public class SwingClient extends AbstractPlayer
 	/**
 	 * Problem while placing joker.
 	 */
-	private class JokerPlacementException extends Throwable
+	private static class JokerPlacementException extends Throwable
 	{
 		JokerPlacementException(final String message, final ScrabbleException e)
 		{
@@ -921,7 +919,7 @@ public class SwingClient extends AbstractPlayer
 	/**
 	 * Eine Frame, die wie eine Telnet-Console sich immer erweiterndes Text anzeigt.
 	 */
-	private class TelnetFrame
+	private static class TelnetFrame
 	{
 
 		private final JLabel label;
