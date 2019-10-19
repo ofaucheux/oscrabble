@@ -517,28 +517,24 @@ public class SwingClient extends AbstractPlayer
 
 			StoneCell(final int x, final int y)
 			{
-				this.square = JGrid.this.grid.getSquare(x , y );
-				if (JGrid.this.grid.hasDictionary())
+				this.square = JGrid.this.grid.getSquare(x, y);
+				final JPopupMenu popup = new JPopupMenu();
+				popup.add(new AbstractAction("Show definitions")
 				{
-					this.addMouseListener(new MouseAdapter()
+					@Override
+					public void actionPerformed(final ActionEvent e)
 					{
-						@Override
-						public void mouseClicked(final MouseEvent e)
+						for (final Move.Direction direction : Move.Direction.values())
 						{
-							if (e.getButton() == 3)
+							final String word = JGrid.this.grid.getWord(StoneCell.this.square, direction);
+							if (word != null)
 							{
-								for (final Move.Direction direction : Move.Direction.values())
-								{
-									final String word = JGrid.this.grid.getWord(StoneCell.this.square, direction);
-									if (word != null)
-									{
-										showDefinition(word);
-									}
-								}
+								showDefinition(word);
 							}
 						}
-					});
-				}
+					}
+				});
+				setComponentPopupMenu(popup);
 			}
 
 			@Override
