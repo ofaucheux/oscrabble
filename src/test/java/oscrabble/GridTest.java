@@ -25,14 +25,14 @@ class GridTest
 		SwingClientTest.showGrid(grid);
 
 		// erster Test
-		move = Move.parseMove(grid, "A1 FINIT");
+		move = Move.parseMove(grid, "A1 FINIT", false);
 		metaInformation = grid.getMetaInformation(move);
 		assertEquals(27, metaInformation.score);
 		Assertions.assertEquals(0, metaInformation.crosswords.size());
 		assertBagContent(metaInformation.getRequiredLetters(), "FINIT");
 		grid.put(move);
 
-		move = Move.parseMove(grid,"1A FEMME");
+		move = Move.parseMove(grid,"1A FEMME", false);
 		assertBagContent(
 				grid.getMetaInformation(move).getRequiredLetters(),
 				"EMME"
@@ -40,14 +40,14 @@ class GridTest
 		grid.put(move);
 
 		// erster Test
-		move = Move.parseMove(grid, "J2 ELEPHANT");
+		move = Move.parseMove(grid, "J2 ELEPHANT", false);
 		metaInformation = grid.getMetaInformation(move);
 		assertEquals(23, metaInformation.score);
 		Assertions.assertEquals(0, metaInformation.crosswords.size());
 		grid.put(move);
 
 		// Cross word
-		move = Move.parseMove(grid, "B5 ELU");
+		move = Move.parseMove(grid, "B5 ELU", false);
 		metaInformation = grid.getMetaInformation(move);
 		Assertions.assertEquals(1, metaInformation.crosswords.size());
 		assertEquals(7, metaInformation.score);
@@ -55,14 +55,14 @@ class GridTest
 		grid.put(move);
 
 		// Cross word mit cross auf Bonus
-		move = Move.parseMove(grid, "C7 SUE");
+		move = Move.parseMove(grid, "C7 SUE", false);
 		metaInformation = grid.getMetaInformation(move);
 		assertEquals(1, metaInformation.crosswords.size());
 		assertEquals(8, metaInformation.score);
 		grid.put(move);
 
 		// Blank
-		move = Move.parseMove(grid, "5J PhASME");
+		move = Move.parseMove(grid, "5J PhASME", false);
 		metaInformation = grid.getMetaInformation(move);
 		assertEquals(16, metaInformation.score);
 		grid.put(move);

@@ -93,7 +93,7 @@ class BruteForceMethodTest
 	void testBlank() throws ParseException, ScrabbleException
 	{
 		final Grid grid = new Grid(16);
-		grid.put(Move.parseMove(grid, "J2 ELEPHANT"));
+		grid.put(Move.parseMove(grid, "J2 ELEPHANT", false));
 		final Rack rack = new Rack();
 		for (final char c : "ASMETH".toCharArray())
 		{
@@ -101,8 +101,8 @@ class BruteForceMethodTest
 		}
 		rack.add(Stone.SIMPLE_GENERATOR.generateStone(null));
 		final Set<Move> moves = this.instance.getLegalMoves(grid, rack);
-		assertTrue(moves.contains(Move.parseMove(grid, "5J PHASME")));
-		assertTrue(moves.contains(Move.parseMove(grid, "5J PhASME")));
+		assertTrue(moves.contains(Move.parseMove(grid, "5J PHASME", false)));
+		assertTrue(moves.contains(Move.parseMove(grid, "5J PhASME", false)));
 	}
 
 	@Test

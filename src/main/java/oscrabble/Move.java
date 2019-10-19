@@ -30,19 +30,8 @@ public class Move implements IAction
 		this.word = word.toUpperCase();
 	}
 
-	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)\\s+(\\S*)");
-	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\w)(\\d+)\\s+(\\S*)");
-
-	/**
-	 * @param description
-	 * @return {@code true} wenn die Zeichenkette tatsächlich einen Spielzug beschreibt.
-	 */
-	public static boolean isMoveDescription(final String description)
-	{
-		return
-				HORIZONTAL_COORDINATE_PATTERN.matcher(description).matches()
-				|| VERTICAL_COORDINATE_PATTERN.matcher(description).matches();
-	}
+	public static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("((\\d+)(\\w))(\\s+(\\S*))?");
+	public static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("((\\w)(\\d+))(\\s+(\\S*))?");
 
 	public LinkedHashMap<Grid.Square, Stone> getStones(final Grid grid, final Dictionary dictionary)
 	{
@@ -90,10 +79,11 @@ public class Move implements IAction
 	 *
 	 * @param grid          die
 	 * @param coordinate    die Beschreibung, z.B. {@code B4 WAGEN} für Honizontal, B, 4 Wort WAGEN.
+	 * @param acceptEmptyWord
 	 * @return der Spielzug
 	 * @throws ParseException wenn aus der Beschreibung keinen Spielzug zu finden ist.
 	 */
-	public static Move parseMove(final Grid grid, final String coordinate) throws ParseException
+	public static Move parseMove(final Grid grid, final String coordinate, final boolean acceptEmptyWord) throws ParseException
 	{
 		final Move.Direction direction;
 		final int groupX;
@@ -102,22 +92,34 @@ public class Move implements IAction
 		if ((matcher = HORIZONTAL_COORDINATE_PATTERN.matcher(coordinate)).matches())
 		{
 			direction = Move.Direction.HORIZONTAL;
-			groupX = 2;
-			groupY = 1;
+			groupX = 3;
+			groupY = 2;
 		}
 		else if ((matcher = VERTICAL_COORDINATE_PATTERN.matcher(coordinate)).matches())
 		{
 			direction = Move.Direction.VERTICAL;
-			groupX = 1;
-			groupY = 2;
+			groupX = 2;
+			groupY = 3;
 		}
 		else
 		{
 			throw new ParseException(coordinate, 0);
 		}
+
 		final int x = (Character.toUpperCase(matcher.group(groupX).charAt(0)) - 'A' + 1);
 		final int y = Integer.parseInt(matcher.group(groupY));
-		final Move move = new Move(grid.getSquare(x, y), direction, matcher.group(3));
+		final String word = matcher.group(5);
+
+		if (x == 0 || y == 0 || x > 15 || y > 15)
+		{
+			throw new ParseException("Invalid coordinates: " + matcher.group(1), 0);
+		}
+
+		if (!acceptEmptyWord && (word == null || word.isEmpty()))
+		{
+			throw new ParseException("Missing word", 0);
+		}
+		final Move move = new Move(grid.getSquare(x, y), direction, word == null ? "" : word);
 		return move;
 	}
 
@@ -164,10 +166,42 @@ public class Move implements IAction
 	{
 		final String column = Character.toString((char) ('A' - 1 + this.startSquare.getX()));
 		final String line = Integer.toString(this.startSquare.getY());
-		return String.format("%3s  %s",
+		return String.format("%3s %s",
 				(this.direction == Direction.HORIZONTAL) ? line + column : column + line,
 				this.originalWord
-		);
+		);	}
+
+	/**
+	 * @return die Standardnotation des Spielschritt z.B. {@code B4 WAGEN}.
+	 */
+	public String getNotation()
+	{
+		final String column = Character.toString((char) ('A' - 1 + this.startSquare.getX()));
+		final String line = Integer.toString(this.startSquare.getY());
+		final StringBuilder sb = new StringBuilder();
+		sb.append((this.direction == Direction.HORIZONTAL) ? line + column : column + line);
+		if (this.originalWord != null && !this.originalWord.isEmpty())
+		{
+			sb.append(" ").append(this.originalWord);
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * @return eine Kopie des Spielzuges in der anderen Richtung: selbes Wort, selbe Startzelle.
+	 */
+	public Move getInvertedDirectionCopy()
+	{
+		return new Move(this.startSquare, this.direction.other(), this.word);
+	}
+
+	/**
+	 * @param newStartSquare das neue Startfeld
+	 * @return eine Kopie des Spielzuges mit einer anderen Startfeld.
+	 */
+	public Move getTranslatedCopy(Grid.Square newStartSquare)
+	{
+		return new Move(newStartSquare, this.direction, this.word);
 	}
 
 	/**
