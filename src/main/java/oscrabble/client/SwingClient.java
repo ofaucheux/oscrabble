@@ -572,6 +572,9 @@ public class SwingClient extends AbstractPlayer
 
 		}
 
+		/**
+		 * Component für die Anzeige der Nummer und Buchstaben der Zeilen und Spalten des Grids.
+		 */
 		private static class BorderCell extends JComponent
 		{
 
