@@ -19,15 +19,18 @@ import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.Normalizer;
 import java.text.ParseException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +40,7 @@ public class SwingClient extends AbstractPlayer
 	private final static int CELL_SIZE = 40;
 	public static final Logger LOGGER = Logger.getLogger(SwingClient.class);
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
+	public static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
 	private final JGrid jGrid;
 	private final JTextField commandPrompt;
@@ -116,6 +120,16 @@ public class SwingClient extends AbstractPlayer
 		final Window rackFrame = new JDialog(gridFrame);
 		rackFrame.setLayout(new BorderLayout());
 		rackFrame.add(this.jRack);
+
+		final JButton exchangeButton = new JButton((new ExchangeTilesAction()));
+		exchangeButton.setToolTipText(exchangeButton.getText());
+		exchangeButton.setHideActionText(true);
+		final Dimension dim = new Dimension(30, 20);
+		exchangeButton.setMaximumSize(dim);
+		exchangeButton.setPreferredSize(dim);
+		exchangeButton.setIcon(exchangeButton.getIcon());
+
+		rackFrame.add(exchangeButton, BorderLayout.AFTER_LINE_ENDS);
 		rackFrame.pack();
 		rackFrame.setVisible(true);
 		rackFrame.setLocation(
@@ -204,7 +218,7 @@ public class SwingClient extends AbstractPlayer
 	private static final Color STONE_BACKGROUND_COLOR = Color.decode("0xF3E5AB");
 	private static final int ARC_WIDTH = 14;
 	private static void drawStone(final Graphics2D g2,
-								  final JComponent component,
+								  final Container component,
 								  final Stone stone,
 								  final Color foregroundColor)
 	{
@@ -253,7 +267,7 @@ public class SwingClient extends AbstractPlayer
 	}
 
 
-	private static float getCharacterSize(final JComponent cell)
+	private static float getCharacterSize(final Container cell)
 	{
 		return cell.getWidth() * 18 / 32f;
 	}
@@ -383,7 +397,7 @@ public class SwingClient extends AbstractPlayer
 						switch (cell.square.getBonus())
 						{
 							case NONE:
-								cellColor = Color.green.darker().darker();
+								cellColor = SCRABBLE_GREEN;
 								break;
 							case BORDER:
 								cellColor = Color.black;
@@ -914,6 +928,65 @@ public class SwingClient extends AbstractPlayer
 	private static class RackCell extends JComponent
 	{
 		private Stone stone;
+		private JFrame dragAndDropFrame;
+
+		RackCell()
+		{
+			final MouseAdapter listener = new MouseAdapter()
+			{
+				@Override
+				public void mousePressed(final MouseEvent e)
+				{
+					if (RackCell.this.dragAndDropFrame == null)
+					{
+
+						RackCell.this.dragAndDropFrame = new JFrame()
+						{
+							@Override
+							public void paint(final Graphics g)
+							{
+								drawStone((Graphics2D) g, this, stone, Color.black);
+							}
+						};
+						RackCell.this.dragAndDropFrame.setSize(CELL_SIZE, CELL_SIZE);
+						RackCell.this.dragAndDropFrame.setUndecorated(true);
+						RackCell.this.dragAndDropFrame.setBackground(new Color(0, 0, 0, 0));
+						RackCell.this.dragAndDropFrame.setVisible(true);
+						centerDragAndDropFrame(e);
+					}
+				}
+
+
+				@Override
+				public void mouseReleased ( final MouseEvent e)
+				{
+					if (dragAndDropFrame != null)
+					{
+						dragAndDropFrame.dispose();
+						dragAndDropFrame = null;
+					}
+				}
+
+				@Override
+				public void mouseDragged ( final MouseEvent e)
+				{
+					if (dragAndDropFrame != null)
+					{
+						centerDragAndDropFrame(e);
+					}
+				}
+			};
+			addMouseListener(listener);
+			addMouseMotionListener(listener);
+		}
+
+		void centerDragAndDropFrame(final MouseEvent e)
+		{
+			final Point center = e.getLocationOnScreen();
+			center.translate(-CELL_SIZE / 2, -CELL_SIZE / 2);
+			RackCell.this.dragAndDropFrame.setLocation(center);
+		}
+
 
 		@Override
 		protected void paintComponent(final Graphics g)
@@ -1162,5 +1235,47 @@ public class SwingClient extends AbstractPlayer
 		this.server.play(SwingClient.this, move);
 		this.commandPrompt.setText("");
 		resetPossibleMovesPanel();
+	}
+
+	/**
+	 *
+	 */
+	private class ExchangeTilesAction extends AbstractAction
+	{
+		ExchangeTilesAction()
+		{
+			super(
+					"Exchange tiles",
+					new ImageIcon(SwingClient.class.getResource("exchangeTiles.png"))
+			);
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e)
+		{
+			final JFrame frame = new JFrame("Exchange");
+			frame.setLayout(new BorderLayout());
+
+			final JPanel carpet = new JPanel();
+			carpet.setBackground(SCRABBLE_GREEN);
+			final Dimension carpetDimension = new Dimension(250, 250);
+			carpet.setPreferredSize(carpetDimension);
+			carpet.setSize(carpetDimension);
+			frame.add(carpet, BorderLayout.NORTH);
+			frame.add(new JButton(new AbstractAction("Exchange them!")
+			{
+				@Override
+				public void actionPerformed(final ActionEvent e)
+				{
+//					exchange(); TODO
+					frame.dispose();
+				}
+			}), BorderLayout.SOUTH);
+
+			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			frame.setVisible(true);
+			frame.setLocationRelativeTo(jRack);
+			frame.pack();
+		}
 	}
 }
