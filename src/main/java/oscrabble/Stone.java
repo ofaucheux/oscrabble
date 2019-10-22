@@ -1,5 +1,8 @@
 package oscrabble;
 
+/**
+ * Definition eines Steins im Spiel: Letter (oder Blank), Wert usw.
+ */
 public class Stone
 {
 	public final static Generator SIMPLE_GENERATOR = new SimpleGenerator();
