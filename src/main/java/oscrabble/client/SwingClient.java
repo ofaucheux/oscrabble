@@ -40,7 +40,7 @@ public class SwingClient extends AbstractPlayer
 	private final static int CELL_SIZE = 40;
 	public static final Logger LOGGER = Logger.getLogger(SwingClient.class);
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
-	public static final Color SCRABBLE_GREEN = Color.green.darker().darker();
+	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
 	private final JGrid jGrid;
 	private final JTextField commandPrompt;
@@ -212,64 +212,6 @@ public class SwingClient extends AbstractPlayer
 	{
 		this.isObserver = true;
 		return this;
-	}
-
-
-	private static final Color STONE_BACKGROUND_COLOR = Color.decode("0xF3E5AB");
-	private static final int ARC_WIDTH = 14;
-	private static void drawStone(final Graphics2D g2,
-								  final Container component,
-								  final Stone stone,
-								  final Color foregroundColor)
-	{
-		if (stone == null)
-		{
-			return;
-		}
-
-		g2.setPaint(STONE_BACKGROUND_COLOR);
-		final Insets insets = component.getInsets();
-		//noinspection SuspiciousNameCombination
-		g2.fillRoundRect(
-				insets.right,
-				insets.top,
-				component.getWidth() - insets.left - insets.right,
-				component.getHeight() - insets.bottom - insets.top,
-				ARC_WIDTH,
-				ARC_WIDTH);
-
-		if (stone.hasCharacterSet())
-		{
-			final float characterSize = getCharacterSize(component);
-
-			// Draw the letter
-			g2.setColor(stone.isJoker() ? Color.GRAY : foregroundColor);
-			final Font font = g2.getFont().deriveFont(characterSize).deriveFont(Font.BOLD);
-			g2.setFont(font);
-			final String letter = Character.toString(stone.getChar());
-			FontMetrics metrics = g2.getFontMetrics(font);
-			int tx = (component.getWidth() - metrics.stringWidth(letter)) / 2;
-			int ty = ((component.getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
-			g2.drawString(letter, tx, ty);
-
-
-			// Draw the point-value
-			if (stone.getPoints() != 0)
-			{
-				g2.setFont(font.deriveFont(characterSize * 10 / 18));
-				metrics = g2.getFontMetrics(font);
-				final String points = Integer.toString(stone.getPoints());
-				int px = (component.getWidth() * 4 / 5) - (metrics.stringWidth(points) / 2);
-				int py = (component.getHeight() * 3 / 4) - (metrics.getHeight() / 2) + metrics.getAscent() - 1;
-				g2.drawString(points, px, py);
-			}
-		}
-	}
-
-
-	private static float getCharacterSize(final Container cell)
-	{
-		return cell.getWidth() * 18 / 32f;
 	}
 
 	/**
@@ -591,11 +533,11 @@ public class SwingClient extends AbstractPlayer
 				Stone stone;
 				if (this.square.stone != null)
 				{
-					drawStone(g2, this, this.square.stone, Color.black);
+					JStone.drawStone(g2, this, this.square.stone, Color.black);
 				}
 				else if ((stone = JGrid.this.preparedMoveStones.get(this.square)) != null)
 				{
-					drawStone(g2, this, stone, Color.blue);
+					JStone.drawStone(g2, this, stone, Color.blue);
 				}
 
 				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);
@@ -639,7 +581,7 @@ public class SwingClient extends AbstractPlayer
 
 				// Draw the label
 				g2.setColor(Color.BLACK);
-				final Font font = g2.getFont().deriveFont(getCharacterSize(this)).deriveFont(Font.BOLD);
+				final Font font = g2.getFont().deriveFont(JStone.getCharacterSize(this)).deriveFont(Font.BOLD);
 				g2.setFont(font);
 				FontMetrics metrics = g.getFontMetrics(font);
 				int tx = (getWidth() - metrics.stringWidth(this.label)) / 2;
@@ -928,77 +870,17 @@ public class SwingClient extends AbstractPlayer
 	private static class RackCell extends JComponent
 	{
 		private Stone stone;
-		private JFrame dragAndDropFrame;
 
 		RackCell()
 		{
-			final MouseAdapter listener = new MouseAdapter()
-			{
-				@Override
-				public void mousePressed(final MouseEvent e)
-				{
-					if (RackCell.this.dragAndDropFrame == null)
-					{
-
-						RackCell.this.dragAndDropFrame = new JFrame()
-						{
-							@Override
-							public void paint(final Graphics g)
-							{
-								drawStone((Graphics2D) g, this, stone, Color.black);
-							}
-						};
-						RackCell.this.dragAndDropFrame.setSize(CELL_SIZE, CELL_SIZE);
-						RackCell.this.dragAndDropFrame.setUndecorated(true);
-						RackCell.this.dragAndDropFrame.setBackground(new Color(0, 0, 0, 0));
-						RackCell.this.dragAndDropFrame.setVisible(true);
-						centerDragAndDropFrame(e);
-					}
-				}
-
-
-				@Override
-				public void mouseReleased ( final MouseEvent e)
-				{
-					if (dragAndDropFrame != null)
-					{
-						dragAndDropFrame.dispose();
-						dragAndDropFrame = null;
-					}
-				}
-
-				@Override
-				public void mouseDragged ( final MouseEvent e)
-				{
-					if (dragAndDropFrame != null)
-					{
-						centerDragAndDropFrame(e);
-					}
-				}
-			};
-			addMouseListener(listener);
-			addMouseMotionListener(listener);
+			setPreferredSize(JStone.CELL_DIMENSION);
 		}
-
-		void centerDragAndDropFrame(final MouseEvent e)
-		{
-			final Point center = e.getLocationOnScreen();
-			center.translate(-CELL_SIZE / 2, -CELL_SIZE / 2);
-			RackCell.this.dragAndDropFrame.setLocation(center);
-		}
-
 
 		@Override
 		protected void paintComponent(final Graphics g)
 		{
 			super.paintComponent(g);
-			drawStone((Graphics2D) g, this, this.stone, Color.black);
-		}
-
-		@Override
-		public Dimension getPreferredSize()
-		{
-			return new Dimension(CELL_SIZE, CELL_SIZE);
+			JStone.drawStone((Graphics2D) g, this, this.stone, Color.black);
 		}
 
 		public void setStone(final Stone stone)
