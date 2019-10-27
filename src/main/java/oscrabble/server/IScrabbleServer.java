@@ -1,7 +1,8 @@
 package oscrabble.server;
 
-import org.apache.commons.collections4.Bag;
-import oscrabble.*;
+import oscrabble.Grid;
+import oscrabble.Rack;
+import oscrabble.ScrabbleException;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
 
@@ -31,4 +32,19 @@ public interface IScrabbleServer
 	Rack getRack(AbstractPlayer player, UUID clientKey) throws ScrabbleException;
 
 	int getScore(final AbstractPlayer player);
+
+	/**
+	 * @param caller UUID des Players, der die Funktion aufruft
+	 * @param player anderer Player
+	 * @return ob der andere Player eine Möglichkeit anbietet, seine Parameters zu ändern
+	 */
+	boolean hasEditableParameters(UUID caller, IPlayerInfo player);
+
+	/**
+	 * Editiere die Parameters eines Spielers.
+	 *
+	 * @param caller UUID des Players, der die Funktion aufruft
+	 * @param player anderer Player
+	 */
+	void editParameters(UUID caller, IPlayerInfo player);
 }

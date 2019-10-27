@@ -3,6 +3,9 @@ package oscrabble.player;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public abstract class AbstractPlayer
@@ -27,14 +30,20 @@ public abstract class AbstractPlayer
 	}
 
 	public abstract void onPlayRequired();
+
 	public abstract void onDictionaryChange();
+
 	public abstract void onDispatchMessage(String msg);
 
 	public abstract void afterPlay(IPlayerInfo info, IAction action, int score);
 
-	public void beforeGameStart() {}
+	public void beforeGameStart()
+	{
+	}
 
-	public void afterGameEnd() {}
+	public void afterGameEnd()
+	{
+	}
 
 	public abstract boolean isObserver();
 
@@ -43,4 +52,21 @@ public abstract class AbstractPlayer
 	{
 		return getName();
 	}
+
+	/**
+	 * @return {@code true} wenn manche Parameters editierbar sind.
+	 */
+	public boolean hasEditableParameters()
+	{
+		return false;
+	}
+
+	/**
+	 * Gibt die Möglichkeit, die Parameters zu ändern. Es kann z.B. durch die Anzeige eines JPanels erfolgen.
+	 */
+	public void editParameters()
+	{
+		throw new AssertionError("Default implementation has no editable parameter");
+	}
+
 }

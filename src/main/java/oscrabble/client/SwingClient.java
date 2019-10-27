@@ -31,6 +31,7 @@ import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,6 +184,14 @@ public class SwingClient extends AbstractPlayer
 		JOptionPane.showMessageDialog(null, msg);
 	}
 
+	/**
+	 * Zeigt eine Fehlermeldung in einem {@link JOptionPane} an
+	 * @param msg Text der Meldung
+	 */
+	private void displayError(final String msg)
+	{
+		JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.ERROR_MESSAGE);
+	}
 
 	@Override
 	public void afterPlay(final IPlayerInfo info, final IAction action, final int score)
@@ -243,6 +252,38 @@ public class SwingClient extends AbstractPlayer
 				final String name = player.getName();
 				final JLabel score = new JLabel();
 				this.scoreLabels.put(name, score);
+				final JPanel playerPanel = new JPanel();
+				playerPanel.setLayout(new BorderLayout());
+				playerPanel.add(new JLabel(name));
+				if (SwingClient.this.server.hasEditableParameters(SwingClient.this.playerKey, player))
+				{
+					playerPanel.add(new JButton(new AbstractAction("...")
+					{
+						@Override
+						public void actionPerformed(final ActionEvent e)
+						{
+							final SwingWorker<Void, Void> worker = new SwingWorker<>()
+							{
+								@Override
+								protected Void doInBackground()
+								{
+									SwingClient.this.server.editParameters(SwingClient.this.playerKey, player);
+									return null;
+								}
+							};
+							worker.execute();
+							try
+							{
+								worker.get();
+							}
+							catch (InterruptedException | ExecutionException ex)
+							{
+								LOGGER.error(ex, ex);
+								displayError(ex.toString());
+							}
+						}
+					}));
+				}
 				add(new JLabel(name));
 				add(score);
 			}

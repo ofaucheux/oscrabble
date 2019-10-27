@@ -3,6 +3,7 @@ package oscrabble.server;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.bag.TreeBag;
+import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.apache.log4j.Logger;
 import oscrabble.*;
 import oscrabble.client.Exchange;
@@ -25,7 +26,7 @@ public class ScrabbleServer implements IScrabbleServer
 	public final static int RACK_SIZE = 7;
 	static final String SCRABBLE_MESSAGE = "Scrabble!";
 
-	private final LinkedHashMap<AbstractPlayer, PlayerInfo> players = new LinkedHashMap<>();
+	private final DualLinkedHashBidiMap<AbstractPlayer, PlayerInfo> players = new DualLinkedHashBidiMap<>();
 	private final LinkedList<AbstractPlayer> toPlay = new LinkedList<>();
 	private final Grid grid;
 	private final Random random;
@@ -194,6 +195,7 @@ public class ScrabbleServer implements IScrabbleServer
 					dispatchMessage(SCRABBLE_MESSAGE);
 				}
 				playerInfo.score += score;
+				LOGGER.info(player.getName() + " plays \"" + move.getNotation() + "\" for " + score + " points");
 			}
 			else if (action instanceof Exchange)
 			{
@@ -402,6 +404,18 @@ public class ScrabbleServer implements IScrabbleServer
 		return this.players.get(player).getScore();
 	}
 
+	@Override
+	public boolean hasEditableParameters(final UUID caller, final IPlayerInfo player)
+	{
+		return this.players.getKey(player).hasEditableParameters();
+	}
+
+	@Override
+	public void editParameters(final UUID caller, final IPlayerInfo player)
+	{
+		this.players.getKey(player).editParameters();
+	}
+
 	/**
 	 * @return the parameter of the server. TODO: made them editable only by master of game.
 	 */
@@ -444,12 +458,8 @@ public class ScrabbleServer implements IScrabbleServer
 		}
 	}
 
-
 	public interface ScrabbleEvent
 	{
 		void dispatch(final AbstractPlayer player);
 	}
-
-
-
 }
