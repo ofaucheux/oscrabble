@@ -1,5 +1,6 @@
 package oscrabble.player;
 
+import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.apache.log4j.Logger;
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
@@ -10,6 +11,8 @@ import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 import oscrabble.server.IScrabbleServer;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 
@@ -313,13 +316,17 @@ public class BruteForceMethod
 	public class Player extends AbstractPlayer
 	{
 		private final IScrabbleServer server;
+		private final LinkedHashMap<String, IMoveSelector> possibleMoveSelectors;
 		private IMoveSelector selectionMethod;
 
-		public Player(final IScrabbleServer server, final String name, final IMoveSelector selectionMethod)
+		public Player(final IScrabbleServer server, final String name)
 		{
 			super(name);
 			this.server = server;
-			this.selectionMethod = selectionMethod;
+			this.possibleMoveSelectors = new LinkedHashMap<>();
+			this.possibleMoveSelectors.put("Best score", new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.SCORE_COMPARATOR));
+			this.possibleMoveSelectors.put("Longest word", new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
+			this.selectionMethod = this.possibleMoveSelectors.get(0);
 		}
 
 		@Override
@@ -372,7 +379,6 @@ public class BruteForceMethod
 
 		}
 
-
 		@Override
 		public boolean isObserver()
 		{
@@ -385,8 +391,44 @@ public class BruteForceMethod
 			return this.getName();
 		}
 
-	}
+		@Override
+		public boolean hasEditableParameters()
+		{
+			return true;
+		}
 
+		@Override
+		public void editParameters()
+		{
+			final JPanel panel = new JPanel();
+			panel.setLayout(new GridLayout(0, 2));
+			panel.add(new JLabel("Strategie"));
+			final JComboBox<String> cb = new JComboBox<>();
+			this.possibleMoveSelectors.entrySet().forEach(enty -> {
+				cb.addItem(enty.getKey());
+				if (enty.getValue() == this.selectionMethod)
+				{
+					cb.setSelectedItem(enty.getKey());
+				}
+			});
+			panel.add(cb);
+			final int ok = JOptionPane.showOptionDialog(
+					null,
+					new JScrollPane(panel),
+					"Options for " + getName(),
+					JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.PLAIN_MESSAGE,
+					null,
+					null,
+					null
+					);
+
+			if (ok == JOptionPane.OK_OPTION)
+			{
+				this.selectionMethod = this.possibleMoveSelectors.get(cb.getModel().getSelectedItem());
+			}
+		}
+	}
 
 	static class CalculateCtx
 	{
@@ -403,7 +445,5 @@ public class BruteForceMethod
 			this.crosschecks.put(Move.Direction.VERTICAL, new HashMap<>());
 		}
 	}
-
-
 
 }

@@ -8,7 +8,7 @@ public class DictionaryTest
 {
 
 	@Test
-	void toUpperCase()
+	public void toUpperCase()
 	{
 		final Dictionary german = Dictionary.getDictionary(Dictionary.Language.GERMAN);
 		assertEquals("ÄCHSEND", german.toUpperCase("ächsend"));
@@ -22,20 +22,20 @@ public class DictionaryTest
 	private final Dictionary french = Dictionary.getDictionary(Dictionary.Language.FRENCH);
 
 	@Test
-	void getWords()
+	public void getWords()
 	{
 		assertTrue(this.french.getMutations().contains("ETERNUER"));
 	}
 
 
 	@Test
-	void getLetters()
+	public void getLetters()
 	{
 		this.french.getLetters();
 	}
 
 	@Test
-	void containUpperCaseWord()
+	public void containUpperCaseWord()
 	{
 		Dictionary.getDictionary(Dictionary.Language.FRENCH);
 		assertTrue(this.french.containUpperCaseWord("PIECE"));

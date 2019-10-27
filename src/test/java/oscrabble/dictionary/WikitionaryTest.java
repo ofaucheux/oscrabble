@@ -6,11 +6,11 @@ import javax.swing.*;
 
 import java.awt.*;
 
-class WikitionaryTest
+public class WikitionaryTest
 {
 
 	@Test
-	void getDescription() throws InterruptedException, DictionaryException
+	public void getDescription() throws InterruptedException, DictionaryException
 	{
 		final int width = 200;
 		final Wikitionary wikitionary = new Wikitionary("https://fr.wiktionary.org");

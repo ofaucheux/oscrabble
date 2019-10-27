@@ -4,21 +4,20 @@ import oscrabble.Grid;
 import oscrabble.Move;
 import oscrabble.ScrabbleException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Filter, das nur Wort mit den meisten neuen Buchstaben übrig lässt.
  */
-public class MostLetterSetFilter implements IMoveSelector
+public class ComparatorSelector implements IMoveSelector
 {
 	private final Grid grid;
+	private final Comparator<Grid.MoveMetaInformation> comparator;
 
-	public MostLetterSetFilter(final Grid grid)
+	public ComparatorSelector(final Grid grid, final Comparator<Grid.MoveMetaInformation> comparator)
 	{
 		this.grid  = grid;
+		this.comparator = comparator;
 	}
 
 	@Override
@@ -26,7 +25,7 @@ public class MostLetterSetFilter implements IMoveSelector
 	{
 		final List<Move> list = new ArrayList<>(moves);
 		Collections.shuffle(list);
-		Move.sort(list, grid, Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR.reversed());
+		Move.sort(list, grid, comparator.reversed());
 
 		return list.get(0);
 	}

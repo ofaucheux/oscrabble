@@ -1,17 +1,17 @@
 package oscrabble.dictionary;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-class UnMotDotNetTest
+public class UnMotDotNetTest
 {
 
 
 	@Test
-	void getDescription() throws DictionaryException
+	public void getDescription() throws DictionaryException
 	{
 		final UnMotDotNet wmip = new UnMotDotNet();
 		final ArrayList<String> words = new ArrayList<>();
