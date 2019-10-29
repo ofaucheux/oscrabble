@@ -227,7 +227,7 @@ public class SwingClient extends AbstractPlayer
 		return this.isObserver;
 	}
 
-	private SwingClient setObserver()
+	public SwingClient setObserver()
 	{
 		this.isObserver = true;
 		return this;

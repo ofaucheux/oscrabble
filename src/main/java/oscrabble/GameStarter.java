@@ -20,6 +20,7 @@ public class GameStarter
 			final Dictionary dictionary = server.getDictionary();
 			final BruteForceMethod method = new BruteForceMethod(dictionary);
 			server.register(method.new Player(server, "Computer"));
+			server.register(method.new Player(server, "Computer2"));
 			server.register(new SwingClient(server, "Swing"));
 			server.startGame();
 		}

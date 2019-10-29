@@ -34,6 +34,9 @@ public class ScrabbleServer implements IScrabbleServer
 	final LinkedList<Stone> bag = new LinkedList<>();
 	private final Dictionary dictionary;
 
+	/** State of the game */
+	private State state;
+
 	/** Parameter of the server */
 	private final ParameterSet parameters;
 
@@ -53,6 +56,7 @@ public class ScrabbleServer implements IScrabbleServer
 				this.acceptNewAttemptAfterForbiddenMove
 		);
 
+		this.state = State.BEFORE_START;
 	}
 
 	public ScrabbleServer(final Dictionary dictionary)
@@ -114,11 +118,11 @@ public class ScrabbleServer implements IScrabbleServer
 	{
 		assertIsCurrentlyPlaying(player);
 
+		final PlayerInfo playerInfo = this.players.get(player);
 		boolean done = false;
 		try
 		{
 			int score = 0;
-			final PlayerInfo playerInfo = this.players.get(player);
 			if (action instanceof Move)
 			{
 				final Move move = (Move) action;
@@ -234,14 +238,49 @@ public class ScrabbleServer implements IScrabbleServer
 		}
 		finally
 		{
-			if (done)
+			if (playerInfo.rack.isEmpty())
 			{
-				this.toPlay.pop();
-				this.toPlay.add(player);
+				endGame(playerInfo);
 			}
-			this.waitingForPlay.countDown();
-
+			else
+			{
+				if (done)
+				{
+					this.toPlay.pop();
+					this.toPlay.add(player);
+				}
+				this.waitingForPlay.countDown();
+			}
 		}
+	}
+
+	/**
+	 * Ends the game.
+	 * @param firstEndingPlayer player which has first emptied its rack.
+	 */
+	private synchronized void endGame(PlayerInfo firstEndingPlayer)
+	{
+		this.state = State.ENDED;
+		this.toPlay.clear();
+		final StringBuffer message = new StringBuffer();
+		message.append(firstEndingPlayer.getName()).append(" hat clear its rack.\n");
+		this.players.forEach(
+				(player, info) ->
+				{
+					if (info != firstEndingPlayer)
+					{
+						int gift = 0;
+						for (final Stone stone : info.rack)
+						{
+							gift += stone.getPoints();
+						}
+						info.score -= gift;
+						firstEndingPlayer.score += gift;
+						message.append(info.getName()).append(" gives ").append(gift).append(" points\n");
+					}
+				});
+
+		dispatch(c -> c.onDispatchMessage(message.toString()));
 	}
 
 	/**
@@ -277,6 +316,7 @@ public class ScrabbleServer implements IScrabbleServer
 			this.bag.remove(stone);
 			rack.add(stone);
 		}
+		LOGGER.trace("Remaining stones in the bag: " + this.bag.size());
 	}
 
 	@Override
@@ -294,6 +334,7 @@ public class ScrabbleServer implements IScrabbleServer
 		{
 			do
 			{
+				state = State.STARTED;
 				final AbstractPlayer player = this.toPlay.peekFirst();
 				LOGGER.info("Let's play " + player);
 				this.waitingForPlay = new CountDownLatch(1);
@@ -306,8 +347,8 @@ public class ScrabbleServer implements IScrabbleServer
 				{
 					// TODO: timeout
 				}
-				Thread.sleep(500);
-			} while (!this.bag.isEmpty());  // TODO: andere Möglichkeiten fürs Ende des Spieles
+				Thread.sleep(50);
+			} while (this.state != State.ENDED);
 		}
 		catch (InterruptedException e)
 		{
@@ -370,6 +411,7 @@ public class ScrabbleServer implements IScrabbleServer
 	{
 		for (final AbstractPlayer player : this.players.keySet())
 		{
+			LOGGER.trace("Send " + scrabbleEvent + " to " + player.getName());
 			scrabbleEvent.dispatch(player);
 		}
 	}
@@ -457,6 +499,9 @@ public class ScrabbleServer implements IScrabbleServer
 			return this.score;
 		}
 	}
+
+	/** State of the game */
+	private enum State { BEFORE_START, STARTED, ENDED}
 
 	public interface ScrabbleEvent
 	{
