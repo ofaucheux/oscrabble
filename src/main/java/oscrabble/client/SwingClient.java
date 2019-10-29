@@ -307,15 +307,6 @@ public class SwingClient extends AbstractPlayer
 							}
 						};
 						worker.execute();
-						try
-						{
-							worker.get();
-						}
-						catch (InterruptedException | ExecutionException ex)
-						{
-							LOGGER.error(ex, ex);
-							displayError(ex.toString());
-						}
 					}
 				});
 				line.parameterButton.setVisible(SwingClient.this.server.hasEditableParameters(SwingClient.this.playerKey, player));
