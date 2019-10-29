@@ -267,7 +267,7 @@ public class SwingClient extends AbstractPlayer
 				final ScorePanelLine line = new ScorePanelLine();
 				this.scoreLabels.put(player, line);
 
-				c.insets = new Insets(0, 5, 0, 5);
+				c.insets = new Insets(0, 0, 0, 0);
 				c.gridy++;
 				c.gridx = 0;
 				c.weightx = SMALL_WEIGHT;
@@ -313,6 +313,12 @@ public class SwingClient extends AbstractPlayer
 				add(line.parameterButton, c);
 
 			}
+
+			c.gridy++;
+			c.gridx = 0;
+			c.weighty = 5.0f;
+			add(new JPanel(), c);
+
 			setPreferredSize(new Dimension(200, 50 * players.size()));
 			getParent().validate();
 		}
