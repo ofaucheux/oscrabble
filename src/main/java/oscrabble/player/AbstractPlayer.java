@@ -3,9 +3,6 @@ package oscrabble.player;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public abstract class AbstractPlayer
@@ -29,12 +26,18 @@ public abstract class AbstractPlayer
 		this.playerKey = playerKey;
 	}
 
-	public abstract void onPlayRequired();
+	/**
+	 * Sent to all players to indicate who now has to play.
+	 */
+	public abstract void onPlayRequired(AbstractPlayer currentPlayer);
 
 	public abstract void onDictionaryChange();
 
 	public abstract void onDispatchMessage(String msg);
 
+	/**
+	 * Send to all players after a player has played
+	 */
 	public abstract void afterPlay(IPlayerInfo info, IAction action, int score);
 
 	public void beforeGameStart()

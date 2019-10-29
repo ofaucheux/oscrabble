@@ -25,8 +25,13 @@ class TestPlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void onPlayRequired()
+	public void onPlayRequired(final AbstractPlayer player)
 	{
+		if (player != this)
+		{
+			return;
+		}
+
 		while (this.nextMove == null)
 		{
 			try

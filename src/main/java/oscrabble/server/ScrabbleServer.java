@@ -297,7 +297,7 @@ public class ScrabbleServer implements IScrabbleServer
 				final AbstractPlayer player = this.toPlay.peekFirst();
 				LOGGER.info("Let's play " + player);
 				this.waitingForPlay = new CountDownLatch(1);
-				player.onPlayRequired();
+				dispatch( p -> p.onPlayRequired(player));
 				if (this.waitingForPlay.await(1, TimeUnit.MINUTES))
 				{
 					// OK
@@ -364,7 +364,7 @@ public class ScrabbleServer implements IScrabbleServer
 	}
 
 	/**
-	 *
+	 * Send an event at all the players.
 	 */
 	private void dispatch(final ScrabbleEvent scrabbleEvent)
 	{

@@ -167,9 +167,19 @@ public class SwingClient extends AbstractPlayer
 	}
 
 	@Override
-	public void onPlayRequired()
+	public void onPlayRequired(final AbstractPlayer currentPlayer)
 	{
-		this.jRack.update();
+		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
+		{
+			final IPlayerInfo playerInfo = entry.getKey();
+			final JScoreboard.ScorePanelLine line = entry.getValue();
+			line.currentPlaying.setVisible(playerInfo.getName().equals(currentPlayer.getName()));
+		}
+
+		if (currentPlayer == this)
+		{
+			this.jRack.update();
+		}
 	}
 
 	@Override
@@ -229,66 +239,98 @@ public class SwingClient extends AbstractPlayer
 	private class JScoreboard extends JPanel
 	{
 
-		private final HashMap<String, JLabel> scoreLabels = new HashMap<>();
+		private final HashMap<IPlayerInfo, ScorePanelLine> scoreLabels = new HashMap<>();
+		private final HashMap<IPlayerInfo, JLabel> currentPlayerFlags = new HashMap<>();
 
 		JScoreboard()
 		{
 			setPreferredSize(new Dimension(200, 0));
-			setLayout(new GridLayout(0, 2));
+			setLayout(new GridBagLayout());
 			setBorder(new TitledBorder("Score"));
 		}
 
 		void refreshDisplay(final IPlayerInfo playerInfo)
 		{
-			this.scoreLabels.get(playerInfo.getName())
-					.setText(playerInfo.getScore() + " pts");
+			this.scoreLabels.get(playerInfo).score.setText(playerInfo.getScore() + " pts");
 		}
 
 		void prepareBoard()
 		{
+			final double SMALL_WEIGHT = 0.1;
+			final double BIG_WEIGHT = 10;
+
+			final Dimension buttonDim = new Dimension(20, 20);
 			final List<IPlayerInfo> players = SwingClient.this.server.getPlayers();
+			final GridBagConstraints c = new GridBagConstraints();
 			for (final IPlayerInfo player : players)
 			{
+				final ScorePanelLine line = new ScorePanelLine();
+				this.scoreLabels.put(player, line);
+
+				c.insets = new Insets(0, 5, 0, 5);
+				c.gridy++;
+				c.gridx = 0;
+				c.weightx = SMALL_WEIGHT;
+				line.currentPlaying = new JLabel("►");
+				line.currentPlaying.setPreferredSize(buttonDim);
+				line.currentPlaying.setVisible(false);
+				add(line.currentPlaying, c);
+
+				c.gridx++;
+				c.weightx = BIG_WEIGHT;
+				c.anchor = GridBagConstraints.LINE_START;
 				final String name = player.getName();
-				final JLabel score = new JLabel();
-				this.scoreLabels.put(name, score);
-				final JPanel playerPanel = new JPanel();
-				playerPanel.setLayout(new BorderLayout());
-				playerPanel.add(new JLabel(name));
-				if (SwingClient.this.server.hasEditableParameters(SwingClient.this.playerKey, player))
+				add(new JLabel(name), c);
+				c.weightx = SMALL_WEIGHT;
+
+				c.gridx++;
+				c.anchor = GridBagConstraints.LINE_END;
+				line.score = new JLabel();
+				add(line.score, c);
+
+				c.gridx++;
+				line.parameterButton = new JButton();
+				line.parameterButton.setPreferredSize(buttonDim);
+				line.parameterButton.setFocusable(false);
+				line.parameterButton.setAction(new AbstractAction("...")
 				{
-					playerPanel.add(new JButton(new AbstractAction("...")
+					@Override
+					public void actionPerformed(final ActionEvent e)
 					{
-						@Override
-						public void actionPerformed(final ActionEvent e)
+						final SwingWorker<Void, Void> worker = new SwingWorker<>()
 						{
-							final SwingWorker<Void, Void> worker = new SwingWorker<>()
+							@Override
+							protected Void doInBackground()
 							{
-								@Override
-								protected Void doInBackground()
-								{
-									SwingClient.this.server.editParameters(SwingClient.this.playerKey, player);
-									return null;
-								}
-							};
-							worker.execute();
-							try
-							{
-								worker.get();
+								SwingClient.this.server.editParameters(SwingClient.this.playerKey, player);
+								return null;
 							}
-							catch (InterruptedException | ExecutionException ex)
-							{
-								LOGGER.error(ex, ex);
-								displayError(ex.toString());
-							}
+						};
+						worker.execute();
+						try
+						{
+							worker.get();
 						}
-					}));
-				}
-				add(new JLabel(name));
-				add(score);
+						catch (InterruptedException | ExecutionException ex)
+						{
+							LOGGER.error(ex, ex);
+							displayError(ex.toString());
+						}
+					}
+				});
+				line.parameterButton.setVisible(SwingClient.this.server.hasEditableParameters(SwingClient.this.playerKey, player));
+				add(line.parameterButton, c);
+
 			}
 			setPreferredSize(new Dimension(200, 50 * players.size()));
 			getParent().validate();
+		}
+
+		private class ScorePanelLine
+		{
+			private JLabel score;
+			private JLabel currentPlaying;
+			public JButton parameterButton;
 		}
 	}
 
@@ -1197,7 +1239,7 @@ public class SwingClient extends AbstractPlayer
 
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			frame.setVisible(true);
-			frame.setLocationRelativeTo(jRack);
+			frame.setLocationRelativeTo(SwingClient.this.jRack);
 			frame.pack();
 		}
 	}

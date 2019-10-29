@@ -91,9 +91,12 @@ public class ScrabbleServerTest
 			private boolean found;
 
 			@Override
-			public void onPlayRequired()
+			public void onPlayRequired(final AbstractPlayer currentPlayer)
 			{
-				server.play(this, new Move(server.getGrid().getCenter(), Move.Direction.HORIZONTAL, SCRABBLE_WORD));
+				if (currentPlayer == this)
+				{
+					server.play(this, new Move(server.getGrid().getCenter(), Move.Direction.HORIZONTAL, SCRABBLE_WORD));
+				}
 			}
 
 			@Override

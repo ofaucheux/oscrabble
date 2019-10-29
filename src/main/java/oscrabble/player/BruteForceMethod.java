@@ -326,12 +326,17 @@ public class BruteForceMethod
 			this.possibleMoveSelectors = new LinkedHashMap<>();
 			this.possibleMoveSelectors.put("Best score", new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.SCORE_COMPARATOR));
 			this.possibleMoveSelectors.put("Longest word", new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
-			this.selectionMethod = this.possibleMoveSelectors.get(0);
+			this.selectionMethod = this.possibleMoveSelectors.values().iterator().next();
 		}
 
 		@Override
-		public void onPlayRequired()
+		public void onPlayRequired(final AbstractPlayer currentPlayer)
 		{
+			if (currentPlayer != this)
+			{
+				return;
+			}
+
 			try
 			{
 				Set<Move> moves = new HashSet<>(getLegalMoves(

@@ -13,11 +13,13 @@ public class ConsolePlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void onPlayRequired()
+	public void onPlayRequired(final AbstractPlayer currentPlayer)
 	{
-		final String move = JOptionPane.showInputDialog("New word?");
-		final String verticalPattern = "(\\a\\d) +(\\w+)";
-
+		if (currentPlayer == this)
+		{
+			final String move = JOptionPane.showInputDialog("New word?");
+			final String verticalPattern = "(\\a\\d) +(\\w+)";
+		}
 	}
 
 	@Override
