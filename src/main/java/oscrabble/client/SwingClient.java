@@ -25,6 +25,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.Normalizer;
@@ -150,6 +151,17 @@ public class SwingClient extends AbstractPlayer
 			this.commandPrompt.requestFocusInWindow();
 			this.commandPrompt.grabFocus();
 		});
+
+		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager() {
+			@Override
+			public boolean dispatchKeyEvent(final KeyEvent e)
+			{
+				SwingClient.this.commandPrompt.requestFocus();
+				e.setSource(SwingClient.this.commandPrompt);
+				return super.dispatchKeyEvent(e);
+			}
+		});
+
 	}
 
 	private void resetPossibleMovesPanel()
