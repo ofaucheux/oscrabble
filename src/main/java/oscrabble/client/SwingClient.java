@@ -731,18 +731,18 @@ public class SwingClient extends AbstractPlayer
 	 */
 	private void setStartCell(final JGrid.StoneCell cell)
 	{
-		String newPrompt = null;
+		Move move = null;
 		try
 		{
 			final String currentPrompt = this.commandPrompt.getText();
-			final Move move = Move.parseMove(this.server.getGrid(), currentPrompt, true);
+			move = Move.parseMove(this.server.getGrid(), currentPrompt, true);
 			if (move.startSquare == cell.square)
 			{
-				newPrompt = move.getInvertedDirectionCopy().getNotation();
+				move = move.getInvertedDirectionCopy();
 			}
 			else
 			{
-				newPrompt = move.getTranslatedCopy(cell.square).getNotation();
+				move = move.getTranslatedCopy(cell.square);
 			}
 		}
 		catch (ParseException e)
@@ -750,12 +750,12 @@ public class SwingClient extends AbstractPlayer
 			// OK: noch kein Prompt vorhanden.
 		}
 
-		if (newPrompt == null)
+		if (move == null)
 		{
-			newPrompt = new Move(cell.square, Move.Direction.HORIZONTAL, "").getNotation();
+			move = new Move(cell.square, Move.Direction.HORIZONTAL, "");
 		}
 
-		this.commandPrompt.setText(newPrompt);
+		this.commandPrompt.setText(move.getNotation() + (move.word.isEmpty() ? " " : ""));
 
 	}
 
