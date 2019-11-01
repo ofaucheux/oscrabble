@@ -4,6 +4,8 @@ import oscrabble.Stone;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * Darstellung eines Spielstein.
@@ -20,7 +22,8 @@ class JStone extends JComponent
 	{
 		this.stone = stone;
 		setPreferredSize(CELL_DIMENSION);
-
+		setTransferHandler(new TransferHandler("name"));
+		addMouseListener(new DragMouseAdapter());
 	}
 
 
@@ -35,9 +38,9 @@ class JStone extends JComponent
 	private static final int ARC_WIDTH = 14;
 
 	static void drawStone(final Graphics2D g2,
-								  final Container component,
-								  final Stone stone,
-								  final Color foregroundColor)
+						  final Container component,
+						  final Stone stone,
+						  final Color foregroundColor)
 	{
 		if (stone == null)
 		{
@@ -88,5 +91,14 @@ class JStone extends JComponent
 		return cell.getWidth() * 18 / 32f;
 	}
 
+	private class DragMouseAdapter extends MouseAdapter
+	{
 
+		public void mousePressed(MouseEvent e) {
+
+			JComponent c = (JComponent) e.getSource();
+			TransferHandler handler = c.getTransferHandler();
+			handler.exportAsDrag(c, e, TransferHandler.COPY);
+		}
+	}
 }
