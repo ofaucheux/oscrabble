@@ -25,13 +25,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -150,6 +151,17 @@ public class SwingClient extends AbstractPlayer
 			this.commandPrompt.requestFocusInWindow();
 			this.commandPrompt.grabFocus();
 		});
+
+		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager() {
+			@Override
+			public boolean dispatchKeyEvent(final KeyEvent e)
+			{
+				SwingClient.this.commandPrompt.requestFocus();
+				e.setSource(SwingClient.this.commandPrompt);
+				return super.dispatchKeyEvent(e);
+			}
+		});
+
 	}
 
 	private void resetPossibleMovesPanel()
@@ -384,6 +396,9 @@ public class SwingClient extends AbstractPlayer
 		/** Client mit dem diese Grid verknüpft ist */
 		private SwingClient client;
 
+		/** Vorbereiteter Spielzug */
+		private Move preparedMove;
+
 		/** Spielfeld des Scrabbles */
 		JGrid(final Grid grid, final Dictionary dictionary)
 		{
@@ -458,6 +473,7 @@ public class SwingClient extends AbstractPlayer
 		 */
 		void setPreparedMove(final Move move)
 		{
+			this.preparedMove = move;
 			this.preparedMoveStones.clear();
 			// Calculate the border for prepared word
 			this.specialBorders.clear();
@@ -626,6 +642,35 @@ public class SwingClient extends AbstractPlayer
 					specialBorder.paintBorder(
 							this, g, 0, 0, getWidth(), getHeight()
 					);
+				}
+
+				// Markiert die Start Zelle des Wortes
+				if (JGrid.this.preparedMove != null && JGrid.this.preparedMove.startSquare == this.square)
+				{
+					g.setColor(Color.BLACK);
+					final Polygon p = new Polygon();
+					final int h = getHeight();
+					final int POLYGONE_SIZE = h / 3;
+					p.addPoint(-POLYGONE_SIZE / 2, 0);
+					p.addPoint(0, POLYGONE_SIZE / 2);
+					p.addPoint(POLYGONE_SIZE / 2, 0);
+
+					final AffineTransform saved = ((Graphics2D) g).getTransform();
+					switch (JGrid.this.preparedMove.getDirection())
+					{
+						case VERTICAL:
+							g2.translate(h / 2f, 6f);
+							break;
+						case HORIZONTAL:
+							g2.rotate(-Math.PI / 2);
+							g2.translate(-h / 2f, 6f);
+							break;
+						default:
+							throw new IllegalStateException("Unexpected value: " + JGrid.this.preparedMove.getDirection());
+					}
+					g.fillPolygon(p);
+					((Graphics2D) g).setTransform(saved);
+
 				}
 			}
 
@@ -833,7 +878,7 @@ public class SwingClient extends AbstractPlayer
 					throw new JokerPlacementException("Error placing Joker", e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString(), false);
+				move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString(), true);
 
 				//
 				// Check if jokers are needed and try to position them
@@ -887,10 +932,8 @@ public class SwingClient extends AbstractPlayer
 						}
 					}
 				}
-				move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString(), false);
+				move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString(), true);
 				LOGGER.debug("Word after having positioned white tiles: " + inputWord);
-
-				SwingClient.this.jGrid.setPreparedMove(move);
 			}
 			else
 			{
