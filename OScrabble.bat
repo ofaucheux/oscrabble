@@ -1,2 +1,3 @@
 set DEBUG_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044
-java %DEBUG_OPTS% -cp lib/* -jar target/scrabble.jar
+set TARGET=C:\Programmierung\OScrabble\build\deployed
+java %DEBUG_OPTS% -jar %TARGET%/scrabble-1.0_BUILD.jar
