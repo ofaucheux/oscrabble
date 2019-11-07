@@ -1,6 +1,5 @@
 package oscrabble.player;
 
-import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.apache.log4j.Logger;
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
@@ -319,6 +318,9 @@ public class BruteForceMethod
 		private final LinkedHashMap<String, IMoveSelector> possibleMoveSelectors;
 		private IMoveSelector selectionMethod;
 
+		/** Seconds to wait before playing */
+		private int throttle;
+
 		public Player(final IScrabbleServer server, final String name)
 		{
 			super(name);
@@ -349,6 +351,11 @@ public class BruteForceMethod
 				}
 				else
 				{
+					if (this.throttle > 0)
+					{
+						LOGGER.trace("Wait " + this.throttle + " seconds...");
+						Thread.sleep(this.throttle * 1000);
+					}
 					final Move toPlay = this.selectionMethod.select(moves);
 					LOGGER.info("Play " + toPlay);
 					this.server.play(this, toPlay);
@@ -357,6 +364,12 @@ public class BruteForceMethod
 			catch (ScrabbleException e)
 			{
 				throw new Error(e);
+			}
+			catch (InterruptedException e)
+			{
+				LOGGER.info("Has been interrupted");
+				// TODO inform server
+				Thread.currentThread().interrupt();
 			}
 		}
 
@@ -406,17 +419,24 @@ public class BruteForceMethod
 		public void editParameters()
 		{
 			final JPanel panel = new JPanel();
+
 			panel.setLayout(new GridLayout(0, 2));
 			panel.add(new JLabel("Strategie"));
 			final JComboBox<String> cb = new JComboBox<>();
-			this.possibleMoveSelectors.entrySet().forEach(enty -> {
-				cb.addItem(enty.getKey());
-				if (enty.getValue() == this.selectionMethod)
+			this.possibleMoveSelectors.forEach((key, value) -> {
+				cb.addItem(key);
+				if (value == this.selectionMethod)
 				{
-					cb.setSelectedItem(enty.getKey());
+					cb.setSelectedItem(key);
 				}
 			});
 			panel.add(cb);
+
+			panel.add(new JLabel("Throttle (in seconds)"));
+			final JSpinner throttle = new JSpinner(new SpinnerNumberModel(0, 0, 30, 1));
+			throttle.setValue(this.throttle);
+			panel.add(throttle);
+
 			final int ok = JOptionPane.showOptionDialog(
 					null,
 					new JScrollPane(panel),
@@ -430,7 +450,8 @@ public class BruteForceMethod
 
 			if (ok == JOptionPane.OK_OPTION)
 			{
-				this.selectionMethod = this.possibleMoveSelectors.get(cb.getModel().getSelectedItem());
+				this.selectionMethod = this.possibleMoveSelectors.get(cb.getSelectedItem());
+				this.throttle = ((Integer) throttle.getValue());
 			}
 		}
 	}
