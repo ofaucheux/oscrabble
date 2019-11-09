@@ -123,6 +123,8 @@ public class ScrabbleServer implements IScrabbleServer
 		try
 		{
 			int score = 0;
+			final ArrayList<String> messages = new ArrayList<>(5);
+
 			if (action instanceof Move)
 			{
 				final Move move = (Move) action;
@@ -197,7 +199,7 @@ public class ScrabbleServer implements IScrabbleServer
 				score = moveMI.getScore();
 				if (moveMI.isScrabble)
 				{
-					dispatchMessage(SCRABBLE_MESSAGE);
+					messages.add(SCRABBLE_MESSAGE);
 				}
 				playerInfo.score += score;
 				LOGGER.info(player.getName() + " plays \"" + move.getNotation() + "\" for " + score + " points");
@@ -215,6 +217,7 @@ public class ScrabbleServer implements IScrabbleServer
 
 			refillRack(player);
 			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
+			messages.forEach(m -> dispatchMessage(m));
 
 			LOGGER.debug("Grid after play\n" + this.grid.asASCIIArt());
 
