@@ -1,5 +1,7 @@
 package oscrabble;
 
+import oscrabble.server.IAction;
+
 /**
  * Definition eines Steins im Spiel: Letter (oder Blank), Wert usw.
  */
@@ -10,6 +12,11 @@ public class Stone
 	private final boolean isJoker;
 	private Character c;
 	private final int points;
+
+	/**
+	 * Der Spielzug, bei welchem der Stein gespielt wurde.
+	 */
+	private IAction settingAction;
 
 	public Stone(final Character c, final int point)
 	{
@@ -64,6 +71,16 @@ public class Stone
 		}
 
 		this.c = c;
+	}
+
+	public void setSettingAction(final IAction settingAction)
+	{
+		this.settingAction = settingAction;
+	}
+
+	public IAction getSettingAction()
+	{
+		return this.settingAction;
 	}
 
 	public interface Generator

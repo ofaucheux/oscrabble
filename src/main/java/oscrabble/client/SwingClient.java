@@ -33,6 +33,7 @@ import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,6 +59,12 @@ public class SwingClient extends AbstractPlayer
 
 	/** Button to display / hide the possible moves */
 	private JButton showPossibilitiesButton;
+
+	/** Thread executor */
+	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
+
+	/** Future to let the last played stone flash */
+	private ScheduledFuture<Object> flashFuture;
 
 	public SwingClient(final ScrabbleServer server, final String name)
 	{
@@ -218,6 +225,28 @@ public class SwingClient extends AbstractPlayer
 	@Override
 	public void afterPlay(final IPlayerInfo info, final IAction action, final int score)
 	{
+		this.jGrid.lastAction = action;
+		if (this.flashFuture != null)
+		{
+			this.flashFuture.cancel(true);
+		}
+
+		this.flashFuture = this.executor.schedule(
+				() -> {
+					for (int i = 0; i < 3; i++)
+					{
+						SwingClient.this.jGrid.hideNewStones = !SwingClient.this.jGrid.hideNewStones;
+						Thread.sleep(5 * 100);
+						SwingClient.this.jGrid.repaint();
+					}
+					SwingClient.this.jGrid.hideNewStones = false;
+					SwingClient.this.jGrid.repaint();
+					this.flashFuture = null;
+					return null;
+				},
+				0,
+				TimeUnit.SECONDS);
+
 		this.jGrid.repaint();
 		this.jScoreboard.refreshDisplay(info);
 		if (info.getName().equals(this.getName()))
@@ -398,6 +427,12 @@ public class SwingClient extends AbstractPlayer
 
 		/** Vorbereiteter Spielzug */
 		private Move preparedMove;
+
+		/** Set to let the new stones flash	*/
+		private boolean hideNewStones;
+
+		/** Last played action */
+		private IAction lastAction;
 
 		/** Spielfeld des Scrabbles */
 		JGrid(final Grid grid, final Dictionary dictionary)
@@ -629,7 +664,14 @@ public class SwingClient extends AbstractPlayer
 				Stone stone;
 				if (this.square.stone != null)
 				{
-					JStone.drawStone(g2, this, this.square.stone, Color.black);
+					if (JGrid.this.hideNewStones && this.square.stone.getSettingAction() == JGrid.this.lastAction)
+					{
+						// don't draw
+					}
+					else
+					{
+						JStone.drawStone(g2, this, this.square.stone, Color.black);
+					}
 				}
 				else if ((stone = JGrid.this.preparedMoveStones.get(this.square)) != null)
 				{

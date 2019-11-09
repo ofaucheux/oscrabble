@@ -185,6 +185,7 @@ public class ScrabbleServer implements IScrabbleServer
 							stone.setCharacter(c);
 						}
 						this.grid.set(square, stone);
+						stone.setSettingAction(action);
 					}
 					else
 					{
