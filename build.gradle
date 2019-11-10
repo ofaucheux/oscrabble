@@ -25,6 +25,7 @@ dependencies {
     compile 'org.jsoup:jsoup:1.12.1'
     compile 'commons-io:commons-io:2.6'
     compile 'org.apache.commons:commons-csv:1.7'
+    compile group: 'org.apache.commons', name: 'commons-configuration2', version: '2.6'
     testCompile 'junit:junit:4.12'
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.5.2'
 }
