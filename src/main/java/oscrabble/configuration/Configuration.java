@@ -23,6 +23,9 @@ public abstract class Configuration
 	private final Listener listener;
 	private final PropertyChangeSupport changeListeners = new PropertyChangeSupport(this);
 
+	private final static Icon trueIcon = new ImageIcon(Configuration.class.getResource("checkboxTrue.png"));
+	private final static Icon falseIcon = new ImageIcon(Configuration.class.getResource("checkboxFalse.png"));
+
 	public Configuration()
 	{
 		this.listener = new Listener()
@@ -126,9 +129,12 @@ public abstract class Configuration
 				}
 				else if (boolean.class.equals(type))
 				{
-					paramComponent = new JCheckBox((String) null, (Boolean) value);
-					((JCheckBox) paramComponent).addActionListener(this.listener);
-					listener = evt -> ((JCheckBox) paramComponent).setSelected(((Boolean) evt.getNewValue()));
+					final JCheckBox cb = new JCheckBox((String) null, (Boolean) value);
+					paramComponent = cb;
+					cb.setIcon(falseIcon);
+					cb.setSelectedIcon(trueIcon);
+					cb.addActionListener(this.listener);
+					listener = evt -> (cb).setSelected(((Boolean) evt.getNewValue()));
 				}
 				else if (int.class.equals(type))
 				{

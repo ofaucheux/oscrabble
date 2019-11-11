@@ -36,13 +36,13 @@ class ConfigurationTest
 	public static class TestConfiguration extends Configuration
 	{
 		@Parameter(description = "Willst du es?")
-		boolean errorAccepted;
+		public boolean errorAccepted;
 
 		@Parameter(description = "name")
-		String name;
+		public String name;
 
 		@Parameter(description = "score")
-		int score;
+		public int score;
 
 		@Override
 		public String toString()
