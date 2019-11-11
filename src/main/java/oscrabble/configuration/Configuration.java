@@ -13,7 +13,7 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
 
 /**
- * Sammlung von Parameters, die zusammen eine Konfiguration dar bilden.
+ * Sammlung von Parameters, die zusammen eine Konfiguration darstellen.
  * Jeder Parameter ist als Feld (Field) mit der Annotation {@link Parameter} zu versehen.
  * Die Methode {@link #createPanel()} ermöglicht die Anzeige und Änderung der Parameter durch Swing.
  */
