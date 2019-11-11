@@ -117,7 +117,9 @@ public abstract class Configuration
 				{
 					throw new Error("Problem", e);
 				}
-				panel.add(new JLabel(annotation.description()));
+				final JLabel label = new JLabel(annotation.label());
+				label.setToolTipText(annotation.description().isEmpty() ? annotation.label() : annotation.description());
+				panel.add(label);
 				final Class<?> type = field.getType();
 				final Component paramComponent;
 				final PropertyChangeListener listener;

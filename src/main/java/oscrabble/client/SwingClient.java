@@ -115,7 +115,7 @@ public class SwingClient extends AbstractPlayer
 		panel1.add(this.possibleMovePanel);
 		panel1.add(Box.createVerticalGlue());
 
-		final JPanel configPanel = this.server.getParameters().createPanel();
+		final JPanel configPanel = this.server.getConfiguration().createPanel();
 		panel1.add(configPanel);
 		configPanel.setBorder(new TitledBorder("Server configuration"));
 		eastPanel.add(panel1, BorderLayout.CENTER);

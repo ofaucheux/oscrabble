@@ -35,13 +35,13 @@ class ConfigurationTest
 
 	public static class TestConfiguration extends Configuration
 	{
-		@Parameter(description = "Willst du es?")
+		@Parameter(label = "Willst du es?")
 		public boolean errorAccepted;
 
-		@Parameter(description = "name")
+		@Parameter(label = "name")
 		public String name;
 
-		@Parameter(description = "score")
+		@Parameter(label = "score", description = "points obtained all along the game")
 		public int score;
 
 		@Override

@@ -9,8 +9,6 @@ import oscrabble.*;
 import oscrabble.client.Exchange;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
-import oscrabble.properties.Parameter;
-import oscrabble.properties.ParameterSet;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -38,10 +36,7 @@ public class ScrabbleServer implements IScrabbleServer
 	private State state;
 
 	/** Parameter of the server */
-	private final ParameterSet parameters;
-
-	/** Accept a new attempt after a player has tried a forbidden move */
-	private final Parameter.Boolean acceptNewAttemptAfterForbiddenMove;
+	private final ServerConfiguration configuration = new ServerConfiguration();
 
 	ScrabbleServer(final Dictionary dictionary, final Random random)
 	{
@@ -49,12 +44,6 @@ public class ScrabbleServer implements IScrabbleServer
 		this.grid = new Grid(this.dictionary);
 		this.random = random;
 		this.waitingForPlay = new CountDownLatch(1);
-
-		this.acceptNewAttemptAfterForbiddenMove = new Parameter.Boolean("Retry on error", "Accept a new attempt after a player has tried a forbidden move", true);
-
-		this.parameters = new ParameterSet(
-				this.acceptNewAttemptAfterForbiddenMove
-		);
 
 		this.state = State.BEFORE_START;
 	}
@@ -228,7 +217,7 @@ public class ScrabbleServer implements IScrabbleServer
 		{
 			LOGGER.info("Refuse play: " + e);
 			player.onDispatchMessage(e.toString());
-			if (this.acceptNewAttemptAfterForbiddenMove.getValue() || e.acceptRetry())
+			if (this.configuration.acceptNewAttemptAfterForbiddenMove || e.acceptRetry())
 			{
 				player.onDispatchMessage("Retry accepted");
 				done = false;
@@ -465,9 +454,9 @@ public class ScrabbleServer implements IScrabbleServer
 	/**
 	 * @return the parameter of the server. TODO: made them editable only by master of game.
 	 */
-	public ParameterSet getParameters()
+	public ServerConfiguration getConfiguration()
 	{
-		return this.parameters;
+		return this.configuration;
 	}
 
 	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
