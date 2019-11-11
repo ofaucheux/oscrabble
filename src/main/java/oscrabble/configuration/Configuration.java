@@ -132,12 +132,13 @@ public abstract class Configuration
 				if (String.class.equals(type))
 				{
 					paramComponent = new JTextField((String) value);
-					((JTextField) paramComponent).addActionListener(this.listener);
+					((JTextField) paramComponent).addActionListener(this.listener);  // todo: reicht nicht: Fall berücksichtigen, wo man enter nicht gedrückt hat.
 					listener = evt -> ((JTextField) paramComponent).setText(((String) evt.getNewValue()));
 				}
 				else if (type.isEnum())
 				{
 					final JComboBox<Object> cb = new JComboBox<>(type.getEnumConstants());
+					cb.setSelectedItem(value);
 					paramComponent = cb;
 					cb.addActionListener(this.listener);
 					listener = evt -> cb.setSelectedItem(evt.getNewValue());
@@ -153,7 +154,7 @@ public abstract class Configuration
 				}
 				else if (int.class.equals(type))
 				{
-					paramComponent = new JSpinner(new SpinnerNumberModel(1, 0, Integer.MAX_VALUE, 1));
+					paramComponent = new JSpinner(new SpinnerNumberModel((int) value, 0, Integer.MAX_VALUE, 1));
 					((JSpinner) paramComponent).addChangeListener(this.listener);
 					listener = evt -> ((JSpinner) paramComponent).setValue(((Integer) evt.getNewValue()));
 				}

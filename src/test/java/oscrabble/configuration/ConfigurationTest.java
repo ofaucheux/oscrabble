@@ -34,6 +34,15 @@ class ConfigurationTest
 		JOptionPane.showMessageDialog(null, configuration.createPanel());
 	}
 
+	@Test
+	void testPreValued()
+	{
+		final TestConfiguration configuration = new TestConfiguration();
+		configuration.name = "Amédée";
+		JOptionPane.showMessageDialog(null, configuration.createPanel());
+		JOptionPane.showMessageDialog(null, configuration.createPanel());
+	}
+
 	public static class TestConfiguration extends Configuration
 	{
 		@Parameter(label = "Willst du es?")
