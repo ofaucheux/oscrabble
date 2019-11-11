@@ -1,21 +1,27 @@
 package oscrabble.configuration;
 
+import org.apache.log4j.Logger;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
 
 /**
- * Sammlung von Parameters, die zusammen eine Konfiguration darbilden.
+ * Sammlung von Parameters, die zusammen eine Konfiguration dar bilden.
  * Jeder Parameter ist als Feld (Field) mit der Annotation {@link Parameter} zu versehen.
  * Die Methode {@link #createPanel()} ermöglicht die Anzeige und Änderung der Parameter durch Swing.
  */
 public abstract class Configuration
 {
+	public static final Logger LOGGER = Logger.getLogger(Configuration.class);
 	private final Listener listener;
+	private final PropertyChangeSupport changeListeners = new PropertyChangeSupport(this);
 
 	public Configuration()
 	{
@@ -24,16 +30,32 @@ public abstract class Configuration
 			@Override
 			public void actionPerformed(final ActionEvent e)
 			{
-				setFromSource(e.getSource());
+				try
+				{
+					setFromSource(e.getSource());
+				}
+				catch (ConfigurationException configurationException)
+				{
+					LOGGER.error(configurationException, configurationException);
+					throw new Error(configurationException);
+				}
 			}
 
 			@Override
 			public void stateChanged(final ChangeEvent e)
 			{
-				setFromSource(e.getSource());
+				try
+				{
+					setFromSource(e.getSource());
+				}
+				catch (ConfigurationException configurationException)
+				{
+					LOGGER.error(configurationException, configurationException);
+					throw new Error(configurationException);
+				}
 			}
 
-			private void setFromSource(final Object source)
+			private void setFromSource(final Object source) throws ConfigurationException
 			{
 				if (!(source instanceof Component))
 				{
@@ -41,19 +63,7 @@ public abstract class Configuration
 				}
 
 				final String sourceName = ((Component) source).getName();
-				try
-				{
-					final Field field = Configuration.this.getClass().getField(sourceName);
-					field.set(Configuration.this, getValue(((Component) source)));
-				}
-				catch (NoSuchFieldException ex)
-				{
-					throw new IllegalArgumentException("Parameter not found: " + sourceName, ex);
-				}
-				catch (IllegalAccessException ex)
-				{
-					throw new Error("Error setting " + sourceName, ex);
-				}
+				setValue(sourceName, getValue(((Component) source)));
 				System.out.println(Configuration.this.toString());
 			}
 		};
@@ -107,28 +117,33 @@ public abstract class Configuration
 				panel.add(new JLabel(annotation.description()));
 				final Class<?> type = field.getType();
 				final Component paramComponent;
+				final PropertyChangeListener listener;
 				if (String.class.equals(type))
 				{
 					paramComponent = new JTextField((String) value);
 					((JTextField) paramComponent).addActionListener(this.listener);
+					listener = evt -> ((JTextField) paramComponent).setText(((String) evt.getNewValue()));
 				}
 				else if (boolean.class.equals(type))
 				{
 					paramComponent = new JCheckBox((String) null, (Boolean) value);
 					((JCheckBox) paramComponent).addActionListener(this.listener);
+					listener = evt -> ((JCheckBox) paramComponent).setSelected(((Boolean) evt.getNewValue()));
 				}
 				else if (int.class.equals(type))
 				{
 					paramComponent = new JSpinner(new SpinnerNumberModel(1, 0, Integer.MAX_VALUE, 1));
 					((JSpinner) paramComponent).addChangeListener(this.listener);
+					listener = evt -> ((JSpinner) paramComponent).setValue(((Integer) evt.getNewValue()));
 				}
 				else
 				{
 					throw new IllegalArgumentException("Cannot treat type " + type);
 				}
-				paramComponent.setName(field.getName());
+				final String fieldName = field.getName();
+				paramComponent.setName(fieldName);
+				this.changeListeners.addPropertyChangeListener(fieldName, listener);
 				panel.add(paramComponent);
-
 			}
 		}
 		return panel;
@@ -136,5 +151,35 @@ public abstract class Configuration
 
 	private abstract static class Listener implements ActionListener, ChangeListener
 	{
+	}
+
+	public void setValue(final String fieldName, final Object newValue) throws ConfigurationException
+	{
+		try
+		{
+			final Field field = this.getClass().getField(fieldName);
+			final Object oldValue = field.get(this);
+			if (newValue == oldValue)
+			{
+				return;
+			}
+			field.set(this, newValue);
+			this.changeListeners.fireIndexedPropertyChange(fieldName, -1, oldValue, newValue);
+		}
+		catch (final Throwable cause)
+		{
+			throw new ConfigurationException("Cannot set " + fieldName + " to " + newValue, cause);
+		}
+	}
+
+	/**
+	 * Exception
+	 */
+	public static class ConfigurationException extends Error
+	{
+		ConfigurationException(final String msg, final Throwable cause)
+		{
+			super(msg, cause);
+		}
 	}
 }

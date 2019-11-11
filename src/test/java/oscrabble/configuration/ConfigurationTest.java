@@ -3,32 +3,51 @@ package oscrabble.configuration;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
+import java.util.Random;
 
-public class ConfigurationTest
+class ConfigurationTest
 {
+
+	private static final Random RANDOM = new Random();
 
 	@Test
 	void test()
 	{
-		final Configuration configuration = new TestParam();
+		final TestConfiguration configuration = new TestConfiguration();
+		new SwingWorker<>()
+		{
+			@Override
+			protected Object doInBackground() throws Exception
+			{
+				for (int i = 0; i < 100; i++)
+				{
+					configuration.setValue("name", "content " + i);
+					configuration.setValue("errorAccepted", !configuration.errorAccepted);
+					configuration.setValue("score", RANDOM.nextInt(100));
+					Thread.sleep(200);
+				}
+				return null;
+			}
+		}.execute();
+
 		JOptionPane.showMessageDialog(null, configuration.createPanel());
 	}
 
-	public static class TestParam extends Configuration
+	public static class TestConfiguration extends Configuration
 	{
 		@Parameter(description = "Willst du es?")
-		public boolean errorAccepted;
+		boolean errorAccepted;
 
 		@Parameter(description = "name")
-		public String name;
+		String name;
 
 		@Parameter(description = "score")
-		public int score;
+		int score;
 
 		@Override
 		public String toString()
 		{
-			return "errorAccepted: " + errorAccepted + "\nname: " + name + "\nscore: " + score;
+			return "errorAccepted: " + this.errorAccepted + "\nname: " + this.name + "\nscore: " + this.score;
 		}
 	}
 }
