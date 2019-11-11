@@ -8,5 +8,4 @@ public @interface Parameter
 {
 	String label();
 	String description() default "";
-	String elementOf() default "";
 }

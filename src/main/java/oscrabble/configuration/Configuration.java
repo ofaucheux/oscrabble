@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
-import java.util.List;
 
 /**
  * Sammlung von Parameters, die zusammen eine Konfiguration darstellen.
@@ -108,7 +107,7 @@ public abstract class Configuration
 		panel.removeAll();
 		panel.setLayout(new GridLayout(0, 2));
 
-		for (final Field field : this.getClass().getFields())
+		for (final Field field : this.getClass().getDeclaredFields())
 		{
 			final Parameter annotation = field.getAnnotation(Parameter.class);
 			if (annotation != null)
@@ -128,25 +127,15 @@ public abstract class Configuration
 				final Class<?> type = field.getType();
 				final Component paramComponent;
 				final PropertyChangeListener listener;
-				final String elementOf;
 				if (String.class.equals(type))
 				{
 					paramComponent = new JTextField((String) value);
 					((JTextField) paramComponent).addActionListener(this.listener);
 					listener = evt -> ((JTextField) paramComponent).setText(((String) evt.getNewValue()));
 				}
-				else if (!(elementOf = annotation.elementOf()).isEmpty())
+				else if (type.isEnum())
 				{
-					final List list;
-					try
-					{
-						list = (List) this.getClass().getField(elementOf).get(this);
-					}
-					catch (NoSuchFieldException | IllegalAccessException e)
-					{
-						throw new ConfigurationException("Missing public field: " + elementOf, e);
-					}
-					final JComboBox<Object> cb = new JComboBox<>(list.toArray());
+					final JComboBox<Object> cb = new JComboBox<>(type.getEnumConstants());
 					paramComponent = cb;
 					cb.addActionListener(this.listener);
 					listener = evt -> cb.setSelectedItem(evt.getNewValue());
@@ -187,7 +176,7 @@ public abstract class Configuration
 	{
 		try
 		{
-			final Field field = this.getClass().getField(fieldName);
+			final Field field = this.getClass().getDeclaredField(fieldName);
 			final Object oldValue = field.get(this);
 			if (newValue == oldValue)
 			{
