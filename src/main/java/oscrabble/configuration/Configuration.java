@@ -112,6 +112,7 @@ public abstract class Configuration
 			final Parameter annotation = field.getAnnotation(Parameter.class);
 			if (annotation != null)
 			{
+				field.setAccessible(true);
 				final Object value;
 				try
 				{
@@ -119,6 +120,7 @@ public abstract class Configuration
 				}
 				catch (IllegalAccessException e)
 				{
+					LOGGER.error(e, e);
 					throw new Error("Problem", e);
 				}
 				final JLabel label = new JLabel(annotation.label());
@@ -177,6 +179,7 @@ public abstract class Configuration
 		try
 		{
 			final Field field = this.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
 			final Object oldValue = field.get(this);
 			if (newValue == oldValue)
 			{

@@ -5,13 +5,13 @@ import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import oscrabble.*;
+import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 import oscrabble.server.IScrabbleServer;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.*;
 import java.util.*;
 
@@ -315,20 +315,17 @@ public class BruteForceMethod
 	public class Player extends AbstractPlayer
 	{
 		private final IScrabbleServer server;
-		private final LinkedHashMap<String, IMoveSelector> possibleMoveSelectors;
-		private IMoveSelector selectionMethod;
+		private final Configuration configuration = new Configuration();
 
-		/** Seconds to wait before playing */
-		private int throttle;
+
+		private final Map<Strategy, ComparatorSelector> strategies = new HashMap<>();
 
 		public Player(final IScrabbleServer server, final String name)
 		{
 			super(name);
 			this.server = server;
-			this.possibleMoveSelectors = new LinkedHashMap<>();
-			this.possibleMoveSelectors.put("Best score", new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.SCORE_COMPARATOR));
-			this.possibleMoveSelectors.put("Longest word", new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
-			this.selectionMethod = this.possibleMoveSelectors.values().iterator().next();
+			this.strategies.put(Strategy.BEST_SCORE, new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.SCORE_COMPARATOR));
+			this.strategies.put(Strategy.LONGEST_WORD, new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
 		}
 
 		@Override
@@ -351,12 +348,12 @@ public class BruteForceMethod
 				}
 				else
 				{
-					if (this.throttle > 0)
+					if (this.configuration.throttle > 0)
 					{
-						LOGGER.trace("Wait " + this.throttle + " seconds...");
-						Thread.sleep(this.throttle * 1000);
+						LOGGER.trace("Wait " + this.configuration.throttle + " seconds...");
+						Thread.sleep(this.configuration.throttle * 1000);
 					}
-					final Move toPlay = this.selectionMethod.select(moves);
+					final Move toPlay = this.strategies.get(this.configuration.strategie).select(moves);
 					LOGGER.info("Play " + toPlay);
 					this.server.play(this, toPlay);
 				}
@@ -418,28 +415,9 @@ public class BruteForceMethod
 		@Override
 		public void editParameters()
 		{
-			final JPanel panel = new JPanel();
-
-			panel.setLayout(new GridLayout(0, 2));
-			panel.add(new JLabel("Strategie"));
-			final JComboBox<String> cb = new JComboBox<>();
-			this.possibleMoveSelectors.forEach((key, value) -> {
-				cb.addItem(key);
-				if (value == this.selectionMethod)
-				{
-					cb.setSelectedItem(key);
-				}
-			});
-			panel.add(cb);
-
-			panel.add(new JLabel("Throttle (in seconds)"));
-			final JSpinner throttle = new JSpinner(new SpinnerNumberModel(0, 0, 30, 1));
-			throttle.setValue(this.throttle);
-			panel.add(throttle);
-
-			final int ok = JOptionPane.showOptionDialog(
+			JOptionPane.showOptionDialog(
 					null,
-					new JScrollPane(panel),
+					new JScrollPane(this.configuration.createPanel()),
 					"Options for " + getName(),
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.PLAIN_MESSAGE,
@@ -447,12 +425,18 @@ public class BruteForceMethod
 					null,
 					null
 					);
+		}
 
-			if (ok == JOptionPane.OK_OPTION)
-			{
-				this.selectionMethod = this.possibleMoveSelectors.get(cb.getSelectedItem());
-				this.throttle = ((Integer) throttle.getValue());
-			}
+		class Configuration extends oscrabble.configuration.Configuration
+		{
+			/**
+			 * Seconds to wait before playing
+			 */
+			@Parameter(label = "throttle")
+			private int throttle = 0;
+
+			@Parameter(label = "Strategie")
+			private Strategy strategie = Strategy.LONGEST_WORD;
 		}
 	}
 
@@ -472,4 +456,20 @@ public class BruteForceMethod
 		}
 	}
 
+	/** Playing strategy for a player */
+	private enum Strategy { LONGEST_WORD ("Longest word"), BEST_SCORE ("Best score");
+
+		private final String label;
+
+		Strategy(final String label)
+		{
+			this.label = label;
+		}
+
+		@Override
+		public String toString()
+		{
+			return this.label;
+		}
+	}
 }
