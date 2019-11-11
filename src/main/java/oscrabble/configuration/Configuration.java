@@ -11,10 +11,11 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * Sammlung von Parameters, die zusammen eine Konfiguration darstellen.
- * Jeder Parameter ist als Feld (Field) mit der Annotation {@link Parameter} zu versehen.
+ * Jeder Parameter ist als public Feld (Field) mit der Annotation {@link Parameter} zu versehen.
  * Die Methode {@link #createPanel()} ermöglicht die Anzeige und Änderung der Parameter durch Swing.
  */
 public abstract class Configuration
@@ -91,6 +92,10 @@ public abstract class Configuration
 		{
 			return ((JSpinner) inputComponent).getValue();
 		}
+		else if (inputComponent instanceof JComboBox)
+		{
+			return ((JComboBox) inputComponent).getSelectedItem();
+		}
 		throw new IllegalArgumentException("Cannot treat: " + inputComponent.getClass());
 	}
 
@@ -123,11 +128,28 @@ public abstract class Configuration
 				final Class<?> type = field.getType();
 				final Component paramComponent;
 				final PropertyChangeListener listener;
+				final String elementOf;
 				if (String.class.equals(type))
 				{
 					paramComponent = new JTextField((String) value);
 					((JTextField) paramComponent).addActionListener(this.listener);
 					listener = evt -> ((JTextField) paramComponent).setText(((String) evt.getNewValue()));
+				}
+				else if (!(elementOf = annotation.elementOf()).isEmpty())
+				{
+					final List list;
+					try
+					{
+						list = (List) this.getClass().getField(elementOf).get(this);
+					}
+					catch (NoSuchFieldException | IllegalAccessException e)
+					{
+						throw new ConfigurationException("Missing public field: " + elementOf, e);
+					}
+					final JComboBox<Object> cb = new JComboBox<>(list.toArray());
+					paramComponent = cb;
+					cb.addActionListener(this.listener);
+					listener = evt -> cb.setSelectedItem(evt.getNewValue());
 				}
 				else if (boolean.class.equals(type))
 				{
@@ -136,7 +158,7 @@ public abstract class Configuration
 					cb.setIcon(falseIcon);
 					cb.setSelectedIcon(trueIcon);
 					cb.addActionListener(this.listener);
-					listener = evt -> (cb).setSelected(((Boolean) evt.getNewValue()));
+					listener = evt -> cb.setSelected(((Boolean) evt.getNewValue()));
 				}
 				else if (int.class.equals(type))
 				{
