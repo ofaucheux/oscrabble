@@ -11,6 +11,10 @@ import java.util.UUID;
 
 public interface IScrabbleServer
 {
+	/**
+	 * Registriert einen neuen Spieler.
+	 * @param player der Spieler
+	 */
 	void register(AbstractPlayer player);
 
 	/**

@@ -15,6 +15,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class ScrabbleServer implements IScrabbleServer
 {
@@ -61,30 +62,13 @@ public class ScrabbleServer implements IScrabbleServer
 		info.key = UUID.randomUUID();
 		newPlayer.setPlayerKey(info.key);
 		info.rack = new Rack();
-		info.eventQueue = new LinkedBlockingDeque<>();
-		info.dispatchThread = new Thread(() -> {
-			try
-			{
-				while (true)
-				{
-					final ScrabbleEvent event = info.eventQueue.poll(Integer.MAX_VALUE, TimeUnit.DAYS);
-					assert event != null;
-					event.dispatch(info.player);
-				}
-			}
-			catch (InterruptedException e)
-			{
-				reportError(info, e);
-			}
-		});
+		info.incomingEventQueue = new LinkedBlockingDeque<>();
 		this.players.put(newPlayer, info);
 
-		info.dispatchThread.start();
 		if (!newPlayer.isObserver())
 		{
 			this.toPlay.push(newPlayer);
 		}
-
 	}
 
 
@@ -405,7 +389,7 @@ public class ScrabbleServer implements IScrabbleServer
 		for (final AbstractPlayer player : this.players.keySet())
 		{
 			LOGGER.trace("Send " + scrabbleEvent + " to " + player.getName());
-			scrabbleEvent.dispatch(player);
+			player.getIncomingEventQueue().add(scrabbleEvent);
 		}
 	}
 
@@ -475,8 +459,10 @@ public class ScrabbleServer implements IScrabbleServer
 		 * Password für die Kommunikation Player &lt;&gt; Server
 		 */
  		UUID key;
- 		BlockingQueue<ScrabbleEvent> eventQueue;
-		Thread dispatchThread;
+
+		/** Queue  to receive events from client */
+		BlockingQueue<ScrabbleServer.ScrabbleEvent> incomingEventQueue;
+
 		Rack rack;
 		int score;
 
@@ -496,8 +482,8 @@ public class ScrabbleServer implements IScrabbleServer
 	/** State of the game */
 	private enum State { BEFORE_START, STARTED, ENDED}
 
-	public interface ScrabbleEvent
+	public interface ScrabbleEvent extends Consumer<AbstractPlayer>
 	{
-		void dispatch(final AbstractPlayer player);
+		void accept(final AbstractPlayer player);
 	}
 }
