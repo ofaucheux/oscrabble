@@ -22,19 +22,13 @@ public interface Configurable
 	/** inform all listeners values have been changed */
 	default void firePropertiesChange()
 	{
-
 		doOnParameters(
 				(f, a) ->
 				{
 					final String property = f.getName();
 					final Object newValue = f.get(this);
 					final Object oldValue = this.oldValues.get(property);
-//					if (!this.oldValues.containsKey(property)
-//							|| (oldValue == null && newValue != null)
-//							|| (oldValue != null && !oldValue.equals(newValue)))
-//					{
-						changeListeners.firePropertyChange(property, oldValue, newValue);
-//					}
+					changeListeners.firePropertyChange(property, oldValue, newValue);
 				}
 		);
 	}
