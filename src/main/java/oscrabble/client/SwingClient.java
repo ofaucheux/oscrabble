@@ -246,8 +246,8 @@ public class SwingClient extends AbstractPlayer
 				() -> {
 					for (int i = 0; i < 3; i++)
 					{
-						SwingClient.this.jGrid.hideNewStones = !SwingClient.this.jGrid.hideNewStones;
 						Thread.sleep(5 * 100);
+						SwingClient.this.jGrid.hideNewStones = !SwingClient.this.jGrid.hideNewStones;
 						SwingClient.this.jGrid.repaint();
 					}
 					SwingClient.this.jGrid.hideNewStones = false;
