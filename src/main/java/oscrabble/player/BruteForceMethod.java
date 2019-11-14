@@ -5,11 +5,14 @@ import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import oscrabble.*;
+import oscrabble.configuration.Configurable;
+import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 import oscrabble.server.IScrabbleServer;
+import oscrabble.server.ScrabbleServer;
 
 import javax.swing.*;
 import java.io.*;
@@ -312,20 +315,35 @@ public class BruteForceMethod
 		return crossChecks.get(crossSquare);
 	}
 
-	public class Player extends AbstractPlayer
+	public class Player extends AbstractPlayer implements Configurable
 	{
 		private final IScrabbleServer server;
-		private final Configuration configuration = new Configuration();
-
 
 		private final Map<Strategy, ComparatorSelector> strategies = new HashMap<>();
 
-		public Player(final IScrabbleServer server, final String name)
+		@Parameter(label = "Throttle")
+		private int throttle;
+
+		@Parameter(label = "Strategie")
+		private Strategy strategie = Strategy.LONGEST_WORD;
+
+		public Player(final GameStarter.Game game, final String name)
 		{
-			super(name);
+			this(game, game.getServer(), name);
+		}
+
+		public Player(final ScrabbleServer server, final String name)
+		{
+			this(null, server, name);
+		}
+
+		private Player(final GameStarter.Game game, final ScrabbleServer server, final String name)
+		{
+			super(name, game);
 			this.server = server;
 			this.strategies.put(Strategy.BEST_SCORE, new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.SCORE_COMPARATOR));
 			this.strategies.put(Strategy.LONGEST_WORD, new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
+			changeListeners.addPropertyChangeListener((ev) -> saveConfiguration());
 		}
 
 		@Override
@@ -348,12 +366,12 @@ public class BruteForceMethod
 				}
 				else
 				{
-					if (this.configuration.throttle > 0)
+					if (this.throttle > 0)
 					{
-						LOGGER.trace("Wait " + this.configuration.throttle + " seconds...");
-						Thread.sleep(this.configuration.throttle * 1000);
+						LOGGER.trace("Wait " + this.throttle + " seconds...");
+						Thread.sleep(this.throttle * 1000);
 					}
-					final Move toPlay = this.strategies.get(this.configuration.strategie).select(moves);
+					final Move toPlay = this.strategies.get(this.strategie).select(moves);
 					LOGGER.info("Play " + toPlay);
 					this.server.play(this, toPlay);
 				}
@@ -417,7 +435,7 @@ public class BruteForceMethod
 		{
 			JOptionPane.showOptionDialog(
 					null,
-					new JScrollPane(this.configuration.createPanel()),
+					new JScrollPane(new ConfigurationPanel(Player.this)),
 					"Options for " + getName(),
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.PLAIN_MESSAGE,
@@ -425,18 +443,6 @@ public class BruteForceMethod
 					null,
 					null
 					);
-		}
-
-		class Configuration extends oscrabble.configuration.Configuration
-		{
-			/**
-			 * Seconds to wait before playing
-			 */
-			@Parameter(label = "throttle")
-			private int throttle = 0;
-
-			@Parameter(label = "Strategie")
-			private Strategy strategie = Strategy.LONGEST_WORD;
 		}
 	}
 

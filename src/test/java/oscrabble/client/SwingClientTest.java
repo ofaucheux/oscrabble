@@ -4,13 +4,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.Stone;
-import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryTest;
 import oscrabble.server.ScrabbleServer;
 import oscrabble.server.ScrabbleServerTest;
 
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 
 public class SwingClientTest

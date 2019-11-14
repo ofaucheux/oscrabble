@@ -1,9 +1,15 @@
 package oscrabble.configuration;
 
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
 import java.util.Random;
+
+import static org.junit.Assert.*;
 
 class ConfigurationTest implements Configurable
 {
@@ -27,7 +33,25 @@ class ConfigurationTest implements Configurable
 	private	MyColor color2;
 
 	@Test
-	void test()
+	void testConfiguration()
+	{
+		final PropertiesConfiguration config = new PropertiesConfiguration();
+		for (final String prefix : new String[]{null, "myPrefix"})
+		{
+			final Configuration subconfig = prefix == null ? config : config.subset(prefix);
+			subconfig.setProperty("color", MyColor.BLUE);
+			subconfig.setProperty("score", 2010);
+			subconfig.setProperty("errorAccepted", false);
+			ConfigurableUtils.loadProperties(this, subconfig);
+		}
+
+		assertEquals(MyColor.BLUE, color);
+		assertEquals(2010, score);
+		assertEquals(false, errorAccepted);
+	}
+
+	@Test
+	void testPanel()
 	{
 		new SwingWorker<>()
 		{

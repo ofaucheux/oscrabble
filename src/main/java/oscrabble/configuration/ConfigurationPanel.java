@@ -69,7 +69,7 @@ public final class ConfigurationPanel extends JPanel
 
 				final String sourceName = ((Component) source).getName();
 				setValue(sourceName, getValue(((Component) source)));
-				System.out.println(ConfigurationPanel.this.toString());
+				configurable.firePropertiesChange();;
 			}
 		};
 
@@ -160,23 +160,9 @@ public final class ConfigurationPanel extends JPanel
 
 	private void setValue(final String fieldName, final Object newValue) throws ConfigurationException
 	{
-		try
-		{
-			final Field field = this.configurable.getClass().getDeclaredField(fieldName);
-			field.setAccessible(true);
-			final Object oldValue = field.get(this.configurable);
-			if (newValue == oldValue)
-			{
-				return;
-			}
-			field.set(this.configurable, newValue);
-			this.configurable.changeListeners.fireIndexedPropertyChange(fieldName, -1, oldValue, newValue);
-		}
-		catch (final Throwable cause)
-		{
-			throw new ConfigurationException("Cannot set " + fieldName + " to " + newValue, cause);
-		}
+		ConfigurableUtils.setValue(this.configurable, fieldName, newValue);
 	}
+
 
 
 	/**

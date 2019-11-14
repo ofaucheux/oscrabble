@@ -26,6 +26,7 @@ dependencies {
     compile 'commons-io:commons-io:2.6'
     compile 'org.apache.commons:commons-csv:1.7'
     compile group: 'org.apache.commons', name: 'commons-configuration2', version: '2.6'
+    compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
     testCompile 'junit:junit:4.12'
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.5.2'
 }

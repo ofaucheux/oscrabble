@@ -4,6 +4,7 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import oscrabble.*;
+import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryException;
 import oscrabble.player.AbstractPlayer;
@@ -66,12 +67,22 @@ public class SwingClient extends AbstractPlayer
 	/** Future to let the last played stone flash */
 	private ScheduledFuture<Object> flashFuture;
 
+	public SwingClient(final GameStarter.Game game, final String name)
+	{
+		this(game, game.getServer(), name);
+	}
+
 	public SwingClient(final ScrabbleServer server, final String name)
 	{
-		super(name);
+		this(null, server, name);
+	}
+
+	private SwingClient(final GameStarter.Game game, final ScrabbleServer server, final String name)
+	{
+		super(name, game);
 		this.server = server;
 
-		this.jGrid = new JGrid(server.getGrid(), server.getDictionary());
+		this.jGrid = new JGrid(this.server.getGrid(), this.server.getDictionary());
 		this.jGrid.setClient(this);
 		this.jRack = new JRack();
 		this.jScoreboard = new JScoreboard();
@@ -115,7 +126,7 @@ public class SwingClient extends AbstractPlayer
 		panel1.add(this.possibleMovePanel);
 		panel1.add(Box.createVerticalGlue());
 
-		final JPanel configPanel = this.server.getConfiguration().createPanel();
+		final JPanel configPanel = new ConfigurationPanel(this.server.getConfiguration());
 		panel1.add(configPanel);
 		configPanel.setBorder(new TitledBorder("Server configuration"));
 		eastPanel.add(panel1, BorderLayout.CENTER);
