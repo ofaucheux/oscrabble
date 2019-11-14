@@ -184,7 +184,7 @@ public class ScrabbleServer implements IScrabbleServer
 
 			refillRack(player);
 			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
-			messages.forEach(m -> dispatchMessage(m));
+			messages.forEach(message -> dispatchMessage(message));
 
 			LOGGER.debug("Grid after play\n" + this.grid.asASCIIArt());
 
@@ -430,6 +430,12 @@ public class ScrabbleServer implements IScrabbleServer
 		{
 			throw new IllegalArgumentException("Cannot find the player matching this info: " + player);
 		}
+	}
+
+	@Override
+	public void sendMessage(final AbstractPlayer sender, final String message)
+	{
+		dispatchMessage("Message of " + sender.getName() + ": " + message);
 	}
 
 	/**

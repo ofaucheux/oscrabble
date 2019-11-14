@@ -361,6 +361,7 @@ public class BruteForceMethod
 
 				if (moves.isEmpty())
 				{
+					this.server.sendMessage(this, "No possible moves anymore");
 					// TODO - passt oder ersetzt manche Stones
 					throw new UnsupportedOperationException();
 				}

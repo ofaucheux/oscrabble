@@ -45,9 +45,9 @@ public class GameStarter
 				final BruteForceMethod method = new BruteForceMethod(dictionary);
 				server.register(method.new Player(this, "Computer1"));
 				server.register(method.new Player(this, "Computer2"));
-//				server.register(method.new Player(this, "Computer4"));
-//				server.register(method.new Player(this, "Computer5"));
-//				server.register(method.new Player(this, "Computer6"));
+				server.register(method.new Player(this, "Computer4"));
+				server.register(method.new Player(this, "Computer5"));
+				server.register(method.new Player(this, "Computer6"));
 				server.register(new SwingClient(this, "Swing"));
 				server.startGame();
 			}

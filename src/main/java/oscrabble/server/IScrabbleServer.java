@@ -5,6 +5,7 @@ import oscrabble.Rack;
 import oscrabble.ScrabbleException;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
+import oscrabble.player.BruteForceMethod;
 
 import java.util.List;
 import java.util.UUID;
@@ -44,4 +45,12 @@ public interface IScrabbleServer
 	 * @param player anderer Player
 	 */
 	void editParameters(UUID caller, IPlayerInfo player);
+
+	/**
+	 * Send a message to all players.
+	 *
+	 * @param sender sender
+	 * @param message message
+	 */
+	void sendMessage(AbstractPlayer sender, String message);
 }
