@@ -1,13 +1,8 @@
 package oscrabble;
 
 import org.apache.commons.configuration2.FileBasedConfiguration;
-import org.apache.commons.configuration2.HierarchicalConfigurationXMLReader;
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.builder.ConfigurationBuilder;
-import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.BasicConfigurator;
 import oscrabble.client.SwingClient;
@@ -17,7 +12,6 @@ import oscrabble.server.ScrabbleServer;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOError;
 
 public class GameStarter
 {
@@ -49,8 +43,11 @@ public class GameStarter
 				server = new ScrabbleServer(Dictionary.getDictionary(Dictionary.Language.FRENCH));
 				final Dictionary dictionary = server.getDictionary();
 				final BruteForceMethod method = new BruteForceMethod(dictionary);
-				server.register(method.new Player(this, "Computer"));
+				server.register(method.new Player(this, "Computer1"));
 				server.register(method.new Player(this, "Computer2"));
+//				server.register(method.new Player(this, "Computer4"));
+//				server.register(method.new Player(this, "Computer5"));
+//				server.register(method.new Player(this, "Computer6"));
 				server.register(new SwingClient(this, "Swing"));
 				server.startGame();
 			}

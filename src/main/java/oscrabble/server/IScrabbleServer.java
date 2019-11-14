@@ -38,13 +38,6 @@ public interface IScrabbleServer
 	int getScore(final AbstractPlayer player);
 
 	/**
-	 * @param caller UUID des Players, der die Funktion aufruft
-	 * @param player anderer Player
-	 * @return ob der andere Player eine Möglichkeit anbietet, seine Parameters zu ändern
-	 */
-	boolean hasEditableParameters(UUID caller, IPlayerInfo player);
-
-	/**
 	 * Editiere die Parameters eines Spielers.
 	 *
 	 * @param caller UUID des Players, der die Funktion aufruft

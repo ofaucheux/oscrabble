@@ -3,7 +3,6 @@ package oscrabble.server;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.bag.TreeBag;
-import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.apache.log4j.Logger;
 import oscrabble.*;
 import oscrabble.client.Exchange;
@@ -25,7 +24,7 @@ public class ScrabbleServer implements IScrabbleServer
 	public final static int RACK_SIZE = 7;
 	static final String SCRABBLE_MESSAGE = "Scrabble!";
 
-	private final DualLinkedHashBidiMap<AbstractPlayer, PlayerInfo> players = new DualLinkedHashBidiMap<>();
+	private final Map<AbstractPlayer, PlayerInfo> players = new LinkedHashMap<>();
 	private final LinkedList<AbstractPlayer> toPlay = new LinkedList<>();
 	private final Grid grid;
 	private final Random random;
@@ -64,11 +63,6 @@ public class ScrabbleServer implements IScrabbleServer
 		info.rack = new Rack();
 		info.incomingEventQueue = new LinkedBlockingDeque<>();
 		this.players.put(newPlayer, info);
-
-		if (!newPlayer.isObserver())
-		{
-			this.toPlay.push(newPlayer);
-		}
 	}
 
 
@@ -340,7 +334,17 @@ public class ScrabbleServer implements IScrabbleServer
 		assert !this.toPlay.isEmpty();
 
 		fillBag();
-		sortPlayers();
+
+		// Sortiert (oder mischt) die Spieler, um eine Spielreihenfolge zu definieren.
+		final ArrayList<AbstractPlayer> list = new ArrayList<>(this.players.keySet());
+		Collections.shuffle(list);
+		final HashMap<AbstractPlayer, PlayerInfo> mapCopy = new HashMap<>(this.players);
+		this.players.clear();
+		for (final AbstractPlayer player : list)
+		{
+			this.players.put(player, mapCopy.get(player));
+		}
+		this.toPlay.addAll(this.players.keySet());
 
 		// Fill racks
 		for (final AbstractPlayer player : this.toPlay)
@@ -351,14 +355,6 @@ public class ScrabbleServer implements IScrabbleServer
 		dispatch(player -> player.beforeGameStart());
 	}
 
-	/**
-	 * Sortiert (oder mischt) die Spieler, um eine Spielreihenfolge zu definieren.
-	 */
-	private void sortPlayers()
-	{
-		// select the player playing the first
-		Collections.shuffle(this.toPlay);
-	}
 
 	/**
 	 * Füllt das Säckchen mit den Buchstaben.
@@ -424,15 +420,16 @@ public class ScrabbleServer implements IScrabbleServer
 	}
 
 	@Override
-	public boolean hasEditableParameters(final UUID caller, final IPlayerInfo player)
-	{
-		return this.players.getKey(player).hasEditableParameters();
-	}
-
-	@Override
 	public void editParameters(final UUID caller, final IPlayerInfo player)
 	{
-		this.players.getKey(player).editParameters();
+		if (player instanceof PlayerInfo)
+		{
+			((PlayerInfo) player).player.editParameters();
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot find the player matching this info: " + player);
+		}
 	}
 
 	/**
@@ -476,6 +473,12 @@ public class ScrabbleServer implements IScrabbleServer
 		public int getScore()
 		{
 			return this.score;
+		}
+
+		@Override
+		public boolean hasEditableParameters()
+		{
+			return this.player.hasEditableParameters();
 		}
 	}
 

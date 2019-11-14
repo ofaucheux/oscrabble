@@ -361,7 +361,7 @@ public class SwingClient extends AbstractPlayer
 						worker.execute();
 					}
 				});
-				line.parameterButton.setVisible(SwingClient.this.server.hasEditableParameters(SwingClient.this.playerKey, player));
+				line.parameterButton.setVisible(player.hasEditableParameters());
 				add(line.parameterButton, c);
 
 			}
