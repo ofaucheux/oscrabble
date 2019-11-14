@@ -5,66 +5,69 @@ import org.junit.jupiter.api.Test;
 import javax.swing.*;
 import java.util.Random;
 
-class ConfigurationTest
+class ConfigurationTest implements Configurable
 {
 
 	private static final Random RANDOM = new Random();
 
+	@Parameter(label = "Willst du es?")
+	private	boolean errorAccepted;
+
+	@Parameter(label = "name")
+	private	String name;
+
+	@Parameter(label = "score", description = "points obtained all along the game")
+	private	int score;
+
+	@Parameter(label="color")
+	private	MyColor color;
+
+
+	@Parameter(label="second color")
+	private	MyColor color2;
+
 	@Test
 	void test()
 	{
-		final TestConfiguration configuration = new TestConfiguration();
 		new SwingWorker<>()
 		{
 			@Override
 			protected Object doInBackground() throws Exception
 			{
-				for (int i = 0; i < 100; i++)
+				for (int i = 0; i < 10; i++)
 				{
-					configuration.setValue("name", "content " + i);
-					configuration.setValue("errorAccepted", !configuration.errorAccepted);
-					configuration.setValue("score", RANDOM.nextInt(100));
-					configuration.setValue("color", configuration.color == TestConfiguration.MyColor.YELLOW ? TestConfiguration.MyColor.BLUE : TestConfiguration.MyColor.YELLOW);
+					ConfigurationTest.this.name =  "content " + i;
+					ConfigurationTest.this.errorAccepted = !ConfigurationTest.this.errorAccepted;
+					ConfigurationTest.this.score = RANDOM.nextInt(100);
+					ConfigurationTest.this.color = ConfigurationTest.this.color == MyColor.YELLOW ? MyColor.BLUE : MyColor.YELLOW;
+					ConfigurationTest.this.firePropertiesChange();
 					Thread.sleep(200);
 				}
+
+				for (int i = 0; i < 10; i++)
+				{
+					ConfigurationTest.this.color2 = ConfigurationTest.this.color2 == MyColor.YELLOW ? MyColor.BLUE : MyColor.YELLOW;
+					ConfigurationTest.this.firePropertiesChange();
+					Thread.sleep(200);
+				}
+				JOptionPane.showMessageDialog(null, "Done!");
 				return null;
 			}
 		}.execute();
 
-		JOptionPane.showMessageDialog(null, configuration.createPanel());
+		JOptionPane.showMessageDialog(null, new ConfigurationPanel(this));
+
+
 	}
 
-	@Test
-	void testPreValued()
+
+	private enum MyColor
+	{BLUE, YELLOW}
+
+
+	@Override
+	public String toString()
 	{
-		final TestConfiguration configuration = new TestConfiguration();
-		configuration.name = "Amédée";
-		JOptionPane.showMessageDialog(null, configuration.createPanel());
-		JOptionPane.showMessageDialog(null, configuration.createPanel());
-	}
-
-	public static class TestConfiguration extends Configuration
-	{
-		@Parameter(label = "Willst du es?")
-		boolean errorAccepted;
-
-		@Parameter(label = "name")
-		String name;
-
-		@Parameter(label = "score", description = "points obtained all along the game")
-		int score;
-
-		@Parameter(label="color")
-		MyColor color;
-
-		private enum MyColor
-		{BLUE, GREEN, YELLOW}
-
-
-		@Override
-		public String toString()
-		{
-			return "errorAccepted: " + this.errorAccepted + "\nname: " + this.name + "\nscore: " + this.score;
-		}
+		return "errorAccepted: " + this.errorAccepted + "\nname: " + this.name + "\nscore: " + this.score;
 	}
 }

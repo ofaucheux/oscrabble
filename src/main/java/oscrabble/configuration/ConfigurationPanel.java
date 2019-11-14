@@ -1,8 +1,5 @@
 package oscrabble.configuration;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -12,25 +9,27 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
 
 /**
- * Sammlung von Parameters, die zusammen eine Konfiguration darstellen.
- * Jeder Parameter ist als public Feld (Field) mit der Annotation {@link Parameter} zu versehen.
- * Die Methode {@link #createPanel()} ermöglicht die Anzeige und Änderung der Parameter durch Swing.
+ * Panel für die Anzeige und Änderung der Parameter durch Swing.
  */
-public abstract class Configuration
+public final class ConfigurationPanel extends JPanel
 {
-	public static final Logger LOGGER = Logger.getLogger(Configuration.class);
+	public static final Logger LOGGER = Logger.getLogger(ConfigurationPanel.class);
+	private final Configurable configurable;
+
+	private final static Icon trueIcon = new ImageIcon(ConfigurationPanel.class.getResource("checkboxTrue.png"));
+	private final static Icon falseIcon = new ImageIcon(ConfigurationPanel.class.getResource("checkboxFalse.png"));
 	private final Listener listener;
-	private final PropertyChangeSupport changeListeners = new PropertyChangeSupport(this);
 
-	private final static Icon trueIcon = new ImageIcon(Configuration.class.getResource("checkboxTrue.png"));
-	private final static Icon falseIcon = new ImageIcon(Configuration.class.getResource("checkboxFalse.png"));
-
-	public Configuration()
+	public ConfigurationPanel(final Configurable configurable)
 	{
+		super();
+		this.configurable = configurable;
+		setLayout(new GridLayout(0, 2));
+
+
 		this.listener = new Listener()
 		{
 			@Override
@@ -70,9 +69,11 @@ public abstract class Configuration
 
 				final String sourceName = ((Component) source).getName();
 				setValue(sourceName, getValue(((Component) source)));
-				System.out.println(Configuration.this.toString());
+				System.out.println(ConfigurationPanel.this.toString());
 			}
 		};
+
+		this.configurable.doOnParameters((field, annotation)->addField(field, annotation));
 	}
 
 	private Object getValue(final Component inputComponent)
@@ -102,28 +103,15 @@ public abstract class Configuration
 	}
 
 	/**
-	 * Erstellt ein Panel.
-	 */
-	public JPanel createPanel()
-	{
-		final JPanel panel = new JPanel();
-		panel.removeAll();
-		panel.setLayout(new GridLayout(0, 2));
-
-		doOnParameters((field, annotation)->addField(panel, field, annotation));
-		return panel;
-	}
-
-	/**
 	 * Fügt zu einem Panel die Widgets für ein Parameter Feld hinzu.
 	 */
-	private void addField(final JPanel panel, final Field field, final Parameter annotation) throws IllegalAccessException
+	private void addField(final Field field, final Parameter annotation) throws IllegalAccessException
 	{
 		final Object value;
-		value = field.get(this);
+		value = field.get(this.configurable);
 		final JLabel label = new JLabel(annotation.label());
 		label.setToolTipText(annotation.description().isEmpty() ? annotation.label() : annotation.description());
-		panel.add(label);
+		add(label);
 		final Class<?> type = field.getType();
 		final Component paramComponent;
 		final PropertyChangeListener listener;
@@ -162,27 +150,27 @@ public abstract class Configuration
 		}
 		final String fieldName = field.getName();
 		paramComponent.setName(fieldName);
-		this.changeListeners.addPropertyChangeListener(fieldName, listener);
-		panel.add(paramComponent);
+		this.configurable.changeListeners.addPropertyChangeListener(fieldName, listener);
+		add(paramComponent);
 	}
 
 	private abstract static class Listener implements ActionListener, ChangeListener
 	{
 	}
 
-	public void setValue(final String fieldName, final Object newValue) throws ConfigurationException
+	private void setValue(final String fieldName, final Object newValue) throws ConfigurationException
 	{
 		try
 		{
-			final Field field = this.getClass().getDeclaredField(fieldName);
+			final Field field = this.configurable.getClass().getDeclaredField(fieldName);
 			field.setAccessible(true);
-			final Object oldValue = field.get(this);
+			final Object oldValue = field.get(this.configurable);
 			if (newValue == oldValue)
 			{
 				return;
 			}
-			field.set(this, newValue);
-			this.changeListeners.fireIndexedPropertyChange(fieldName, -1, oldValue, newValue);
+			field.set(this.configurable, newValue);
+			this.configurable.changeListeners.fireIndexedPropertyChange(fieldName, -1, oldValue, newValue);
 		}
 		catch (final Throwable cause)
 		{
@@ -190,49 +178,6 @@ public abstract class Configuration
 		}
 	}
 
-	HierarchicalConfiguration<ImmutableNode> export()
-	{
-		final XMLConfiguration exportConfig = new XMLConfiguration();
-		doOnParameters((field, anno) -> exportConfig.setProperty(field.getName(), field.get(this)));
-		return exportConfig;
-	}
-
-	void read(HierarchicalConfiguration<ImmutableNode> source)
-	{
-		doOnParameters((field, anno) -> field.set(this, source.get(field.getClass(), field.getName())));
-	}
-
-	/**
-	 * Führt eine Aktion auf alle Felder aus, die mit der Annotation  {@code Parameter} versehen sind.
-	 * @param function die Funktion.
-	 */
-	private void doOnParameters(final FieldConsumer function)
-	{
-		for (final Field field : this.getClass().getDeclaredFields())
-		{
-			final Parameter annotation = field.getAnnotation(Parameter.class);
-			if (annotation != null)
-			{
-				field.setAccessible(true);
-				try
-				{
-					function.accept(field, annotation);
-				}
-				catch (final Throwable e)
-				{
-					final ConfigurationException ex = new ConfigurationException("Error treating field " + field.getName(), e);
-					LOGGER.error(ex, ex);
-					throw ex;
-				}
-			}
-		}
-	}
-
-	@FunctionalInterface
-	interface FieldConsumer
-	{
-		void accept(final Field field, final Parameter annotation) throws IllegalAccessException;
-	}
 
 	/**
 	 * Exception
