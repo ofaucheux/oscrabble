@@ -1,19 +1,14 @@
 package oscrabble.player;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.log4j.Logger;
-import oscrabble.GameStarter;
 import oscrabble.server.Game;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
-import oscrabble.server.ScrabbleServer;
 
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Consumer;
 
 public abstract class AbstractPlayer
 {
@@ -26,7 +21,7 @@ public abstract class AbstractPlayer
 	/**
 	 * Queue to receive events from server
 	 */
-	BlockingQueue<ScrabbleServer.ScrabbleEvent> incomingEvents = new ArrayBlockingQueue<>(16);
+	private BlockingQueue<Game.ScrabbleEvent> incomingEvents = new ArrayBlockingQueue<>(16);
 
 	protected AbstractPlayer(final String name)
 	{
@@ -42,7 +37,7 @@ public abstract class AbstractPlayer
 			{
 				while (true)
 				{
-					final ScrabbleServer.ScrabbleEvent event = this.incomingEvents.take();
+					final Game.ScrabbleEvent event = this.incomingEvents.take();
 					event.accept(AbstractPlayer.this);
 				}
 			}
@@ -58,7 +53,7 @@ public abstract class AbstractPlayer
 		return this.name;
 	}
 
-	public Queue<ScrabbleServer.ScrabbleEvent> getIncomingEventQueue()
+	public Queue<Game.ScrabbleEvent> getIncomingEventQueue()
 	{
 		return this.incomingEvents;
 	}

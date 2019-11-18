@@ -371,7 +371,7 @@ public class BruteForceMethod
 
 				if (moves.isEmpty())
 				{
-					this.server.sendMessage(this, "No possible moves anymore");
+					this.game.sendMessage(this, "No possible moves anymore");
 					// TODO - passt oder ersetzt manche Stones
 					throw new UnsupportedOperationException();
 				}
@@ -463,7 +463,6 @@ public class BruteForceMethod
 			panel.add(strategyComboBox);
 			panel.add(new JLabel("Throttle (seconds)"));
 			panel.add(throttleSpinner);
-			panel.add(new JCheckBox());
 
 			final JScrollPane sp = new JScrollPane(panel);
 			sp.setBorder(null);

@@ -467,7 +467,7 @@ public class Game implements IGame
  		UUID key;
 
 		/** Queue  to receive events from client */
-		BlockingQueue<ScrabbleServer.ScrabbleEvent> incomingEventQueue;
+		BlockingQueue<ScrabbleEvent> incomingEventQueue;
 
 		Rack rack;
 		int score;
