@@ -152,6 +152,29 @@ public class Grid
 		return ((Dictionary) this.stoneGenerator);
 	}
 
+	/**
+	 *
+	 * @param square Square
+	 * @return the one or two words built on the square. The set is empty if the square is empty.
+	 */
+	public Set<String> getWords(final Square square)
+	{
+		Set<String> set = null;
+		for (final Move.Direction direction : Move.Direction.values())
+		{
+			String word;
+			if ((word = getWord(square, direction)) != null)
+			{
+				if (set == null)
+				{
+					set = new HashSet<>();
+				}
+				set.add(word);
+			}
+		}
+		return set == null ? Collections.emptySet() : set;
+	}
+
 	public static class MoveMetaInformation
 	{
 		public static final Comparator<Grid.MoveMetaInformation> WORD_LENGTH_COMPARATOR = (meta1, meta2) -> meta1.getRequiredLetters().size() - meta2.getRequiredLetters().size();

@@ -19,6 +19,8 @@ import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -608,24 +610,48 @@ public class SwingClient extends AbstractPlayer
 		class StoneCell extends JComponent
 		{
 			private final Grid.Square square;
+			private final AbstractAction showDefinitionAction;
 
 			StoneCell(final int x, final int y)
 			{
 				this.square = JGrid.this.grid.getSquare(x, y);
 				final JPopupMenu popup = new JPopupMenu();
-				popup.add(new AbstractAction("Show definitions")
+				this.showDefinitionAction = new AbstractAction()
 				{
 					@Override
 					public void actionPerformed(final ActionEvent e)
 					{
-						for (final Move.Direction direction : Move.Direction.values())
+						JGrid.this.grid.getWords(StoneCell.this.square).forEach(
+								word -> showDefinition(word)
+						);
+					}
+				};
+				final JMenuItem menuItem = popup.add(this.showDefinitionAction);
+				popup.addPopupMenuListener(new PopupMenuListener()
+				{
+					@Override
+					public void popupMenuWillBecomeVisible(final PopupMenuEvent e)
+					{
+						final Set<String> words = JGrid.this.grid.getWords(StoneCell.this.square);
+						if (words.isEmpty())
 						{
-							final String word = JGrid.this.grid.getWord(StoneCell.this.square, direction);
-							if (word != null)
-							{
-								showDefinition(word);
-							}
+							popup.remove(menuItem);
 						}
+						else
+						{
+							popup.add(menuItem);
+							StoneCell.this.showDefinitionAction.putValue(Action.NAME, "Show definition" + (words.size() > 1 ? "s" : ""));
+						}
+					}
+
+					@Override
+					public void popupMenuWillBecomeInvisible(final PopupMenuEvent e)
+					{
+					}
+
+					@Override
+					public void popupMenuCanceled(final PopupMenuEvent e)
+					{
 					}
 				});
 				setComponentPopupMenu(popup);
