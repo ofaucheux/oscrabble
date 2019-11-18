@@ -5,10 +5,10 @@ import oscrabble.player.AbstractPlayer;
 
 class TestPlayer extends AbstractPlayer
 {
-	private final ScrabbleServer server;
+	private final Game server;
 	private Move nextMove;
 
-	public TestPlayer(final String name, final ScrabbleServer server)
+	public TestPlayer(final String name, final Game server)
 	{
 		super(name);
 		this.server = server;

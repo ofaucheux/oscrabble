@@ -16,9 +16,9 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class ScrabbleServer implements IScrabbleServer
+public class Game implements IGame
 {
-	private final static Logger LOGGER = Logger.getLogger(ScrabbleServer.class);
+	private final static Logger LOGGER = Logger.getLogger(Game.class);
 
 
 	public final static int RACK_SIZE = 7;
@@ -35,10 +35,10 @@ public class ScrabbleServer implements IScrabbleServer
 	/** State of the game */
 	private State state;
 
-	/** Parameter of the server */
-	private final ServerConfiguration configuration = new ServerConfiguration();
+	/** Accept a new attempt after a player has tried a forbidden move */
+	private boolean acceptNewAttemptAfterForbiddenMove;
 
-	ScrabbleServer(final Dictionary dictionary, final Random random)
+	Game(final Dictionary dictionary, final Random random)
 	{
 		this.dictionary = dictionary;
 		this.grid = new Grid(this.dictionary);
@@ -48,7 +48,7 @@ public class ScrabbleServer implements IScrabbleServer
 		this.state = State.BEFORE_START;
 	}
 
-	public ScrabbleServer(final Dictionary dictionary)
+	public Game(final Dictionary dictionary)
 	{
 		this (dictionary, new Random());
 	}
@@ -63,6 +63,7 @@ public class ScrabbleServer implements IScrabbleServer
 		info.rack = new Rack();
 		info.incomingEventQueue = new LinkedBlockingDeque<>();
 		this.players.put(newPlayer, info);
+		newPlayer.setGame(this);
 	}
 
 
@@ -195,7 +196,7 @@ public class ScrabbleServer implements IScrabbleServer
 		{
 			LOGGER.info("Refuse play: " + e);
 			player.onDispatchMessage(e.toString());
-			if (this.configuration.acceptNewAttemptAfterForbiddenMove || e.acceptRetry())
+			if (this.acceptNewAttemptAfterForbiddenMove || e.acceptRetry())
 			{
 				player.onDispatchMessage("Retry accepted");
 				done = false;
@@ -297,8 +298,13 @@ public class ScrabbleServer implements IScrabbleServer
 		dispatch(AbstractPlayer::onDictionaryChange);
 	}
 
-	public void startGame()
+	public void startGame() throws ScrabbleException
 	{
+		if (this.players.isEmpty())
+		{
+			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "Cannot start game: no player registred");
+		}
+
 		prepareGame();
 
 		try
@@ -307,6 +313,10 @@ public class ScrabbleServer implements IScrabbleServer
 			{
 				state = State.STARTED;
 				final AbstractPlayer player = this.toPlay.peekFirst();
+				if (player == null)
+				{
+					throw new AssertionError();
+				}
 				LOGGER.info("Let's play " + player);
 				this.waitingForPlay = new CountDownLatch(1);
 				dispatch( p -> p.onPlayRequired(player));
@@ -438,13 +448,6 @@ public class ScrabbleServer implements IScrabbleServer
 		dispatchMessage("Message of " + sender.getName() + ": " + message);
 	}
 
-	/**
-	 * @return the parameter of the server. TODO: made them editable only by master of game.
-	 */
-	public ServerConfiguration getConfiguration()
-	{
-		return this.configuration;
-	}
 
 	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
 	{

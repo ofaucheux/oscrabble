@@ -3,6 +3,7 @@ package oscrabble.player;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import oscrabble.GameStarter;
+import oscrabble.server.Game;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 import oscrabble.server.ScrabbleServer;
@@ -20,8 +21,7 @@ public abstract class AbstractPlayer
 	private String name;
 
 	protected UUID playerKey;
-	private PropertiesConfiguration configuration;
-	private final GameStarter.Game game;
+	protected Game game;
 
 	/**
 	 * Queue to receive events from server
@@ -30,12 +30,11 @@ public abstract class AbstractPlayer
 
 	protected AbstractPlayer(final String name)
 	{
-		this(name, null);
+		this.name = name;
 	}
 
-	protected AbstractPlayer(final String name, final GameStarter.Game game)
+	public void setGame(final Game game)
 	{
-		this.name = name;
 		this.game = game;
 
 		new Thread(() -> {
@@ -91,11 +90,6 @@ public abstract class AbstractPlayer
 	{
 	}
 
-	public void setConfiguration(final PropertiesConfiguration configuration)
-	{
-		this.configuration = configuration;
-	}
-
 	public abstract boolean isObserver();
 
 	@Override
@@ -120,11 +114,4 @@ public abstract class AbstractPlayer
 		throw new AssertionError("Default implementation has no editable parameter");
 	}
 
-	protected void saveConfiguration()
-	{
-		if (this.game != null)
-		{
-			this.game.saveConfig();
-		}
-	}
 }

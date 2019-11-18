@@ -9,7 +9,7 @@ import oscrabble.player.AbstractPlayer;
 
 import java.util.Random;
 
-public class ScrabbleServerTest
+public class GameTest
 {
 	@Test
 	void markAsIllegal()
@@ -33,12 +33,13 @@ public class ScrabbleServerTest
 	void play()
 	{
 		final Dictionary french = Dictionary.getDictionary(Dictionary.Language.FRENCH);
-		final ScrabbleServer server = new ScrabbleServer(french)
+		final Game server = new Game(french)
 		{
 			@Override
 			void fillBag()
 			{
-				final String letters = "orchidee" + "glooiwp" + "appeera";
+				String letters = "orchidee" + "glooiwp" + "appeera";
+				letters = letters.toUpperCase();
 				for (final char c : letters.toCharArray())
 				{
 					this.bag.add(french.generateStone(c));
@@ -51,7 +52,6 @@ public class ScrabbleServerTest
 		server.register(playerA);
 		server.register(playerB);
 
-
 		server.startGame();
 		playerA.setNextMove(new Move(server.getGrid().getSquare(7, 7), Move.Direction.HORIZONTAL, "ORCHIDEE"));
 	}
@@ -60,9 +60,9 @@ public class ScrabbleServerTest
 	 * Baut einen Test-Server. Der erste Player bekommt die Buchstaben {@code EIUBO S}.
 	 * @return
 	 */
-	public static ScrabbleServer getTestServer()
+	public static Game getTestServer()
 	{
-		return new ScrabbleServer(DictionaryTest.getTestDictionary(), new Random(0));
+		return new Game(DictionaryTest.getTestDictionary(), new Random(0));
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class ScrabbleServerTest
 	{
 		final Dictionary french = Dictionary.getDictionary(Dictionary.Language.FRENCH);
 		final String SCRABBLE_WORD = "RELIEUR";
-		final ScrabbleServer server = new ScrabbleServer(french)
+		final Game server = new Game(french)
 		{
 			@Override
 			void fillBag()
@@ -106,7 +106,7 @@ public class ScrabbleServerTest
 			@Override
 			public void onDispatchMessage(final String msg)
 			{
-				if (msg.equals(ScrabbleServer.SCRABBLE_MESSAGE))
+				if (msg.equals(Game.SCRABBLE_MESSAGE))
 				{
 					this.found = true;
 				}

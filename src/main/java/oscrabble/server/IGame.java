@@ -10,7 +10,7 @@ import oscrabble.player.BruteForceMethod;
 import java.util.List;
 import java.util.UUID;
 
-public interface IScrabbleServer
+public interface IGame
 {
 	/**
 	 * Registriert einen neuen Spieler.
