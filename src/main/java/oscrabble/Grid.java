@@ -3,7 +3,7 @@ package oscrabble;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.TreeBag;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.server.ScrabbleServer;
+import oscrabble.server.Game;
 
 import java.util.*;
 
@@ -273,7 +273,7 @@ public class Grid
 		mmi.score += crosswordScores;
 
 		// scrabble-bonus
-		if (mmi.requiredLetter.size() == ScrabbleServer.RACK_SIZE)
+		if (mmi.requiredLetter.size() == Game.RACK_SIZE)
 		{
 			mmi.isScrabble = true;
 			mmi.score += 50;

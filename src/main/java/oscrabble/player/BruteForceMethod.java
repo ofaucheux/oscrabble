@@ -5,18 +5,17 @@ import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import oscrabble.*;
-import oscrabble.configuration.Configurable;
-import oscrabble.configuration.ConfigurationPanel;
-import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
+import oscrabble.server.Game;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
-import oscrabble.server.IScrabbleServer;
-import oscrabble.server.ScrabbleServer;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 public class BruteForceMethod
 {
@@ -315,35 +314,46 @@ public class BruteForceMethod
 		return crossChecks.get(crossSquare);
 	}
 
-	public class Player extends AbstractPlayer implements Configurable
+	public class Player extends AbstractPlayer
 	{
-		private final IScrabbleServer server;
+		private final List<Strategy> strategies = new ArrayList<>();
 
-		private final Map<Strategy, ComparatorSelector> strategies = new HashMap<>();
+		private Strategy strategy;
 
-		@Parameter(label = "Throttle")
 		private int throttle;
 
-		@Parameter(label = "Strategie")
-		private Strategy strategie = Strategy.LONGEST_WORD;
-
-		public Player(final GameStarter.Game game, final String name)
+		public Player(final String name)
 		{
-			this(game, game.getServer(), name);
+			super(name);
+
+			this.strategies.add(new Strategy("Best score")
+						   {
+							   @Override
+							   protected ComparatorSelector createSelector(final Grid grid)
+							   {
+								   return  new ComparatorSelector(grid, Grid.MoveMetaInformation.SCORE_COMPARATOR);
+							   }
+						   }
+			);
+			this.strategies.add(
+					new Strategy("Longest word") {
+						@Override
+						protected ComparatorSelector createSelector(final Grid grid)
+						{
+							return new ComparatorSelector(grid, Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR);
+						}
+					});
+
 		}
 
-		public Player(final ScrabbleServer server, final String name)
+		@Override
+		public void setGame(final Game game)
 		{
-			this(null, server, name);
-		}
-
-		private Player(final GameStarter.Game game, final ScrabbleServer server, final String name)
-		{
-			super(name, game);
-			this.server = server;
-			this.strategies.put(Strategy.BEST_SCORE, new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.SCORE_COMPARATOR));
-			this.strategies.put(Strategy.LONGEST_WORD, new ComparatorSelector(server.getGrid(), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
-			changeListeners.addPropertyChangeListener((ev) -> saveConfiguration());
+			super.setGame(game);
+			for (final Strategy s : this.strategies)
+			{
+				s.selector = s.createSelector(this.game.getGrid());
+			}
 		}
 
 		@Override
@@ -357,7 +367,7 @@ public class BruteForceMethod
 			try
 			{
 				Set<Move> moves = new HashSet<>(getLegalMoves(
-						this.server.getGrid(), this.server.getRack(this, this.playerKey)));
+						this.game.getGrid(), this.game.getRack(this, this.playerKey)));
 
 				if (moves.isEmpty())
 				{
@@ -371,9 +381,9 @@ public class BruteForceMethod
 						LOGGER.trace("Wait " + this.throttle + " seconds...");
 						Thread.sleep(this.throttle * 1000);
 					}
-					final Move toPlay = this.strategies.get(this.strategie).select(moves);
+					final Move toPlay = this.strategy.selector.select(moves);
 					LOGGER.info("Play " + toPlay);
-					this.server.play(this, toPlay);
+					this.game.play(this, toPlay);
 				}
 			}
 			catch (ScrabbleException e)
@@ -391,7 +401,7 @@ public class BruteForceMethod
 		@Override
 		public void onDictionaryChange()
 		{
-			loadDictionary(this.server.getDictionary());
+			loadDictionary(this.game.getDictionary());
 		}
 
 		@Override
@@ -409,7 +419,15 @@ public class BruteForceMethod
 		@Override
 		public void beforeGameStart()
 		{
+			if (this.strategy == null)
+			{
+				this.strategy = this.strategies.get(0);
+			}
 
+			if (this.throttle == 0)
+			{
+				this.throttle = 5;
+			}
 		}
 
 		@Override
@@ -433,17 +451,42 @@ public class BruteForceMethod
 		@Override
 		public void editParameters()
 		{
-			JOptionPane.showOptionDialog(
+			final JSpinner throttleSpinner = new JSpinner(new SpinnerNumberModel(5, 0, 3600, 1));
+			final JComboBox<Strategy> strategyComboBox = new JComboBox<>(this.strategies.toArray(new Strategy[0]));
+			strategyComboBox.setSelectedItem(this.strategy);
+
+			final JPanel panel = new JPanel();
+			panel.setBorder(new TitledBorder("Parameters"));
+			panel.setLayout(new GridLayout(0, 2));
+			panel.add(new JLabel("Strategy"));
+			panel.add(strategyComboBox);
+			panel.add(new JLabel("Throttle (seconds)"));
+			panel.add(throttleSpinner);
+			panel.add(new JCheckBox());
+
+			final JScrollPane sp = new JScrollPane(panel);
+			sp.setBorder(null);
+			final int returnCode = JOptionPane.showOptionDialog(
 					null,
-					new JScrollPane(new ConfigurationPanel(Player.this)),
+					sp,
 					"Options for " + getName(),
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.PLAIN_MESSAGE,
 					null,
 					null,
 					null
-					);
+			);
+
+			// nach dem Rückkehr
+			if (returnCode == JOptionPane.OK_OPTION)
+			{
+				this.strategy = strategyComboBox.getItemAt(strategyComboBox.getSelectedIndex());
+				this.throttle = (Integer) throttleSpinner.getValue();
+			}
+
 		}
+
+
 	}
 
 	static class CalculateCtx
@@ -462,15 +505,19 @@ public class BruteForceMethod
 		}
 	}
 
+
 	/** Playing strategy for a player */
-	private enum Strategy { LONGEST_WORD ("Longest word"), BEST_SCORE ("Best score");
+	abstract static class Strategy {
 
 		private final String label;
+		private ComparatorSelector selector;
 
 		Strategy(final String label)
 		{
 			this.label = label;
 		}
+
+		protected abstract ComparatorSelector createSelector(final Grid grid);
 
 		@Override
 		public String toString()
@@ -478,4 +525,6 @@ public class BruteForceMethod
 			return this.label;
 		}
 	}
+
+
 }

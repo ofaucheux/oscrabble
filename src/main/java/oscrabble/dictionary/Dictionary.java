@@ -261,6 +261,11 @@ public class Dictionary implements Stone.Generator
 		}
 		else
 		{
+			if (!Character.isUpperCase(c))
+			{
+				throw new AssertionError("Character must be uppercase: " + c);
+			}
+
 			final Letter letter = this.letters.get(c);
 			stone = new Stone(letter.c, letter.points);
 		}

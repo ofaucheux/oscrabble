@@ -9,7 +9,7 @@ import oscrabble.player.AbstractPlayer;
 import java.util.List;
 import java.util.UUID;
 
-public interface IScrabbleServer
+public interface IGame
 {
 	void register(AbstractPlayer player);
 

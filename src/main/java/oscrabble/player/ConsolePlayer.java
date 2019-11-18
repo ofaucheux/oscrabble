@@ -9,7 +9,7 @@ public class ConsolePlayer extends AbstractPlayer
 {
 	ConsolePlayer()
 	{
-		super("Console", null);
+		super("Console");
 	}
 
 	@Override

@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.Stone;
 import oscrabble.dictionary.DictionaryTest;
-import oscrabble.server.ScrabbleServer;
-import oscrabble.server.ScrabbleServerTest;
+import oscrabble.server.Game;
+import oscrabble.server.GameTest;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,8 +53,8 @@ public class SwingClientTest
 	@Test
 	public void display()
 	{
-		final ScrabbleServer server = ScrabbleServerTest.getTestServer();
-		final SwingClient client = new SwingClient(server, "Test Client");
+		final Game server = GameTest.getTestServer();
+		final SwingClient client = new SwingClient("Test Client");
 		server.register(client);
 		server.prepareGame();
 		client.setCommandPrompt("H8 BISOU");

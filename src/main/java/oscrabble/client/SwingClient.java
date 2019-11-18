@@ -4,14 +4,13 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import oscrabble.*;
-import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryException;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
-import oscrabble.server.ScrabbleServer;
+import oscrabble.server.Game;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -34,7 +33,9 @@ import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,14 +47,13 @@ public class SwingClient extends AbstractPlayer
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
-	private final JGrid jGrid;
-	private final JTextField commandPrompt;
-	private final ScrabbleServer server;
-	private final JRack jRack;
-	private final JScoreboard jScoreboard;
+	private JGrid jGrid;
+	private JTextField commandPrompt;
+	private JRack jRack;
+	private JScoreboard jScoreboard;
 
 	private boolean isObserver;
-	private final TelnetFrame telnetFrame;
+	private TelnetFrame telnetFrame;
 
 	/** Panel for the display of possible moves and corresponding buttons */
 	private JPanel possibleMovePanel;
@@ -67,22 +67,17 @@ public class SwingClient extends AbstractPlayer
 	/** Future to let the last played stone flash */
 	private ScheduledFuture<Object> flashFuture;
 
-	public SwingClient(final GameStarter.Game game, final String name)
+	public SwingClient(final String name)
 	{
-		this(game, game.getServer(), name);
+		super(name);
 	}
 
-	public SwingClient(final ScrabbleServer server, final String name)
+	/**
+	 * create UI and display it
+	 */
+	private void display()
 	{
-		this(null, server, name);
-	}
-
-	private SwingClient(final GameStarter.Game game, final ScrabbleServer server, final String name)
-	{
-		super(name, game);
-		this.server = server;
-
-		this.jGrid = new JGrid(this.server.getGrid(), this.server.getDictionary());
+		this.jGrid = new JGrid(getGrid(), this.game.getDictionary());
 		this.jGrid.setClient(this);
 		this.jRack = new JRack();
 		this.jScoreboard = new JScoreboard();
@@ -95,14 +90,6 @@ public class SwingClient extends AbstractPlayer
 		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
 		this.telnetFrame = new TelnetFrame("Help");
 
-		display();
-	}
-
-	/**
-	 *
-	 */
-	private void display()
-	{
 		final JFrame gridFrame = new JFrame();
 		gridFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		gridFrame.setLayout(new BorderLayout());
@@ -118,7 +105,7 @@ public class SwingClient extends AbstractPlayer
 		this.possibleMovePanel.setBorder(new TitledBorder("Possible moves"));
 		this.possibleMovePanel.setSize(new Dimension(200, 300));
 		this.possibleMovePanel.setLayout(new BorderLayout());
-		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.server.getDictionary());
+		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.game.getDictionary());
 		this.showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(bruteForceMethod));
 		this.showPossibilitiesButton.setFocusable(false);
 		resetPossibleMovesPanel();
@@ -126,7 +113,7 @@ public class SwingClient extends AbstractPlayer
 		panel1.add(this.possibleMovePanel);
 		panel1.add(Box.createVerticalGlue());
 
-		final JPanel configPanel = new ConfigurationPanel(this.server.getConfiguration());
+		final JPanel configPanel = new JPanel();
 		panel1.add(configPanel);
 		configPanel.setBorder(new TitledBorder("Server configuration"));
 		eastPanel.add(panel1, BorderLayout.CENTER);
@@ -269,6 +256,7 @@ public class SwingClient extends AbstractPlayer
 	@Override
 	public void beforeGameStart()
 	{
+		this.display();
 		this.jScoreboard.prepareBoard();
 		this.jRack.update();
 	}
@@ -292,7 +280,6 @@ public class SwingClient extends AbstractPlayer
 	{
 
 		private final HashMap<IPlayerInfo, ScorePanelLine> scoreLabels = new HashMap<>();
-		private final HashMap<IPlayerInfo, JLabel> currentPlayerFlags = new HashMap<>();
 
 		JScoreboard()
 		{
@@ -312,7 +299,7 @@ public class SwingClient extends AbstractPlayer
 			final double BIG_WEIGHT = 10;
 
 			final Dimension buttonDim = new Dimension(20, 20);
-			final List<IPlayerInfo> players = SwingClient.this.server.getPlayers();
+			final List<IPlayerInfo> players = SwingClient.this.game.getPlayers();
 			final GridBagConstraints c = new GridBagConstraints();
 			for (final IPlayerInfo player : players)
 			{
@@ -354,14 +341,14 @@ public class SwingClient extends AbstractPlayer
 							@Override
 							protected Void doInBackground()
 							{
-								SwingClient.this.server.editParameters(SwingClient.this.playerKey, player);
+								getGame().editParameters(SwingClient.this.playerKey, player);
 								return null;
 							}
 						};
 						worker.execute();
 					}
 				});
-				line.parameterButton.setVisible(SwingClient.this.server.hasEditableParameters(SwingClient.this.playerKey, player));
+				line.parameterButton.setVisible(getGame().hasEditableParameters(SwingClient.this.playerKey, player));
 				add(line.parameterButton, c);
 
 			}
@@ -379,7 +366,7 @@ public class SwingClient extends AbstractPlayer
 		{
 			private JLabel score;
 			private JLabel currentPlaying;
-			public JButton parameterButton;
+			private JButton parameterButton;
 		}
 	}
 
@@ -403,7 +390,7 @@ public class SwingClient extends AbstractPlayer
 			try
 			{
 				final ArrayList<Stone> stones = new ArrayList<>(
-						SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey));
+						getGame().getRack(SwingClient.this, SwingClient.this.playerKey));
 
 				for (int i = 0; i < RACK_SIZE; i++)
 				{
@@ -788,7 +775,7 @@ public class SwingClient extends AbstractPlayer
 		try
 		{
 			final String currentPrompt = this.commandPrompt.getText();
-			move = Move.parseMove(this.server.getGrid(), currentPrompt, true);
+			move = Move.parseMove(getGrid(), currentPrompt, true);
 			if (move.startSquare == cell.square)
 			{
 				move = move.getInvertedDirectionCopy();
@@ -835,7 +822,7 @@ public class SwingClient extends AbstractPlayer
 
 			this.commands.put("isvalid", new Command( "check if a word is valid", ( args -> {
 				final String word = args[0];
-				final Collection<String> mutations = SwingClient.this.server.getDictionary().getMutations(
+				final Collection<String> mutations = SwingClient.this.game.getDictionary().getMutations(
 						word.toUpperCase());
 				final boolean isValid = mutations != null && !mutations.isEmpty();
 				SwingClient.this.telnetFrame.appendConsoleText(
@@ -879,7 +866,7 @@ public class SwingClient extends AbstractPlayer
 					{
 						chars.add(c);
 					}
-					SwingClient.this.server.play(SwingClient.this, new Exchange(chars));
+					getGame().play(SwingClient.this, new Exchange(chars));
 					SwingClient.this.commandPrompt.setText("");
 				}
 				else
@@ -923,7 +910,7 @@ public class SwingClient extends AbstractPlayer
 				final Rack rack;
 				try
 				{
-					rack = SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey);
+					rack = getGame().getRack(SwingClient.this, SwingClient.this.playerKey);
 				}
 				catch (ScrabbleException e)
 				{
@@ -931,7 +918,7 @@ public class SwingClient extends AbstractPlayer
 					throw new JokerPlacementException("Error placing Joker", e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString(), true);
+				move = Move.parseMove(getGame().getGrid(), inputWord.toString(), true);
 
 				//
 				// Check if jokers are needed and try to position them
@@ -985,7 +972,7 @@ public class SwingClient extends AbstractPlayer
 						}
 					}
 				}
-				move = Move.parseMove(SwingClient.this.server.getGrid(), inputWord.toString(), true);
+				move = Move.parseMove(getGrid(), inputWord.toString(), true);
 				LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 			}
 			else
@@ -1230,13 +1217,13 @@ public class SwingClient extends AbstractPlayer
 					return;
 				}
 
-				final Set<Move> moves = this.bruteForceMethod.getLegalMoves(SwingClient.this.server.getGrid(),
-						SwingClient.this.server.getRack(SwingClient.this, SwingClient.this.playerKey));
+				final Set<Move> moves = this.bruteForceMethod.getLegalMoves(getGrid(),
+						getGame().getRack(SwingClient.this, SwingClient.this.playerKey));
 				this.legalMoves = new ArrayList<>();
 
 				for (final Move move : moves)
 				{
-					this.legalMoves.add(SwingClient.this.server.getGrid().getMetaInformation(move));
+					this.legalMoves.add(getGrid().getMetaInformation(move));
 				}
 
 				SwingClient.this.possibleMovePanel.add(
@@ -1284,15 +1271,25 @@ public class SwingClient extends AbstractPlayer
 		}
 	}
 
+	private Grid getGrid()
+	{
+		return SwingClient.this.game.getGrid();
+	}
+
 	/**
 	 * Play the move: inform the server about it and clear the client input field.
 	 * @param move move to play
 	 */
 	private void play(final Move move)
 	{
-		this.server.play(SwingClient.this, move);
+		getGame().play(SwingClient.this, move);
 		this.commandPrompt.setText("");
 		resetPossibleMovesPanel();
+	}
+
+	private Game getGame()
+	{
+		return this.game;
 	}
 
 	/**

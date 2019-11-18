@@ -6,8 +6,8 @@ import org.quinto.dawg.DAWGNode;
 import oscrabble.*;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.client.TextClient;
-import oscrabble.server.ScrabbleServer;
-import oscrabble.server.ScrabbleServerTest;
+import oscrabble.server.Game;
+import oscrabble.server.GameTest;
 
 import java.text.ParseException;
 import java.util.*;
@@ -18,7 +18,7 @@ class BruteForceMethodTest
 {
 
 	private static final Random RANDOM = new Random();
-	public static final ScrabbleServer TEST_SERVER = ScrabbleServerTest.getTestServer();
+	public static final Game TEST_SERVER = GameTest.getTestServer();
 	private BruteForceMethod instance;
 
 	@BeforeEach
@@ -122,7 +122,7 @@ class BruteForceMethodTest
 	@Test
 	void selectMethod()
 	{
-		final BruteForceMethod.Player player = instance.new Player(TEST_SERVER, "Test client");
+		final BruteForceMethod.Player player = instance.new Player("Test client");
 		player.editParameters();
 		player.editParameters();
 	}
