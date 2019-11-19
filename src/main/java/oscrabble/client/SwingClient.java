@@ -661,7 +661,7 @@ public class SwingClient extends AbstractPlayer
 					@Override
 					public void mouseClicked(final MouseEvent e)
 					{
-						if (JGrid.this.client != null)
+						if (JGrid.this.client != null && JGrid.this.client.isPlaying())
 						{
 							JGrid.this.client.setStartCell(StoneCell.this);
 						}

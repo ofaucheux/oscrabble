@@ -109,4 +109,16 @@ public abstract class AbstractPlayer
 		throw new AssertionError("Default implementation has no editable parameter");
 	}
 
+	/**
+	 * @return ob dieser Spieler gerade am Ball ist.
+	 */
+	public final boolean isPlaying()
+	{
+		if (this.game == null)
+		{
+			throw new IllegalStateException("Game not set");
+		}
+
+		return this.game.getPlayerToPlay() == this;
+	}
 }

@@ -84,7 +84,10 @@ public class Game implements IGame
 	@Override
 	public synchronized int play(final AbstractPlayer player, final IAction action)
 	{
-		assertIsCurrentlyPlaying(player);
+		if (player != getPlayerToPlay())
+		{
+			throw new IllegalStateException("The player " + player.toString() + " is not playing");
+		}
 
 		final PlayerInfo playerInfo = this.players.get(player);
 		boolean done = false;
@@ -226,6 +229,12 @@ public class Game implements IGame
 		}
 	}
 
+	@Override
+	public AbstractPlayer getPlayerToPlay()
+	{
+		return this.toPlay.getFirst();
+	}
+
 	/**
 	 * Ends the game.
 	 * @param firstEndingPlayer player which has first emptied its rack.
@@ -262,14 +271,6 @@ public class Game implements IGame
 	private void dispatchMessage(final String message)
 	{
 		this.players.keySet().forEach(p -> p.onDispatchMessage(message));
-	}
-
-	private void assertIsCurrentlyPlaying(final AbstractPlayer player)
-	{
-		if (player != this.toPlay.getFirst())
-		{
-			throw new IllegalStateException("The player " + player.toString() + " is not playing");
-		}
 	}
 
 	@Override

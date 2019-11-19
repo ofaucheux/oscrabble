@@ -23,6 +23,12 @@ public interface IGame
 	 */
 	int play(AbstractPlayer player, IAction action);
 
+	/**
+	 *
+	 * @return den Spiel, der am Ball ist.
+	 */
+	AbstractPlayer getPlayerToPlay();
+
 	List<IPlayerInfo> getPlayers();
 
 	void markAsIllegal(final String word);
