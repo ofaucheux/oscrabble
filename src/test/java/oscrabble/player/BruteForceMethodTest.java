@@ -18,7 +18,6 @@ class BruteForceMethodTest
 {
 
 	private static final Random RANDOM = new Random();
-	public static final Game TEST_SERVER = GameTest.getTestServer();
 	private BruteForceMethod instance;
 
 	@BeforeEach

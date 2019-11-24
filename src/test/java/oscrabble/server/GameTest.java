@@ -1,141 +1,78 @@
 package oscrabble.server;
 
-import org.junit.jupiter.api.Assertions;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import oscrabble.Grid;
 import oscrabble.Move;
+import oscrabble.ScrabbleException;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryTest;
 import oscrabble.player.AbstractPlayer;
 
+import java.beans.XMLEncoder;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 public class GameTest
 {
-	@Test
-	void markAsIllegal()
-	{
-		// TODO
-	}
 
 	@Test
-	void getDictionary()
+	void play() throws ScrabbleException, ParseException
 	{
-		// TODO
-	}
+		final Game server = new Game(Dictionary.getDictionary(Dictionary.Language.FRENCH), -3300078916872261882L);
 
-	@Test
-	void getScore()
-	{
-		// TODO
-	}
+		final TestPlayer gustav = new TestPlayer("Gustav", server);
+		final TestPlayer john = new TestPlayer("John", server);
+		final TestPlayer jurek = new TestPlayer("Jurek", server);
+		server.register(gustav);
+		server.register(john);
+		server.register(jurek);
 
-	@Test
-	void play()
-	{
-		final Dictionary french = Dictionary.getDictionary(Dictionary.Language.FRENCH);
-		final Game server = new Game(french)
+		final List<TestPlayer> players = Arrays.asList(gustav, john, jurek);
+		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
+				"H3 APPETES",
+				"G9 VIGIE",
+				"7C WOmBATS",
+				"3G FATIGUE",
+				"12A DETELAI",
+				"8A ABUS",
+				"13G ESTIMAIT",
+				"5G EPErONNA",
+				"O3 ECIMER",
+				"D3 KOUROS",
+				"L8 ECHOUA",
+				"3A FOLKS",
+				"A1 DEFUNT",
+				"1A DRAYOIR",
+				"L2 QUAND",
+				"1A DRAYOIRE",
+				"11I ENJOUE",
+				"B10 RIELS",
+				"N10 VENTA",
+				"8K HEM"));
+		final Grid grid = server.getGrid();
+		for (int i = 0; i < moves.size(); i++)
 		{
-			@Override
-			void fillBag()
+			players.get(i % players.size()).addMove(
+					Move.parseMove(grid, moves.get(i), true)
+			);
+		}
+
+		server.listeners.add((moveNumber, player, move) -> {
+			switch (moveNumber)
 			{
-				String letters = "orchidee" + "glooiwp" + "appeera";
-				letters = letters.toUpperCase();
-				for (final char c : letters.toCharArray())
-				{
-					this.bag.add(french.generateStone(c));
-				}
+				case 1:
+					Assert.assertEquals(78, server.getPlayerInfo(gustav).getScore());
+					break;
 			}
-		};
-
-		final TestPlayer playerA = new TestPlayer("Player A", server);
-		final TestPlayer playerB = new TestPlayer("Player B", server);
-		server.register(playerA);
-		server.register(playerB);
-
-		server.startGame();
-		playerA.setNextMove(new Move(server.getGrid().getSquare(7, 7), Move.Direction.HORIZONTAL, "ORCHIDEE"));
-	}
-
-	/**
-	 * Baut einen Test-Server. Der erste Player bekommt die Buchstaben {@code EIUBO S}.
-	 * @return
-	 */
-	public static Game getTestServer()
-	{
-		return new Game(DictionaryTest.getTestDictionary(), new Random(0));
-	}
-
-	/**
-	 * Check the scrabble-Message is send when a player a scrabble plays.
-	 */
-	@Test
-	void scrabble()
-	{
-		final Dictionary french = Dictionary.getDictionary(Dictionary.Language.FRENCH);
-		final String SCRABBLE_WORD = "RELIEUR";
-		final Game server = new Game(french)
-		{
-			@Override
-			void fillBag()
-			{
-				for (final char c : SCRABBLE_WORD.toCharArray())
-				{
-					this.bag.add(french.generateStone(c));
-				}
-			}
-		};
-
-		server.register(new AbstractPlayer("")
-		{
-
-			private boolean found;
-
-			@Override
-			public void onPlayRequired(final AbstractPlayer currentPlayer)
-			{
-				if (currentPlayer == this)
-				{
-					server.play(this, new Move(server.getGrid().getCenter(), Move.Direction.HORIZONTAL, SCRABBLE_WORD));
-				}
-			}
-
-			@Override
-			public void onDictionaryChange()
-			{}
-
-			@Override
-			public void onDispatchMessage(final String msg)
-			{
-				if (msg.equals(Game.SCRABBLE_MESSAGE))
-				{
-					this.found = true;
-				}
-
-				System.out.println(msg);
-			}
-
-			@Override
-			public void afterPlay(final IPlayerInfo info, final IAction action, final int score)
-			{}
-
-			@Override
-			public void beforeGameStart()
-			{}
-
-			@Override
-			public boolean isObserver()
-			{
-				return false;
-			}
-
-			@Override
-			public void afterGameEnd()
-			{
-				Assertions.assertTrue(this.found);
-			}
-
 		});
 
 		server.startGame();
 	}
+
 }

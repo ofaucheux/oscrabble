@@ -59,4 +59,14 @@ public interface IGame
 	 * @param message message
 	 */
 	void sendMessage(AbstractPlayer sender, String message);
+
+	/**
+	 * Inform the server that a player leaves the game. This can lead to the end of game, dependently
+	 * of the implementation.
+	 *
+	 * @param player leaving player
+	 * @param key key of player, for identification
+	 * @param message human readable message to transmit, if any.
+	 */
+	void quit(AbstractPlayer player, UUID key, String message) throws ScrabbleException;
 }

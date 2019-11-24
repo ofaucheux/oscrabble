@@ -22,35 +22,45 @@ public class Game implements IGame
 
 
 	public final static int RACK_SIZE = 7;
-	static final String SCRABBLE_MESSAGE = "Scrabble!";
+	private static final String SCRABBLE_MESSAGE = "Scrabble!";
 
 	private final Map<AbstractPlayer, PlayerInfo> players = new LinkedHashMap<>();
 	private final LinkedList<AbstractPlayer> toPlay = new LinkedList<>();
 	private final Grid grid;
 	private final Random random;
 	private CountDownLatch waitingForPlay;
-	final LinkedList<Stone> bag = new LinkedList<>();
+	private final LinkedList<Stone> bag = new LinkedList<>();
 	private final Dictionary dictionary;
+
+	final List<GameListener> listeners = new ArrayList<>();
 
 	/** State of the game */
 	private State state;
 
-	/** Accept a new attempt after a player has tried a forbidden move */
+	/**
+	 * Accept a new attempt after a player has tried a forbidden move
+	 */
 	private boolean acceptNewAttemptAfterForbiddenMove;
 
-	Game(final Dictionary dictionary, final Random random)
+	/**
+	 * Number of current move (Starting with 1).
+	 */
+	private int moveNr;
+
+	Game(final Dictionary dictionary, final long randomSeed)
 	{
 		this.dictionary = dictionary;
 		this.grid = new Grid(this.dictionary);
-		this.random = random;
+		this.random = new Random(randomSeed);
 		this.waitingForPlay = new CountDownLatch(1);
 
 		this.state = State.BEFORE_START;
+		LOGGER.info("Created game with random seed " + randomSeed);
 	}
 
 	public Game(final Dictionary dictionary)
 	{
-		this (dictionary, new Random());
+		this (dictionary, new Random().nextLong());
 	}
 
 	@Override
@@ -65,21 +75,6 @@ public class Game implements IGame
 		this.players.put(newPlayer, info);
 		newPlayer.setGame(this);
 	}
-
-
-	/**
-	 * Report an error coming from a client
-	 *
-	 * @param info
-	 * @param e
-	 */
-	private void reportError(final PlayerInfo info, final InterruptedException e)
-	{
-		// TODO
-		System.out.println(e);
-	}
-
-
 
 	@Override
 	public synchronized int play(final AbstractPlayer player, final IAction action)
@@ -136,7 +131,7 @@ public class Game implements IGame
 				if (this.grid.isEmpty())
 				{
 					final Grid.Square center = this.grid.getCenter();
-					if (!move.getSquares().keySet().contains(center))
+					if (!move.getSquares().containsKey(center))
 					{
 						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
 								"The first word must be on the center square");
@@ -190,14 +185,14 @@ public class Game implements IGame
 			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
 			messages.forEach(message -> dispatchMessage(message));
 
-			LOGGER.debug("Grid after play\n" + this.grid.asASCIIArt());
+			LOGGER.debug("Grid after play move nr #" + this.moveNr + ":\n" + this.grid.asASCIIArt());
 
 			done = true;
 			return score;
 		}
 		catch (final ScrabbleException e)
 		{
-			LOGGER.info("Refuse play: " + e);
+			LOGGER.info("Refuse play: " + action + ". Cause: " + e);
 			player.onDispatchMessage(e.toString());
 			if (this.acceptNewAttemptAfterForbiddenMove || e.acceptRetry())
 			{
@@ -213,6 +208,7 @@ public class Game implements IGame
 		}
 		finally
 		{
+			this.listeners.forEach(l -> l.afterPlayed(this.moveNr - 1, player, action));
 			if (playerInfo.rack.isEmpty())
 			{
 				endGame(playerInfo);
@@ -223,6 +219,7 @@ public class Game implements IGame
 				{
 					this.toPlay.pop();
 					this.toPlay.add(player);
+					this.moveNr++;
 				}
 				this.waitingForPlay.countDown();
 			}
@@ -244,7 +241,7 @@ public class Game implements IGame
 		this.state = State.ENDED;
 		this.toPlay.clear();
 		final StringBuffer message = new StringBuffer();
-		message.append(firstEndingPlayer.getName()).append(" hat clear its rack.\n");
+		message.append(firstEndingPlayer.getName()).append(" has cleared its rack.\n");
 		this.players.forEach(
 				(player, info) ->
 				{
@@ -279,6 +276,21 @@ public class Game implements IGame
 		return List.copyOf(this.players.values());
 	}
 
+	/**
+	 * Return information about the one player
+	 * @param player the player
+	 * @return the information.
+	 */
+	IPlayerInfo getPlayerInfo(final AbstractPlayer player)
+	{
+		final PlayerInfo info = this.players.get(player);
+		if (info == null)
+		{
+			throw new Error(new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "No such player"));
+		}
+		return info;
+	}
+
 
 	private void refillRack(final AbstractPlayer player)
 	{
@@ -308,11 +320,12 @@ public class Game implements IGame
 
 		prepareGame();
 
+		this.state = State.STARTED;
+		this.moveNr = 1;
 		try
 		{
 			do
 			{
-				state = State.STARTED;
 				final AbstractPlayer player = this.toPlay.peekFirst();
 				if (player == null)
 				{
@@ -321,15 +334,13 @@ public class Game implements IGame
 				LOGGER.info("Let's play " + player);
 				this.waitingForPlay = new CountDownLatch(1);
 				dispatch( p -> p.onPlayRequired(player));
-				if (this.waitingForPlay.await(1, TimeUnit.MINUTES))
+				while (!this.waitingForPlay.await(10, TimeUnit.MILLISECONDS))
 				{
-					// OK
+					if (this.state == State.ENDED)
+					{
+						break;
+					}
 				}
-				else
-				{
-					// TODO: timeout
-				}
-				Thread.sleep(50);
 			} while (this.state != State.ENDED);
 		}
 		catch (InterruptedException e)
@@ -340,15 +351,13 @@ public class Game implements IGame
 		dispatch(AbstractPlayer::afterGameEnd);
 	}
 
-	public void prepareGame()
+	private void prepareGame()
 	{
-		assert !this.toPlay.isEmpty();
-
 		fillBag();
 
 		// Sortiert (oder mischt) die Spieler, um eine Spielreihenfolge zu definieren.
 		final ArrayList<AbstractPlayer> list = new ArrayList<>(this.players.keySet());
-		Collections.shuffle(list);
+		Collections.shuffle(list, this.random);
 		final HashMap<AbstractPlayer, PlayerInfo> mapCopy = new HashMap<>(this.players);
 		this.players.clear();
 		for (final AbstractPlayer player : list)
@@ -370,7 +379,7 @@ public class Game implements IGame
 	/**
 	 * Füllt das Säckchen mit den Buchstaben.
 	 */
-	void fillBag()
+	private void fillBag()
 	{
 		// Fill bag
 		final Dictionary dictionary = this.getDictionary();
@@ -449,6 +458,15 @@ public class Game implements IGame
 		dispatchMessage("Message of " + sender.getName() + ": " + message);
 	}
 
+	@Override
+	public void quit(final AbstractPlayer player, final UUID key, final String message) throws ScrabbleException
+	{
+		checkKey(player, key);
+		final String msg = "Player " + player + " quits with message \"" + message + "\"";
+		LOGGER.info(msg);
+		dispatchMessage(msg);
+		this.state = State.ENDED;
+	}
 
 	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
 	{
@@ -498,5 +516,13 @@ public class Game implements IGame
 	public interface ScrabbleEvent extends Consumer<AbstractPlayer>
 	{
 		void accept(final AbstractPlayer player);
+	}
+
+	/**
+	 * A listener
+	 */
+	interface GameListener
+	{
+		void afterPlayed(int moveNumber, AbstractPlayer player, IAction move);
 	}
 }

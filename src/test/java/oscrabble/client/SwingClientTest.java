@@ -50,16 +50,6 @@ public class SwingClientTest
 		th.start();
 	}
 
-	@Test
-	public void display()
-	{
-		final Game server = GameTest.getTestServer();
-		final SwingClient client = new SwingClient("Test Client");
-		server.register(client);
-		server.prepareGame();
-		client.setCommandPrompt("H8 BISOU");
-	}
-
 	@AfterAll
 	static void sleep() throws InterruptedException
 	{

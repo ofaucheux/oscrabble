@@ -1,55 +1,55 @@
 package oscrabble.server;
 
 import oscrabble.Move;
+import oscrabble.ScrabbleException;
 import oscrabble.player.AbstractPlayer;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
+/**
+ * Ein Test-Spieler, dessen Spielzügen durch {@code #addMove} vordefiniert sind.
+ */
 class TestPlayer extends AbstractPlayer
 {
 	private final Game server;
-	private Move nextMove;
+	private BlockingQueue<Move> nextMoves;
 
-	public TestPlayer(final String name, final Game server)
+	TestPlayer(final String name, final Game server)
 	{
 		super(name);
 		this.server = server;
+		this.nextMoves = new ArrayBlockingQueue<>(1024);
 	}
 
-	public void setNextMove(final Move move)
+	void addMove(final Move move)
 	{
-		if (this.nextMove != null)
-		{
-			throw new IllegalStateException("Next move already set");
-		}
-
-		this.nextMove = move;
+		this.nextMoves.add(move);
 	}
 
 	@Override
 	public void onPlayRequired(final AbstractPlayer player)
 	{
-		if (player != this)
-		{
-			return;
-		}
-
-		while (this.nextMove == null)
+		if (player == this)
 		{
 			try
 			{
-				Thread.sleep(100);
+				final Move move = this.nextMoves.poll();
+				if (move == null)
+				{
+					final String error = "no more predefined move anymore";
+					LOGGER.error(error);
+					this.server.quit(this, this.playerKey, error);
+				}
+				else
+				{
+					this.server.play(this, move);
+				}
 			}
-			catch (InterruptedException e)
+			catch (ScrabbleException e)
 			{
 				throw new Error(e);
 			}
-		}
-		try
-		{
-			this.server.play(this, this.nextMove);
-		}
-		finally
-		{
-			this.nextMove = null;
 		}
 	}
 
