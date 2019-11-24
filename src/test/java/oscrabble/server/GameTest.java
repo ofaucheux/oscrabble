@@ -59,7 +59,7 @@ public class GameTest
 		for (int i = 0; i < moves.size(); i++)
 		{
 			players.get(i % players.size()).addMove(
-					Move.parseMove(grid, moves.get(i), true)
+					Move.parseMove(grid, moves.get(i))
 			);
 		}
 

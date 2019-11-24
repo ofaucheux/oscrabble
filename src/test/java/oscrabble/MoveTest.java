@@ -32,7 +32,7 @@ class MoveTest
 
 		try
 		{
-			Move.parseMove(grid, _12F, false);
+			Move.parseMove(grid, _12F);
 			fail();
 		}
 		catch (ParseException ex)

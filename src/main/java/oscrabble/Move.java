@@ -77,6 +77,20 @@ public class Move implements IAction
 	/**
 	 * Parse die Beschreibung eines Spielzuges.
 	 *
+	 * @param grid            die
+	 * @param coordinate      die Beschreibung, z.B. {@code B4 WAGEN} für Honizontal, B, 4 Wort WAGEN.
+	 * @return der Spielzug
+	 * @throws ParseException wenn aus der Beschreibung keinen Spielzug zu finden ist.
+	 */
+	public static Move parseMove(final Grid grid, final String coordinate) throws ParseException
+	{
+		return parseMove(grid, coordinate, false);
+	}
+
+
+	/**
+	 * Parse die Beschreibung eines Spielzuges.
+	 *
 	 * @param grid          die
 	 * @param coordinate    die Beschreibung, z.B. {@code B4 WAGEN} für Honizontal, B, 4 Wort WAGEN.
 	 * @param acceptEmptyWord
