@@ -6,6 +6,7 @@ import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
 import oscrabble.*;
 import oscrabble.client.Exchange;
+import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
 
@@ -19,7 +20,6 @@ import java.util.function.Consumer;
 public class Game implements IGame
 {
 	private final static Logger LOGGER = Logger.getLogger(Game.class);
-
 
 	public final static int RACK_SIZE = 7;
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
@@ -37,10 +37,8 @@ public class Game implements IGame
 	/** State of the game */
 	private State state;
 
-	/**
-	 * Accept a new attempt after a player has tried a forbidden move
-	 */
-	private boolean acceptNewAttemptAfterForbiddenMove;
+	/** Configuration of the game */
+	private final Configuration configuration;
 
 	/**
 	 * Number of current move (Starting with 1).
@@ -49,6 +47,7 @@ public class Game implements IGame
 
 	Game(final Dictionary dictionary, final long randomSeed)
 	{
+		this.configuration = new Configuration();
 		this.dictionary = dictionary;
 		this.grid = new Grid(this.dictionary);
 		this.random = new Random(randomSeed);
@@ -194,7 +193,7 @@ public class Game implements IGame
 		{
 			LOGGER.info("Refuse play: " + action + ". Cause: " + e);
 			player.onDispatchMessage(e.toString());
-			if (this.acceptNewAttemptAfterForbiddenMove || e.acceptRetry())
+			if (this.configuration.retryAccepted || e.acceptRetry())
 			{
 				player.onDispatchMessage("Retry accepted");
 				done = false;
@@ -315,7 +314,7 @@ public class Game implements IGame
 	{
 		if (this.players.isEmpty())
 		{
-			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "Cannot start game: no player registred");
+			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "Cannot start game: no player registered");
 		}
 
 		prepareGame();
@@ -468,6 +467,12 @@ public class Game implements IGame
 		this.state = State.ENDED;
 	}
 
+	@Override
+	public oscrabble.configuration.Configuration getConfiguration()
+	{
+		return this.configuration;
+	}
+
 	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
 	{
 		if (clientKey == null || !clientKey.equals(this.players.get(player).key))
@@ -524,5 +529,17 @@ public class Game implements IGame
 	interface GameListener
 	{
 		void afterPlayed(int moveNumber, AbstractPlayer player, IAction move);
+	}
+
+	/**
+	 * Configuration parameters.
+	 */
+	private static class Configuration extends oscrabble.configuration.Configuration
+	{
+		/**
+		 * Accept a new attempt after a player has tried a forbidden move
+		 */
+		@Parameter(label="Retry allowed", description = "Allow retry on error")
+		private boolean retryAccepted;
 	}
 }

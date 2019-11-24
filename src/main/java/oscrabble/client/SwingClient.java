@@ -4,6 +4,7 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import oscrabble.*;
+import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryException;
 import oscrabble.player.AbstractPlayer;
@@ -115,7 +116,7 @@ public class SwingClient extends AbstractPlayer
 		panel1.add(this.possibleMovePanel);
 		panel1.add(Box.createVerticalGlue());
 
-		final JPanel configPanel = new JPanel();
+		final ConfigurationPanel configPanel = new ConfigurationPanel(this.game.getConfiguration());
 		panel1.add(configPanel);
 		configPanel.setBorder(new TitledBorder("Server configuration"));
 		eastPanel.add(panel1, BorderLayout.CENTER);

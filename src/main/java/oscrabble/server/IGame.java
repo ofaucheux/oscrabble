@@ -3,9 +3,9 @@ package oscrabble.server;
 import oscrabble.Grid;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
+import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
-import oscrabble.player.BruteForceMethod;
 
 import java.util.List;
 import java.util.UUID;
@@ -69,4 +69,10 @@ public interface IGame
 	 * @param message human readable message to transmit, if any.
 	 */
 	void quit(AbstractPlayer player, UUID key, String message) throws ScrabbleException;
+
+	/**
+	 *
+	 * @return the configuration object of the game. Never null.
+	 */
+	Configuration getConfiguration();
 }
