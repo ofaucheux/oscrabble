@@ -138,11 +138,6 @@ public class Grid
 		return square.neighbours;
 	}
 
-	public boolean hasDictionary()
-	{
-		return (this.stoneGenerator instanceof Dictionary);
-	}
-
 	public Dictionary getDictionary()
 	{
 		if (!(this.stoneGenerator instanceof Dictionary))
@@ -207,10 +202,6 @@ public class Grid
 			return this.move;
 		}
 
-		public int getRequiredBlanks()
-		{
-			return this.requiredBlanks;
-		}
 	}
 
 	public MoveMetaInformation getMetaInformation(final Move move) throws ScrabbleException
@@ -296,7 +287,7 @@ public class Grid
 		mmi.score += crosswordScores;
 
 		// scrabble-bonus
-		if (mmi.requiredLetter.size() == Game.RACK_SIZE)
+		if (mmi.requiredLetter.size() + mmi.requiredBlanks == Game.RACK_SIZE)
 		{
 			mmi.isScrabble = true;
 			mmi.score += 50;
@@ -607,7 +598,7 @@ public class Grid
 	/**
 	 * @return Das Wort an diese Position und in der angegeben direction, {@code null} wenn kein Wort
 	 */
-	public String getWord(final Grid.Square position, final Move.Direction direction)
+	private String getWord(final Grid.Square position, final Move.Direction direction)
 	{
 		if (position.isEmpty())
 		{
