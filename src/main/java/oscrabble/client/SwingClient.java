@@ -55,7 +55,6 @@ public class SwingClient extends AbstractPlayer
 	private JRack jRack;
 	private JScoreboard jScoreboard;
 
-	private boolean isObserver;
 	private TelnetFrame telnetFrame;
 
 	/** Panel for the display of possible moves and corresponding buttons */
@@ -196,9 +195,20 @@ public class SwingClient extends AbstractPlayer
 			line.currentPlaying.setVisible(playerInfo.getName().equals(currentPlayer.getName()));
 		}
 
+		final Cursor cursor;
 		if (currentPlayer == this)
 		{
 			this.jRack.update();
+			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+		}
+		else
+		{
+			cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+		}
+
+		for (final Frame frame : Frame.getFrames())
+		{
+			frame.setCursor(cursor);
 		}
 	}
 
@@ -212,15 +222,6 @@ public class SwingClient extends AbstractPlayer
 	public void onDispatchMessage(final String msg)
 	{
 		JOptionPane.showMessageDialog(null, msg);
-	}
-
-	/**
-	 * Zeigt eine Fehlermeldung in einem {@link JOptionPane} an
-	 * @param msg Text der Meldung
-	 */
-	private void displayError(final String msg)
-	{
-		JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.ERROR_MESSAGE);
 	}
 
 	@Override
@@ -267,13 +268,7 @@ public class SwingClient extends AbstractPlayer
 	@Override
 	public boolean isObserver()
 	{
-		return this.isObserver;
-	}
-
-	public SwingClient setObserver()
-	{
-		this.isObserver = true;
-		return this;
+		return false;
 	}
 
 	/**
