@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
@@ -68,6 +69,9 @@ public class SwingClient extends AbstractPlayer
 	/** Future to let the last played stone flash */
 	private ScheduledFuture<Object> flashFuture;
 
+	/** Listing of the history of the game */
+	private JList<Game.HistoryEntry> historyList;
+
 	public SwingClient(final String name)
 	{
 		super(name);
@@ -101,6 +105,23 @@ public class SwingClient extends AbstractPlayer
 		panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
 		panel1.add(this.jScoreboard);
 		panel1.add(Box.createVerticalGlue());
+
+		final JPanel historyPanel = new JPanel();
+		historyPanel.setBorder(new TitledBorder("Moves"));
+		this.historyList = new JList<>();
+		this.historyList.setCellRenderer(new DefaultListCellRenderer()
+		{
+			@Override
+			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
+			{
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				setText(((Game.HistoryEntry) value).print());
+				return this;
+			}
+		});
+		historyPanel.setSize(new Dimension(200, 300));
+		historyPanel.add(new JScrollPane(this.historyList));
+		panel1.add(historyPanel);
 
 		this.possibleMovePanel = new JPanel();
 		this.possibleMovePanel.setBorder(new TitledBorder("Possible moves"));
@@ -250,6 +271,8 @@ public class SwingClient extends AbstractPlayer
 
 		this.jGrid.repaint();
 		this.jScoreboard.refreshDisplay(info);
+
+		this.historyList.setListData(IterableUtils.toList(this.game.getHistory()).toArray(new Game.HistoryEntry[0]));
 		if (info.getName().equals(this.getName()))
 		{
 			this.jRack.update();

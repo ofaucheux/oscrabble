@@ -82,6 +82,7 @@ public class Game implements IGame
 		info.rack = new Rack();
 		info.incomingEventQueue = new LinkedBlockingDeque<>();
 		this.players.put(newPlayer, info);
+		this.listeners.add(newPlayer);
 		newPlayer.setGame(this);
 	}
 
@@ -193,7 +194,6 @@ public class Game implements IGame
 			}
 
 			drawn = refillRack(player);
-			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
 			messages.forEach(message -> dispatchMessage(message));
 
 			LOGGER.debug("Grid after play move nr #" + this.moveNr + ":\n" + this.grid.asASCIIArt());
@@ -220,22 +220,18 @@ public class Game implements IGame
 		}
 		finally
 		{
-
-			this.listeners.forEach(l -> l.afterPlayed(this.moveNr - 1, player, action));
+			if (done)
+			{
+				this.history.add(new HistoryEntry(player, action, errorOccurred, score, drawn));
+				this.toPlay.pop();
+				this.toPlay.add(player);
+				this.moveNr++;
+			}
+			this.waitingForPlay.countDown();
+			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
 			if (playerInfo.rack.isEmpty())
 			{
 				endGame(playerInfo);
-			}
-			else
-			{
-				if (done)
-				{
-					this.history.add(new HistoryEntry(player, action, errorOccurred, score, drawn));
-					this.toPlay.pop();
-					this.toPlay.add(player);
-					this.moveNr++;
-				}
-				this.waitingForPlay.countDown();
 			}
 		}
 	}
@@ -277,13 +273,13 @@ public class Game implements IGame
 	}
 
 	/**
-	 * Send a message to all the clients.
+	 * Send a message to each listener.
 	 *
 	 * @param message message to dispatch
 	 */
 	private void dispatchMessage(final String message)
 	{
-		this.players.keySet().forEach(p -> p.onDispatchMessage(message));
+		dispatch(l -> l.onDispatchMessage(message));
 	}
 
 	@Override
@@ -339,7 +335,7 @@ public class Game implements IGame
 	public void markAsIllegal(final String word)
 	{
 		this.getDictionary().markAsIllegal(word);
-		dispatch(AbstractPlayer::onDictionaryChange);
+		dispatch(GameListener::onDictionaryChange);
 	}
 
 	public void startGame() throws ScrabbleException
@@ -379,7 +375,7 @@ public class Game implements IGame
 			LOGGER.error(e, e);
 		}
 
-		dispatch(AbstractPlayer::afterGameEnd);
+		dispatch(GameListener::afterGameEnd);
 	}
 
 	private void prepareGame()
@@ -403,7 +399,7 @@ public class Game implements IGame
 			refillRack(player);
 		}
 
-		dispatch(player -> player.beforeGameStart());
+		dispatch(GameListener::beforeGameStart);
 	}
 
 
@@ -429,13 +425,12 @@ public class Game implements IGame
 	}
 
 	/**
-	 * Send an event at all the players.
+	 * Send an event to each listener, and don't wait after an answer.
 	 */
 	private void dispatch(final ScrabbleEvent scrabbleEvent)
 	{
-		for (final AbstractPlayer player : this.players.keySet())
+		for (final GameListener player : this.listeners)
 		{
-			LOGGER.trace("Send " + scrabbleEvent + " to " + player.getName());
 			player.getIncomingEventQueue().add(scrabbleEvent);
 		}
 	}
@@ -555,17 +550,32 @@ public class Game implements IGame
 	private enum State
 	{BEFORE_START, STARTED, ENDED}
 
-	public interface ScrabbleEvent extends Consumer<AbstractPlayer>
+	public interface ScrabbleEvent extends Consumer<GameListener>
 	{
-		void accept(final AbstractPlayer player);
+		void accept(final GameListener player);
 	}
 
 	/**
 	 * A listener
 	 */
-	interface GameListener
+	public interface GameListener
 	{
-		void afterPlayed(int moveNumber, AbstractPlayer player, IAction move);
+		/**
+		 * Sent to all players to indicate who now has to play.
+		 */
+		void onPlayRequired(AbstractPlayer currentPlayer);
+
+		void onDictionaryChange();
+
+		void onDispatchMessage(String msg);
+
+		void afterPlay(final IPlayerInfo info, final IAction action, final int score);
+
+		void beforeGameStart();
+
+		void afterGameEnd();
+
+		Queue<ScrabbleEvent> getIncomingEventQueue();
 	}
 
 	/**

@@ -2,15 +2,13 @@ package oscrabble.player;
 
 import org.apache.log4j.Logger;
 import oscrabble.server.Game;
-import oscrabble.server.IAction;
-import oscrabble.server.IPlayerInfo;
 
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public abstract class AbstractPlayer
+public abstract class AbstractPlayer implements Game.GameListener
 {
 	public static final Logger LOGGER = Logger.getLogger(AbstractPlayer.class);
 	private String name;
@@ -62,20 +60,6 @@ public abstract class AbstractPlayer
 	{
 		this.playerKey = playerKey;
 	}
-
-	/**
-	 * Sent to all players to indicate who now has to play.
-	 */
-	public abstract void onPlayRequired(AbstractPlayer currentPlayer);
-
-	public abstract void onDictionaryChange();
-
-	public abstract void onDispatchMessage(String msg);
-
-	/**
-	 * Send to all players after a player has played
-	 */
-	public abstract void afterPlay(IPlayerInfo info, IAction action, int score);
 
 	public void beforeGameStart()
 	{
