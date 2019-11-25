@@ -31,6 +31,11 @@ public interface IGame
 
 	List<IPlayerInfo> getPlayers();
 
+	/**
+	 * @return the history of the game.
+	 */
+	Iterable<Game.HistoryEntry> getHistory();
+
 	void markAsIllegal(final String word);
 
 	Dictionary getDictionary();

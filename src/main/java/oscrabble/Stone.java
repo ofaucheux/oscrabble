@@ -32,7 +32,8 @@ public class Stone
 	}
 
 	/**
-	 * @return
+	 * @return the letter of this stone
+	 * @throws AssertionError if the stone is a still not played joker.
 	 */
 	public char getChar()
 	{
@@ -41,6 +42,21 @@ public class Stone
 			throw new AssertionError("White stone not set");
 		}
 		return this.c;
+	}
+
+	/**
+	 * @return the letter of this stone or a space for a still not played joker.
+	 */
+	public char getCharOrSpace()
+	{
+		if (this.isJoker)
+		{
+			return ' ';
+		}
+		else
+		{
+			return getChar();
+		}
 	}
 
 	public int getPoints()

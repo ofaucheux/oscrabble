@@ -34,10 +34,14 @@ public class Game implements IGame
 
 	final List<GameListener> listeners = new ArrayList<>();
 
-	/** State of the game */
+	/**
+	 * State of the game
+	 */
 	private State state;
 
-	/** Configuration of the game */
+	/**
+	 * Configuration of the game
+	 */
 	private final Configuration configuration;
 
 	/**
@@ -45,9 +49,15 @@ public class Game implements IGame
 	 */
 	private int moveNr;
 
+	/**
+	 * History of the game, a line played move (even if it was an error).
+	 */
+	private final List<HistoryEntry> history = new ArrayList<>();
+
 	Game(final Dictionary dictionary, final long randomSeed)
 	{
 		this.configuration = new Configuration();
+		this.configuration.setValue("retryAccepted", true);
 		this.dictionary = dictionary;
 		this.grid = new Grid(this.dictionary);
 		this.random = new Random(randomSeed);
@@ -59,7 +69,7 @@ public class Game implements IGame
 
 	public Game(final Dictionary dictionary)
 	{
-		this (dictionary, new Random().nextLong());
+		this(dictionary, new Random().nextLong());
 	}
 
 	@Override
@@ -85,9 +95,11 @@ public class Game implements IGame
 
 		final PlayerInfo playerInfo = this.players.get(player);
 		boolean done = false;
+		int score = 0;
+		boolean errorOccurred = false;
+		Set<Stone> drawn = null;
 		try
 		{
-			int score = 0;
 			final ArrayList<String> messages = new ArrayList<>(5);
 
 			if (action instanceof Move)
@@ -180,18 +192,19 @@ public class Game implements IGame
 				throw new AssertionError("Command not treated: " + action);
 			}
 
-			refillRack(player);
+			drawn = refillRack(player);
 			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
 			messages.forEach(message -> dispatchMessage(message));
 
 			LOGGER.debug("Grid after play move nr #" + this.moveNr + ":\n" + this.grid.asASCIIArt());
-
+			errorOccurred = false;
 			done = true;
 			return score;
 		}
 		catch (final ScrabbleException e)
 		{
 			LOGGER.info("Refuse play: " + action + ". Cause: " + e);
+			errorOccurred = true;
 			player.onDispatchMessage(e.toString());
 			if (this.configuration.retryAccepted || e.acceptRetry())
 			{
@@ -207,6 +220,7 @@ public class Game implements IGame
 		}
 		finally
 		{
+
 			this.listeners.forEach(l -> l.afterPlayed(this.moveNr - 1, player, action));
 			if (playerInfo.rack.isEmpty())
 			{
@@ -216,6 +230,7 @@ public class Game implements IGame
 			{
 				if (done)
 				{
+					this.history.add(new HistoryEntry(player, action, errorOccurred, score, drawn));
 					this.toPlay.pop();
 					this.toPlay.add(player);
 					this.moveNr++;
@@ -233,6 +248,7 @@ public class Game implements IGame
 
 	/**
 	 * Ends the game.
+	 *
 	 * @param firstEndingPlayer player which has first emptied its rack.
 	 */
 	private synchronized void endGame(PlayerInfo firstEndingPlayer)
@@ -262,6 +278,7 @@ public class Game implements IGame
 
 	/**
 	 * Send a message to all the clients.
+	 *
 	 * @param message message to dispatch
 	 */
 	private void dispatchMessage(final String message)
@@ -275,8 +292,15 @@ public class Game implements IGame
 		return List.copyOf(this.players.values());
 	}
 
+	@Override
+	public Iterable<HistoryEntry> getHistory()
+	{
+		return this.history;
+	}
+
 	/**
 	 * Return information about the one player
+	 *
 	 * @param player the player
 	 * @return the information.
 	 */
@@ -290,17 +314,25 @@ public class Game implements IGame
 		return info;
 	}
 
-
-	private void refillRack(final AbstractPlayer player)
+	/**
+	 * Refill the rack of a player.
+	 *
+	 * @param player Player to refill the rack
+	 * @return the new drawn stones.
+	 */
+	private Set<Stone> refillRack(final AbstractPlayer player)
 	{
 		final Rack rack = this.players.get(player).rack;
+		final HashSet<Stone> drawn = new HashSet<>();
 		while (!this.bag.isEmpty() && rack.size() < RACK_SIZE)
 		{
 			final Stone stone = this.bag.poll();
 			this.bag.remove(stone);
+			drawn.add(stone);
 			rack.add(stone);
 		}
 		LOGGER.trace("Remaining stones in the bag: " + this.bag.size());
+		return drawn;
 	}
 
 	@Override
@@ -332,7 +364,7 @@ public class Game implements IGame
 				}
 				LOGGER.info("Let's play " + player);
 				this.waitingForPlay = new CountDownLatch(1);
-				dispatch( p -> p.onPlayRequired(player));
+				dispatch(p -> p.onPlayRequired(player));
 				while (!this.waitingForPlay.await(10, TimeUnit.MILLISECONDS))
 				{
 					if (this.state == State.ENDED)
@@ -488,9 +520,11 @@ public class Game implements IGame
 		/**
 		 * Password für die Kommunikation Player &lt;&gt; Server
 		 */
- 		UUID key;
+		UUID key;
 
-		/** Queue  to receive events from client */
+		/**
+		 * Queue  to receive events from client
+		 */
 		BlockingQueue<ScrabbleEvent> incomingEventQueue;
 
 		Rack rack;
@@ -515,8 +549,11 @@ public class Game implements IGame
 		}
 	}
 
-	/** State of the game */
-	private enum State { BEFORE_START, STARTED, ENDED}
+	/**
+	 * State of the game
+	 */
+	private enum State
+	{BEFORE_START, STARTED, ENDED}
 
 	public interface ScrabbleEvent extends Consumer<AbstractPlayer>
 	{
@@ -539,7 +576,36 @@ public class Game implements IGame
 		/**
 		 * Accept a new attempt after a player has tried a forbidden move
 		 */
-		@Parameter(label="Retry allowed", description = "Allow retry on error")
+		@Parameter(label = "Retry allowed", description = "Allow retry on error")
 		private boolean retryAccepted;
+	}
+
+	/**
+	 * Description of a played move.
+	 */
+	public static class HistoryEntry
+	{
+		private AbstractPlayer player;
+		private final IAction action;
+		private final boolean errorOccurred;
+		private final int score;
+		private final Set<Stone> drawn;  // to be used for rewind
+
+		private HistoryEntry(final AbstractPlayer player, final IAction action, final boolean errorOccurred, final int score, final Set<Stone> drawn)
+		{
+			this.player = player;
+			this.action = action;
+			this.errorOccurred = errorOccurred;
+			this.score = score;
+			this.drawn = drawn;
+		}
+
+		public String print()
+		{
+			final StringBuilder sb = new StringBuilder(this.player.getName());
+			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((Move) this.action).getNotation());
+			sb.append(" ").append(this.score).append(" pts");
+			return sb.toString();
+		}
 	}
 }

@@ -178,15 +178,11 @@ public class Move implements IAction
 	@Override
 	public String toString()
 	{
-		final String column = Character.toString((char) ('A' - 1 + this.startSquare.getX()));
-		final String line = Integer.toString(this.startSquare.getY());
-		return String.format("%3s %s",
-				(this.direction == Direction.HORIZONTAL) ? line + column : column + line,
-				this.originalWord
-		);	}
+		return getNotation();
+	}
 
 	/**
-	 * @return die Standardnotation des Spielschritt z.B. {@code B4 WAGEN}.
+	 * @return die Standardnotation des Spielschritt z.B. {@code B4 WAGEN}. Blanks werden als Kleinbuchstaben dargestellt.
 	 */
 	public String getNotation()
 	{
@@ -196,7 +192,15 @@ public class Move implements IAction
 		sb.append((this.direction == Direction.HORIZONTAL) ? line + column : column + line);
 		if (this.originalWord != null && !this.originalWord.isEmpty())
 		{
-			sb.append(" ").append(this.originalWord);
+			final char[] letters = this.originalWord.toCharArray();
+			for (int i = 0; i < letters.length; i++)
+			{
+				if (isPlayedByBlank(i))
+				{
+					letters[i] = Character.toLowerCase(letters[i]);
+				}
+			}
+			sb.append(" ").append(String.valueOf(letters));
 		}
 		return sb.toString();
 	}
