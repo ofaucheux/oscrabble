@@ -57,14 +57,21 @@ public class GameTest
 			);
 		}
 
-		server.listeners.add((moveNumber, player, move) -> {
-			switch (moveNumber)
-			{
-				case 1:
-					Assert.assertEquals(78, server.getPlayerInfo(gustav).getScore());
-					break;
-			}
-		});
+		server.listeners.add(
+				new Game.DefaultGameListener()
+				{
+					@Override
+					public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
+					{
+						switch (moveNr)
+						{
+							case 1:
+								Assert.assertEquals(78, server.getPlayerInfo(gustav).getScore());
+								break;
+						}
+					}
+				}
+		);
 
 		server.startGame();
 	}

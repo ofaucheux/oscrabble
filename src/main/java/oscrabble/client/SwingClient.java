@@ -245,7 +245,7 @@ public class SwingClient extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final IPlayerInfo info, final IAction action, final int score)
+	public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
 	{
 		this.jGrid.lastAction = action;
 		if (this.flashFuture != null)

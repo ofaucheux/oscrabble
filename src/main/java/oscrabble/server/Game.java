@@ -228,7 +228,8 @@ public class Game implements IGame
 				this.moveNr++;
 			}
 			this.waitingForPlay.countDown();
-			dispatch(toInform -> toInform.afterPlay(playerInfo, action, 0));
+			final int copyScore = score;
+			dispatch(toInform -> toInform.afterPlay(this.moveNr, playerInfo, action, copyScore));
 			if (playerInfo.rack.isEmpty())
 			{
 				endGame(playerInfo);
@@ -569,13 +570,58 @@ public class Game implements IGame
 
 		void onDispatchMessage(String msg);
 
-		void afterPlay(final IPlayerInfo info, final IAction action, final int score);
+		void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score);
 
 		void beforeGameStart();
 
 		void afterGameEnd();
 
 		Queue<ScrabbleEvent> getIncomingEventQueue();
+	}
+
+	/**
+	 * Default listener. Does nothing.
+	 */
+	public static class DefaultGameListener implements GameListener
+	{
+
+		private final LinkedList<ScrabbleEvent> queue = new LinkedList<>();
+
+		@Override
+		public void onPlayRequired(final AbstractPlayer currentPlayer)
+		{
+		}
+
+		@Override
+		public void onDictionaryChange()
+		{
+		}
+
+		@Override
+		public void onDispatchMessage(final String msg)
+		{
+		}
+
+		@Override
+		public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
+		{
+		}
+
+		@Override
+		public void beforeGameStart()
+		{
+		}
+
+		@Override
+		public void afterGameEnd()
+		{
+		}
+
+		@Override
+		public Queue<ScrabbleEvent> getIncomingEventQueue()
+		{
+			return this.queue;
+		}
 	}
 
 	/**

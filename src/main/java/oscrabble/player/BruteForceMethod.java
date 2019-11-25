@@ -383,7 +383,7 @@ public class BruteForceMethod
 		}
 
 		@Override
-		public void afterPlay(final IPlayerInfo player, final IAction action, final int score)
+		public void afterPlay(final int moveNr, final IPlayerInfo player, final IAction action, final int score)
 		{
 			// nichts
 		}

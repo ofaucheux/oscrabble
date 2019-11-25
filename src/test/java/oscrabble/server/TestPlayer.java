@@ -64,7 +64,7 @@ class TestPlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final IPlayerInfo info, final IAction action, final int score)
+	public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
 	{
 		System.out.println(info.getName() + " played " + action);
 	}
