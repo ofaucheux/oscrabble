@@ -1,22 +1,16 @@
 package oscrabble.server;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.Move;
 import oscrabble.ScrabbleException;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.dictionary.DictionaryTest;
-import oscrabble.player.AbstractPlayer;
 
-import java.beans.XMLEncoder;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 public class GameTest
 {
@@ -75,4 +69,22 @@ public class GameTest
 		server.startGame();
 	}
 
+	@Test
+	public void errorsCases() throws ScrabbleException, ParseException
+	{
+		final Game server = new Game(Dictionary.getDictionary(Dictionary.Language.FRENCH), -3300078916872261882L);
+
+		final TestPlayer gustav = new TestPlayer("Gustav", server);
+		final TestPlayer john = new TestPlayer("John", server);
+		final TestPlayer jurek = new TestPlayer("Jurek", server);
+		server.register(gustav);
+		server.register(john);
+		server.register(jurek);
+
+		final Grid grid = server.getGrid();
+		server.getConfiguration().setValue("retryAccepted", true);
+		gustav.addMove(Move.parseMove(grid, "H3 APPETEE"));
+		gustav.addMove(Move.parseMove(grid, "H3 APPETES"));
+		server.startGame();
+	}
 }
