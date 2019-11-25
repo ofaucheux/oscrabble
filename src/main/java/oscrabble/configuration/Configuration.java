@@ -50,7 +50,7 @@ public abstract class Configuration
 		void accept(final Field field, final Parameter annotation) throws IllegalAccessException;
 	}
 
-	void setValue(final String propertyName, final Object newValue) throws ConfigurationException
+	public void setValue(final String propertyName, final Object newValue) throws ConfigurationException
 	{
 		try
 		{
