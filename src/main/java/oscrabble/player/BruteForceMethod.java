@@ -6,7 +6,6 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import oscrabble.*;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.server.Game;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 
@@ -14,8 +13,9 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.io.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
+import java.util.function.Supplier;
 
 public class BruteForceMethod
 {
@@ -326,34 +326,10 @@ public class BruteForceMethod
 		{
 			super(name);
 
-			this.strategies.add(new Strategy("Best score")
-						   {
-							   @Override
-							   protected ComparatorSelector createSelector(final Grid grid)
-							   {
-								   return  new ComparatorSelector(grid, Grid.MoveMetaInformation.SCORE_COMPARATOR);
-							   }
-						   }
-			);
-			this.strategies.add(
-					new Strategy("Longest word") {
-						@Override
-						protected ComparatorSelector createSelector(final Grid grid)
-						{
-							return new ComparatorSelector(grid, Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR);
-						}
-					});
+			final Supplier<Grid> gridSupplier = () -> Player.this.game.getGrid();
+			this.strategies.add(new Strategy("Best score", new ComparatorSelector(gridSupplier, Grid.MoveMetaInformation.SCORE_COMPARATOR)));
+			this.strategies.add(new Strategy("Longest word", new ComparatorSelector(gridSupplier, Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR)));
 
-		}
-
-		@Override
-		public void setGame(final Game game)
-		{
-			super.setGame(game);
-			for (final Strategy s : this.strategies)
-			{
-				s.selector = s.createSelector(this.game.getGrid());
-			}
 		}
 
 		@Override
@@ -507,17 +483,16 @@ public class BruteForceMethod
 
 
 	/** Playing strategy for a player */
-	abstract static class Strategy {
+	final static class Strategy {
 
 		private final String label;
-		private ComparatorSelector selector;
+		private final IMoveSelector selector;
 
-		Strategy(final String label)
+		Strategy(final String label, final IMoveSelector selector)
 		{
 			this.label = label;
+			this.selector = selector;
 		}
-
-		protected abstract ComparatorSelector createSelector(final Grid grid);
 
 		@Override
 		public String toString()

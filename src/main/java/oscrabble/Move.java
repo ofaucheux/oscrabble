@@ -218,28 +218,4 @@ public class Move implements IAction
 		return new Move(newStartSquare, this.direction, this.word);
 	}
 
-	/**
-	 * Sort a list of move
-	 * @param list  list to sort
-	 * @param grid  current grid
-	 * @param comparator comparator on {@link oscrabble.Grid.MoveMetaInformation}
-	 * @throws ScrabbleException
-	 */
-	public static void sort(final List<Move> list, final Grid grid, final Comparator<Grid.MoveMetaInformation> comparator) throws ScrabbleException
-	{
-		final HashMap<Move, Grid.MoveMetaInformation> mapping = new HashMap<>();
-		for (Move w : list)
-		{
-			mapping.put(w, grid.getMetaInformation(w));
-		}
-		final Comparator<Move> moveComparator = new Comparator<Move>()
-		{
-			@Override
-			public int compare(final Move o1, final Move o2)
-			{
-				return comparator.compare(mapping.get(o1), mapping.get(o2));
-			}
-		};
-		list.sort(moveComparator);
-	}
 }
