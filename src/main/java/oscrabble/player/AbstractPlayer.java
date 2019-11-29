@@ -61,6 +61,12 @@ public abstract class AbstractPlayer implements Game.GameListener
 		this.playerKey = playerKey;
 	}
 
+	@Override
+	public void afterRollback()
+	{
+		// TODO
+	}
+
 	public void beforeGameStart()
 	{
 	}

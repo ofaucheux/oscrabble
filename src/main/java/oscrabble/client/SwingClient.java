@@ -122,7 +122,23 @@ public class SwingClient extends AbstractPlayer
 		historyPanel.setSize(new Dimension(200, 300));
 		historyPanel.add(new JScrollPane(this.historyList));
 		panel1.add(historyPanel);
-
+		panel1.add(new JButton(new AbstractAction("Rollback")
+		{
+			@Override
+			public void actionPerformed(final ActionEvent e)
+			{
+				try
+				{
+					SwingClient.this.game.rollbackLastMove(playerKey);
+				}
+				catch (final Throwable ex)
+				{
+					LOGGER.error(ex, ex);
+					JOptionPane.showMessageDialog(panel1, ex.toString());
+				}
+			}
+		}
+		));
 		this.possibleMovePanel = new JPanel();
 		this.possibleMovePanel.setBorder(new TitledBorder("Possible moves"));
 		this.possibleMovePanel.setSize(new Dimension(200, 300));
@@ -917,21 +933,28 @@ public class SwingClient extends AbstractPlayer
 
 			try
 			{
-				final Matcher m;
-				if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
+				if (SwingClient.this.game.getPlayerToPlay() == SwingClient.this)
 				{
-					final ArrayList<Character> chars = new ArrayList<>();
-					for (final char c : m.group(1).toCharArray())
+					final Matcher m;
+					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
 					{
-						chars.add(c);
+						final ArrayList<Character> chars = new ArrayList<>();
+						for (final char c : m.group(1).toCharArray())
+						{
+							chars.add(c);
+						}
+						getGame().play(SwingClient.this, new Exchange(chars));
+						SwingClient.this.commandPrompt.setText("");
 					}
-					SwingClient.this.game.play(SwingClient.this, new Exchange(chars));
-					SwingClient.this.commandPrompt.setText("");
+					else
+					{
+						final Move preparedMove = getPreparedMove();
+						play(preparedMove);
+					}
 				}
 				else
 				{
-					final Move preparedMove = getPreparedMove();
-					play(preparedMove);
+					JOptionPane.showMessageDialog(SwingClient.this.jGrid, "It's not your turn!");
 				}
 			}
 			catch (final JokerPlacementException | ParseException ex)

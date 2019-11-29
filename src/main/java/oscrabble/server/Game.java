@@ -239,7 +239,7 @@ public class Game implements IGame
 		}
 	}
 
-	public synchronized void rollbackLastMove(final AbstractPlayer caller) throws ScrabbleException
+	public synchronized void rollbackLastMove(final UUID callerKey) throws ScrabbleException
 	{
 		final HistoryEntry historyEntry = this.history.pollLast();
 		if (historyEntry == null)
@@ -255,6 +255,8 @@ public class Game implements IGame
 		this.grid.remove(historyEntry.metaInformation);
 		playerInfo.score -= historyEntry.metaInformation.getScore();
 		this.toPlay.addFirst(historyEntry.player);
+		dispatch(toInform -> toInform.afterRollback());
+		this.waitingForPlay.countDown();
 	}
 
 	@Override
@@ -590,6 +592,8 @@ public class Game implements IGame
 
 		void onDispatchMessage(String msg);
 
+		void afterRollback();
+
 		void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score);
 
 		void beforeGameStart();
@@ -619,6 +623,11 @@ public class Game implements IGame
 
 		@Override
 		public void onDispatchMessage(final String msg)
+		{
+		}
+
+		@Override
+		public void afterRollback()
 		{
 		}
 
