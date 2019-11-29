@@ -1,6 +1,7 @@
 package oscrabble.player;
 
 import org.apache.log4j.Logger;
+import oscrabble.configuration.Configuration;
 import oscrabble.server.Game;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
@@ -94,11 +95,11 @@ public abstract class AbstractPlayer
 	}
 
 	/**
-	 * @return {@code true} wenn manche Parameters editierbar sind.
+	 * @return the configuration, if any
 	 */
-	public boolean hasEditableParameters()
+	public Configuration getConfiguration()
 	{
-		return false;
+		return null;
 	}
 
 	/**
