@@ -1,5 +1,7 @@
 package oscrabble.player;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.log4j.Logger;
 import oscrabble.Grid;
 import oscrabble.Move;
@@ -16,7 +18,7 @@ public class ComparatorSelector implements IMoveSelector
 	public static final Logger LOGGER = Logger.getLogger(ComparatorSelector.class);
 	private final Comparator<Grid.MoveMetaInformation> comparator;
 	private static final Random RANDOM = new Random();
-	private float mean = .5f;
+	private float mean = .7f;
 	private final Supplier<Grid> gridSupplier;
 
 	ComparatorSelector(final Supplier<Grid> gridSupplier, final Comparator<Grid.MoveMetaInformation> comparator)
@@ -45,17 +47,19 @@ public class ComparatorSelector implements IMoveSelector
 		Collections.shuffle(list);
 		list.sort((o1, o2) -> ComparatorSelector.this.comparator.compare(o1.metaInformation, o2.metaInformation));
 
-		int position = (((int) (RANDOM.nextGaussian() + this.mean) * list.size()));
-		if (0 < position)
+		final int minScore = list.get(0).metaInformation.getScore();
+		final int maxScore = list.get(list.size() - 1).metaInformation.getScore();
+
+		final double gaussian = RANDOM.nextGaussian() / 3;
+		int selectedScore = (int) ((gaussian + this.mean) * (maxScore + minScore));
+		int selected = ListUtils.indexOf(list, el -> el.metaInformation.getScore() >= selectedScore);
+		if (selected == -1)
 		{
-			position = 0;
+			selected = 0;
 		}
-		if (position >= list.size())
-		{
-			position = list.size() - 1;
-		}
-		LOGGER.trace("select(): select " + position + "th of " + list.size() + " moves");
-		return list.get(position).move;
+
+		LOGGER.trace("select(): select " + selected + "th of " + list.size() + " moves (Gaussian: " + gaussian + ")");
+		return list.get(selected).move;
 	}
 
 	private static class Element
