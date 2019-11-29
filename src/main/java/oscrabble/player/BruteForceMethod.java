@@ -5,7 +5,6 @@ import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import oscrabble.*;
-import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
@@ -14,6 +13,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.io.*;
+import java.util.List;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -316,12 +316,19 @@ public class BruteForceMethod
 
 	public class Player extends AbstractPlayer
 	{
+		private final List<Strategy> strategies = new ArrayList<>();
 
-		private Configuration configuration = new Configuration();
+		private Strategy strategy;
+
+		private int throttle;
 
 		public Player(final String name)
 		{
 			super(name);
+
+			final Supplier<Grid> gridSupplier = () -> Player.this.game.getGrid();
+			this.strategies.add(new Strategy("Best score", new ComparatorSelector(gridSupplier, Grid.MoveMetaInformation.SCORE_COMPARATOR)));
+			this.strategies.add(new Strategy("Longest word", new ComparatorSelector(gridSupplier, Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR)));
 
 		}
 
@@ -346,7 +353,7 @@ public class BruteForceMethod
 				}
 				else
 				{
-					if (this.configuration.throttle > 0)
+					if (this.throttle > 0)
 					{
 						LOGGER.trace("Wait " + this.throttle + " seconds...");
 						Thread.sleep(this.throttle * 1000);
@@ -389,7 +396,15 @@ public class BruteForceMethod
 		@Override
 		public void beforeGameStart()
 		{
-			this.configuration = new Configuration();
+			if (this.strategy == null)
+			{
+				this.strategy = this.strategies.get(0);
+			}
+
+			if (this.throttle == 0)
+			{
+				this.throttle = 5;
+			}
 		}
 
 		@Override
@@ -402,6 +417,12 @@ public class BruteForceMethod
 		public String toString()
 		{
 			return this.getName();
+		}
+
+		@Override
+		public boolean hasEditableParameters()
+		{
+			return true;
 		}
 
 		@Override
@@ -439,23 +460,9 @@ public class BruteForceMethod
 				this.throttle = (Integer) throttleSpinner.getValue();
 			}
 
-			final Supplier<Grid> gridSupplier = () -> Player.this.game.getGrid();
-			this.strategies.add(new Strategy("Best score", new ComparatorSelector(gridSupplier, Grid.MoveMetaInformation.SCORE_COMPARATOR)));
-			this.strategies.add(new Strategy("Longest word", new ComparatorSelector(gridSupplier, Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR)));
-
 		}
-	}
 
-	static class Configuration extends oscrabble.configuration.Configuration
-	{
-		@Parameter(label = "Strategy")
-		Strategy strategy;
 
-		@Parameter(label = "Throttle (seconds)")
-		Range throttle = new Range(0, 30, 4);
-
-		@Parameter(label = "Force")
-		Range force = new Range(0, 100, 70);
 	}
 
 	static class CalculateCtx
@@ -475,19 +482,16 @@ public class BruteForceMethod
 	}
 
 
-	/**
-	 * Playing strategy for a player
-	 */
-	enum Strategy
-	{
-		BEST_SCORE("Best score"),
-		MAX_LENGTH("Max length");
+	/** Playing strategy for a player */
+	final static class Strategy {
 
 		private final String label;
+		private final IMoveSelector selector;
 
-		Strategy(final String label)
+		Strategy(final String label, final IMoveSelector selector)
 		{
 			this.label = label;
+			this.selector = selector;
 		}
 
 		@Override
