@@ -10,6 +10,7 @@ import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryException;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
+import oscrabble.server.Game;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 
@@ -264,10 +265,7 @@ public class SwingClient extends AbstractPlayer
 	public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
 	{
 		this.jGrid.lastAction = action;
-		if (this.flashFuture != null)
-		{
-			this.flashFuture.cancel(true);
-		}
+		refreshUI();
 
 		this.flashFuture = this.executor.schedule(
 				() -> {
@@ -285,14 +283,20 @@ public class SwingClient extends AbstractPlayer
 				0,
 				TimeUnit.SECONDS);
 
+	}
+
+	protected void refreshUI()
+	{
+		if (this.flashFuture != null)
+		{
+			this.flashFuture.cancel(true);
+		}
+
 		this.jGrid.repaint();
-		this.jScoreboard.refreshDisplay(info);
+		this.jScoreboard.refreshDisplay();
 
 		this.historyList.setListData(IterableUtils.toList(this.game.getHistory()).toArray(new Game.HistoryEntry[0]));
-		if (info.getName().equals(this.getName()))
-		{
-			this.jRack.update();
-		}
+		this.jRack.update();
 	}
 
 	@Override
@@ -324,9 +328,12 @@ public class SwingClient extends AbstractPlayer
 			setBorder(new TitledBorder("Score"));
 		}
 
-		void refreshDisplay(final IPlayerInfo playerInfo)
+		void refreshDisplay()
 		{
-			this.scoreLabels.get(playerInfo).score.setText(playerInfo.getScore() + " pts");
+			for (final IPlayerInfo playerInfo : game.getPlayers())
+			{
+				this.scoreLabels.get(playerInfo).score.setText(playerInfo.getScore() + " pts");
+			}
 		}
 
 		void prepareBoard()
@@ -943,7 +950,7 @@ public class SwingClient extends AbstractPlayer
 						{
 							chars.add(c);
 						}
-						getGame().play(SwingClient.this, new Exchange(chars));
+						SwingClient.this.game.play(SwingClient.this, new Exchange(chars));
 						SwingClient.this.commandPrompt.setText("");
 					}
 					else
@@ -1132,6 +1139,12 @@ public class SwingClient extends AbstractPlayer
 		{
 			this.stone = stone;
 		}
+	}
+
+	@Override
+	public void afterRollback()
+	{
+		refreshUI();
 	}
 
 	/**

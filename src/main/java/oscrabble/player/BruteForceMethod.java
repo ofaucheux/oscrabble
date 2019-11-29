@@ -354,8 +354,11 @@ public class BruteForceMethod
 						Thread.sleep(this.configuration.throttle * 1000);
 					}
 					final Move toPlay = this.selector.select(moves);
-					LOGGER.info("Play " + toPlay);
-					this.game.play(this, toPlay);
+					if (this.game.getPlayerToPlay().equals(this))  // check the player still is on turn and no rollback toke place.
+					{
+						LOGGER.info("Play " + toPlay);
+						this.game.play(this, toPlay);
+					}
 				}
 			}
 			catch (ScrabbleException e)

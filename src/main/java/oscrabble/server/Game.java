@@ -254,9 +254,11 @@ public class Game implements IGame
 		);
 		this.grid.remove(historyEntry.metaInformation);
 		playerInfo.score -= historyEntry.metaInformation.getScore();
+		assert this.toPlay.peekLast() == historyEntry.player;
+		this.toPlay.removeLast();
 		this.toPlay.addFirst(historyEntry.player);
 		dispatch(toInform -> toInform.afterRollback());
-		this.waitingForPlay.countDown();
+		dispatch(toInform -> toInform.onPlayRequired(historyEntry.player));
 	}
 
 	@Override
