@@ -86,6 +86,10 @@ public final class ConfigurationPanel extends JPanel
 		{
 			return ((JComboBox) source).getSelectedItem();
 		}
+		else if (source instanceof JSlider)
+		{
+			return ((JSlider) source).getValue();
+		}
 		throw new IllegalArgumentException("Cannot treat: " + source.getClass());
 	}
 
@@ -130,6 +134,20 @@ public final class ConfigurationPanel extends JPanel
 			paramComponent = new JSpinner(new SpinnerNumberModel((int) value, 0, Integer.MAX_VALUE, 1));
 			((JSpinner) paramComponent).addChangeListener(this.listener);
 			listener = evt -> ((JSpinner) paramComponent).setValue(((Integer) evt.getNewValue()));
+		}
+		else if (Configuration.Range.class.equals(type))
+		{
+			final Configuration.Range range = (Configuration.Range) value;
+			paramComponent = new JSlider(
+					range.lower,
+					range.upper,
+					range.getValue()
+			);
+			((JSlider) paramComponent).setPaintLabels(true);
+			((JSlider) paramComponent).setMajorTickSpacing((range.upper - range.lower) / 2);
+			((JSlider) paramComponent).addChangeListener(this.listener);
+			listener = evt -> ((JSlider) paramComponent).setValue(((Integer) evt.getNewValue()));
+
 		}
 		else
 		{
