@@ -131,23 +131,37 @@ public final class ConfigurationPanel extends JPanel
 		}
 		else if (int.class.equals(type))
 		{
-			paramComponent = new JSpinner(new SpinnerNumberModel((int) value, 0, Integer.MAX_VALUE, 1));
-			((JSpinner) paramComponent).addChangeListener(this.listener);
-			listener = evt -> ((JSpinner) paramComponent).setValue(((Integer) evt.getNewValue()));
-		}
-		else if (Configuration.Range.class.equals(type))
-		{
-			final Configuration.Range range = (Configuration.Range) value;
-			paramComponent = new JSlider(
-					range.lower,
-					range.upper,
-					range.getValue()
-			);
-			((JSlider) paramComponent).setPaintLabels(true);
-			((JSlider) paramComponent).setMajorTickSpacing((range.upper - range.lower) / 2);
-			((JSlider) paramComponent).addChangeListener(this.listener);
-			listener = evt -> ((JSlider) paramComponent).setValue(((Integer) evt.getNewValue()));
+			int lower;
+			int upper;
+			lower = annotation.lowerBound();
+			upper = annotation.upperBound();
+			if (lower == upper && upper == -1)
+			{
+				lower = 0;
+				upper = Integer.MAX_VALUE;
+			}
 
+			if (annotation.isSlide())
+			{
+				paramComponent = new JSlider(
+						lower,
+						upper,
+						(int) value
+				);
+				((JSlider) paramComponent).setPaintLabels(true);
+				if (upper - lower < 100000)
+				{
+					((JSlider) paramComponent).setMajorTickSpacing((upper - lower) / 2);
+				}
+				((JSlider) paramComponent).addChangeListener(this.listener);
+				listener = evt -> ((JSlider) paramComponent).setValue(((Integer) evt.getNewValue()));
+			}
+			else
+			{
+				paramComponent = new JSpinner(new SpinnerNumberModel((int) value, lower, upper, 1));
+				((JSpinner) paramComponent).addChangeListener(this.listener);
+				listener = evt -> ((JSpinner) paramComponent).setValue(((Integer) evt.getNewValue()));
+			}
 		}
 		else
 		{

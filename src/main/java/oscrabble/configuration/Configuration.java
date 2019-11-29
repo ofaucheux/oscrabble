@@ -62,18 +62,7 @@ public abstract class Configuration
 				return;
 			}
 
-			if (field.getType().equals(Range.class))
-			{
-				// we want to change the "value" field of the range object
-				final Object range = field.get(this);
-				final Field valueField = Range.class.getDeclaredField("value");
-				valueField.setAccessible(true);
-				valueField.set(range, newValue);
-			}
-			else
-			{
-				field.set(this, newValue);
-			}
+			field.set(this, newValue);
 
 			this.changeListeners.fireIndexedPropertyChange(propertyName, -1, oldValue, newValue);
 		}
@@ -95,39 +84,6 @@ public abstract class Configuration
 					setValue(k, newValue);
 				}
 		);
-	}
-
-	/**
-	 * Parameter object to represent an integer within a range. The representation will be a slider.
-	 */
-	public static class Range
-	{
-		final int lower;
-		final int upper;
-
-		private int value;
-
-		/**
-		 * Constructor
-		 * @param lower
-		 * @param upper
-		 * @param value
-		 */
-		public Range(final int lower, final int upper, final Integer value)
-		{
-			assert lower < upper;
-			this.lower = lower;
-			this.upper = upper;
-			this.value = value == null ? (lower + upper) / 2 : value;
-			assert lower <= this.value;
-			assert this.value <= upper;
-		}
-
-		public int getValue()
-		{
-			return this.value;
-		}
-
 	}
 
 }

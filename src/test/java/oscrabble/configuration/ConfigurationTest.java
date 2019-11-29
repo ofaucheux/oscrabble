@@ -56,7 +56,7 @@ class ConfigurationTest
 
 		System.out.println(config1.data);
 		System.out.println(config1.allowError);
-		System.out.println(config1.happines.getValue());
+		System.out.println(config1.happines);
 	}
 
 	private static class Config1 extends Configuration
@@ -67,7 +67,13 @@ class ConfigurationTest
 		@Parameter(label = "Allow error")
 		boolean allowError;
 
-		@Parameter(label = "Happiness")
-		Range happines = new Range(0, 100, 80);
+		@Parameter(label = "Happiness", isSlide = true)
+		int happines;
+
+		@Parameter(label = "Sadless", isSlide = true, lowerBound = -50, upperBound = 100)
+		int sadless;
+
+		@Parameter(label = "Seconds", isSlide = false, lowerBound = 0, upperBound = 100)
+		int seconds;
 	}
 }
