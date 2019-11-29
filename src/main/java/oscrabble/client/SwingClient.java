@@ -11,7 +11,6 @@ import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
-import oscrabble.server.Game;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -221,7 +220,7 @@ public class SwingClient extends AbstractPlayer
 	@Override
 	public void onDispatchMessage(final String msg)
 	{
-		JOptionPane.showMessageDialog(null, msg);
+		showMessage(msg);
 	}
 
 	@Override
@@ -339,7 +338,7 @@ public class SwingClient extends AbstractPlayer
 							@Override
 							protected Void doInBackground()
 							{
-								getGame().editParameters(SwingClient.this.playerKey, player);
+								SwingClient.this.game.editParameters(SwingClient.this.playerKey, player);
 								return null;
 							}
 						};
@@ -388,7 +387,7 @@ public class SwingClient extends AbstractPlayer
 			try
 			{
 				final ArrayList<Stone> stones = new ArrayList<>(
-						getGame().getRack(SwingClient.this, SwingClient.this.playerKey));
+						SwingClient.this.game.getRack(SwingClient.this, SwingClient.this.playerKey));
 
 				for (int i = 0; i < RACK_SIZE; i++)
 				{
@@ -400,9 +399,24 @@ public class SwingClient extends AbstractPlayer
 			}
 			catch (ScrabbleException e)
 			{
-				JOptionPane.showMessageDialog(null, e.getMessage());
+				showMessage(e.getMessage());
 			}
 		}
+	}
+
+	private void showMessage(final Object message)
+	{
+		final KeyboardFocusManager previous = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager());
+		try
+		{
+			JOptionPane.showMessageDialog(null, message);
+		}
+		finally
+		{
+			KeyboardFocusManager.setCurrentKeyboardFocusManager(previous);
+		}
+
 	}
 
 	/**
@@ -888,7 +902,7 @@ public class SwingClient extends AbstractPlayer
 					{
 						chars.add(c);
 					}
-					getGame().play(SwingClient.this, new Exchange(chars));
+					SwingClient.this.game.play(SwingClient.this, new Exchange(chars));
 					SwingClient.this.commandPrompt.setText("");
 				}
 				else
@@ -932,7 +946,7 @@ public class SwingClient extends AbstractPlayer
 				final Rack rack;
 				try
 				{
-					rack = getGame().getRack(SwingClient.this, SwingClient.this.playerKey);
+					rack = SwingClient.this.game.getRack(SwingClient.this, SwingClient.this.playerKey);
 				}
 				catch (ScrabbleException e)
 				{
@@ -940,7 +954,7 @@ public class SwingClient extends AbstractPlayer
 					throw new JokerPlacementException("Error placing Joker", e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				move = Move.parseMove(getGame().getGrid(), inputWord.toString(), true);
+				move = Move.parseMove(SwingClient.this.game.getGrid(), inputWord.toString(), true);
 
 				//
 				// Check if jokers are needed and try to position them
@@ -1240,7 +1254,7 @@ public class SwingClient extends AbstractPlayer
 				}
 
 				final Set<Move> moves = this.bruteForceMethod.getLegalMoves(getGrid(),
-						getGame().getRack(SwingClient.this, SwingClient.this.playerKey));
+						SwingClient.this.game.getRack(SwingClient.this, SwingClient.this.playerKey));
 				this.legalMoves = new ArrayList<>();
 
 				for (final Move move : moves)
@@ -1304,14 +1318,9 @@ public class SwingClient extends AbstractPlayer
 	 */
 	private void play(final Move move)
 	{
-		getGame().play(SwingClient.this, move);
+		this.game.play(SwingClient.this, move);
 		this.commandPrompt.setText("");
 		resetPossibleMovesPanel();
-	}
-
-	private Game getGame()
-	{
-		return this.game;
 	}
 
 	/**
