@@ -52,7 +52,7 @@ public class Game implements IGame
 	/**
 	 * History of the game, a line played move (even if it was an error).
 	 */
-	private final List<HistoryEntry> history = new ArrayList<>();
+	private final LinkedList<HistoryEntry> history = new LinkedList<>();
 
 	Game(final Dictionary dictionary, final long randomSeed)
 	{
@@ -99,6 +99,7 @@ public class Game implements IGame
 		int score = 0;
 		boolean errorOccurred = false;
 		Set<Stone> drawn = null;
+		Grid.MoveMetaInformation moveMI = null;
 		try
 		{
 			final ArrayList<String> messages = new ArrayList<>(5);
@@ -108,7 +109,7 @@ public class Game implements IGame
 				final Move move = (Move) action;
 
 				// check possibility
-				final Grid.MoveMetaInformation moveMI = this.grid.getMetaInformation(move);
+				moveMI = this.grid.getMetaInformation(move);
 				final TreeBag<Character> rackLetters = new TreeBag<>();
 				playerInfo.rack.forEach(stone -> {
 					if (!stone.isJoker())
@@ -187,6 +188,7 @@ public class Game implements IGame
 				final List<Stone> stones1 = playerInfo.rack.removeStones(((Exchange) action).getChars());
 				this.bag.addAll(stones1);
 				Collections.shuffle(this.bag, this.random);
+				moveMI = null;
 			}
 			else
 			{
@@ -222,7 +224,7 @@ public class Game implements IGame
 		{
 			if (done)
 			{
-				this.history.add(new HistoryEntry(player, action, errorOccurred, score, drawn));
+				this.history.add(new HistoryEntry(player, action, errorOccurred, score, drawn, moveMI));
 				this.toPlay.pop();
 				this.toPlay.add(player);
 				this.moveNr++;
@@ -237,8 +239,26 @@ public class Game implements IGame
 		}
 	}
 
+	public synchronized void rollbackLastMove(final AbstractPlayer caller) throws ScrabbleException
+	{
+		final HistoryEntry historyEntry = this.history.pollLast();
+		if (historyEntry == null)
+		{
+			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "No move played for the time");
+		}
+
+		final PlayerInfo playerInfo = this.players.get(historyEntry.player);
+		playerInfo.rack.removeAll(historyEntry.drawn);
+		historyEntry.metaInformation.getFilledSquares().forEach(
+				filled -> playerInfo.rack.add(filled.stone)
+		);
+		this.grid.remove(historyEntry.metaInformation);
+		playerInfo.score -= historyEntry.metaInformation.getScore();
+		this.toPlay.addFirst(historyEntry.player);
+	}
+
 	@Override
-	public AbstractPlayer getPlayerToPlay()
+	public synchronized AbstractPlayer getPlayerToPlay()
 	{
 		return this.toPlay.getFirst();
 	}
@@ -443,14 +463,14 @@ public class Game implements IGame
 	}
 
 	@Override
-	public Grid getGrid()
+	public synchronized Grid getGrid()
 	{
 		return this.grid;
 	}
 
 
 	@Override
-	public Rack getRack(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
+	public synchronized Rack getRack(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
 	{
 		checkKey(player, clientKey);
 		if (player.isObserver())
@@ -461,7 +481,7 @@ public class Game implements IGame
 	}
 
 	@Override
-	public int getScore(final AbstractPlayer player)
+	public synchronized int getScore(final AbstractPlayer player)
 	{
 		return this.players.get(player).getScore();
 	}
@@ -647,13 +667,19 @@ public class Game implements IGame
 		private final int score;
 		private final Set<Stone> drawn;  // to be used for rewind
 
-		private HistoryEntry(final AbstractPlayer player, final IAction action, final boolean errorOccurred, final int score, final Set<Stone> drawn)
+		/**
+		 * Information about the move at time of the action.
+		 */
+		private final Grid.MoveMetaInformation metaInformation;
+
+		private HistoryEntry(final AbstractPlayer player, final IAction action, final boolean errorOccurred, final int score, final Set<Stone> drawn, final Grid.MoveMetaInformation metaInformation)
 		{
 			this.player = player;
 			this.action = action;
 			this.errorOccurred = errorOccurred;
 			this.score = score;
 			this.drawn = drawn;
+			this.metaInformation = metaInformation;
 		}
 
 		public String print()

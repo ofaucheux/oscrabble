@@ -33,11 +33,17 @@ public class Move implements IAction
 	public static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("((\\d+)(\\w))(\\s+(\\S*))?");
 	public static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("((\\w)(\\d+))(\\s+(\\S*))?");
 
+	/**
+	 *
+	 * @param grid grid of game
+	 * @param dictionary dictionary of game
+	 * @return all stones of the move, even if they already are on the board.
+	 */
 	public LinkedHashMap<Grid.Square, Stone> getStones(final Grid grid, final Dictionary dictionary)
 	{
 		final LinkedHashMap<Grid.Square, Stone> stones = new LinkedHashMap<>();
-		int x = this.startSquare.getX();
 		int y = this.startSquare.getY();
+		int x = this.startSquare.getX();
 		for (int i = 0; i < this.word.length(); i++)
 		{
 			char c = this.originalWord.charAt(i);

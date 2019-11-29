@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GridTest
 {
 	@Test
-	void getMetaInformation() throws ScrabbleException, ParseException
+	void getMetaInformation() throws ScrabbleException, ParseException, InterruptedException
 	{
 		final Grid grid = new Grid(Dictionary.getDictionary(Dictionary.Language.FRENCH));
 
@@ -66,6 +66,12 @@ class GridTest
 		metaInformation = grid.getMetaInformation(move);
 		assertEquals(16, metaInformation.score);
 		grid.put(move);
+
+		// Remove
+		Thread.sleep(500);
+		grid.remove(metaInformation);
+		assertFalse(grid.getSquare("5J").isEmpty());
+		assertTrue(grid.getSquare("5K").isEmpty());
 	}
 
 	private void assertBagContent(final Bag<Character> bag, final String letters)

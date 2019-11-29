@@ -5,6 +5,7 @@ import org.apache.commons.collections4.bag.TreeBag;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.Game;
 
+import java.text.ParseException;
 import java.util.*;
 
 public class Grid
@@ -170,6 +171,16 @@ public class Grid
 		return set == null ? Collections.emptySet() : set;
 	}
 
+	/**
+	 * Return the square described by its coordinate
+	 */
+	public Square getSquare(final String coordinate) throws ParseException
+	{
+		final Move move = Move.parseMove(this, coordinate, true);
+		assert move.word.isEmpty();
+		return move.startSquare;
+	}
+
 	public static class MoveMetaInformation
 	{
 		public static final Comparator<Grid.MoveMetaInformation> WORD_LENGTH_COMPARATOR = (meta1, meta2) -> meta1.getRequiredLetters().size() - meta2.getRequiredLetters().size();
@@ -178,6 +189,10 @@ public class Grid
 		public List<String> crosswords = new ArrayList<>();
 		final Move move;
 		public boolean isScrabble;
+
+		/** Square the move will fill and which are not filled for the move */
+		private final ArrayList<Square> filledSquares = new ArrayList<>();
+
 		int score;
 		private int requiredBlanks;
 		private final Bag<Character> requiredLetter = new TreeBag<>();
@@ -202,6 +217,10 @@ public class Grid
 			return this.move;
 		}
 
+		public Iterable<Square> getFilledSquares()
+		{
+			return this.filledSquares;
+		}
 	}
 
 	public MoveMetaInformation getMetaInformation(final Move move) throws ScrabbleException
@@ -212,7 +231,6 @@ public class Grid
 		System.out.println("Scoring " + move);
 
 		final MoveMetaInformation mmi = new MoveMetaInformation(move);
-
 		int wordFactor = 1;
 		int crosswordScores = 0;
 		for (int i = 0; i < move.word.length(); i++)
@@ -223,6 +241,7 @@ public class Grid
 			final Square sq = getSquare(x, y);
 			if (sq.isEmpty())
 			{
+				mmi.filledSquares.add(sq);
 				if (isBlank)
 				{
 					mmi.requiredBlanks++;
@@ -296,7 +315,20 @@ public class Grid
 		return mmi;
 	}
 
-	public void put(final Move move) throws ScrabbleException
+	/**
+	 * Rollback a move.
+	 *
+	 * @param move information about the move to rollback
+	 */
+	public synchronized void remove(final MoveMetaInformation move)
+	{
+		for (final Square filledSquare : move.filledSquares)
+		{
+			filledSquare.stone = null;
+		}
+	}
+
+	public synchronized void put(final Move move) throws ScrabbleException
 	{
 		int x = move.startSquare.x;
 		int y = move.startSquare.y;

@@ -74,6 +74,21 @@ public class GameTest
 		);
 
 		server.startGame();
+
+		Assert.assertFalse(grid.getSquare("8K").isEmpty());
+		Assert.assertFalse(grid.getSquare("8L").isEmpty());
+		Assert.assertFalse(grid.getSquare("8M").isEmpty());
+		server.rollbackLastMove(null);
+		Assert.assertTrue(grid.getSquare("8K").isEmpty());
+		Assert.assertFalse(grid.getSquare("8L").isEmpty());
+		Assert.assertTrue(grid.getSquare("8M").isEmpty());
+
+		server.getPlayerInfo(john).getScore();
+		Assert.assertFalse(grid.getSquare("N10").isEmpty());
+		server.rollbackLastMove(null);
+		Assert.assertTrue(grid.getSquare("N10").isEmpty());
+
+
 	}
 
 	@Test
