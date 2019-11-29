@@ -1,6 +1,5 @@
 package oscrabble.player;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.log4j.Logger;
 import oscrabble.Grid;
@@ -18,7 +17,7 @@ public class ComparatorSelector implements IMoveSelector
 	public static final Logger LOGGER = Logger.getLogger(ComparatorSelector.class);
 	private final Comparator<Grid.MoveMetaInformation> comparator;
 	private static final Random RANDOM = new Random();
-	private float mean = .7f;
+	private float mean = 0.7f;
 	private final Supplier<Grid> gridSupplier;
 
 	ComparatorSelector(final Supplier<Grid> gridSupplier, final Comparator<Grid.MoveMetaInformation> comparator)
@@ -60,6 +59,11 @@ public class ComparatorSelector implements IMoveSelector
 
 		LOGGER.trace("select(): select " + selected + "th of " + list.size() + " moves (Gaussian: " + gaussian + ")");
 		return list.get(selected).move;
+	}
+
+	public void setMean(final float mean)
+	{
+		this.mean = mean;
 	}
 
 	private static class Element

@@ -5,15 +5,15 @@ import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import oscrabble.*;
+import oscrabble.configuration.ConfigurationPanel;
+import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import java.awt.*;
 import java.io.*;
-import java.util.List;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -174,8 +174,8 @@ public class BruteForceMethod
 
 		if (
 				(possibleNextSquare.isEmpty() || possibleNextSquare.isBorder())
-				&& node.isAcceptNode()
-				&& possibleNextSquare != ctx.anchor
+						&& node.isAcceptNode()
+						&& possibleNextSquare != ctx.anchor
 		)
 		{
 			addLegalMove(ctx, possibleNextSquare.getPrevious(ctx.direction), partialWord);
@@ -316,20 +316,14 @@ public class BruteForceMethod
 
 	public class Player extends AbstractPlayer
 	{
-		private final List<Strategy> strategies = new ArrayList<>();
 
-		private Strategy strategy;
+		private Configuration configuration = new Configuration();
 
-		private int throttle;
+		private ComparatorSelector selector;
 
 		public Player(final String name)
 		{
 			super(name);
-
-			final Supplier<Grid> gridSupplier = () -> Player.this.game.getGrid();
-			this.strategies.add(new Strategy("Best score", new ComparatorSelector(gridSupplier, Grid.MoveMetaInformation.SCORE_COMPARATOR)));
-			this.strategies.add(new Strategy("Longest word", new ComparatorSelector(gridSupplier, Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR)));
-
 		}
 
 		@Override
@@ -342,8 +336,9 @@ public class BruteForceMethod
 
 			try
 			{
+				final Rack rack = this.game.getRack(this, this.playerKey);
 				Set<Move> moves = new HashSet<>(getLegalMoves(
-						this.game.getGrid(), this.game.getRack(this, this.playerKey)));
+						this.game.getGrid(), rack));
 
 				if (moves.isEmpty())
 				{
@@ -353,12 +348,12 @@ public class BruteForceMethod
 				}
 				else
 				{
-					if (this.throttle > 0)
+					if (this.configuration.throttle > 0)
 					{
-						LOGGER.trace("Wait " + this.throttle + " seconds...");
-						Thread.sleep(this.throttle * 1000);
+						LOGGER.trace("Wait " + this.configuration.throttle + " seconds...");
+						Thread.sleep(this.configuration.throttle * 1000);
 					}
-					final Move toPlay = this.strategy.selector.select(moves);
+					final Move toPlay = this.selector.select(moves);
 					LOGGER.info("Play " + toPlay);
 					this.game.play(this, toPlay);
 				}
@@ -396,15 +391,7 @@ public class BruteForceMethod
 		@Override
 		public void beforeGameStart()
 		{
-			if (this.strategy == null)
-			{
-				this.strategy = this.strategies.get(0);
-			}
-
-			if (this.throttle == 0)
-			{
-				this.throttle = 5;
-			}
+			updateConfiguration();
 		}
 
 		@Override
@@ -428,41 +415,45 @@ public class BruteForceMethod
 		@Override
 		public void editParameters()
 		{
-			final JSpinner throttleSpinner = new JSpinner(new SpinnerNumberModel(5, 0, 3600, 1));
-			final JComboBox<Strategy> strategyComboBox = new JComboBox<>(this.strategies.toArray(new Strategy[0]));
-			strategyComboBox.setSelectedItem(this.strategy);
 
 			final JPanel panel = new JPanel();
 			panel.setBorder(new TitledBorder("Parameters"));
-			panel.setLayout(new GridLayout(0, 2));
-			panel.add(new JLabel("Strategy"));
-			panel.add(strategyComboBox);
-			panel.add(new JLabel("Throttle (seconds)"));
-			panel.add(throttleSpinner);
+			panel.add(new ConfigurationPanel(this.configuration));
 
 			final JScrollPane sp = new JScrollPane(panel);
 			sp.setBorder(null);
-			final int returnCode = JOptionPane.showOptionDialog(
+			JOptionPane.showOptionDialog(
 					null,
 					sp,
 					"Options for " + getName(),
-					JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.DEFAULT_OPTION,
 					JOptionPane.PLAIN_MESSAGE,
 					null,
 					null,
 					null
 			);
 
-			// nach dem Rückkehr
-			if (returnCode == JOptionPane.OK_OPTION)
-			{
-				this.strategy = strategyComboBox.getItemAt(strategyComboBox.getSelectedIndex());
-				this.throttle = (Integer) throttleSpinner.getValue();
-			}
-
+			updateConfiguration();
 		}
 
+		protected void updateConfiguration()
+		{
+			final Supplier<Grid> gridSupplier = () -> Player.this.game.getGrid();
+			this.selector = new ComparatorSelector(gridSupplier, this.configuration.strategy.comparator);
+			this.selector.setMean(this.configuration.force / 100f);
+		}
+	}
 
+	static class Configuration extends oscrabble.configuration.Configuration
+	{
+		@Parameter(label = "Strategy")
+		Strategy strategy = Strategy.MAX_LENGTH;
+
+		@Parameter(label = "Throttle (seconds)", lowerBound = 0, upperBound = 30)
+		int throttle = 4;
+
+		@Parameter(label = "Force", isSlide = true, lowerBound = 0, upperBound = 100)
+		int force = 70;
 	}
 
 	static class CalculateCtx
@@ -482,16 +473,22 @@ public class BruteForceMethod
 	}
 
 
-	/** Playing strategy for a player */
-	final static class Strategy {
+	/**
+	 * Playing strategy for a player
+	 */
+	@SuppressWarnings("unused")
+	enum Strategy
+	{
+		BEST_SCORE("Best score", Grid.MoveMetaInformation.SCORE_COMPARATOR),
+		MAX_LENGTH("Max length", Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR);
 
 		private final String label;
-		private final IMoveSelector selector;
+		private final Comparator<Grid.MoveMetaInformation> comparator;
 
-		Strategy(final String label, final IMoveSelector selector)
+		Strategy(final String label, Comparator<Grid.MoveMetaInformation> comparator)
 		{
 			this.label = label;
-			this.selector = selector;
+			this.comparator = comparator;
 		}
 
 		@Override
