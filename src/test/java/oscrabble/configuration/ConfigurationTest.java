@@ -1,6 +1,7 @@
 package oscrabble.configuration;
 
 import javafx.scene.control.ButtonBar;
+import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -12,6 +13,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 class ConfigurationTest
 {
+
+	public static final Logger LOGGER = Logger.getLogger(ConfigurationTest.class);
 
 	@Test
 	void configuration() throws InterruptedException
@@ -54,9 +57,9 @@ class ConfigurationTest
 			Thread.sleep(100);
 		}
 
-		System.out.println(config1.data);
-		System.out.println(config1.allowError);
-		System.out.println(config1.happines);
+		LOGGER.info(config1.data);
+		LOGGER.info(config1.allowError);
+		LOGGER.info(config1.happines);
 	}
 
 	private static class Config1 extends Configuration

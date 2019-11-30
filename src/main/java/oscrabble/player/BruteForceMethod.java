@@ -382,7 +382,7 @@ public class BruteForceMethod
 		@Override
 		public void onDispatchMessage(String msg)
 		{
-			System.out.println(msg);
+			LOGGER.debug("Received message: " + msg);
 		}
 
 		@Override

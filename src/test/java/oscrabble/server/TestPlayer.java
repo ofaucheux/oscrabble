@@ -1,5 +1,6 @@
 package oscrabble.server;
 
+import org.apache.log4j.Logger;
 import oscrabble.Move;
 import oscrabble.ScrabbleException;
 import oscrabble.player.AbstractPlayer;
@@ -12,6 +13,7 @@ import java.util.concurrent.BlockingQueue;
  */
 class TestPlayer extends AbstractPlayer
 {
+	public static final Logger LOGGER = Logger.getLogger(TestPlayer.class);
 	private final Game server;
 	private BlockingQueue<Move> nextMoves;
 
@@ -60,13 +62,13 @@ class TestPlayer extends AbstractPlayer
 	@Override
 	public void onDispatchMessage(final String msg)
 	{
-		System.out.println(msg);
+		LOGGER.info(msg);
 	}
 
 	@Override
 	public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
 	{
-		System.out.println(info.getName() + " played " + action);
+		LOGGER.info(info.getName() + " played " + action);
 	}
 
 	@Override

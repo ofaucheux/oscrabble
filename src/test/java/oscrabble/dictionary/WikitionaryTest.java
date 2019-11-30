@@ -1,5 +1,6 @@
 package oscrabble.dictionary;
 
+import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -9,6 +10,8 @@ import java.awt.*;
 public class WikitionaryTest
 {
 
+	public static final Logger LOGGER = Logger.getLogger(WikitionaryTest.class);
+
 	@Test
 	public void getDescription() throws InterruptedException, DictionaryException
 	{
@@ -16,7 +19,7 @@ public class WikitionaryTest
 		final Wikitionary wikitionary = new Wikitionary("https://fr.wiktionary.org");
 		wikitionary.setHtmlWidth(width);
 		Iterable<String> description = wikitionary.getDefinitions("ahaner");
-		System.out.println(description);
+		LOGGER.info(description);
 
 		final JFrame jFrame = new JFrame();
 		final ScrollPane sp = new ScrollPane();

@@ -2,6 +2,7 @@
 package oscrabble;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.TreeBag;
+import org.apache.log4j.Logger;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.Game;
 
@@ -11,6 +12,7 @@ import java.util.*;
 public class Grid
 {
 	public static final int SCRABBLE_SIZE = 15;
+	public static final Logger LOGGER = Logger.getLogger(Grid.class);
 
 	private final int size;
 	private final Stone.Generator stoneGenerator;
@@ -228,7 +230,7 @@ public class Grid
 		int x = move.startSquare.x;
 		int y = move.startSquare.y;
 
-		System.out.println("Scoring " + move);
+		LOGGER.trace("Scoring " + move);
 
 		final MoveMetaInformation mmi = new MoveMetaInformation(move);
 		int wordFactor = 1;
@@ -333,7 +335,7 @@ public class Grid
 		int x = move.startSquare.x;
 		int y = move.startSquare.y;
 
-		System.out.println("Putting " + move);
+		LOGGER.info("Putting " + move);
 
 		for (int i = 0; i < move.word.length(); i++)
 		{

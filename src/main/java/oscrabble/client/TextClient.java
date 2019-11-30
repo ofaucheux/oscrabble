@@ -1,9 +1,11 @@
 package oscrabble.client;
 
+import org.apache.log4j.Logger;
 import oscrabble.Grid;
 
 public class TextClient
 {
+	public static final Logger LOGGER = Logger.getLogger(TextClient.class);
 	private final Grid grid;
 
 	public TextClient(final Grid grid)
@@ -13,6 +15,6 @@ public class TextClient
 
 	public void refreshGrid()
 	{
-		System.out.println(this.grid.asASCIIArt());
+		LOGGER.debug(this.grid.asASCIIArt());
 	}
 }
