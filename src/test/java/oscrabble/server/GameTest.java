@@ -3,6 +3,7 @@ package oscrabble.server;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.Move;
@@ -26,7 +27,7 @@ public class GameTest
 	private TestPlayer john;
 	private TestPlayer jurek;
 
-	@Before
+	@BeforeEach
 	public void initialize()
 	{
 		final Dictionary FRENCH_DICTIONARY = Dictionary.getDictionary(Dictionary.Language.FRENCH);
