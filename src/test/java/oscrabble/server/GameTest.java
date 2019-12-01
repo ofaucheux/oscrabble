@@ -140,7 +140,7 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove(Move.parseMove(this.grid, "H7 A"));
+		this.gustav.addMove(Move.parseMove(this.grid, "H8 A"));
 		Thread.sleep(100);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -152,7 +152,7 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove(Move.parseMove(this.grid, "G7 A"));
+		this.gustav.addMove(Move.parseMove(this.grid, "G7 AS"));
 		Thread.sleep(100);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
