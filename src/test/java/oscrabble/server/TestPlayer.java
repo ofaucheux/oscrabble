@@ -36,21 +36,21 @@ class TestPlayer extends AbstractPlayer
 		{
 			try
 			{
-				final Move move = this.nextMoves.poll();
-				if (move == null)
+				final Move move = this.nextMoves.take();
+				this.server.play(this, move);
+			}
+			catch (InterruptedException e)
+			{
+				final String error = "Interrupted";
+				LOGGER.error(error);
+				try
 				{
-					final String error = "no more predefined move anymore";
-					LOGGER.error(error);
 					this.server.quit(this, this.playerKey, error);
 				}
-				else
+				catch (ScrabbleException ex)
 				{
-					this.server.play(this, move);
+					throw new Error(ex);
 				}
-			}
-			catch (ScrabbleException e)
-			{
-				throw new Error(e);
 			}
 		}
 	}
