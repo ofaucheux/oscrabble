@@ -130,7 +130,7 @@ public class SwingClient extends AbstractPlayer
 			{
 				try
 				{
-					SwingClient.this.game.rollbackLastMove(playerKey);
+					SwingClient.this.game.rollbackLastMove(SwingClient.this, playerKey);
 				}
 				catch (final Throwable ex)
 				{

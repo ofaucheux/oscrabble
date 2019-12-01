@@ -15,6 +15,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class Game implements IGame
@@ -37,7 +38,7 @@ public class Game implements IGame
 	/**
 	 * State of the game
 	 */
-	private State state;
+	private final AtomicReference<State> state = new AtomicReference<>();
 
 	/**
 	 * Configuration of the game
@@ -63,7 +64,7 @@ public class Game implements IGame
 		this.random = new Random(randomSeed);
 		this.waitingForPlay = new CountDownLatch(1);
 
-		this.state = State.BEFORE_START;
+		this.state.set(State.BEFORE_START);
 		LOGGER.info("Created game with random seed " + randomSeed);
 	}
 
@@ -237,9 +238,11 @@ public class Game implements IGame
 		}
 		finally
 		{
+			HistoryEntry historyEntry = null;
 			if (done)
 			{
-				this.history.add(new HistoryEntry(player, action, errorOccurred, score, drawn, moveMI));
+				historyEntry = new HistoryEntry(player, action, errorOccurred, score, drawn, moveMI);
+				this.history.add(historyEntry);
 				this.toPlay.pop();
 				this.toPlay.add(player);
 				this.moveNr++;
@@ -247,14 +250,14 @@ public class Game implements IGame
 			this.waitingForPlay.countDown();
 			final int copyScore = score;
 			dispatch(toInform -> toInform.afterPlay(this.moveNr, playerInfo, action, copyScore));
-			if (playerInfo.rack.isEmpty())
+			if (done && playerInfo.rack.isEmpty())
 			{
-				endGame(playerInfo);
+				endGame(playerInfo, historyEntry);
 			}
 		}
 	}
 
-	public synchronized void rollbackLastMove(final UUID callerKey) throws ScrabbleException
+	public synchronized void rollbackLastMove(final AbstractPlayer caller, final UUID callerKey) throws ScrabbleException
 	{
 		final HistoryEntry historyEntry = this.history.pollLast();
 		if (historyEntry == null)
@@ -268,12 +271,20 @@ public class Game implements IGame
 				filled -> playerInfo.rack.add(filled.stone)
 		);
 		this.grid.remove(historyEntry.metaInformation);
+		this.players.forEach( (p,info) -> info.score += historyEntry.scores.getOrDefault(p, 0));
 		playerInfo.score -= historyEntry.metaInformation.getScore();
-		assert this.toPlay.peekLast() == historyEntry.player;
-		this.toPlay.removeLast();
+		if (!this.toPlay.isEmpty())
+		{
+			assert this.toPlay.peekLast() == historyEntry.player;
+			this.toPlay.removeLast();
+		}
 		this.toPlay.addFirst(historyEntry.player);
+		LOGGER.info("Last move rollback on demand of " + caller);
+		this.state.set(State.STARTED);
 		dispatch(toInform -> toInform.afterRollback());
 		dispatch(toInform -> toInform.onPlayRequired(historyEntry.player));
+
+		this.waitingForPlay.countDown();
 	}
 
 	@Override
@@ -287,10 +298,9 @@ public class Game implements IGame
 	 *
 	 * @param firstEndingPlayer player which has first emptied its rack.
 	 */
-	private synchronized void endGame(PlayerInfo firstEndingPlayer)
+	private synchronized void endGame(PlayerInfo firstEndingPlayer, final HistoryEntry historyEntry)
 	{
-		this.state = State.ENDED;
-		this.toPlay.clear();
+		this.state.set(State.ENDED);
 		final StringBuffer message = new StringBuffer();
 		message.append(firstEndingPlayer.getName()).append(" has cleared its rack.\n");
 		this.players.forEach(
@@ -305,6 +315,8 @@ public class Game implements IGame
 						}
 						info.score -= gift;
 						firstEndingPlayer.score += gift;
+						historyEntry.scores.put(player, -gift);
+						historyEntry.scores.put(firstEndingPlayer.player, historyEntry.scores.get(firstEndingPlayer.player) + gift);
 						message.append(info.getName()).append(" gives ").append(gift).append(" points\n");
 					}
 				});
@@ -387,28 +399,36 @@ public class Game implements IGame
 
 		prepareGame();
 
-		this.state = State.STARTED;
+		this.state.set(State.STARTED);
 		this.moveNr = 1;
 		try
 		{
 			do
 			{
-				final AbstractPlayer player = this.toPlay.peekFirst();
-				if (player == null)
+				if (this.state.get() == State.ENDED)
 				{
-					throw new AssertionError();
-				}
-				LOGGER.info("Let's play " + player);
-				this.waitingForPlay = new CountDownLatch(1);
-				dispatch(p -> p.onPlayRequired(player));
-				while (!this.waitingForPlay.await(10, TimeUnit.MILLISECONDS))
-				{
-					if (this.state == State.ENDED)
+					// let the players the possibility to rollback
+					this.waitingForPlay = new CountDownLatch(1);
+					this.waitingForPlay.await(10L, TimeUnit.SECONDS);
+					if (this.state.get() == State.ENDED)
 					{
 						break;
 					}
 				}
-			} while (this.state != State.ENDED);
+				else
+				{
+					final AbstractPlayer player = this.toPlay.peekFirst();
+					if (player == null)
+					{
+						throw new AssertionError();
+					}
+					LOGGER.info("Let's play " + player);
+					this.waitingForPlay = new CountDownLatch(1);
+					dispatch(p -> p.onPlayRequired(player));
+					this.waitingForPlay.await();
+				}
+
+			} while (true);
 		}
 		catch (InterruptedException e)
 		{
@@ -531,7 +551,7 @@ public class Game implements IGame
 		final String msg = "Player " + player + " quits with message \"" + message + "\"";
 		LOGGER.info(msg);
 		dispatchMessage(msg);
-		this.state = State.ENDED;
+		this.state.set(State.ENDED);
 	}
 
 	@Override
@@ -557,6 +577,11 @@ public class Game implements IGame
 		{
 			throw new ScrabbleException(ScrabbleException.ERROR_CODE.NOT_IDENTIFIED);
 		}
+	}
+
+	State getState()
+	{
+		return this.state.get();
 	}
 
 	private static class PlayerInfo implements IPlayerInfo
@@ -602,7 +627,7 @@ public class Game implements IGame
 	/**
 	 * State of the game
 	 */
-	private enum State
+	enum  State
 	{BEFORE_START, STARTED, ENDED}
 
 	public interface ScrabbleEvent extends Consumer<GameListener>
@@ -705,7 +730,7 @@ public class Game implements IGame
 		private AbstractPlayer player;
 		private final IAction action;
 		private final boolean errorOccurred;
-		private final int score;
+		private final HashMap<AbstractPlayer, Integer> scores = new HashMap<>();
 		private final Set<Stone> drawn;  // to be used for rewind
 
 		/**
@@ -718,7 +743,7 @@ public class Game implements IGame
 			this.player = player;
 			this.action = action;
 			this.errorOccurred = errorOccurred;
-			this.score = score;
+			this.scores.put(player, score);
 			this.drawn = drawn;
 			this.metaInformation = metaInformation;
 		}
@@ -727,7 +752,7 @@ public class Game implements IGame
 		{
 			final StringBuilder sb = new StringBuilder(this.player.getName());
 			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((Move) this.action).getNotation());
-			sb.append(" ").append(this.score).append(" pts");
+			sb.append(" ").append(this.scores).append(" pts");
 			return sb.toString();
 		}
 	}

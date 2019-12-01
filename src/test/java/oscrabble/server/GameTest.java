@@ -49,7 +49,7 @@ public class GameTest
 	}
 
 	@Test
-	void completeGame() throws ScrabbleException, ParseException
+	void completeGame() throws ScrabbleException, ParseException, InterruptedException
 	{
 		final List<TestPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
 		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
@@ -96,20 +96,26 @@ public class GameTest
 				}
 		);
 
-		this.game.startGame();
+		startGame(true);
 
 		assertFalse(this.grid.getSquare("8K").isEmpty());
 		assertFalse(this.grid.getSquare("8L").isEmpty());
 		assertFalse(this.grid.getSquare("8M").isEmpty());
-		this.game.rollbackLastMove(null);
+		this.game.rollbackLastMove(null, null);
 		Assert.assertTrue(this.grid.getSquare("8K").isEmpty());
 		assertFalse(this.grid.getSquare("8L").isEmpty());
 		Assert.assertTrue(this.grid.getSquare("8M").isEmpty());
 
 		this.game.getPlayerInfo(this.john).getScore();
 		assertFalse(this.grid.getSquare("N10").isEmpty());
-		this.game.rollbackLastMove(null);
+		this.game.rollbackLastMove(null, null);
 		Assert.assertTrue(this.grid.getSquare("N10").isEmpty());
+
+		gustav.addMove(Move.parseMove(grid, "N10 VENTA"));
+		john.addMove(Move.parseMove(grid, "8K HEM"));
+
+		Thread.sleep(100);
+		assertEquals(Game.State.ENDED, game.getState());
 	}
 
 	@Test
