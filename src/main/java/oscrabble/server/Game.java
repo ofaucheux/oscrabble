@@ -195,6 +195,7 @@ public class Game implements IGame
 				throw new AssertionError("Command not treated: " + action);
 			}
 
+			playerInfo.isLastPlayError = false;
 			drawn = refillRack(player);
 			messages.forEach(message -> dispatchMessage(message));
 
@@ -217,6 +218,7 @@ public class Game implements IGame
 			{
 				dispatchMessage("Player " + player + " would have play an illegal move: " + e + ". Skip its turn");
 				done = true;
+				playerInfo.isLastPlayError = true;
 			}
 			return 0;
 		}
@@ -525,6 +527,17 @@ public class Game implements IGame
 		return this.configuration;
 	}
 
+	@Override
+	public boolean isLastPlayError(final AbstractPlayer player)
+	{
+		final PlayerInfo mi = this.players.get(player);
+		if (mi.isLastPlayError == null)
+		{
+			throw new IllegalStateException("Player never has played");
+		}
+		return mi.isLastPlayError;
+	}
+
 	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
 	{
 		if (clientKey == null || !clientKey.equals(this.players.get(player).key))
@@ -549,7 +562,6 @@ public class Game implements IGame
 
 		Rack rack;
 		int score;
-
 		@Override
 		public String getName()
 		{
@@ -567,6 +579,11 @@ public class Game implements IGame
 		{
 			return this.player.hasEditableParameters();
 		}
+
+		/**
+		 * Was last play an error?
+		 */
+		public Boolean isLastPlayError;
 	}
 
 	/**

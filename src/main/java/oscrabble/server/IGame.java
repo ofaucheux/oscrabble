@@ -80,4 +80,12 @@ public interface IGame
 	 * @return the configuration object of the game. Never null.
 	 */
 	Configuration getConfiguration();
+
+	/**
+	 *
+	 * @param player Player
+	 * @return if the last play of the player was an error. It wasn't an error if a successful retry has token place.
+	 * @throws IllegalStateException if the player has never played for the time
+	 */
+	boolean isLastPlayError(AbstractPlayer player);
 }

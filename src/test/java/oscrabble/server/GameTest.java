@@ -2,7 +2,6 @@ package oscrabble.server;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
@@ -26,11 +25,11 @@ public class GameTest
 	private TestPlayer gustav;
 	private TestPlayer john;
 	private TestPlayer jurek;
+	public static final Dictionary FRENCH_DICTIONARY = Dictionary.getDictionary(Dictionary.Language.FRENCH);
 
 	@BeforeEach
 	public void initialize()
 	{
-		final Dictionary FRENCH_DICTIONARY = Dictionary.getDictionary(Dictionary.Language.FRENCH);
 
 		this.game = new Game(FRENCH_DICTIONARY, -3300078916872261882L);
 		this.grid = this.game.getGrid();
@@ -111,14 +110,11 @@ public class GameTest
 		assertFalse(this.grid.getSquare("N10").isEmpty());
 		this.game.rollbackLastMove(null);
 		Assert.assertTrue(this.grid.getSquare("N10").isEmpty());
-
-
 	}
 
 	@Test
 	public void retryAccepted() throws ScrabbleException, ParseException, InterruptedException
 	{
-
 		// test retry accepted
 		this.grid = this.game.getGrid();
 		this.game.getConfiguration().setValue("retryAccepted", true);
@@ -127,8 +123,6 @@ public class GameTest
 		assertEquals(this.game.getScore(this.gustav), 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 		this.gustav.addMove(Move.parseMove(this.grid, "H3 APTES"));
-
-
 	}
 
 	@Test
@@ -138,6 +132,29 @@ public class GameTest
 		this.startGame(true);
 		this.gustav.addMove(Move.parseMove(this.grid, "H3 APPETEE"));
 		assertEquals(this.game.getScore(this.gustav), 0);
+		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+	}
+
+	@Test
+	public void startWithOnlyOneLetter() throws ScrabbleException, ParseException, InterruptedException
+	{
+		this.game.getConfiguration().setValue("retryAccepted", false);
+		startGame(true);
+		this.gustav.addMove(Move.parseMove(this.grid, "H7 A"));
+		Thread.sleep(100);
+		assertTrue(this.game.isLastPlayError(this.gustav));
+		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+	}
+
+
+	@Test
+	public void startNotCentered() throws ScrabbleException, ParseException, InterruptedException
+	{
+		this.game.getConfiguration().setValue("retryAccepted", false);
+		startGame(true);
+		this.gustav.addMove(Move.parseMove(this.grid, "G7 A"));
+		Thread.sleep(100);
+		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
