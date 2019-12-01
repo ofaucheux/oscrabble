@@ -136,6 +136,10 @@ public class Game implements IGame
 						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "First word must have at least two letters");
 					}
 				}
+				else if (moveMI.crosswords.isEmpty() && requiredLetters.size() == move.word.length())
+				{
+					throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "New word must touch another one");
+				}
 
 				// check dictionary
 				final Set<String> toTest = new LinkedHashSet<>();

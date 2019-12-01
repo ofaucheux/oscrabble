@@ -169,7 +169,6 @@ public class GameTest
 		this.john.addMove(Move.parseMove(this.grid, "A3 VIGIE"));
 		Thread.sleep(100);
 		assertTrue(this.game.isLastPlayError(this.john));
-
 	}
 
 
