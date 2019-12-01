@@ -131,6 +131,7 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.startGame(true);
 		this.gustav.addMove(Move.parseMove(this.grid, "H3 APPETEE"));
+		Thread.sleep(100);
 		assertEquals(this.game.getScore(this.gustav), 0);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
