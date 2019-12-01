@@ -158,6 +158,21 @@ public class GameTest
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
+	@Test
+	public void wordDoesNotTouch() throws ScrabbleException, ParseException, InterruptedException
+	{
+		this.game.getConfiguration().setValue("retryAccepted", false);
+		startGame(true);
+		this.gustav.addMove(Move.parseMove(this.grid, "H8 AS"));
+		Thread.sleep(100);
+		assertFalse(this.game.isLastPlayError(this.gustav));
+		this.john.addMove(Move.parseMove(this.grid, "A3 VIGIE"));
+		Thread.sleep(100);
+		assertTrue(this.game.isLastPlayError(this.john));
+
+	}
+
+
 	/**
 	 * Start the game.
 	 *

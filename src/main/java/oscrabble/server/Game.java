@@ -128,6 +128,15 @@ public class Game implements IGame
 					throw new ScrabbleException(ScrabbleException.ERROR_CODE.MISSING_LETTER);
 				}
 
+				// check touch
+				if (this.grid.isEmpty())
+				{
+					if (move.word.length() < 2)
+					{
+						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "First word must have at least two letters");
+					}
+				}
+
 				// check dictionary
 				final Set<String> toTest = new LinkedHashSet<>();
 				toTest.add(move.word);
