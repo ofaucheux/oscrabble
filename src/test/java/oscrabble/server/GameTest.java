@@ -18,16 +18,10 @@ public class GameTest
 	@Test
 	void play() throws ScrabbleException, ParseException
 	{
-		final Game server = new Game(Dictionary.getDictionary(Dictionary.Language.FRENCH), -3300078916872261882L);
+		final TestEnvironment env = new TestEnvironment();
+		final Game server = env.game;
 
-		final TestPlayer gustav = new TestPlayer("Gustav", server);
-		final TestPlayer john = new TestPlayer("John", server);
-		final TestPlayer jurek = new TestPlayer("Jurek", server);
-		server.register(gustav);
-		server.register(john);
-		server.register(jurek);
-
-		final List<TestPlayer> players = Arrays.asList(gustav, john, jurek);
+		final List<TestPlayer> players = Arrays.asList(env.gustav, env.john, env.jurek);
 		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
 				"H3 APPETES",
 				"G9 VIGIE",
@@ -66,7 +60,7 @@ public class GameTest
 						switch (moveNr)
 						{
 							case 1:
-								Assert.assertEquals(78, server.getPlayerInfo(gustav).getScore());
+								Assert.assertEquals(78, server.getPlayerInfo(env.gustav).getScore());
 								break;
 						}
 					}
@@ -83,7 +77,7 @@ public class GameTest
 		Assert.assertFalse(grid.getSquare("8L").isEmpty());
 		Assert.assertTrue(grid.getSquare("8M").isEmpty());
 
-		server.getPlayerInfo(john).getScore();
+		server.getPlayerInfo(env.john).getScore();
 		Assert.assertFalse(grid.getSquare("N10").isEmpty());
 		server.rollbackLastMove(null);
 		Assert.assertTrue(grid.getSquare("N10").isEmpty());
@@ -94,19 +88,37 @@ public class GameTest
 	@Test
 	public void errorsCases() throws ScrabbleException, ParseException
 	{
-		final Game server = new Game(Dictionary.getDictionary(Dictionary.Language.FRENCH), -3300078916872261882L);
+		final TestEnvironment env = new TestEnvironment();
 
-		final TestPlayer gustav = new TestPlayer("Gustav", server);
-		final TestPlayer john = new TestPlayer("John", server);
-		final TestPlayer jurek = new TestPlayer("Jurek", server);
-		server.register(gustav);
-		server.register(john);
-		server.register(jurek);
+		final Grid grid = env.game.getGrid();
+		env.game.getConfiguration().setValue("retryAccepted", true);
+		env.gustav.addMove(Move.parseMove(grid, "H3 APPETEE"));
+		env.gustav.addMove(Move.parseMove(grid, "H3 APPETES"));
+		env.game.startGame();
+	}
 
-		final Grid grid = server.getGrid();
-		server.getConfiguration().setValue("retryAccepted", true);
-		gustav.addMove(Move.parseMove(grid, "H3 APPETEE"));
-		gustav.addMove(Move.parseMove(grid, "H3 APPETES"));
-		server.startGame();
+	/**
+	 * Vordefinierte Spiel Startumgebung.
+	 */
+	private static class TestEnvironment
+	{
+		public static final Dictionary FRENCH_DICTIONARY = Dictionary.getDictionary(Dictionary.Language.FRENCH);
+
+		private Game game;
+		private TestPlayer gustav;
+		private TestPlayer john;
+		private TestPlayer jurek;
+
+		public TestEnvironment()
+		{
+			this.game = new Game(FRENCH_DICTIONARY, -3300078916872261882L);
+
+			this.gustav = new TestPlayer("Gustav", this.game);
+			this.john = new TestPlayer("John", this.game);
+			this.jurek = new TestPlayer("Jurek", this.game);
+			this.game.register(this.gustav);
+			this.game.register(this.john);
+			this.game.register(this.jurek);
+		}
 	}
 }
