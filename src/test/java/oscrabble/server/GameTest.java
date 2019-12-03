@@ -114,7 +114,10 @@ public class GameTest
 		gustav.addMove(Move.parseMove(grid, "N10 VENTA"));
 		john.addMove(Move.parseMove(grid, "8K HEM"));
 
-		Thread.sleep(100);
+		Thread.sleep(Game.DELAY_BEFORE_ENDS * 1000 / 2);
+		assertEquals(Game.State.ENDING, game.getState());
+
+		Thread.sleep(Game.DELAY_BEFORE_ENDS * 1000 / 2 + 500);
 		assertEquals(Game.State.ENDED, game.getState());
 	}
 

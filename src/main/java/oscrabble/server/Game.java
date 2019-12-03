@@ -11,11 +11,7 @@ import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class Game implements IGame
@@ -24,8 +20,18 @@ public class Game implements IGame
 
 	public final static int RACK_SIZE = 7;
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
+	public static final ScheduledExecutorService SERVICE = Executors.newScheduledThreadPool(3);
+
+	/**
+	 * Delay (in seconds) before changing the state from ENDING to ENDED
+	 */
+	static final int DELAY_BEFORE_ENDS = 3;
 
 	private final Map<AbstractPlayer, PlayerInfo> players = new LinkedHashMap<>();
+
+	/**
+	 * List of the users, the first to play at head
+	 */
 	private final LinkedList<AbstractPlayer> toPlay = new LinkedList<>();
 	private final Grid grid;
 	private final Random random;
@@ -38,7 +44,7 @@ public class Game implements IGame
 	/**
 	 * State of the game
 	 */
-	private final AtomicReference<State> state = new AtomicReference<>();
+	private State state;
 
 	/**
 	 * Configuration of the game
@@ -55,6 +61,11 @@ public class Game implements IGame
 	 */
 	private final LinkedList<HistoryEntry> history = new LinkedList<>();
 
+	/**
+	 * Schedule task to change the state from ENDING to ENDED
+	 */
+	private ScheduledFuture<Void> endScheduler;
+
 	Game(final Dictionary dictionary, final long randomSeed)
 	{
 		this.configuration = new Configuration();
@@ -64,8 +75,17 @@ public class Game implements IGame
 		this.random = new Random(randomSeed);
 		this.waitingForPlay = new CountDownLatch(1);
 
-		this.state.set(State.BEFORE_START);
+		setState(State.BEFORE_START);
 		LOGGER.info("Created game with random seed " + randomSeed);
+	}
+
+	private void setState(final State state)
+	{
+		if (this.state != state)
+		{
+			this.state = state;
+			this.listeners.forEach( l -> l.onGameStateChanged());
+		}
 	}
 
 	public Game(final Dictionary dictionary)
@@ -265,6 +285,13 @@ public class Game implements IGame
 			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "No move played for the time");
 		}
 
+		if (this.endScheduler != null)
+		{
+			this.endScheduler.cancel(true);
+			this.endScheduler = null;
+			setState(State.STARTED);
+		}
+
 		final PlayerInfo playerInfo = this.players.get(historyEntry.player);
 		playerInfo.rack.removeAll(historyEntry.drawn);
 		historyEntry.metaInformation.getFilledSquares().forEach(
@@ -273,14 +300,11 @@ public class Game implements IGame
 		this.grid.remove(historyEntry.metaInformation);
 		this.players.forEach( (p,info) -> info.score += historyEntry.scores.getOrDefault(p, 0));
 		playerInfo.score -= historyEntry.metaInformation.getScore();
-		if (!this.toPlay.isEmpty())
-		{
-			assert this.toPlay.peekLast() == historyEntry.player;
-			this.toPlay.removeLast();
-		}
+		assert this.toPlay.peekLast() == historyEntry.player;
+		this.toPlay.removeLast();
 		this.toPlay.addFirst(historyEntry.player);
 		LOGGER.info("Last move rollback on demand of " + caller);
-		this.state.set(State.STARTED);
+		setState(State.STARTED);
 		dispatch(toInform -> toInform.afterRollback());
 		dispatch(toInform -> toInform.onPlayRequired(historyEntry.player));
 
@@ -300,7 +324,8 @@ public class Game implements IGame
 	 */
 	private synchronized void endGame(PlayerInfo firstEndingPlayer, final HistoryEntry historyEntry)
 	{
-		this.state.set(State.ENDED);
+		assert this.endScheduler == null;
+		setState(State.ENDING);
 		final StringBuffer message = new StringBuffer();
 		message.append(firstEndingPlayer.getName()).append(" has cleared its rack.\n");
 		this.players.forEach(
@@ -322,7 +347,14 @@ public class Game implements IGame
 				});
 
 		dispatch(c -> c.onDispatchMessage(message.toString()));
+		this.endScheduler = SERVICE.schedule(() -> {
+					setState(State.ENDED);
+					return null;
+				},
+				DELAY_BEFORE_ENDS,
+				TimeUnit.SECONDS);
 	}
+
 
 	/**
 	 * Send a message to each listener.
@@ -399,36 +431,26 @@ public class Game implements IGame
 
 		prepareGame();
 
-		this.state.set(State.STARTED);
+		setState(State.STARTED);
 		this.moveNr = 1;
 		try
 		{
 			do
 			{
-				if (this.state.get() == State.ENDED)
+				if (this.state == State.ENDING)
 				{
-					// let the players the possibility to rollback
-					this.waitingForPlay = new CountDownLatch(1);
-					this.waitingForPlay.await(10L, TimeUnit.SECONDS);
-					if (this.state.get() == State.ENDED)
-					{
-						break;
-					}
+					Thread.sleep(100);
 				}
 				else
 				{
 					final AbstractPlayer player = this.toPlay.peekFirst();
-					if (player == null)
-					{
-						throw new AssertionError();
-					}
+					assert  player != null;
 					LOGGER.info("Let's play " + player);
 					this.waitingForPlay = new CountDownLatch(1);
 					dispatch(p -> p.onPlayRequired(player));
 					this.waitingForPlay.await();
 				}
-
-			} while (true);
+			} while (this.state != State.ENDED);
 		}
 		catch (InterruptedException e)
 		{
@@ -551,7 +573,7 @@ public class Game implements IGame
 		final String msg = "Player " + player + " quits with message \"" + message + "\"";
 		LOGGER.info(msg);
 		dispatchMessage(msg);
-		this.state.set(State.ENDED);
+		setState(State.ENDED);
 	}
 
 	@Override
@@ -581,7 +603,7 @@ public class Game implements IGame
 
 	State getState()
 	{
-		return this.state.get();
+		return this.state;
 	}
 
 	private static class PlayerInfo implements IPlayerInfo
@@ -628,7 +650,7 @@ public class Game implements IGame
 	 * State of the game
 	 */
 	enum  State
-	{BEFORE_START, STARTED, ENDED}
+	{BEFORE_START, STARTED, ENDING, ENDED}
 
 	public interface ScrabbleEvent extends Consumer<GameListener>
 	{
@@ -658,6 +680,11 @@ public class Game implements IGame
 		void afterGameEnd();
 
 		Queue<ScrabbleEvent> getIncomingEventQueue();
+
+		/**
+		 * Called after the state of the game have changed
+		 */
+		default void onGameStateChanged() { }
 	}
 
 	/**
