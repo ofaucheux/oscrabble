@@ -10,6 +10,7 @@ import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
+import oscrabble.server.PassTurn;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -343,8 +344,7 @@ public class BruteForceMethod
 				if (moves.isEmpty())
 				{
 					this.game.sendMessage(this, "No possible moves anymore");
-					// TODO - passt oder ersetzt manche Stones
-					throw new UnsupportedOperationException();
+					this.game.play(this, PassTurn.SINGLETON);
 				}
 				else
 				{

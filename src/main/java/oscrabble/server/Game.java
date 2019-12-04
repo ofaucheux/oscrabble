@@ -224,6 +224,10 @@ public class Game implements IGame
 				Collections.shuffle(this.bag, this.random);
 				moveMI = null;
 			}
+			else if (action instanceof PassTurn)
+			{
+				this.dispatchMessage(player.getName() + " passes its turn");
+			}
 			else
 			{
 				throw new AssertionError("Command not treated: " + action);
@@ -665,19 +669,19 @@ public class Game implements IGame
 		/**
 		 * Sent to all players to indicate who now has to play.
 		 */
-		void onPlayRequired(AbstractPlayer currentPlayer);
+		default void onPlayRequired(AbstractPlayer currentPlayer) { }
 
-		void onDictionaryChange();
+		default void onDictionaryChange() { }
 
-		void onDispatchMessage(String msg);
+		default void onDispatchMessage(String msg) { }
 
-		void afterRollback();
+		default void afterRollback() { }
 
-		void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score);
+		default void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score) { }
 
-		void beforeGameStart();
+		default void beforeGameStart() { }
 
-		void afterGameEnd();
+		default void afterGameEnd() { }
 
 		Queue<ScrabbleEvent> getIncomingEventQueue();
 
@@ -694,41 +698,6 @@ public class Game implements IGame
 	{
 
 		private final LinkedList<ScrabbleEvent> queue = new LinkedList<>();
-
-		@Override
-		public void onPlayRequired(final AbstractPlayer currentPlayer)
-		{
-		}
-
-		@Override
-		public void onDictionaryChange()
-		{
-		}
-
-		@Override
-		public void onDispatchMessage(final String msg)
-		{
-		}
-
-		@Override
-		public void afterRollback()
-		{
-		}
-
-		@Override
-		public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
-		{
-		}
-
-		@Override
-		public void beforeGameStart()
-		{
-		}
-
-		@Override
-		public void afterGameEnd()
-		{
-		}
 
 		@Override
 		public Queue<ScrabbleEvent> getIncomingEventQueue()
