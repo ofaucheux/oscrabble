@@ -12,6 +12,7 @@ import oscrabble.player.AbstractPlayer;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class Game implements IGame
@@ -115,6 +116,7 @@ public class Game implements IGame
 			throw new IllegalStateException("The player " + player.toString() + " is not playing");
 		}
 
+		LOGGER.info(player.getName() + " plays " + action);
 		final PlayerInfo playerInfo = this.players.get(player);
 		boolean done = false;
 		int score = 0;
@@ -265,6 +267,7 @@ public class Game implements IGame
 		}
 		finally
 		{
+			playerInfo.lastAction = action;
 			HistoryEntry historyEntry = null;
 			if (done)
 			{
@@ -274,13 +277,26 @@ public class Game implements IGame
 				this.toPlay.add(player);
 				this.moveNr++;
 			}
-			this.waitingForPlay.countDown();
 			final int copyScore = score;
 			dispatch(toInform -> toInform.afterPlay(this.moveNr, playerInfo, action, copyScore));
-			if (done && playerInfo.rack.isEmpty())
+			if (done)
 			{
-				endGame(playerInfo, historyEntry);
+				if (playerInfo.rack.isEmpty())
+				{
+					endGame(playerInfo, historyEntry);
+				}
+				else if (action == SkipTurn.SINGLETON)
+				{
+					// Quit if nobody can play
+					final AtomicBoolean canPlay = new AtomicBoolean(false);
+					this.players.forEach((p, mi) -> { if (mi.lastAction != SkipTurn.SINGLETON) canPlay.set(true);});
+					if (!canPlay.get())
+					{
+						endGame(null, historyEntry);
+					}
+				}
 			}
+			this.waitingForPlay.countDown();
 		}
 	}
 
@@ -327,14 +343,22 @@ public class Game implements IGame
 	/**
 	 * Ends the game.
 	 *
-	 * @param firstEndingPlayer player which has first emptied its rack.
+	 * @param firstEndingPlayer player which has first emptied its rack, or {@code null} if nobody has cleared it.
 	 */
-	private synchronized void endGame(PlayerInfo firstEndingPlayer, final HistoryEntry historyEntry)
+	private synchronized void endGame(final PlayerInfo firstEndingPlayer, final HistoryEntry historyEntry)
 	{
+		LOGGER.info("Games ends. Player which have clear its rack: " + (firstEndingPlayer == null ? null : firstEndingPlayer.getName()));
 		assert this.endScheduler == null;
 		setState(State.ENDING);
 		final StringBuffer message = new StringBuffer();
-		message.append(firstEndingPlayer.getName()).append(" has cleared its rack.\n");
+		if (firstEndingPlayer == null)
+		{
+			message.append("Game ends without any player have cleared its rack");
+		}
+		else
+		{
+			message.append(firstEndingPlayer.getName()).append(" has cleared its rack.\n");
+		}
 		this.players.forEach(
 				(player, info) ->
 				{
@@ -346,9 +370,12 @@ public class Game implements IGame
 							gift += stone.getPoints();
 						}
 						info.score -= gift;
-						firstEndingPlayer.score += gift;
 						historyEntry.scores.put(player, -gift);
-						historyEntry.scores.put(firstEndingPlayer.player, historyEntry.scores.get(firstEndingPlayer.player) + gift);
+						if (firstEndingPlayer != null)
+						{
+							firstEndingPlayer.score += gift;
+							historyEntry.scores.put(firstEndingPlayer.player, historyEntry.scores.get(firstEndingPlayer.player) + gift);
+						}
 						message.append(info.getName()).append(" gives ").append(gift).append(" points\n");
 					}
 				});
@@ -442,22 +469,15 @@ public class Game implements IGame
 		this.moveNr = 1;
 		try
 		{
-			do
+			while (this.state != State.ENDED && this.state != State.ENDING)
 			{
-				if (this.state == State.ENDING)
-				{
-					Thread.sleep(100);
-				}
-				else
-				{
-					final AbstractPlayer player = this.toPlay.peekFirst();
-					assert  player != null;
-					LOGGER.info("Let's play " + player);
-					this.waitingForPlay = new CountDownLatch(1);
-					dispatch(p -> p.onPlayRequired(player));
-					this.waitingForPlay.await();
-				}
-			} while (this.state != State.ENDED);
+				final AbstractPlayer player = this.toPlay.peekFirst();
+				assert  player != null;
+				LOGGER.info("Let's play " + player);
+				this.waitingForPlay = new CountDownLatch(1);
+				dispatch(p -> p.onPlayRequired(player));
+				this.waitingForPlay.await();
+			}
 		}
 		catch (InterruptedException e)
 		{
@@ -651,6 +671,11 @@ public class Game implements IGame
 		 * Was last play an error?
 		 */
 		public Boolean isLastPlayError;
+
+		/**
+		 * Last played action.
+		 */
+		IAction lastAction;
 	}
 
 	/**
