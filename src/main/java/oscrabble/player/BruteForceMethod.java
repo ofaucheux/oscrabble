@@ -317,7 +317,7 @@ public class BruteForceMethod
 	public class Player extends AbstractPlayer
 	{
 
-		private Configuration configuration = new Configuration();
+		protected Configuration configuration = new Configuration();
 
 		private ComparatorSelector selector;
 

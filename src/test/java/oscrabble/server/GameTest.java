@@ -1,5 +1,6 @@
 package oscrabble.server;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.Move;
 import oscrabble.ScrabbleException;
+import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Dictionary;
+import oscrabble.player.BruteForceMethod;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -49,7 +52,35 @@ public class GameTest
 	}
 
 	@Test
-	void completeGame() throws ScrabbleException, ParseException, InterruptedException
+	void completeRandomGame() throws InterruptedException, ScrabbleException
+	{
+		for (int gameNr = 0; gameNr < 10; gameNr++)
+		{
+			this.game = new Game(FRENCH_DICTIONARY);
+			final BruteForceMethod method = new BruteForceMethod(FRENCH_DICTIONARY);
+
+			for (int i = 0; i < RandomUtils.nextInt(1, 7); i++)
+			{
+				final BruteForceMethod.Player player = method.new Player("Player " + i)
+				{
+					{
+						((Configuration) this.configuration).setValue("throttle", 0);
+					}
+				};
+
+				this.game.register(player);
+			}
+			startGame(true);
+		}
+
+		while (this.game.getState() != Game.State.ENDED)
+		{
+			Thread.sleep(100);
+		}
+	}
+
+	@Test
+	void completeKnownGame() throws ScrabbleException, ParseException, InterruptedException
 	{
 		final List<TestPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
 		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
@@ -111,14 +142,14 @@ public class GameTest
 		this.game.rollbackLastMove(null, null);
 		Assert.assertTrue(this.grid.getSquare("N10").isEmpty());
 
-		gustav.addMove(Move.parseMove(grid, "N10 VENTA"));
-		john.addMove(Move.parseMove(grid, "8K HEM"));
+		this.gustav.addMove(Move.parseMove(this.grid, "N10 VENTA"));
+		this.john.addMove(Move.parseMove(this.grid, "8K HEM"));
 
 		Thread.sleep(Game.DELAY_BEFORE_ENDS * 1000 / 2);
-		assertEquals(Game.State.ENDING, game.getState());
+		assertEquals(Game.State.ENDING, this.game.getState());
 
 		Thread.sleep(Game.DELAY_BEFORE_ENDS * 1000 / 2 + 500);
-		assertEquals(Game.State.ENDED, game.getState());
+		assertEquals(Game.State.ENDED, this.game.getState());
 	}
 
 	@Test
