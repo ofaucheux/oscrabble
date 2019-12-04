@@ -1,6 +1,8 @@
 package oscrabble.server;
 
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggerRepository;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,15 +15,15 @@ import oscrabble.dictionary.Dictionary;
 import oscrabble.player.BruteForceMethod;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
 
 public class GameTest
 {
+
+	public static final Logger LOGGER = Logger.getLogger(GameTest.class);
 
 	private Game game;
 	private Grid grid;
@@ -71,11 +73,11 @@ public class GameTest
 				this.game.register(player);
 			}
 			startGame(true);
-		}
 
-		while (this.game.getState() != Game.State.ENDED)
-		{
-			Thread.sleep(100);
+			while (this.game.getState() != Game.State.ENDED)
+			{
+				Thread.sleep(100);
+			}
 		}
 	}
 
@@ -238,6 +240,14 @@ public class GameTest
 	 */
 	public void startGame(final boolean fork) throws ScrabbleException, InterruptedException
 	{
+		this.game.listeners.add(new Game.DefaultGameListener()
+		{
+			@Override
+			public void onGameStateChanged()
+			{
+				LOGGER.info("Game state changed to " + GameTest.this.game.getState());
+			}
+		});
 		if (fork)
 		{
 			final AtomicReference<ScrabbleException> exception = new AtomicReference<>();
