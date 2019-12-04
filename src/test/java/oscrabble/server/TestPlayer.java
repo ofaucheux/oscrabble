@@ -5,6 +5,7 @@ import oscrabble.Move;
 import oscrabble.ScrabbleException;
 import oscrabble.player.AbstractPlayer;
 
+import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -22,6 +23,11 @@ class TestPlayer extends AbstractPlayer
 		super(name);
 		this.server = server;
 		this.nextMoves = new ArrayBlockingQueue<>(1024);
+	}
+
+	UUID getKey()
+	{
+		return this.playerKey;
 	}
 
 	void addMove(final Move move)

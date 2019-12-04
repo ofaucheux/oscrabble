@@ -181,6 +181,24 @@ public class GameTest
 		assertTrue(this.game.isLastPlayError(this.john));
 	}
 
+	@Test
+	public void testScore() throws ScrabbleException, InterruptedException, ParseException
+	{
+		// dieser seed gibt die Buchstaben "[F, T, I, N, O, A,  - joker - ]"
+		this.game = new Game(FRENCH_DICTIONARY, 2346975568742590367L);
+		final TestPlayer p = new TestPlayer("Etienne", this.game);
+		this.game.register(p);
+		startGame(true);
+		final Grid grid = this.game.getGrid();
+
+		p.addMove(Move.parseMove(grid, "H7 As"));
+		Thread.sleep(100);
+		assertEquals(2, this.game.getScore(p));
+
+		p.addMove(Move.parseMove(grid, "8H SI"));
+		Thread.sleep(100);
+		assertEquals(3, this.game.getScore(p));
+	}
 
 	/**
 	 * Start the game.
