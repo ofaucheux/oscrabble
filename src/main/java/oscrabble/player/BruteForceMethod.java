@@ -16,6 +16,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BruteForceMethod
@@ -442,7 +443,7 @@ public class BruteForceMethod
 		protected void updateConfiguration()
 		{
 			final Supplier<Grid> gridSupplier = () -> Player.this.game.getGrid();
-			this.selector = new ComparatorSelector(gridSupplier, this.configuration.strategy.comparator);
+			this.selector = new ComparatorSelector(gridSupplier, this.configuration.strategy.valuator);
 			this.selector.setMean(this.configuration.force / 100f);
 		}
 	}
@@ -480,18 +481,18 @@ public class BruteForceMethod
 	 * Playing strategy for a player
 	 */
 	@SuppressWarnings("unused")
-	enum Strategy
+	public enum Strategy
 	{
-		BEST_SCORE("Best score", Grid.MoveMetaInformation.SCORE_COMPARATOR),
-		MAX_LENGTH("Max length", Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR);
+		BEST_SCORE("Best score", mi -> mi.getScore()),
+		MAX_LENGTH("Max length", mi -> mi.getRequiredLetters().size());
 
 		private final String label;
-		private final Comparator<Grid.MoveMetaInformation> comparator;
+		private final Function<Grid.MoveMetaInformation, Integer> valuator;
 
-		Strategy(final String label, Comparator<Grid.MoveMetaInformation> comparator)
+		Strategy(final String label, Function<Grid.MoveMetaInformation, Integer> valuator)
 		{
 			this.label = label;
-			this.comparator = comparator;
+			this.valuator = valuator;
 		}
 
 		@Override

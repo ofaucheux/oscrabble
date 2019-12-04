@@ -7,6 +7,7 @@ import oscrabble.Move;
 import oscrabble.ScrabbleException;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -15,15 +16,15 @@ import java.util.function.Supplier;
 public class ComparatorSelector implements IMoveSelector
 {
 	public static final Logger LOGGER = Logger.getLogger(ComparatorSelector.class);
-	private final Comparator<Grid.MoveMetaInformation> comparator;
+	private final Function<Grid.MoveMetaInformation, Integer> valueFunction;
 	private static final Random RANDOM = new Random();
 	private float mean = 0.7f;
 	private final Supplier<Grid> gridSupplier;
 
-	ComparatorSelector(final Supplier<Grid> gridSupplier, final Comparator<Grid.MoveMetaInformation> comparator)
+	ComparatorSelector(final Supplier<Grid> gridSupplier, final Function<Grid.MoveMetaInformation, Integer> valueFunction)
 	{
 		this.gridSupplier = gridSupplier;
-		this.comparator = comparator;
+		this.valueFunction = valueFunction;
 	}
 
 	@Override
@@ -44,17 +45,20 @@ public class ComparatorSelector implements IMoveSelector
 			list.add(el);
 		}
 		Collections.shuffle(list);
-		list.sort((o1, o2) -> ComparatorSelector.this.comparator.compare(o1.metaInformation, o2.metaInformation));
+		final Comparator<Element> comparator =
+				(o1, o2) -> ComparatorSelector.this.valueFunction.apply(o1.metaInformation) - this.valueFunction.apply(o2.metaInformation);
 
-		final int minScore = list.get(0).metaInformation.getScore();
-		final int maxScore = list.get(list.size() - 1).metaInformation.getScore();
+		list.sort(comparator);
+
+		final int minValue = this.valueFunction.apply(list.get(0).metaInformation);
+		final int maxValue = this.valueFunction.apply(list.get(list.size() - 1).metaInformation);
 
 		final double gaussian = RANDOM.nextGaussian() / 3;
-		int selectedScore = (int) ((gaussian + this.mean) * (maxScore + minScore));
-		int selected = ListUtils.indexOf(list, el -> el.metaInformation.getScore() >= selectedScore);
+		int selectedValue = (int) ((gaussian + this.mean) * (maxValue + minValue));
+		int selected = ListUtils.indexOf(list, el -> this.valueFunction.apply(el.metaInformation) >= selectedValue);
 		if (selected == -1)
 		{
-			selected = 0;
+			selected = list.size() - 1;
 		}
 
 		LOGGER.trace("select(): select " + selected + "th of " + list.size() + " moves (Gaussian: " + gaussian + ")");

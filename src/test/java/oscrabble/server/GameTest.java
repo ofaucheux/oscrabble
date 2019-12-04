@@ -66,7 +66,10 @@ public class GameTest
 				final BruteForceMethod.Player player = method.new Player("Player " + i)
 				{
 					{
-						((Configuration) this.configuration).setValue("throttle", 0);
+						final Configuration configuration = this.configuration;
+						configuration.setValue("throttle", 0);
+						configuration.setValue("force", 100);
+						configuration.setValue("strategy", BruteForceMethod.Strategy.BEST_SCORE);
 					}
 				};
 
