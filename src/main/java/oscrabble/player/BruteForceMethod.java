@@ -10,7 +10,7 @@ import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.IAction;
 import oscrabble.server.IPlayerInfo;
-import oscrabble.server.PassTurn;
+import oscrabble.server.SkipTurn;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -344,7 +344,7 @@ public class BruteForceMethod
 				if (moves.isEmpty())
 				{
 					this.game.sendMessage(this, "No possible moves anymore");
-					this.game.play(this, PassTurn.SINGLETON);
+					this.game.play(this, SkipTurn.SINGLETON);
 				}
 				else
 				{

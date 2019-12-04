@@ -219,14 +219,17 @@ public class Game implements IGame
 			}
 			else if (action instanceof Exchange)
 			{
-				final List<Stone> stones1 = playerInfo.rack.removeStones(((Exchange) action).getChars());
+				final Exchange exchange = (Exchange) action;
+				final List<Stone> stones1 = playerInfo.rack.removeStones(exchange.getChars());
 				this.bag.addAll(stones1);
 				Collections.shuffle(this.bag, this.random);
 				moveMI = null;
+				LOGGER.info(player.getName() + " exchanges " + exchange.getChars().size() + " stones");
 			}
-			else if (action instanceof PassTurn)
+			else if (action instanceof SkipTurn)
 			{
-				this.dispatchMessage(player.getName() + " passes its turn");
+				LOGGER.info(player.getName() + " skips its turn");
+				this.dispatchMessage(player.getName() + " skips its turn");
 			}
 			else
 			{
