@@ -772,11 +772,11 @@ public class Game implements IGame
 			this.metaInformation = metaInformation;
 		}
 
-		public String print()
+		public String formatAsString()
 		{
 			final StringBuilder sb = new StringBuilder(this.player.getName());
 			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((Move) this.action).getNotation());
-			sb.append(" ").append(this.scores).append(" pts");
+			sb.append(" ").append(this.scores.get(player)).append(" pts");
 			return sb.toString();
 		}
 	}

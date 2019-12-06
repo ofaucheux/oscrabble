@@ -116,7 +116,7 @@ public class SwingClient extends AbstractPlayer
 			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
 			{
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setText(((Game.HistoryEntry) value).print());
+				setText(((Game.HistoryEntry) value).formatAsString());
 				return this;
 			}
 		});
