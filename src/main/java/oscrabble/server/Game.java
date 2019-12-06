@@ -26,7 +26,7 @@ public class Game implements IGame
 	/**
 	 * Delay (in seconds) before changing the state from ENDING to ENDED
 	 */
-	static final int DELAY_BEFORE_ENDS = 3;
+	int delayBeforeEnds = 3;
 
 	private final Map<AbstractPlayer, PlayerInfo> players = new LinkedHashMap<>();
 
@@ -279,6 +279,10 @@ public class Game implements IGame
 			}
 			final int copyScore = score;
 			dispatch(toInform -> toInform.afterPlay(this.moveNr, playerInfo, action, copyScore));
+			if (errorOccurred)
+			{
+				dispatch(listener -> listener.afterErrorPlay(player, action));
+			}
 			if (done)
 			{
 				if (playerInfo.rack.isEmpty())
@@ -385,7 +389,7 @@ public class Game implements IGame
 					setState(State.ENDED);
 					return null;
 				},
-				DELAY_BEFORE_ENDS,
+				delayBeforeEnds,
 				TimeUnit.SECONDS);
 	}
 
@@ -717,6 +721,14 @@ public class Game implements IGame
 		 * Called after the state of the game have changed
 		 */
 		default void onGameStateChanged() { }
+
+		/**
+		 * Called after a player has (definitively) play an non admissible play
+		 * @param player
+		 * @param action
+		 */
+		default void afterErrorPlay(final AbstractPlayer player, final IAction action){}
+
 	}
 
 	/**

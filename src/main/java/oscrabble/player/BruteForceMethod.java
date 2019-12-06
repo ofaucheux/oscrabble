@@ -46,7 +46,18 @@ public class BruteForceMethod
 		}
 		else
 		{
-			this.automaton = new ModifiableDAWGSet(dictionary.getMutations()).compress();
+			final Set<String> mutations = new HashSet<>(dictionary.getMutations());
+
+			// remove words with one letter
+			final Iterator<String> it = mutations.iterator();
+			it.forEachRemaining(w -> {
+				if (w.length() == 1)
+				{
+					it.remove();
+				}
+			});
+
+			this.automaton = new ModifiableDAWGSet(mutations).compress();
 			try (ObjectOutputStream oss = new ObjectOutputStream(new FileOutputStream(fff)))
 			{
 				oss.writeObject(this.automaton);

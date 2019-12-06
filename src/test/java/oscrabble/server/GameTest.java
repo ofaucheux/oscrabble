@@ -2,7 +2,6 @@ package oscrabble.server;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggerRepository;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +11,7 @@ import oscrabble.Move;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Dictionary;
+import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
 import java.text.ParseException;
@@ -59,6 +59,7 @@ public class GameTest
 		for (int gameNr = 0; gameNr < 10; gameNr++)
 		{
 			this.game = new Game(FRENCH_DICTIONARY);
+			this.game.delayBeforeEnds = 0;
 			final BruteForceMethod method = new BruteForceMethod(FRENCH_DICTIONARY);
 
 			for (int i = 0; i < RandomUtils.nextInt(1, 7); i++)
@@ -75,6 +76,14 @@ public class GameTest
 
 				this.game.register(player);
 			}
+			this.game.listeners.add(new Game.DefaultGameListener()
+			{
+				@Override
+				public void afterErrorPlay(final AbstractPlayer player, final IAction action)
+				{
+					Assert.fail("Erroneous action: " + action);
+				}
+			});
 			startGame(true);
 
 			while (this.game.getState() != Game.State.ENDED)
@@ -150,10 +159,10 @@ public class GameTest
 		this.gustav.addMove(Move.parseMove(this.grid, "N10 VENTA"));
 		this.john.addMove(Move.parseMove(this.grid, "8K HEM"));
 
-		Thread.sleep(Game.DELAY_BEFORE_ENDS * 1000 / 2);
+		Thread.sleep(this.game.delayBeforeEnds * 1000 / 2);
 		assertEquals(Game.State.ENDING, this.game.getState());
 
-		Thread.sleep(Game.DELAY_BEFORE_ENDS * 1000 / 2 + 500);
+		Thread.sleep(this.game.delayBeforeEnds * 1000 / 2 + 500);
 		assertEquals(Game.State.ENDED, this.game.getState());
 	}
 
