@@ -7,6 +7,7 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractPlayer implements Game.GameListener
 {
@@ -20,6 +21,10 @@ public abstract class AbstractPlayer implements Game.GameListener
 	 * Queue to receive events from server
 	 */
 	private BlockingQueue<Game.ScrabbleEvent> incomingEvents = new ArrayBlockingQueue<>(16);
+	private boolean destroyEDT;
+
+	/** Event dispatching thread */
+	private Thread edt;
 
 	protected AbstractPlayer(final String name)
 	{
@@ -30,20 +35,26 @@ public abstract class AbstractPlayer implements Game.GameListener
 	{
 		this.game = game;
 
-		new Thread(() -> {
-			try
+		this.edt = new Thread(() -> {
+			while (!this.destroyEDT)
 			{
-				while (true)
+				try
 				{
-					final Game.ScrabbleEvent event = this.incomingEvents.take();
-					event.accept(AbstractPlayer.this);
+					final Game.ScrabbleEvent event = this.incomingEvents.poll(100, TimeUnit.MILLISECONDS);
+					if (event != null)
+					{
+						event.accept(AbstractPlayer.this);
+					}
+				}
+				catch (InterruptedException e)
+				{
+					LOGGER.error(e, e);
 				}
 			}
-			catch (InterruptedException e)
-			{
-				LOGGER.error(e, e);
-			}
-		}).start();
+		});
+		this.edt.setName(this.name + " EDT");
+		this.destroyEDT = false;
+		this.edt.start();
 	}
 
 	public final String getName()
@@ -73,6 +84,8 @@ public abstract class AbstractPlayer implements Game.GameListener
 
 	public void afterGameEnd()
 	{
+		this.destroyEDT = true;
+		this.edt.interrupt();
 	}
 
 	public abstract boolean isObserver();
