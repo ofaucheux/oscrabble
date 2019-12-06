@@ -120,7 +120,7 @@ public class Game implements IGame
 		final PlayerInfo playerInfo = this.players.get(player);
 		boolean done = false;
 		int score = 0;
-		boolean errorOccurred = false;
+		boolean actionRejected = false;
 		Set<Stone> drawn = null;
 		Grid.MoveMetaInformation moveMI = null;
 		try
@@ -243,14 +243,14 @@ public class Game implements IGame
 			messages.forEach(message -> dispatchMessage(message));
 
 			LOGGER.debug("Grid after play move nr #" + this.moveNr + ":\n" + this.grid.asASCIIArt());
-			errorOccurred = false;
+			actionRejected = false;
 			done = true;
 			return score;
 		}
 		catch (final ScrabbleException e)
 		{
 			LOGGER.info("Refuse play: " + action + ". Cause: " + e);
-			errorOccurred = true;
+			actionRejected = true;
 			player.onDispatchMessage(e.toString());
 			if (this.configuration.retryAccepted || e.acceptRetry())
 			{
@@ -259,7 +259,7 @@ public class Game implements IGame
 			}
 			else
 			{
-				dispatchMessage("Player " + player + " would have play an illegal move: " + e + ". Skip its turn");
+				dispatch(listener -> listener.afterRejectedAction(player, action));
 				done = true;
 				playerInfo.isLastPlayError = true;
 			}
@@ -268,23 +268,16 @@ public class Game implements IGame
 		finally
 		{
 			playerInfo.lastAction = action;
-			HistoryEntry historyEntry = null;
+			final int copyScore = score;
+			dispatch(toInform -> toInform.afterPlay(this.moveNr, playerInfo, action, copyScore));
 			if (done)
 			{
-				historyEntry = new HistoryEntry(player, action, errorOccurred, score, drawn, moveMI);
+				final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
 				this.history.add(historyEntry);
 				this.toPlay.pop();
 				this.toPlay.add(player);
 				this.moveNr++;
-			}
-			final int copyScore = score;
-			dispatch(toInform -> toInform.afterPlay(this.moveNr, playerInfo, action, copyScore));
-			if (errorOccurred)
-			{
-				dispatch(listener -> listener.afterErrorPlay(player, action));
-			}
-			if (done)
-			{
+
 				if (playerInfo.rack.isEmpty())
 				{
 					endGame(playerInfo, historyEntry);
@@ -607,6 +600,14 @@ public class Game implements IGame
 		setState(State.ENDED);
 	}
 
+	/**
+	 * Quit the game. All listeners are informed through {@code GameListener#afterGameEnd}.
+	 */
+	void quitGame()
+	{
+		dispatch(player -> player.afterGameEnd());
+	}
+
 	@Override
 	public oscrabble.configuration.Configuration getConfiguration()
 	{
@@ -635,6 +636,20 @@ public class Game implements IGame
 	State getState()
 	{
 		return this.state;
+	}
+
+	/**
+	 * For test purposes: wait until the game has reached the end of a defined move.
+	 *
+	 * @param moveNr the move number to wait after the end of.
+	 * @throws InterruptedException if thread has been interrupted
+	 */
+	void waitUntilMove(final int moveNr) throws InterruptedException
+	{
+		while (this.moveNr <= moveNr)
+		{
+			Thread.sleep(100);
+		}
 	}
 
 	private static class PlayerInfo implements IPlayerInfo
@@ -709,6 +724,13 @@ public class Game implements IGame
 
 		default void afterRollback() { }
 
+		/**
+		 *
+		 * @param moveNr number of the move which just have been played
+		 * @param info
+		 * @param action
+		 * @param score
+		 */
 		default void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score) { }
 
 		default void beforeGameStart() { }
@@ -727,23 +749,8 @@ public class Game implements IGame
 		 * @param player
 		 * @param action
 		 */
-		default void afterErrorPlay(final AbstractPlayer player, final IAction action){}
+		default void afterRejectedAction(final AbstractPlayer player, final IAction action){}
 
-	}
-
-	/**
-	 * Default listener. Does nothing.
-	 */
-	public static class DefaultGameListener implements GameListener
-	{
-
-		private final LinkedList<ScrabbleEvent> queue = new LinkedList<>();
-
-		@Override
-		public Queue<ScrabbleEvent> getIncomingEventQueue()
-		{
-			return this.queue;
-		}
 	}
 
 	/**
