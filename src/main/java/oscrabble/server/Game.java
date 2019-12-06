@@ -55,7 +55,7 @@ public class Game implements IGame
 	/**
 	 * Number of current move (Starting with 1).
 	 */
-	private int moveNr;
+	int moveNr;
 
 	/**
 	 * History of the game, a line played move (even if it was an error).
