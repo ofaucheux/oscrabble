@@ -1,6 +1,5 @@
 package oscrabble;
 
-import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.BasicConfigurator;
 import oscrabble.client.SwingClient;
@@ -25,9 +24,9 @@ public class GameStarter
 
 			final Dictionary dictionary = game.getDictionary();
 			final BruteForceMethod method = new BruteForceMethod(dictionary);
-			game.register(method.new Player("Computer"));
-			game.register(method.new Player("Computer2"));
-			game.register(new SwingClient("Swing"));
+			game.addPlayer(method.new Player("Computer"));
+			game.addPlayer(method.new Player("Computer2"));
+			game.addPlayer(new SwingClient("Swing"));
 			game.startGame();
 		}
 		catch (final Throwable e)

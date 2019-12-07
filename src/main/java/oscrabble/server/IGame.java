@@ -16,7 +16,7 @@ public interface IGame
 	 * Registriert einen neuen Spieler.
 	 * @param player der Spieler
 	 */
-	void register(AbstractPlayer player);
+	void addPlayer(AbstractPlayer player);
 
 	/**
 	 * @return score

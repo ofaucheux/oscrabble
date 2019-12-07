@@ -24,6 +24,11 @@ public class Game implements IGame
 	public static final ScheduledExecutorService SERVICE = Executors.newScheduledThreadPool(3);
 
 	/**
+	 *  Seed initially used to create the random generator.
+	 */
+	final long randomSeed;
+
+	/**
 	 * Delay (in seconds) before changing the state from ENDING to ENDED
 	 */
 	int delayBeforeEnds = 3;
@@ -67,12 +72,13 @@ public class Game implements IGame
 	 */
 	private ScheduledFuture<Void> endScheduler;
 
-	Game(final Dictionary dictionary, final long randomSeed)
+	public Game(final Dictionary dictionary, final long randomSeed)
 	{
 		this.configuration = new Configuration();
 		this.configuration.setValue("retryAccepted", true);
 		this.dictionary = dictionary;
 		this.grid = new Grid(this.dictionary);
+		this.randomSeed = randomSeed;
 		this.random = new Random(randomSeed);
 		this.waitingForPlay = new CountDownLatch(1);
 
@@ -95,7 +101,7 @@ public class Game implements IGame
 	}
 
 	@Override
-	public synchronized void register(final AbstractPlayer newPlayer)
+	public synchronized void addPlayer(final AbstractPlayer newPlayer)
 	{
 		final PlayerInfo info = new PlayerInfo();
 		info.player = newPlayer;
@@ -641,14 +647,27 @@ public class Game implements IGame
 	/**
 	 * For test purposes: wait until the game has reached the end of a defined move.
 	 *
+	 * <p>If the specified waiting time elapses then the value {@code false}
+	 * is returned.  If the time is less than or equal to zero, the method
+	 * will not wait at all.
+	 *
 	 * @param moveNr the move number to wait after the end of.
-	 * @throws InterruptedException if thread has been interrupted
+	 * @param timeout the maximum time to wait
+	 * @param unit the time unit of the {@code timeout} argument
+	 * @throws  TimeoutException  if the waiting time elapsed before the move has ended
+	 * @throws InterruptedException if the current thread is interrupted
+	 *         while waiting
 	 */
-	void waitUntilMove(final int moveNr) throws InterruptedException
+	void awaitEndOfMove(final int moveNr, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
 	{
+		long maxTime = unit.toMillis(timeout) + System.currentTimeMillis();
 		while (this.moveNr <= moveNr)
 		{
 			Thread.sleep(100);
+			if (System.currentTimeMillis() > maxTime)
+			{
+				throw new TimeoutException("End of move " + moveNr + " still not reached after " + timeout + " " + unit);
+			}
 		}
 	}
 

@@ -17,6 +17,8 @@ import oscrabble.player.BruteForceMethod;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -46,9 +48,9 @@ public class GameTest
 		this.gustav = new TestPlayer("Gustav " + gameNr, this.game);
 		this.john = new TestPlayer("John " + gameNr, this.game);
 		this.jurek = new TestPlayer("Jurek " + gameNr, this.game);
-		this.game.register(this.gustav);
-		this.game.register(this.john);
-		this.game.register(this.jurek);
+		this.game.addPlayer(this.gustav);
+		this.game.addPlayer(this.john);
+		this.game.addPlayer(this.jurek);
 	}
 
 	@AfterEach
@@ -65,6 +67,14 @@ public class GameTest
 			this.game = new Game(FRENCH_DICTIONARY);
 			this.game.delayBeforeEnds = 0;
 			final BruteForceMethod method = new BruteForceMethod(FRENCH_DICTIONARY);
+			this.game.listeners.add(new TestListener()
+			{
+				@Override
+				public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
+				{
+					LOGGER.info("Played: " + action.toString());
+				}
+			});
 
 			for (int i = 0; i < RandomUtils.nextInt(1, 7); i++)
 			{
@@ -78,7 +88,7 @@ public class GameTest
 					}
 				};
 
-				this.game.register(player);
+				this.game.addPlayer(player);
 			}
 			this.game.listeners.add(new TestListener()
 			{
@@ -98,7 +108,7 @@ public class GameTest
 	}
 
 	@Test
-	void completeKnownGame() throws ScrabbleException, ParseException, InterruptedException
+	void completeKnownGame() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
 	{
 		final List<TestPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
 		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
@@ -164,7 +174,7 @@ public class GameTest
 		this.gustav.addMove(Move.parseMove(this.grid, "N10 VENTA"));
 		this.john.addMove(Move.parseMove(this.grid, "8K HEM"));
 
-		game.waitUntilMove(moveNr + 2);
+		this.game.awaitEndOfMove(moveNr + 2, 1, TimeUnit.SECONDS);
 		assertEquals(Game.State.ENDING, this.game.getState());
 
 		Thread.sleep(this.game.delayBeforeEnds * 1000 / 2 + 500);
@@ -185,7 +195,7 @@ public class GameTest
 	}
 
 	@Test
-	public void retryForbidden() throws ScrabbleException, ParseException, InterruptedException
+	public void retryForbidden() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		final AtomicBoolean playRejected = new AtomicBoolean(false);
@@ -200,7 +210,7 @@ public class GameTest
 		this.game.listeners.add(listener);
 		this.startGame(true);
 		this.gustav.addMove(Move.parseMove(this.grid, "H3 APPETEE"));
-		this.game.waitUntilMove(1);
+		this.game.awaitEndOfMove(1, 1, TimeUnit.SECONDS);
 
 		assertTrue(playRejected.get());
 		assertEquals(this.game.getScore(this.gustav), 0);
@@ -220,23 +230,23 @@ public class GameTest
 
 
 	@Test
-	public void startNotCentered() throws ScrabbleException, ParseException, InterruptedException
+	public void startNotCentered() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
 		this.gustav.addMove(Move.parseMove(this.grid, "G7 AS"));
-		this.game.waitUntilMove(1);
+		this.game.awaitEndOfMove(1, 1, TimeUnit.SECONDS);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
 	@Test
-	public void wordDoesNotTouch() throws ScrabbleException, ParseException, InterruptedException
+	public void wordDoesNotTouch() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
 		this.gustav.addMove(Move.parseMove(this.grid, "H8 AS"));
-		this.game.waitUntilMove(1);
+		this.game.awaitEndOfMove(1, 1, TimeUnit.SECONDS);
 		assertFalse(this.game.isLastPlayError(this.gustav));
 		this.john.addMove(Move.parseMove(this.grid, "A3 VIGIE"));
 		Thread.sleep(100);
@@ -244,12 +254,12 @@ public class GameTest
 	}
 
 	@Test
-	public void testScore() throws ScrabbleException, InterruptedException, ParseException
+	public void testScore() throws ScrabbleException, InterruptedException, ParseException, TimeoutException
 	{
 		// dieser seed gibt die Buchstaben "[F, T, I, N, O, A,  - joker - ]"
 		this.game = new Game(FRENCH_DICTIONARY, 2346975568742590367L);
 		final TestPlayer p = new TestPlayer("Etienne", this.game);
-		this.game.register(p);
+		this.game.addPlayer(p);
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
@@ -260,6 +270,56 @@ public class GameTest
 		p.addMove(Move.parseMove(grid, "8H SI"));
 		Thread.sleep(100);
 		assertEquals(3, this.game.getScore(p));
+
+//		do
+//		{
+//			this.game = new Game(FRENCH_DICTIONARY);
+//			final TestPlayer p2 = new TestPlayer("Anton", this.game);
+//			this.game.addPlayer(p2);
+//			startGame(true);
+//			final Rack rack = this.game.getRack(p2, p2.getKey());
+//			final List<Character> characters = rack.getCharacters();
+//			if (characters.contains(' '))
+//			{
+//				System.out.println("Rand: " + game.randomSeed + " - Chars: " + characters);
+//			}
+//			this.game.quitGame();
+//		} while (true);
+//
+		{
+			// Joker on normal case
+			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
+			this.game = new Game(FRENCH_DICTIONARY, -6804219371477742897L);
+			final TestPlayer anton = new TestPlayer("Anton", this.game);
+			this.game.addPlayer(anton);
+			startGame(true);
+			int move = 1;
+			anton.addMove(Move.parseMove(this.game.getGrid(), "8D PLaCE"));
+			this.game.awaitEndOfMove(move++, 1, TimeUnit.SECONDS);
+			assertEquals(22, this.game.getScore(anton));
+			anton.addMove(Move.parseMove(this.game.getGrid(),
+					RANDOM.nextBoolean() ? "F4 NIERa" : "F4 NIERA"));
+			this.game.awaitEndOfMove(move++, 1, TimeUnit.SECONDS);
+			assertEquals(28, this.game.getScore(anton));
+			this.game.quitGame();
+		}
+
+		{
+			// Joker on blue case
+			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
+			this.game = new Game(FRENCH_DICTIONARY, -6804219371477742897L);
+			final TestPlayer anton = new TestPlayer("Anton", this.game);
+			this.game.addPlayer(anton);
+			startGame(true);
+			int move = 1;
+			anton.addMove(Move.parseMove(this.game.getGrid(), "8D aMPLE"));
+			this.game.awaitEndOfMove(move++, 1, TimeUnit.SECONDS);
+			assertEquals(14, this.game.getScore(anton));
+			anton.addMove(Move.parseMove(this.game.getGrid(), "D7 CAISSE"));
+			this.game.awaitEndOfMove(move++, 1, TimeUnit.SECONDS);
+			assertEquals(28, this.game.getScore(anton));
+			this.game.quitGame();
+		}
 	}
 
 	/**
@@ -308,7 +368,7 @@ public class GameTest
 /**
  * Default listener. Does nothing.
  */
-class TestListener implements Game.GameListener
+abstract class TestListener implements Game.GameListener
 {
 
 	private final ArrayBlockingQueue<Game.ScrabbleEvent> queue = new ArrayBlockingQueue<>(8);
