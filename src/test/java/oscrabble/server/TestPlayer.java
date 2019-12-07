@@ -1,7 +1,7 @@
 package oscrabble.server;
 
 import org.apache.log4j.Logger;
-import oscrabble.Move;
+import oscrabble.PlayTiles;
 import oscrabble.ScrabbleException;
 import oscrabble.player.AbstractPlayer;
 
@@ -16,13 +16,13 @@ class TestPlayer extends AbstractPlayer
 {
 	public static final Logger LOGGER = Logger.getLogger(TestPlayer.class);
 	private final Game server;
-	private BlockingQueue<Move> nextMoves;
+	private BlockingQueue<PlayTiles> nextPlayTiles;
 
 	TestPlayer(final String name, final Game server)
 	{
 		super(name);
 		this.server = server;
-		this.nextMoves = new ArrayBlockingQueue<>(1024);
+		this.nextPlayTiles = new ArrayBlockingQueue<>(1024);
 	}
 
 	UUID getKey()
@@ -30,9 +30,9 @@ class TestPlayer extends AbstractPlayer
 		return this.playerKey;
 	}
 
-	void addMove(final Move move)
+	void addMove(final PlayTiles playTiles)
 	{
-		this.nextMoves.add(move);
+		this.nextPlayTiles.add(playTiles);
 	}
 
 	@Override
@@ -42,8 +42,8 @@ class TestPlayer extends AbstractPlayer
 		{
 			try
 			{
-				final Move move = this.nextMoves.take();
-				this.server.play(this, move);
+				final PlayTiles playTiles = this.nextPlayTiles.take();
+				this.server.play(this, playTiles);
 			}
 			catch (InterruptedException e)
 			{
@@ -72,7 +72,7 @@ class TestPlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
+	public void afterPlay(final int moveNr, final IPlayerInfo info, final IPlay action, final int score)
 	{
 		LOGGER.info(info.getName() + " played " + action + " - scored " + score);
 	}

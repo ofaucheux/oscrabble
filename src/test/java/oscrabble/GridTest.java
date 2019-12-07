@@ -21,51 +21,51 @@ class GridTest
 		final Grid grid = new Grid(Dictionary.getDictionary(Dictionary.Language.FRENCH));
 
 		Grid.MoveMetaInformation metaInformation;
-		Move move;
+		PlayTiles playTiles;
 		SwingClientTest.showGrid(grid);
 
 		// erster Test
-		move = Move.parseMove(grid, "A1 FINIT");
-		metaInformation = grid.getMetaInformation(move);
+		playTiles = PlayTiles.parseMove(grid, "A1 FINIT");
+		metaInformation = grid.getMetaInformation(playTiles);
 		assertEquals(27, metaInformation.score);
 		Assertions.assertEquals(0, metaInformation.crosswords.size());
 		assertBagContent(metaInformation.getRequiredLetters(), "FINIT");
-		grid.put(move);
+		grid.put(playTiles);
 
-		move = Move.parseMove(grid,"1A FEMME");
+		playTiles = PlayTiles.parseMove(grid,"1A FEMME");
 		assertBagContent(
-				grid.getMetaInformation(move).getRequiredLetters(),
+				grid.getMetaInformation(playTiles).getRequiredLetters(),
 				"EMME"
 		);
-		grid.put(move);
+		grid.put(playTiles);
 
 		// erster Test
-		move = Move.parseMove(grid, "J2 ELEPHANT");
-		metaInformation = grid.getMetaInformation(move);
+		playTiles = PlayTiles.parseMove(grid, "J2 ELEPHANT");
+		metaInformation = grid.getMetaInformation(playTiles);
 		assertEquals(23, metaInformation.score);
 		Assertions.assertEquals(0, metaInformation.crosswords.size());
-		grid.put(move);
+		grid.put(playTiles);
 
 		// Cross word
-		move = Move.parseMove(grid, "B5 ELU");
-		metaInformation = grid.getMetaInformation(move);
+		playTiles = PlayTiles.parseMove(grid, "B5 ELU");
+		metaInformation = grid.getMetaInformation(playTiles);
 		Assertions.assertEquals(1, metaInformation.crosswords.size());
 		assertEquals(7, metaInformation.score);
 		assertBagContent(metaInformation.getRequiredLetters(), "ELU");
-		grid.put(move);
+		grid.put(playTiles);
 
 		// Cross word mit cross auf Bonus
-		move = Move.parseMove(grid, "C7 SUE");
-		metaInformation = grid.getMetaInformation(move);
+		playTiles = PlayTiles.parseMove(grid, "C7 SUE");
+		metaInformation = grid.getMetaInformation(playTiles);
 		assertEquals(1, metaInformation.crosswords.size());
 		assertEquals(8, metaInformation.score);
-		grid.put(move);
+		grid.put(playTiles);
 
 		// Blank
-		move = Move.parseMove(grid, "5J PhASME");
-		metaInformation = grid.getMetaInformation(move);
+		playTiles = PlayTiles.parseMove(grid, "5J PhASME");
+		metaInformation = grid.getMetaInformation(playTiles);
 		assertEquals(16, metaInformation.score);
-		grid.put(move);
+		grid.put(playTiles);
 
 		// Remove
 		Thread.sleep(500);

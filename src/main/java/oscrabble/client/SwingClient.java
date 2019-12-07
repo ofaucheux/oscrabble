@@ -11,7 +11,7 @@ import oscrabble.dictionary.DictionaryException;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 import oscrabble.server.Game;
-import oscrabble.server.IAction;
+import oscrabble.server.IPlay;
 import oscrabble.server.IPlayerInfo;
 
 import javax.swing.*;
@@ -262,7 +262,7 @@ public class SwingClient extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
+	public void afterPlay(final int moveNr, final IPlayerInfo info, final IPlay action, final int score)
 	{
 		this.jGrid.lastAction = action;
 		refreshUI();
@@ -432,13 +432,13 @@ public class SwingClient extends AbstractPlayer
 		{
 			try
 			{
-				final ArrayList<Stone> stones = new ArrayList<>(
+				final ArrayList<Tile> tiles = new ArrayList<>(
 						SwingClient.this.game.getRack(SwingClient.this, SwingClient.this.playerKey));
 
 				for (int i = 0; i < RACK_SIZE; i++)
 				{
-					this.cells[i].setStone(
-							i >= stones.size() ? null : stones.get(i)
+					this.cells[i].setTile(
+							i >= tiles.size() ? null : tiles.get(i)
 					);
 				}
 				this.repaint();
@@ -474,7 +474,7 @@ public class SwingClient extends AbstractPlayer
 
 		private final Grid grid;
 		private final Dictionary dictionary;
-		private final Map<Grid.Square, Stone> preparedMoveStones;
+		private final Map<Grid.Square, Tile> preparedMoveStones;
 
 		final JComponent background;
 
@@ -482,13 +482,13 @@ public class SwingClient extends AbstractPlayer
 		private SwingClient client;
 
 		/** Vorbereiteter Spielzug */
-		private Move preparedMove;
+		private PlayTiles preparedPlayTiles;
 
 		/** Set to let the new stones flash	*/
 		private boolean hideNewStones;
 
 		/** Last played action */
-		private IAction lastAction;
+		private IPlay lastAction;
 
 		/** Spielfeld des Scrabbles */
 		JGrid(final Grid grid, final Dictionary dictionary)
@@ -560,20 +560,20 @@ public class SwingClient extends AbstractPlayer
 
 		/**
 		 * Zeigt den vorbereiteten Spielzug auf dem Grid
-		 * @param move der Zug zu zeigen. {@code null} für gar keinen Zug.
+		 * @param playTiles der Zug zu zeigen. {@code null} für gar keinen Zug.
 		 */
-		void setPreparedMove(final Move move)
+		void setPreparedPlayTiles(final PlayTiles playTiles)
 		{
-			this.preparedMove = move;
+			this.preparedPlayTiles = playTiles;
 			this.preparedMoveStones.clear();
 			// Calculate the border for prepared word
 			this.specialBorders.clear();
-			if (move != null)
+			if (playTiles != null)
 			{
-				this.preparedMoveStones.putAll(move.getStones(this.grid, this.dictionary));
+				this.preparedMoveStones.putAll(playTiles.getStones(this.grid, this.dictionary));
 				final int INSET = 4;
 				final Color preparedMoveColor = Color.RED;
-				final boolean isHorizontal = move.getDirection() == Move.Direction.HORIZONTAL;
+				final boolean isHorizontal = playTiles.getDirection() == PlayTiles.Direction.HORIZONTAL;
 				final ArrayList<Grid.Square> squares = new ArrayList<>(this.preparedMoveStones.keySet());
 				for (int i = 0; i < squares.size(); i++)
 				{
@@ -741,21 +741,21 @@ public class SwingClient extends AbstractPlayer
 					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
 				}
 
-				Stone stone;
-				if (this.square.stone != null)
+				Tile tile;
+				if (this.square.tile != null)
 				{
-					if (JGrid.this.hideNewStones && this.square.stone.getSettingAction() == JGrid.this.lastAction)
+					if (JGrid.this.hideNewStones && this.square.tile.getSettingAction() == JGrid.this.lastAction)
 					{
 						// don't draw
 					}
 					else
 					{
-						JStone.drawStone(g2, this, this.square.stone, Color.black);
+						JTile.drawStone(g2, this, this.square.tile, Color.black);
 					}
 				}
-				else if ((stone = JGrid.this.preparedMoveStones.get(this.square)) != null)
+				else if ((tile = JGrid.this.preparedMoveStones.get(this.square)) != null)
 				{
-					JStone.drawStone(g2, this, stone, Color.blue);
+					JTile.drawStone(g2, this, tile, Color.blue);
 				}
 
 				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);
@@ -767,7 +767,7 @@ public class SwingClient extends AbstractPlayer
 				}
 
 				// Markiert die Start Zelle des Wortes
-				if (JGrid.this.preparedMove != null && JGrid.this.preparedMove.startSquare == this.square)
+				if (JGrid.this.preparedPlayTiles != null && JGrid.this.preparedPlayTiles.startSquare == this.square)
 				{
 					g.setColor(Color.BLACK);
 					final Polygon p = new Polygon();
@@ -778,7 +778,7 @@ public class SwingClient extends AbstractPlayer
 					p.addPoint(POLYGONE_SIZE / 2, 0);
 
 					final AffineTransform saved = ((Graphics2D) g).getTransform();
-					switch (JGrid.this.preparedMove.getDirection())
+					switch (JGrid.this.preparedPlayTiles.getDirection())
 					{
 						case VERTICAL:
 							g2.translate(h / 2f, 6f);
@@ -788,7 +788,7 @@ public class SwingClient extends AbstractPlayer
 							g2.translate(-h / 2f, 6f);
 							break;
 						default:
-							throw new IllegalStateException("Unexpected value: " + JGrid.this.preparedMove.getDirection());
+							throw new IllegalStateException("Unexpected value: " + JGrid.this.preparedPlayTiles.getDirection());
 					}
 					g.fillPolygon(p);
 					((Graphics2D) g).setTransform(saved);
@@ -828,7 +828,7 @@ public class SwingClient extends AbstractPlayer
 
 				// Draw the label
 				g2.setColor(Color.BLACK);
-				final Font font = g2.getFont().deriveFont(JStone.getCharacterSize(this)).deriveFont(Font.BOLD);
+				final Font font = g2.getFont().deriveFont(JTile.getCharacterSize(this)).deriveFont(Font.BOLD);
 				g2.setFont(font);
 				FontMetrics metrics = g.getFontMetrics(font);
 				int tx = (getWidth() - metrics.stringWidth(this.label)) / 2;
@@ -853,18 +853,18 @@ public class SwingClient extends AbstractPlayer
 	 */
 	private void setStartCell(final JGrid.StoneCell cell)
 	{
-		Move move = null;
+		PlayTiles playTiles = null;
 		try
 		{
 			final String currentPrompt = this.commandPrompt.getText();
-			move = Move.parseMove(getGrid(), currentPrompt, true);
-			if (move.startSquare == cell.square)
+			playTiles = PlayTiles.parseMove(getGrid(), currentPrompt, true);
+			if (playTiles.startSquare == cell.square)
 			{
-				move = move.getInvertedDirectionCopy();
+				playTiles = playTiles.getInvertedDirectionCopy();
 			}
 			else
 			{
-				move = move.getTranslatedCopy(cell.square);
+				playTiles = playTiles.getTranslatedCopy(cell.square);
 			}
 		}
 		catch (ParseException e)
@@ -872,12 +872,12 @@ public class SwingClient extends AbstractPlayer
 			// OK: noch kein Prompt vorhanden.
 		}
 
-		if (move == null)
+		if (playTiles == null)
 		{
-			move = new Move(cell.square, Move.Direction.HORIZONTAL, "");
+			playTiles = new PlayTiles(cell.square, PlayTiles.Direction.HORIZONTAL, "");
 		}
 
-		this.commandPrompt.setText(move.getNotation() + (move.word.isEmpty() ? " " : ""));
+		this.commandPrompt.setText(playTiles.getNotation() + (playTiles.word.isEmpty() ? " " : ""));
 
 	}
 
@@ -955,8 +955,8 @@ public class SwingClient extends AbstractPlayer
 					}
 					else
 					{
-						final Move preparedMove = getPreparedMove();
-						play(preparedMove);
+						final PlayTiles preparedPlayTiles = getPreparedMove();
+						play(preparedPlayTiles);
 					}
 				}
 				else
@@ -971,7 +971,7 @@ public class SwingClient extends AbstractPlayer
 			}
 		}
 
-		private Move getPreparedMove() throws JokerPlacementException, ParseException
+		private PlayTiles getPreparedMove() throws JokerPlacementException, ParseException
 		{
 			String command = SwingClient.this.commandPrompt.getText();
 			final StringBuilder sb = new StringBuilder();
@@ -993,7 +993,7 @@ public class SwingClient extends AbstractPlayer
 
 			final Pattern playCommandPattern = Pattern.compile("(?:play\\s+)?(.*)", Pattern.CASE_INSENSITIVE);
 			Matcher matcher;
-			Move move;
+			PlayTiles playTiles;
 			if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
 			{
 				final Rack rack;
@@ -1007,17 +1007,17 @@ public class SwingClient extends AbstractPlayer
 					throw new JokerPlacementException("Error placing Joker", e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				move = Move.parseMove(SwingClient.this.game.getGrid(), inputWord.toString(), true);
+				playTiles = PlayTiles.parseMove(SwingClient.this.game.getGrid(), inputWord.toString(), true);
 
 				//
 				// Check if jokers are needed and try to position them
 				//
 
-				LOGGER.debug("Word before positioning jokers: " + move.word);
+				LOGGER.debug("Word before positioning jokers: " + playTiles.word);
 				int remainingJokers = rack.countJoker();
 				final HashSetValuedHashMap<Character, Integer> requiredLetters = new HashSetValuedHashMap<>();
 				int i = inputWord.indexOf(" ") + 1;
-				for (final Map.Entry<Grid.Square, Character> square : move.getSquares().entrySet())
+				for (final Map.Entry<Grid.Square, Character> square : playTiles.getSquares().entrySet())
 				{
 					if (square.getKey().isEmpty())
 					{
@@ -1061,14 +1061,14 @@ public class SwingClient extends AbstractPlayer
 						}
 					}
 				}
-				move = Move.parseMove(getGrid(), inputWord.toString(), true);
+				playTiles = PlayTiles.parseMove(getGrid(), inputWord.toString(), true);
 				LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 			}
 			else
 			{
-				move = null;
+				playTiles = null;
 			}
-			return move;
+			return playTiles;
 		}
 
 
@@ -1087,18 +1087,18 @@ public class SwingClient extends AbstractPlayer
 		@Override
 		public void changedUpdate(final DocumentEvent e)
 		{
-			Move move;
+			PlayTiles playTiles;
 			try
 			{
-				move = getPreparedMove();
+				playTiles = getPreparedMove();
 			}
 			catch (JokerPlacementException | ParseException e1)
 			{
 				LOGGER.debug(e1.getMessage());
-				move = null;
+				playTiles = null;
 			}
 
-			SwingClient.this.jGrid.setPreparedMove(move);
+			SwingClient.this.jGrid.setPreparedPlayTiles(playTiles);
 			SwingClient.this.jGrid.repaint();
 		}
 
@@ -1121,23 +1121,23 @@ public class SwingClient extends AbstractPlayer
 
 	private static class RackCell extends JComponent
 	{
-		private Stone stone;
+		private Tile tile;
 
 		RackCell()
 		{
-			setPreferredSize(JStone.CELL_DIMENSION);
+			setPreferredSize(JTile.CELL_DIMENSION);
 		}
 
 		@Override
 		protected void paintComponent(final Graphics g)
 		{
 			super.paintComponent(g);
-			JStone.drawStone((Graphics2D) g, this, this.stone, Color.black);
+			JTile.drawStone((Graphics2D) g, this, this.tile, Color.black);
 		}
 
-		public void setStone(final Stone stone)
+		public void setTile(final Tile tile)
 		{
-			this.stone = stone;
+			this.tile = tile;
 		}
 	}
 
@@ -1251,23 +1251,23 @@ public class SwingClient extends AbstractPlayer
 					if (value instanceof Grid.MoveMetaInformation)
 					{
 						final Grid.MoveMetaInformation mmi = (Grid.MoveMetaInformation) value;
-						this.setText(mmi.getMove().toString() + "  " + mmi.getScore()  + " pts");
+						this.setText(mmi.getPlayTiles().toString() + "  " + mmi.getScore()  + " pts");
 					}
 					return label;
 				}
 			});
 
 			this.moveList.addListSelectionListener(event -> {
-				Move move = null;
+				PlayTiles playTiles = null;
 				for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
 				{
 					if (this.moveList.isSelectedIndex(i))
 					{
-						move = this.moveList.getModel().getElementAt(i).getMove();
+						playTiles = this.moveList.getModel().getElementAt(i).getPlayTiles();
 						break;
 					}
 				}
-				SwingClient.this.jGrid.setPreparedMove(move);
+				SwingClient.this.jGrid.setPreparedPlayTiles(playTiles);
 			});
 
 			this.moveList.addMouseListener(new MouseAdapter()
@@ -1289,8 +1289,8 @@ public class SwingClient extends AbstractPlayer
 									return null;
 								}
 
-								final Move move = selection.get(0).getMove();
-								play(move);
+								final PlayTiles playTiles = selection.get(0).getPlayTiles();
+								play(playTiles);
 
 								return null;
 							}
@@ -1312,13 +1312,13 @@ public class SwingClient extends AbstractPlayer
 					return;
 				}
 
-				final Set<Move> moves = this.bruteForceMethod.getLegalMoves(getGrid(),
+				final Set<PlayTiles> playTiles = this.bruteForceMethod.getLegalMoves(getGrid(),
 						SwingClient.this.game.getRack(SwingClient.this, SwingClient.this.playerKey));
 				this.legalMoves = new ArrayList<>();
 
-				for (final Move move : moves)
+				for (final PlayTiles playTile : playTiles)
 				{
-					this.legalMoves.add(getGrid().getMetaInformation(move));
+					this.legalMoves.add(getGrid().getMetaInformation(playTile));
 				}
 
 				SwingClient.this.possibleMovePanel.add(
@@ -1373,11 +1373,11 @@ public class SwingClient extends AbstractPlayer
 
 	/**
 	 * Play the move: inform the server about it and clear the client input field.
-	 * @param move move to play
+	 * @param playTiles move to play
 	 */
-	private void play(final Move move)
+	private void play(final PlayTiles playTiles)
 	{
-		this.game.play(SwingClient.this, move);
+		this.game.play(SwingClient.this, playTiles);
 		this.commandPrompt.setText("");
 		resetPossibleMovesPanel();
 	}

@@ -1,18 +1,17 @@
 package oscrabble.client;
 
 import org.junit.jupiter.api.Test;
-import oscrabble.Stone;
+import oscrabble.Tile;
 
 import javax.swing.*;
-import java.awt.*;
 
-class JStoneTest
+class JTileTest
 {
 
 	@Test
 	public void test() throws InterruptedException
 	{
-		final JStone stone = new JStone(new Stone('A', 1));
+		final JTile stone = new JTile(new Tile('A', 1));
 		final JFrame frame = new JFrame("Test JStone");
 //		frame.setUndecorated(true);
 //		frame.setBackground(new Color(0, 0, 0, 0));

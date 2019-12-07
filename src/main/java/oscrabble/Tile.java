@@ -1,11 +1,11 @@
 package oscrabble;
 
-import oscrabble.server.IAction;
+import oscrabble.server.IPlay;
 
 /**
  * Definition eines Steins im Spiel: Letter (oder Blank), Wert usw.
  */
-public class Stone
+public class Tile
 {
 	public final static Generator SIMPLE_GENERATOR = new SimpleGenerator();
 
@@ -16,9 +16,9 @@ public class Stone
 	/**
 	 * Der Spielzug, bei welchem der Stein gespielt wurde.
 	 */
-	private IAction settingAction;
+	private IPlay settingAction;
 
-	public Stone(final Character c, final int point)
+	public Tile(final Character c, final int point)
 	{
 		this.c = c;
 		this.points = point;
@@ -89,12 +89,12 @@ public class Stone
 		this.c = c;
 	}
 
-	public void setSettingAction(final IAction settingAction)
+	public void setSettingAction(final IPlay settingAction)
 	{
 		this.settingAction = settingAction;
 	}
 
-	public IAction getSettingAction()
+	public IPlay getSettingAction()
 	{
 		return this.settingAction;
 	}
@@ -105,16 +105,16 @@ public class Stone
 		 * @param c {@code null} für ein Blank
 		 * @return ein neues Stein.
 		 */
-		Stone generateStone(final Character c);
+		Tile generateStone(final Character c);
 	}
 
 	private static class SimpleGenerator implements Generator
 	{
 		@Override
-		public Stone generateStone(final Character c)
+		public Tile generateStone(final Character c)
 		{
-			final Stone stone = new Stone(c, 1);
-			return stone;
+			final Tile tile = new Tile(c, 1);
+			return tile;
 		}
 	}
 }

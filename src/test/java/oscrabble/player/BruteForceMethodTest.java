@@ -6,8 +6,6 @@ import org.quinto.dawg.DAWGNode;
 import oscrabble.*;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.client.TextClient;
-import oscrabble.server.Game;
-import oscrabble.server.GameTest;
 
 import java.text.ParseException;
 import java.util.*;
@@ -61,7 +59,7 @@ class BruteForceMethodTest
 		ctx.rack = new Rack();
 		for (final Character c : Arrays.asList('A', 'P', 'U', 'M', 'Q', 'M', 'E', 'X', 'T', 'O'))
 		{
-			ctx.rack.add(Stone.SIMPLE_GENERATOR.generateStone(c));
+			ctx.rack.add(Tile.SIMPLE_GENERATOR.generateStone(c));
 		}
 	}
 
@@ -72,9 +70,9 @@ class BruteForceMethodTest
 		{
 			final Grid grid = new Grid(12);
 //			grid.put(1, 1, Move.Direction.HORIZONTAL, "Z");
-			grid.put(new Move(grid.getSquare(1, 1), Move.Direction.HORIZONTAL, "MANDANT"));
-			grid.put(new Move(grid.getSquare(4, 1), Move.Direction.VERTICAL, "DECIME"));
-			grid.put(new Move((grid.getSquare(1, 4)), Move.Direction.HORIZONTAL, "FINIES"));
+			grid.put(new PlayTiles(grid.getSquare(1, 1), PlayTiles.Direction.HORIZONTAL, "MANDANT"));
+			grid.put(new PlayTiles(grid.getSquare(4, 1), PlayTiles.Direction.VERTICAL, "DECIME"));
+			grid.put(new PlayTiles((grid.getSquare(1, 4)), PlayTiles.Direction.HORIZONTAL, "FINIES"));
 			final TextClient textClient = new TextClient(grid);
 			textClient.refreshGrid();
 
@@ -82,11 +80,11 @@ class BruteForceMethodTest
 			final Rack rack = new Rack();
 			for (final char c : "ENFANITS".toCharArray())
 			{
-				rack.add(Stone.SIMPLE_GENERATOR.generateStone(c));
+				rack.add(Tile.SIMPLE_GENERATOR.generateStone(c));
 			}
-			final List<Move> legalMoves = new ArrayList<>(this.instance.getLegalMoves(grid, rack));
-			final Move move = legalMoves.get(RANDOM.nextInt(legalMoves.size()));
-			grid.put(move);
+			final List<PlayTiles> legalPlayTiles = new ArrayList<>(this.instance.getLegalMoves(grid, rack));
+			final PlayTiles playTiles = legalPlayTiles.get(RANDOM.nextInt(legalPlayTiles.size()));
+			grid.put(playTiles);
 			textClient.refreshGrid();
 		}
 	}
@@ -95,23 +93,23 @@ class BruteForceMethodTest
 	void testBlank() throws ParseException, ScrabbleException
 	{
 		final Grid grid = new Grid(16);
-		grid.put(Move.parseMove(grid, "J2 ELEPHANT"));
+		grid.put(PlayTiles.parseMove(grid, "J2 ELEPHANT"));
 		final Rack rack = new Rack();
 		for (final char c : "ASMETH".toCharArray())
 		{
-			rack.add(Stone.SIMPLE_GENERATOR.generateStone(c));
+			rack.add(Tile.SIMPLE_GENERATOR.generateStone(c));
 		}
-		rack.add(Stone.SIMPLE_GENERATOR.generateStone(null));
-		final Set<Move> moves = this.instance.getLegalMoves(grid, rack);
-		assertTrue(moves.contains(Move.parseMove(grid, "5J PHASME")));
-		assertTrue(moves.contains(Move.parseMove(grid, "5J PhASME")));
+		rack.add(Tile.SIMPLE_GENERATOR.generateStone(null));
+		final Set<PlayTiles> playTiles = this.instance.getLegalMoves(grid, rack);
+		assertTrue(playTiles.contains(PlayTiles.parseMove(grid, "5J PHASME")));
+		assertTrue(playTiles.contains(PlayTiles.parseMove(grid, "5J PhASME")));
 	}
 
 	@Test
 	void getAnchors() throws ScrabbleException
 	{
 		final Grid grid = new Grid( 6);
-		grid.put(new Move(grid.getSquare(3, 3), Move.Direction.HORIZONTAL, "Z"));
+		grid.put(new PlayTiles(grid.getSquare(3, 3), PlayTiles.Direction.HORIZONTAL, "Z"));
 		final Set<Grid.Square> anchors = this.instance.getAnchors(grid);
 		assertEquals(4, anchors.size());
 		assertFalse(anchors.contains(grid.new Square(2, 2)));

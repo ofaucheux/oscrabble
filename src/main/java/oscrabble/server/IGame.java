@@ -21,7 +21,7 @@ public interface IGame
 	/**
 	 * @return score
 	 */
-	int play(AbstractPlayer player, IAction action);
+	int play(AbstractPlayer player, IPlay action);
 
 	/**
 	 *

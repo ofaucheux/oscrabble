@@ -3,7 +3,7 @@ package oscrabble.player;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.log4j.Logger;
 import oscrabble.Grid;
-import oscrabble.Move;
+import oscrabble.PlayTiles;
 import oscrabble.ScrabbleException;
 
 import java.util.*;
@@ -28,20 +28,20 @@ public class ComparatorSelector implements IMoveSelector
 	}
 
 	@Override
-	public Move select(final Set<Move> moves) throws ScrabbleException
+	public PlayTiles select(final Set<PlayTiles> playTiles) throws ScrabbleException
 	{
-		if (moves.isEmpty())
+		if (playTiles.isEmpty())
 		{
 			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "Move list is empty");
 		}
 
 		final List<Element> list = new ArrayList<>();
 		final Grid grid = this.gridSupplier.get();
-		for (Move move : moves)
+		for (PlayTiles playTile : playTiles)
 		{
 			final Element el = new Element();
-			el.move = move;
-			el.metaInformation = grid.getMetaInformation(move);
+			el.playTiles = playTile;
+			el.metaInformation = grid.getMetaInformation(playTile);
 			list.add(el);
 		}
 		Collections.shuffle(list);
@@ -62,7 +62,7 @@ public class ComparatorSelector implements IMoveSelector
 		}
 
 		LOGGER.trace("select(): select " + selected + "th of " + list.size() + " moves (Gaussian: " + gaussian + ")");
-		return list.get(selected).move;
+		return list.get(selected).playTiles;
 	}
 
 	public void setMean(final float mean)
@@ -72,7 +72,7 @@ public class ComparatorSelector implements IMoveSelector
 
 	private static class Element
 	{
-		Move move;
+		PlayTiles playTiles;
 		Grid.MoveMetaInformation metaInformation;
 	}
 

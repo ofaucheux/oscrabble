@@ -15,7 +15,7 @@ public class Grid
 	public static final Logger LOGGER = Logger.getLogger(Grid.class);
 
 	private final int size;
-	private final Stone.Generator stoneGenerator;
+	private final Tile.Generator stoneGenerator;
 	private final Square[][] squares;
 
 	private Set<Square> allSquares;
@@ -23,10 +23,10 @@ public class Grid
 
 	public Grid(final int size)
 	{
-		this(Stone.SIMPLE_GENERATOR, size);
+		this(Tile.SIMPLE_GENERATOR, size);
 	}
 
-	public Grid(final Stone.Generator stoneGenerator, final int size)
+	public Grid(final Tile.Generator stoneGenerator, final int size)
 	{
 		this.size = size;
 
@@ -59,14 +59,14 @@ public class Grid
 		return this.squares[x][y];
 	}
 
-	public void set(final Square square, final Stone stone)
+	public void set(final Square square, final Tile tile)
 	{
-		final Stone old = square.stone;
+		final Tile old = square.tile;
 		if (old != null)
 		{
 			throw new IllegalStateException("Square already assertContains " + old);
 		}
-		square.stone = stone;
+		square.tile = tile;
 	}
 
 	public boolean isEmpty()
@@ -158,7 +158,7 @@ public class Grid
 	public Set<String> getWords(final Square square)
 	{
 		Set<String> set = null;
-		for (final Move.Direction direction : Move.Direction.values())
+		for (final PlayTiles.Direction direction : PlayTiles.Direction.values())
 		{
 			String word;
 			if ((word = getWord(square, direction)) != null)
@@ -178,9 +178,9 @@ public class Grid
 	 */
 	public Square getSquare(final String coordinate) throws ParseException
 	{
-		final Move move = Move.parseMove(this, coordinate, true);
-		assert move.word.isEmpty();
-		return move.startSquare;
+		final PlayTiles playTiles = PlayTiles.parseMove(this, coordinate, true);
+		assert playTiles.word.isEmpty();
+		return playTiles.startSquare;
 	}
 
 	public static class MoveMetaInformation
@@ -189,7 +189,7 @@ public class Grid
 		public static final Comparator<Grid.MoveMetaInformation> SCORE_COMPARATOR = (meta1, meta2) -> meta1.score - meta2.score;
 
 		public List<String> crosswords = new ArrayList<>();
-		final Move move;
+		final PlayTiles playTiles;
 		public boolean isScrabble;
 
 		/** Square the move will fill and which are not filled for the move */
@@ -199,9 +199,9 @@ public class Grid
 		private int requiredBlanks;
 		private final Bag<Character> requiredLetter = new TreeBag<>();
 
-		MoveMetaInformation(final Move move)
+		MoveMetaInformation(final PlayTiles playTiles)
 		{
-			this.move = move;
+			this.playTiles = playTiles;
 		}
 
 		public int getScore()
@@ -214,9 +214,9 @@ public class Grid
 			return new TreeBag<>(this.requiredLetter);
 		}
 
-		public Move getMove()
+		public PlayTiles getPlayTiles()
 		{
-			return this.move;
+			return this.playTiles;
 		}
 
 		public Iterable<Square> getFilledSquares()
@@ -225,20 +225,20 @@ public class Grid
 		}
 	}
 
-	public MoveMetaInformation getMetaInformation(final Move move) throws ScrabbleException
+	public MoveMetaInformation getMetaInformation(final PlayTiles playTiles) throws ScrabbleException
 	{
-		int x = move.startSquare.x;
-		int y = move.startSquare.y;
+		int x = playTiles.startSquare.x;
+		int y = playTiles.startSquare.y;
 
-		LOGGER.trace("Scoring " + move);
+		LOGGER.trace("Scoring " + playTiles);
 
-		final MoveMetaInformation mmi = new MoveMetaInformation(move);
+		final MoveMetaInformation mmi = new MoveMetaInformation(playTiles);
 		int wordFactor = 1;
 		int crosswordScores = 0;
-		for (int i = 0; i < move.word.length(); i++)
+		for (int i = 0; i < playTiles.word.length(); i++)
 		{
-			final char c = move.word.charAt(i);
-			final boolean isBlank = move.isPlayedByBlank(i);
+			final char c = playTiles.word.charAt(i);
+			final boolean isBlank = playTiles.isPlayedByBlank(i);
 
 			final Square sq = getSquare(x, y);
 			if (sq.isEmpty())
@@ -263,12 +263,12 @@ public class Grid
 				final StringBuilder crossword = new StringBuilder();
 				Square cursor;
 				cursor = sq;
-				final Move.Direction crossDirection = move.direction.other();
+				final PlayTiles.Direction crossDirection = playTiles.direction.other();
 				int crosswordScore = 0;
 				while (!(cursor = cursor.getPrevious(crossDirection)).isBorder() && !cursor.isEmpty())
 				{
-					crossword.insert(0, cursor.stone.getChar());
-					crosswordScore += cursor.stone.getPoints();
+					crossword.insert(0, cursor.tile.getChar());
+					crosswordScore += cursor.tile.getPoints();
 				}
 
 				crossword.append(c);
@@ -277,8 +277,8 @@ public class Grid
 				cursor = sq;
 				while (!(cursor = cursor.getFollowing(crossDirection)).isBorder() && !cursor.isEmpty())
 				{
-					crossword.append(cursor.stone.getChar());
-					crosswordScore += cursor.stone.getPoints();
+					crossword.append(cursor.tile.getChar());
+					crosswordScore += cursor.tile.getPoints();
 				}
 
 				if (crossword.length() > 1)
@@ -291,10 +291,10 @@ public class Grid
 			else
 			{
 				sq.assertContainChar(c);
-				mmi.score += sq.stone.getPoints();
+				mmi.score += sq.tile.getPoints();
 			}
 
-			switch (move.direction)
+			switch (playTiles.direction)
 			{
 				case HORIZONTAL:
 					x++;
@@ -326,31 +326,31 @@ public class Grid
 	{
 		for (final Square filledSquare : move.filledSquares)
 		{
-			filledSquare.stone = null;
+			filledSquare.tile = null;
 		}
 	}
 
-	public synchronized void put(final Move move) throws ScrabbleException
+	public synchronized void put(final PlayTiles playTiles) throws ScrabbleException
 	{
-		int x = move.startSquare.x;
-		int y = move.startSquare.y;
+		int x = playTiles.startSquare.x;
+		int y = playTiles.startSquare.y;
 
-		LOGGER.info("Putting " + move);
+		LOGGER.info("Putting " + playTiles);
 
-		for (int i = 0; i < move.word.length(); i++)
+		for (int i = 0; i < playTiles.word.length(); i++)
 		{
-			final char c = move.word.charAt(i);
+			final char c = playTiles.word.charAt(i);
 			final Square sq = getSquare(x, y);
 			if (sq.isEmpty())
 			{
-				if (move.isPlayedByBlank(i))
+				if (playTiles.isPlayedByBlank(i))
 				{
-					sq.stone = this.stoneGenerator.generateStone(null);
-					sq.stone.setCharacter(c);
+					sq.tile = this.stoneGenerator.generateStone(null);
+					sq.tile.setCharacter(c);
 				}
 				else
 				{
-					sq.stone = this.stoneGenerator.generateStone(c);
+					sq.tile = this.stoneGenerator.generateStone(c);
 				}
 			}
 			else
@@ -358,7 +358,7 @@ public class Grid
 				sq.assertContainChar(c);
 			}
 
-			switch (move.direction)
+			switch (playTiles.direction)
 			{
 				case HORIZONTAL:
 					x++;
@@ -454,7 +454,7 @@ public class Grid
 		private final int x, y;
 		private final Bonus bonus;
 
-		public Stone stone;
+		public Tile tile;
 
 		private Set<Square> neighbours;
 
@@ -468,7 +468,7 @@ public class Grid
 
 		public boolean isEmpty()
 		{
-			return this.stone == null;
+			return this.tile == null;
 		}
 
 		public boolean isBorder()
@@ -513,26 +513,26 @@ public class Grid
 			return this.getGrid().hashCode() + this.x + this.y;
 		}
 
-		public boolean isLastOfLine(final Move.Direction direction)
+		public boolean isLastOfLine(final PlayTiles.Direction direction)
 		{
-			return (direction == Move.Direction.HORIZONTAL ? this.x : this.y) == Grid.this.size;
+			return (direction == PlayTiles.Direction.HORIZONTAL ? this.x : this.y) == Grid.this.size;
 		}
 
 		@Override
 		public String toString()
 		{
 			final Character representation =
-					this.stone == null
+					this.tile == null
 							? '_'
-							: this.stone.hasCharacterSet() ? '\u25A1' : this.stone.getChar();
+							: this.tile.hasCharacterSet() ? '\u25A1' : this.tile.getChar();
 			return String.format("(%d,%d) %s", this.x, this.y, representation);
 		}
 
 
-		public Square getPrevious(final Move.Direction direction)
+		public Square getPrevious(final PlayTiles.Direction direction)
 		{
 			final int nx, ny;
-			if (direction == Move.Direction.HORIZONTAL)
+			if (direction == PlayTiles.Direction.HORIZONTAL)
 			{
 				nx = this.x - 1;
 				ny = this.y;
@@ -545,15 +545,15 @@ public class Grid
 			return Grid.this.squares[nx][ny];
 		}
 
-		public boolean isFirstOfLine(final Move.Direction direction)
+		public boolean isFirstOfLine(final PlayTiles.Direction direction)
 		{
-			return direction == Move.Direction.HORIZONTAL ? this.x == 1 : this.y == 1;
+			return direction == PlayTiles.Direction.HORIZONTAL ? this.x == 1 : this.y == 1;
 		}
 
-		public Square getFollowing(final Move.Direction direction)
+		public Square getFollowing(final PlayTiles.Direction direction)
 		{
 			final int nx, ny;
-			if (direction == Move.Direction.HORIZONTAL)
+			if (direction == PlayTiles.Direction.HORIZONTAL)
 			{
 				nx = this.x + 1;
 				ny = this.y;
@@ -573,10 +573,10 @@ public class Grid
 
 		private void assertContainChar(final char c) throws ScrabbleException
 		{
-			if (this.isEmpty() || this.stone.getChar() != c)
+			if (this.isEmpty() || this.tile.getChar() != c)
 			{
 				throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
-						"Square " + this.x + "," + this.y + " already occupied by " + this.stone.getChar());
+						"Square " + this.x + "," + this.y + " already occupied by " + this.tile.getChar());
 			}
 		}
 	}
@@ -616,7 +616,7 @@ public class Grid
 				else
 				{
 					final Grid.Square square = this.getSquare(x, y);
-					sb.append(square.isEmpty() ? " " : square.stone.getChar());
+					sb.append(square.isEmpty() ? " " : square.tile.getChar());
 				}
 
 				if (x == gridSize)
@@ -632,7 +632,7 @@ public class Grid
 	/**
 	 * @return Das Wort an diese Position und in der angegeben direction, {@code null} wenn kein Wort
 	 */
-	private String getWord(final Grid.Square position, final Move.Direction direction)
+	private String getWord(final Grid.Square position, final PlayTiles.Direction direction)
 	{
 		if (position.isEmpty())
 		{
@@ -647,7 +647,7 @@ public class Grid
 		final StringBuilder sb = new StringBuilder();
 		while (!(square = square.getFollowing(direction)).isEmpty() && !square.isBorder())
 		{
-			sb.append(square.stone.getChar());
+			sb.append(square.tile.getChar());
 		}
 
 		if (sb.length() == 1)

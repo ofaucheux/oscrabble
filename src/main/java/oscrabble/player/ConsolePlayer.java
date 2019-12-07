@@ -1,6 +1,6 @@
 package oscrabble.player;
 
-import oscrabble.server.IAction;
+import oscrabble.server.IPlay;
 import oscrabble.server.IPlayerInfo;
 
 import javax.swing.*;
@@ -35,7 +35,7 @@ public class ConsolePlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final int moveNr, final IPlayerInfo player, final IAction action, final int score)
+	public void afterPlay(final int moveNr, final IPlayerInfo player, final IPlay action, final int score)
 	{
 
 	}

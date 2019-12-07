@@ -1,11 +1,11 @@
 package oscrabble.player;
 
-import oscrabble.Move;
+import oscrabble.PlayTiles;
 import oscrabble.ScrabbleException;
 
 import java.util.Set;
 
 interface IMoveSelector
 {
-	Move select(Set<Move> moves) throws ScrabbleException;
+	PlayTiles select(Set<PlayTiles> playTiles) throws ScrabbleException;
 }

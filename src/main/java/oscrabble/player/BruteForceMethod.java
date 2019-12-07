@@ -8,7 +8,7 @@ import oscrabble.*;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.server.IAction;
+import oscrabble.server.IPlay;
 import oscrabble.server.IPlayerInfo;
 import oscrabble.server.SkipTurn;
 
@@ -105,7 +105,7 @@ public class BruteForceMethod
 	 * @param rack Rack
 	 * @return all the moves
 	 */
-	public Set<Move> getLegalMoves(final Grid grid, final Rack rack)
+	public Set<PlayTiles> getLegalMoves(final Grid grid, final Rack rack)
 	{
 
 		final CalculateCtx ctx = new CalculateCtx();
@@ -117,7 +117,7 @@ public class BruteForceMethod
 		{
 			ctx.anchor = anchor;
 
-			for (final Move.Direction direction : Move.Direction.values())
+			for (final PlayTiles.Direction direction : PlayTiles.Direction.values())
 			{
 				ctx.direction = direction;
 				final StringBuilder partialWord = new StringBuilder();
@@ -129,7 +129,7 @@ public class BruteForceMethod
 					do
 					{
 						square = square.getPrevious(direction);
-						partialWord.insert(0, square.stone.getChar());
+						partialWord.insert(0, square.tile.getChar());
 					} while (!square.isFirstOfLine(direction) && !square.getPrevious(direction).isEmpty());
 
 					node = node.transition(partialWord.toString());
@@ -148,8 +148,8 @@ public class BruteForceMethod
 			}
 		}
 
-		LOGGER.info("" + ctx.legalMoves.size() + " legal moves calculated");
-		return ctx.legalMoves;
+		LOGGER.info("" + ctx.legalPlayTiles.size() + " legal moves calculated");
+		return ctx.legalPlayTiles;
 	}
 
 	private void leftPart(final CalculateCtx ctx, final String partialWord, final DAWGNode node, final int limit)
@@ -159,21 +159,21 @@ public class BruteForceMethod
 		{
 			for (final Character c : getTransitions(node))
 			{
-				Stone stone;
-				stone = ctx.rack.searchLetter(c);
-				if (stone != null)
+				Tile tile;
+				tile = ctx.rack.searchLetter(c);
+				if (tile != null)
 				{
-					ctx.rack.remove(stone);
+					ctx.rack.remove(tile);
 					leftPart(ctx, partialWord + c, node.transition(c), limit - 1);
-					ctx.rack.add(stone);
+					ctx.rack.add(tile);
 				}
 
-				stone = ctx.rack.searchLetter(' ');
-				if (stone != null)
+				tile = ctx.rack.searchLetter(' ');
+				if (tile != null)
 				{
-					ctx.rack.remove(stone);
+					ctx.rack.remove(tile);
 					leftPart(ctx, partialWord + Character.toLowerCase(c), node.transition(c), limit - 1);
-					ctx.rack.add(stone);
+					ctx.rack.add(tile);
 				}
 			}
 		}
@@ -209,38 +209,38 @@ public class BruteForceMethod
 
 			for (final Character letter : getTransitions(node))
 			{
-				Stone stone;
+				Tile tile;
 				if (allowedCrossCharacters.contains(letter))
 				{
-					if ((stone = ctx.rack.searchLetter(' ')) != null)
+					if ((tile = ctx.rack.searchLetter(' ')) != null)
 					{
 						final DAWGNode nextNode = node.transition(letter);
-						ctx.rack.remove(stone);
+						ctx.rack.remove(tile);
 						if (!possibleNextSquare.isLastOfLine(ctx.direction))
 						{
 							extendRight(ctx, partialWord + Character.toLowerCase(letter), nextNode,
 									possibleNextSquare.getFollowing(ctx.direction));
 						}
-						ctx.rack.add(stone);
+						ctx.rack.add(tile);
 					}
 
-					if ((stone = ctx.rack.searchLetter(letter)) != null)
+					if ((tile = ctx.rack.searchLetter(letter)) != null)
 					{
 						final DAWGNode nextNode = node.transition(letter);
-						ctx.rack.remove(stone);
+						ctx.rack.remove(tile);
 						if (!possibleNextSquare.isLastOfLine(ctx.direction))
 						{
 							extendRight(ctx, partialWord + letter, nextNode,
 									possibleNextSquare.getFollowing(ctx.direction));
 						}
-						ctx.rack.add(stone);
+						ctx.rack.add(tile);
 					}
 				}
 			}
 		}
 		else
 		{
-			final char letter = possibleNextSquare.stone.getChar();
+			final char letter = possibleNextSquare.tile.getChar();
 			if (getTransitions(node).contains(letter))
 			{
 				final DAWGNode nextNode = node.transition(letter);
@@ -269,9 +269,9 @@ public class BruteForceMethod
 	private void addLegalMove(final CalculateCtx ctx, final Grid.Square endSquare, final String word)
 	{
 		final int delta = word.length() - 1;
-		final int wx = endSquare.getX() - (ctx.direction == Move.Direction.HORIZONTAL ? delta : 0);
-		final int wy = endSquare.getY() - (ctx.direction == Move.Direction.VERTICAL ? delta : 0);
-		ctx.legalMoves.add(new Move(
+		final int wx = endSquare.getX() - (ctx.direction == PlayTiles.Direction.HORIZONTAL ? delta : 0);
+		final int wy = endSquare.getY() - (ctx.direction == PlayTiles.Direction.VERTICAL ? delta : 0);
+		ctx.legalPlayTiles.add(new PlayTiles(
 				ctx.grid.getSquare(wx, wy),
 				ctx.direction,
 				word)
@@ -280,7 +280,7 @@ public class BruteForceMethod
 
 	private Set<Character> getAllowedCrossCharacters(final CalculateCtx ctx,
 													 final Grid.Square crossSquare,
-													 final Move.Direction crossDirection)
+													 final PlayTiles.Direction crossDirection)
 	{
 		if (!crossSquare.isEmpty())
 		{
@@ -298,7 +298,7 @@ public class BruteForceMethod
 			Grid.Square square = crossSquare.getPrevious(crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
-				sb.insert(0, square.stone.getChar());
+				sb.insert(0, square.tile.getChar());
 				square = square.getPrevious(crossDirection);
 			}
 
@@ -308,7 +308,7 @@ public class BruteForceMethod
 			square = crossSquare.getFollowing(crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
-				sb.append(square.stone.getChar());
+				sb.append(square.tile.getChar());
 				square = square.getFollowing(crossDirection);
 			}
 
@@ -350,10 +350,10 @@ public class BruteForceMethod
 			try
 			{
 				final Rack rack = this.game.getRack(this, this.playerKey);
-				Set<Move> moves = new HashSet<>(getLegalMoves(
+				Set<PlayTiles> playTiles = new HashSet<>(getLegalMoves(
 						this.game.getGrid(), rack));
 
-				if (moves.isEmpty())
+				if (playTiles.isEmpty())
 				{
 					this.game.sendMessage(this, "No possible moves anymore");
 					this.game.play(this, SkipTurn.SINGLETON);
@@ -365,7 +365,7 @@ public class BruteForceMethod
 						LOGGER.trace("Wait " + this.configuration.throttle + " seconds...");
 						Thread.sleep(this.configuration.throttle * 1000);
 					}
-					final Move toPlay = this.selector.select(moves);
+					final PlayTiles toPlay = this.selector.select(playTiles);
 					if (this.game.getPlayerToPlay().equals(this))  // check the player still is on turn and no rollback toke place.
 					{
 						LOGGER.info("Play " + toPlay);
@@ -398,7 +398,7 @@ public class BruteForceMethod
 		}
 
 		@Override
-		public void afterPlay(final int moveNr, final IPlayerInfo player, final IAction action, final int score)
+		public void afterPlay(final int moveNr, final IPlayerInfo player, final IPlay action, final int score)
 		{
 			// nichts
 		}
@@ -473,17 +473,17 @@ public class BruteForceMethod
 
 	static class CalculateCtx
 	{
-		Move.Direction direction;
+		PlayTiles.Direction direction;
 		Grid.Square anchor;
 		Grid grid;
 
 		Rack rack;
-		Set<Move> legalMoves = new LinkedHashSet<>();
+		Set<PlayTiles> legalPlayTiles = new LinkedHashSet<>();
 
-		final Map<Move.Direction, Map<Grid.Square, Set<Character>>> crosschecks = new HashMap<>();
+		final Map<PlayTiles.Direction, Map<Grid.Square, Set<Character>>> crosschecks = new HashMap<>();
 		{
-			this.crosschecks.put(Move.Direction.HORIZONTAL, new HashMap<>());
-			this.crosschecks.put(Move.Direction.VERTICAL, new HashMap<>());
+			this.crosschecks.put(PlayTiles.Direction.HORIZONTAL, new HashMap<>());
+			this.crosschecks.put(PlayTiles.Direction.VERTICAL, new HashMap<>());
 		}
 	}
 

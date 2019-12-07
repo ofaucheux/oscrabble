@@ -3,10 +3,8 @@ package oscrabble.client;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
-import oscrabble.Stone;
+import oscrabble.Tile;
 import oscrabble.dictionary.DictionaryTest;
-import oscrabble.server.Game;
-import oscrabble.server.GameTest;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +17,7 @@ public class SwingClientTest
 	void layout()
 	{
 		this.grid = new Grid(Grid.SCRABBLE_SIZE);
-		this.grid.set(this.grid.getSquare(1, 3), Stone.SIMPLE_GENERATOR.generateStone('A'));
+		this.grid.set(this.grid.getSquare(1, 3), Tile.SIMPLE_GENERATOR.generateStone('A'));
 		showGrid(grid);
 	}
 

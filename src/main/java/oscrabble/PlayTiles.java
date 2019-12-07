@@ -1,14 +1,14 @@
 package oscrabble;
 
 import oscrabble.dictionary.Dictionary;
-import oscrabble.server.IAction;
+import oscrabble.server.IPlay;
 
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Move implements IAction
+public class PlayTiles implements IPlay
 {
 	public final Grid.Square startSquare;
 	final Direction direction;
@@ -20,9 +20,9 @@ public class Move implements IAction
 	/**
 	 * Die Blanks (mindesten neugespielt) werden durch klein-buchstaben dargestellt.
 	 */
-	public Move(final Grid.Square startSquare,
-				final Direction direction,
-				final String word)
+	public PlayTiles(final Grid.Square startSquare,
+					 final Direction direction,
+					 final String word)
 	{
 		this.startSquare = startSquare;
 		this.direction = direction;
@@ -39,9 +39,9 @@ public class Move implements IAction
 	 * @param dictionary dictionary of game
 	 * @return all stones of the move, even if they already are on the board.
 	 */
-	public LinkedHashMap<Grid.Square, Stone> getStones(final Grid grid, final Dictionary dictionary)
+	public LinkedHashMap<Grid.Square, Tile> getStones(final Grid grid, final Dictionary dictionary)
 	{
-		final LinkedHashMap<Grid.Square, Stone> stones = new LinkedHashMap<>();
+		final LinkedHashMap<Grid.Square, Tile> stones = new LinkedHashMap<>();
 		int y = this.startSquare.getY();
 		int x = this.startSquare.getX();
 		for (int i = 0; i < this.word.length(); i++)
@@ -88,7 +88,7 @@ public class Move implements IAction
 	 * @return der Spielzug
 	 * @throws ParseException wenn aus der Beschreibung keinen Spielzug zu finden ist.
 	 */
-	public static Move parseMove(final Grid grid, final String coordinate) throws ParseException
+	public static PlayTiles parseMove(final Grid grid, final String coordinate) throws ParseException
 	{
 		return parseMove(grid, coordinate, false);
 	}
@@ -103,21 +103,21 @@ public class Move implements IAction
 	 * @return der Spielzug
 	 * @throws ParseException wenn aus der Beschreibung keinen Spielzug zu finden ist.
 	 */
-	public static Move parseMove(final Grid grid, final String coordinate, final boolean acceptEmptyWord) throws ParseException
+	public static PlayTiles parseMove(final Grid grid, final String coordinate, final boolean acceptEmptyWord) throws ParseException
 	{
-		final Move.Direction direction;
+		final PlayTiles.Direction direction;
 		final int groupX;
 		final int groupY;
 		Matcher matcher;
 		if ((matcher = HORIZONTAL_COORDINATE_PATTERN.matcher(coordinate)).matches())
 		{
-			direction = Move.Direction.HORIZONTAL;
+			direction = PlayTiles.Direction.HORIZONTAL;
 			groupX = 3;
 			groupY = 2;
 		}
 		else if ((matcher = VERTICAL_COORDINATE_PATTERN.matcher(coordinate)).matches())
 		{
-			direction = Move.Direction.VERTICAL;
+			direction = PlayTiles.Direction.VERTICAL;
 			groupX = 2;
 			groupY = 3;
 		}
@@ -139,8 +139,8 @@ public class Move implements IAction
 		{
 			throw new ParseException("Missing word", 0);
 		}
-		final Move move = new Move(grid.getSquare(x, y), direction, word == null ? "" : word);
-		return move;
+		final PlayTiles playTiles = new PlayTiles(grid.getSquare(x, y), direction, word == null ? "" : word);
+		return playTiles;
 	}
 
 	public Direction getDirection()
@@ -172,13 +172,13 @@ public class Move implements IAction
 	@Override
 	public boolean equals(final Object other)
 	{
-		if (!(other instanceof Move))
+		if (!(other instanceof PlayTiles))
 		{
 			return false;
 		}
-		return this.startSquare.equals(((Move) other).startSquare)
-				&& this.direction == ((Move) other).direction
-				&& this.originalWord.equals(((Move) other).originalWord);
+		return this.startSquare.equals(((PlayTiles) other).startSquare)
+				&& this.direction == ((PlayTiles) other).direction
+				&& this.originalWord.equals(((PlayTiles) other).originalWord);
 	}
 
 	@Override
@@ -214,18 +214,18 @@ public class Move implements IAction
 	/**
 	 * @return eine Kopie des Spielzuges in der anderen Richtung: selbes Wort, selbe Startzelle.
 	 */
-	public Move getInvertedDirectionCopy()
+	public PlayTiles getInvertedDirectionCopy()
 	{
-		return new Move(this.startSquare, this.direction.other(), this.word);
+		return new PlayTiles(this.startSquare, this.direction.other(), this.word);
 	}
 
 	/**
 	 * @param newStartSquare das neue Startfeld
 	 * @return eine Kopie des Spielzuges mit einer anderen Startfeld.
 	 */
-	public Move getTranslatedCopy(Grid.Square newStartSquare)
+	public PlayTiles getTranslatedCopy(Grid.Square newStartSquare)
 	{
-		return new Move(newStartSquare, this.direction, this.word);
+		return new PlayTiles(newStartSquare, this.direction, this.word);
 	}
 
 }

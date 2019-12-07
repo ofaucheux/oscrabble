@@ -7,7 +7,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
-import oscrabble.Move;
+import oscrabble.PlayTiles;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Dictionary;
@@ -70,7 +70,7 @@ public class GameTest
 			this.game.listeners.add(new TestListener()
 			{
 				@Override
-				public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
+				public void afterPlay(final int moveNr, final IPlayerInfo info, final IPlay action, final int score)
 				{
 					LOGGER.info("Played: " + action.toString());
 				}
@@ -93,7 +93,7 @@ public class GameTest
 			this.game.listeners.add(new TestListener()
 			{
 				@Override
-				public void afterRejectedAction(final AbstractPlayer player, final IAction action)
+				public void afterRejectedAction(final AbstractPlayer player, final IPlay action)
 				{
 					Assert.fail("Rejected action: " + action);
 				}
@@ -135,7 +135,7 @@ public class GameTest
 		for (int i = 0; i < moves.size(); i++)
 		{
 			players.get(i % players.size()).addMove(
-					Move.parseMove(this.grid, moves.get(i))
+					PlayTiles.parseMove(this.grid, moves.get(i))
 			);
 		}
 
@@ -143,7 +143,7 @@ public class GameTest
 				new TestListener()
 				{
 					@Override
-					public void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score)
+					public void afterPlay(final int moveNr, final IPlayerInfo info, final IPlay action, final int score)
 					{
 						switch (moveNr)
 						{
@@ -170,11 +170,11 @@ public class GameTest
 		this.game.rollbackLastMove(null, null);
 		Assert.assertTrue(this.grid.getSquare("N10").isEmpty());
 
-		final int moveNr = this.game.moveNr;
-		this.gustav.addMove(Move.parseMove(this.grid, "N10 VENTA"));
-		this.john.addMove(Move.parseMove(this.grid, "8K HEM"));
+		final int playNr = this.game.playNr;
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "N10 VENTA"));
+		this.john.addMove(PlayTiles.parseMove(this.grid, "8K HEM"));
 
-		this.game.awaitEndOfMove(moveNr + 2, 1, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(playNr + 2, 1, TimeUnit.SECONDS);
 		assertEquals(Game.State.ENDING, this.game.getState());
 
 		Thread.sleep(this.game.delayBeforeEnds * 1000 / 2 + 500);
@@ -188,10 +188,10 @@ public class GameTest
 		this.grid = this.game.getGrid();
 		this.game.getConfiguration().setValue("retryAccepted", true);
 		this.startGame(true);
-		this.gustav.addMove(Move.parseMove(this.grid, "H3 APPETEE"));
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "H3 APPETEE"));
 		assertEquals(this.game.getScore(this.gustav), 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
-		this.gustav.addMove(Move.parseMove(this.grid, "H3 APTES"));
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "H3 APTES"));
 	}
 
 	@Test
@@ -202,15 +202,15 @@ public class GameTest
 		final TestListener listener = new TestListener()
 		{
 			@Override
-			public void afterRejectedAction(final AbstractPlayer player, final IAction action)
+			public void afterRejectedAction(final AbstractPlayer player, final IPlay action)
 			{
 				playRejected.set(true);
 			}
 		};
 		this.game.listeners.add(listener);
 		this.startGame(true);
-		this.gustav.addMove(Move.parseMove(this.grid, "H3 APPETEE"));
-		this.game.awaitEndOfMove(1, 1, TimeUnit.SECONDS);
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "H3 APPETEE"));
+		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 
 		assertTrue(playRejected.get());
 		assertEquals(this.game.getScore(this.gustav), 0);
@@ -222,7 +222,7 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove(Move.parseMove(this.grid, "H8 A"));
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "H8 A"));
 		Thread.sleep(100);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -234,8 +234,8 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove(Move.parseMove(this.grid, "G7 AS"));
-		this.game.awaitEndOfMove(1, 1, TimeUnit.SECONDS);
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "G7 AS"));
+		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
@@ -245,10 +245,10 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove(Move.parseMove(this.grid, "H8 AS"));
-		this.game.awaitEndOfMove(1, 1, TimeUnit.SECONDS);
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "H8 AS"));
+		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 		assertFalse(this.game.isLastPlayError(this.gustav));
-		this.john.addMove(Move.parseMove(this.grid, "A3 VIGIE"));
+		this.john.addMove(PlayTiles.parseMove(this.grid, "A3 VIGIE"));
 		Thread.sleep(100);
 		assertTrue(this.game.isLastPlayError(this.john));
 	}
@@ -263,11 +263,11 @@ public class GameTest
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
-		p.addMove(Move.parseMove(grid, "H7 As"));
+		p.addMove(PlayTiles.parseMove(grid, "H7 As"));
 		Thread.sleep(100);
 		assertEquals(2, this.game.getScore(p));
 
-		p.addMove(Move.parseMove(grid, "8H SI"));
+		p.addMove(PlayTiles.parseMove(grid, "8H SI"));
 		Thread.sleep(100);
 		assertEquals(3, this.game.getScore(p));
 
@@ -294,12 +294,12 @@ public class GameTest
 			this.game.addPlayer(anton);
 			startGame(true);
 			int move = 1;
-			anton.addMove(Move.parseMove(this.game.getGrid(), "8D PLaCE"));
-			this.game.awaitEndOfMove(move++, 1, TimeUnit.SECONDS);
+			anton.addMove(PlayTiles.parseMove(this.game.getGrid(), "8D PLaCE"));
+			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
 			assertEquals(22, this.game.getScore(anton));
-			anton.addMove(Move.parseMove(this.game.getGrid(),
+			anton.addMove(PlayTiles.parseMove(this.game.getGrid(),
 					RANDOM.nextBoolean() ? "F4 NIERa" : "F4 NIERA"));
-			this.game.awaitEndOfMove(move++, 1, TimeUnit.SECONDS);
+			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
 		}
@@ -312,11 +312,11 @@ public class GameTest
 			this.game.addPlayer(anton);
 			startGame(true);
 			int move = 1;
-			anton.addMove(Move.parseMove(this.game.getGrid(), "8D aMPLE"));
-			this.game.awaitEndOfMove(move++, 1, TimeUnit.SECONDS);
+			anton.addMove(PlayTiles.parseMove(this.game.getGrid(), "8D aMPLE"));
+			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
 			assertEquals(14, this.game.getScore(anton));
-			anton.addMove(Move.parseMove(this.game.getGrid(), "D7 CAISSE"));
-			this.game.awaitEndOfMove(move++, 1, TimeUnit.SECONDS);
+			anton.addMove(PlayTiles.parseMove(this.game.getGrid(), "D7 CAISSE"));
+			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
 		}

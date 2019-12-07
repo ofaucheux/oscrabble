@@ -9,7 +9,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import oscrabble.Stone;
+import oscrabble.Tile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +17,7 @@ import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class Dictionary implements Stone.Generator
+public class Dictionary implements Tile.Generator
 {
 
 	private static final Logger LOGGER = Logger.getLogger(Dictionary.class);
@@ -252,12 +252,12 @@ public class Dictionary implements Stone.Generator
 	}
 
 	@Override
-	public Stone generateStone(final Character c)
+	public Tile generateStone(final Character c)
 	{
-		final Stone stone;
+		final Tile tile;
 		if (c == null)
 		{
-			stone = new Stone(null, 0);
+			tile = new Tile(null, 0);
 		}
 		else
 		{
@@ -267,9 +267,9 @@ public class Dictionary implements Stone.Generator
 			}
 
 			final Letter letter = this.letters.get(c);
-			stone = new Stone(letter.c, letter.points);
+			tile = new Tile(letter.c, letter.points);
 		}
-		return stone;
+		return tile;
 	}
 
 	/**

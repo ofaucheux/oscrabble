@@ -42,7 +42,7 @@ public class Game implements IGame
 	private final Grid grid;
 	private final Random random;
 	private CountDownLatch waitingForPlay;
-	private final LinkedList<Stone> bag = new LinkedList<>();
+	private final LinkedList<Tile> bag = new LinkedList<>();
 	private final Dictionary dictionary;
 
 	final List<GameListener> listeners = new ArrayList<>();
@@ -58,9 +58,9 @@ public class Game implements IGame
 	private final Configuration configuration;
 
 	/**
-	 * Number of current move (Starting with 1).
+	 * Number of the current play move (Starting with 1).
 	 */
-	int moveNr;
+	int playNr;
 
 	/**
 	 * History of the game, a line played move (even if it was an error).
@@ -115,7 +115,7 @@ public class Game implements IGame
 	}
 
 	@Override
-	public synchronized int play(final AbstractPlayer player, final IAction action)
+	public synchronized int play(final AbstractPlayer player, final IPlay action)
 	{
 		if (player != getPlayerToPlay())
 		{
@@ -127,18 +127,18 @@ public class Game implements IGame
 		boolean done = false;
 		int score = 0;
 		boolean actionRejected = false;
-		Set<Stone> drawn = null;
+		Set<Tile> drawn = null;
 		Grid.MoveMetaInformation moveMI = null;
 		try
 		{
 			final ArrayList<String> messages = new ArrayList<>(5);
 
-			if (action instanceof Move)
+			if (action instanceof PlayTiles)
 			{
-				final Move move = (Move) action;
+				final PlayTiles playTiles = (PlayTiles) action;
 
 				// check possibility
-				moveMI = this.grid.getMetaInformation(move);
+				moveMI = this.grid.getMetaInformation(playTiles);
 				final TreeBag<Character> rackLetters = new TreeBag<>();
 				playerInfo.rack.forEach(stone -> {
 					if (!stone.isJoker())
@@ -160,19 +160,19 @@ public class Game implements IGame
 				// check touch
 				if (this.grid.isEmpty())
 				{
-					if (move.word.length() < 2)
+					if (playTiles.word.length() < 2)
 					{
 						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "First word must have at least two letters");
 					}
 				}
-				else if (moveMI.crosswords.isEmpty() && requiredLetters.size() == move.word.length())
+				else if (moveMI.crosswords.isEmpty() && requiredLetters.size() == playTiles.word.length())
 				{
 					throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "New word must touch another one");
 				}
 
 				// check dictionary
 				final Set<String> toTest = new LinkedHashSet<>();
-				toTest.add(move.word);
+				toTest.add(playTiles.word);
 				toTest.addAll(moveMI.crosswords);
 				for (final String crossword : toTest)
 				{
@@ -186,35 +186,35 @@ public class Game implements IGame
 				if (this.grid.isEmpty())
 				{
 					final Grid.Square center = this.grid.getCenter();
-					if (!move.getSquares().containsKey(center))
+					if (!playTiles.getSquares().containsKey(center))
 					{
 						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
 								"The first word must be on the center square");
 					}
 				}
 
-				Grid.Square square = move.startSquare;
-				for (int i = 0; i < move.word.length(); i++)
+				Grid.Square square = playTiles.startSquare;
+				for (int i = 0; i < playTiles.word.length(); i++)
 				{
-					final char c = move.word.charAt(i);
+					final char c = playTiles.word.charAt(i);
 					if (square.isEmpty())
 					{
-						final Stone stone =
+						final Tile tile =
 								playerInfo.rack.removeStones(
-										Collections.singletonList(move.isPlayedByBlank(i) ? ' ' : c)
+										Collections.singletonList(playTiles.isPlayedByBlank(i) ? ' ' : c)
 								).get(0);
-						if (stone.isJoker())
+						if (tile.isJoker())
 						{
-							stone.setCharacter(c);
+							tile.setCharacter(c);
 						}
-						this.grid.set(square, stone);
-						stone.setSettingAction(action);
+						this.grid.set(square, tile);
+						tile.setSettingAction(action);
 					}
 					else
 					{
-						assert square.stone.getChar() == c; //  sollte schon oben getestet sein.
+						assert square.tile.getChar() == c; //  sollte schon oben getestet sein.
 					}
-					square = square.getFollowing(move.getDirection());
+					square = square.getFollowing(playTiles.getDirection());
 				}
 
 				score = moveMI.getScore();
@@ -223,12 +223,12 @@ public class Game implements IGame
 					messages.add(SCRABBLE_MESSAGE);
 				}
 				playerInfo.score += score;
-				LOGGER.info(player.getName() + " plays \"" + move.getNotation() + "\" for " + score + " points");
+				LOGGER.info(player.getName() + " plays \"" + playTiles.getNotation() + "\" for " + score + " points");
 			}
 			else if (action instanceof Exchange)
 			{
 				final Exchange exchange = (Exchange) action;
-				final List<Stone> stones1 = playerInfo.rack.removeStones(exchange.getChars());
+				final List<Tile> stones1 = playerInfo.rack.removeStones(exchange.getChars());
 				this.bag.addAll(stones1);
 				Collections.shuffle(this.bag, this.random);
 				moveMI = null;
@@ -248,7 +248,7 @@ public class Game implements IGame
 			drawn = refillRack(player);
 			messages.forEach(message -> dispatchMessage(message));
 
-			LOGGER.debug("Grid after play move nr #" + this.moveNr + ":\n" + this.grid.asASCIIArt());
+			LOGGER.debug("Grid after play move nr #" + this.playNr + ":\n" + this.grid.asASCIIArt());
 			actionRejected = false;
 			done = true;
 			return score;
@@ -275,14 +275,14 @@ public class Game implements IGame
 		{
 			playerInfo.lastAction = action;
 			final int copyScore = score;
-			dispatch(toInform -> toInform.afterPlay(this.moveNr, playerInfo, action, copyScore));
+			dispatch(toInform -> toInform.afterPlay(this.playNr, playerInfo, action, copyScore));
 			if (done)
 			{
 				final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
 				this.history.add(historyEntry);
 				this.toPlay.pop();
 				this.toPlay.add(player);
-				this.moveNr++;
+				this.playNr++;
 
 				if (playerInfo.rack.isEmpty())
 				{
@@ -321,7 +321,7 @@ public class Game implements IGame
 		final PlayerInfo playerInfo = this.players.get(historyEntry.player);
 		playerInfo.rack.removeAll(historyEntry.drawn);
 		historyEntry.metaInformation.getFilledSquares().forEach(
-				filled -> playerInfo.rack.add(filled.stone)
+				filled -> playerInfo.rack.add(filled.tile)
 		);
 		this.grid.remove(historyEntry.metaInformation);
 		this.players.forEach( (p,info) -> info.score += historyEntry.scores.getOrDefault(p, 0));
@@ -368,9 +368,9 @@ public class Game implements IGame
 					if (info != firstEndingPlayer)
 					{
 						int gift = 0;
-						for (final Stone stone : info.rack)
+						for (final Tile tile : info.rack)
 						{
-							gift += stone.getPoints();
+							gift += tile.getPoints();
 						}
 						info.score -= gift;
 						historyEntry.scores.put(player, -gift);
@@ -437,16 +437,16 @@ public class Game implements IGame
 	 * @param player Player to refill the rack
 	 * @return the new drawn stones.
 	 */
-	private Set<Stone> refillRack(final AbstractPlayer player)
+	private Set<Tile> refillRack(final AbstractPlayer player)
 	{
 		final Rack rack = this.players.get(player).rack;
-		final HashSet<Stone> drawn = new HashSet<>();
+		final HashSet<Tile> drawn = new HashSet<>();
 		while (!this.bag.isEmpty() && rack.size() < RACK_SIZE)
 		{
-			final Stone stone = this.bag.poll();
-			this.bag.remove(stone);
-			drawn.add(stone);
-			rack.add(stone);
+			final Tile tile = this.bag.poll();
+			this.bag.remove(tile);
+			drawn.add(tile);
+			rack.add(tile);
 		}
 		LOGGER.trace("Remaining stones in the bag: " + this.bag.size());
 		return drawn;
@@ -469,7 +469,7 @@ public class Game implements IGame
 		prepareGame();
 
 		setState(State.STARTED);
-		this.moveNr = 1;
+		this.playNr = 1;
 		try
 		{
 			while (this.state != State.ENDED && this.state != State.ENDING)
@@ -645,28 +645,24 @@ public class Game implements IGame
 	}
 
 	/**
-	 * For test purposes: wait until the game has reached the end of a defined move.
-	 *
-	 * <p>If the specified waiting time elapses then the value {@code false}
-	 * is returned.  If the time is less than or equal to zero, the method
-	 * will not wait at all.
-	 *
-	 * @param moveNr the move number to wait after the end of.
+	 * For test purposes: wait until the game has reached the end of a defined play.
+
+	 * @param playNr the play number to wait after the end of.
 	 * @param timeout the maximum time to wait
 	 * @param unit the time unit of the {@code timeout} argument
-	 * @throws  TimeoutException  if the waiting time elapsed before the move has ended
+	 * @throws TimeoutException  if the waiting time elapsed before the move has ended
 	 * @throws InterruptedException if the current thread is interrupted
 	 *         while waiting
 	 */
-	void awaitEndOfMove(final int moveNr, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
+	void awaitEndOfPlay(final int playNr, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
 	{
 		long maxTime = unit.toMillis(timeout) + System.currentTimeMillis();
-		while (this.moveNr <= moveNr)
+		while (this.playNr <= playNr)
 		{
 			Thread.sleep(100);
 			if (System.currentTimeMillis() > maxTime)
 			{
-				throw new TimeoutException("End of move " + moveNr + " still not reached after " + timeout + " " + unit);
+				throw new TimeoutException("End of play " + playNr + " still not reached after " + timeout + " " + unit);
 			}
 		}
 	}
@@ -713,7 +709,7 @@ public class Game implements IGame
 		/**
 		 * Last played action.
 		 */
-		IAction lastAction;
+		IPlay lastAction;
 	}
 
 	/**
@@ -750,7 +746,7 @@ public class Game implements IGame
 		 * @param action
 		 * @param score
 		 */
-		default void afterPlay(final int moveNr, final IPlayerInfo info, final IAction action, final int score) { }
+		default void afterPlay(final int moveNr, final IPlayerInfo info, final IPlay action, final int score) { }
 
 		default void beforeGameStart() { }
 
@@ -768,7 +764,7 @@ public class Game implements IGame
 		 * @param player
 		 * @param action
 		 */
-		default void afterRejectedAction(final AbstractPlayer player, final IAction action){}
+		default void afterRejectedAction(final AbstractPlayer player, final IPlay action){}
 
 	}
 
@@ -790,17 +786,17 @@ public class Game implements IGame
 	public static class HistoryEntry
 	{
 		private AbstractPlayer player;
-		private final IAction action;
+		private final IPlay action;
 		private final boolean errorOccurred;
 		private final HashMap<AbstractPlayer, Integer> scores = new HashMap<>();
-		private final Set<Stone> drawn;  // to be used for rewind
+		private final Set<Tile> drawn;  // to be used for rewind
 
 		/**
 		 * Information about the move at time of the action.
 		 */
 		private final Grid.MoveMetaInformation metaInformation;
 
-		private HistoryEntry(final AbstractPlayer player, final IAction action, final boolean errorOccurred, final int score, final Set<Stone> drawn, final Grid.MoveMetaInformation metaInformation)
+		private HistoryEntry(final AbstractPlayer player, final IPlay action, final boolean errorOccurred, final int score, final Set<Tile> drawn, final Grid.MoveMetaInformation metaInformation)
 		{
 			this.player = player;
 			this.action = action;
@@ -813,7 +809,7 @@ public class Game implements IGame
 		public String formatAsString()
 		{
 			final StringBuilder sb = new StringBuilder(this.player.getName());
-			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((Move) this.action).getNotation());
+			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((PlayTiles) this.action).getNotation());
 			sb.append(" ").append(this.scores.get(player)).append(" pts");
 			return sb.toString();
 		}

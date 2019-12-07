@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class Rack extends HashSet<Stone>
+public class Rack extends HashSet<Tile>
 {
 	public Rack()
 	{
@@ -17,9 +17,9 @@ public class Rack extends HashSet<Stone>
 	 *                   entfernt.
 	 * @throws ScrabbleException falls nicht vorhanden.
 	 */
-	public List<Stone> removeStones(final List<Character> characters) throws ScrabbleException
+	public List<Tile> removeStones(final List<Character> characters) throws ScrabbleException
 	{
-		final ArrayList<Stone> found = new ArrayList<>();
+		final ArrayList<Tile> found = new ArrayList<>();
 		boolean success = false;
 		try
 		{
@@ -32,14 +32,14 @@ public class Rack extends HashSet<Stone>
 			{
 				for (final Character c : characters)
 				{
-					Stone stone = searchLetter(c);
-					if (stone == null)
+					Tile tile = searchLetter(c);
+					if (tile == null)
 					{
 						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
 								"Not in the rack: " + characters);
 					}
-					found.add(stone);
-					this.remove(stone);
+					found.add(tile);
+					this.remove(tile);
 				}
 			}
 			success = true;
@@ -57,9 +57,9 @@ public class Rack extends HashSet<Stone>
 	public int countLetter(final Character letter)
 	{
 		int i = 0;
-		for (final Stone stone : this)
+		for (final Tile tile : this)
 		{
-			if (!stone.isJoker() && stone.getChar() == letter)
+			if (!tile.isJoker() && tile.getChar() == letter)
 			{
 				i++;
 			}
@@ -72,22 +72,22 @@ public class Rack extends HashSet<Stone>
 	 * @param c die gesuchte Buchstabe, {@code ' '} für ein Blank
 	 * @return das Stein oder {@code null}
 	 */
-	public Stone searchLetter(final Character c)
+	public Tile searchLetter(final Character c)
 	{
-		Stone found = null;
-		for (final Stone stone : this)
+		Tile found = null;
+		for (final Tile tile : this)
 		{
 			if (c == ' ')
 			{
-				if (stone.isJoker())
+				if (tile.isJoker())
 				{
-					found = stone;
+					found = tile;
 					break;
 				}
 			}
-			else if (!stone.isJoker() && stone.getChar() == c)
+			else if (!tile.isJoker() && tile.getChar() == c)
 			{
-				found = stone;
+				found = tile;
 				break;
 			}
 		}
@@ -97,9 +97,9 @@ public class Rack extends HashSet<Stone>
 	public int countJoker()
 	{
 		int counter = 0;
-		for (final Stone stone : this)
+		for (final Tile tile : this)
 		{
-			if (stone.isJoker())
+			if (tile.isJoker())
 			{
 				counter++;
 			}
@@ -114,9 +114,9 @@ public class Rack extends HashSet<Stone>
 	public Rack copy()
 	{
 		final Rack copy = new Rack();
-		for (final Stone stone : this)
+		for (final Tile tile : this)
 		{
-			copy.add(stone);
+			copy.add(tile);
 		}
 		return copy;
 	}
