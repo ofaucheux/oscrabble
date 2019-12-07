@@ -14,6 +14,7 @@ import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -76,6 +77,7 @@ public class GameTest
 				}
 			});
 
+			ArrayList<BruteForceMethod.Player> players = new ArrayList<>();
 			for (int i = 0; i < RandomUtils.nextInt(1, 7); i++)
 			{
 				final BruteForceMethod.Player player = method.new Player("Player " + i)
@@ -89,13 +91,66 @@ public class GameTest
 				};
 
 				this.game.addPlayer(player);
+				players.add(player);
 			}
+			final AtomicReference<Throwable> error = new AtomicReference<>();
 			this.game.listeners.add(new TestListener()
 			{
+				final LinkedList<Snapshot> snapshots = new LinkedList<>();
+
 				@Override
 				public void afterRejectedAction(final AbstractPlayer player, final IPlay action)
 				{
 					Assert.fail("Rejected action: " + action);
+				}
+
+				@Override
+				public void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score)
+				{
+						if (RANDOM.nextInt(10) == 0)
+						{
+							try
+							{
+								BruteForceMethod.Player caller = players.get(0);
+								UUID key = getKey(caller);
+								final Snapshot before = this.snapshots.getLast();
+								assert before != null;
+								GameTest.this.game.rollbackLastMove(caller, key);
+								final Snapshot after = collectInfos();
+								assertEquals("Wrong play nr", before.playNr, after.playNr);
+								before.scores.forEach(
+										(player, beforeScore) -> assertEquals("Wrong score", beforeScore, after.scores.get(player))
+								);
+							}
+							catch (final Throwable e)
+							{
+								error.set(e);
+							}
+						}
+						else
+						{
+							this.snapshots.add(collectInfos());
+						}
+				}
+
+				protected Snapshot collectInfos()
+				{
+					final Snapshot info = new Snapshot();
+					info.playNr = GameTest.this.game.playNr;
+					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
+					{
+						info.scores.put(player.getName(), player.getScore());
+					}
+					return info;
+				}
+
+				/**
+				 * Infos about the game at a given point.
+				 */
+				class Snapshot
+				{
+					int playNr;
+					final HashMap<String, Integer> scores = new HashMap<String, Integer>();
 				}
 			});
 			startGame(true);
@@ -104,6 +159,27 @@ public class GameTest
 			{
 				Thread.sleep(100);
 			}
+
+			assertNull(error.get());
+		}
+	}
+
+	/**
+	 * Get the key of a player through reflection methods
+	 * @param player the player
+	 * @return the key
+	 */
+	protected UUID getKey(final BruteForceMethod.Player player)
+	{
+		try
+		{
+			Field field = AbstractPlayer.class.getDeclaredField("playerKey");
+			field.setAccessible(true);
+			return (UUID) field.get(player);
+		}
+		catch (NoSuchFieldException | IllegalAccessException e)
+		{
+			throw new Error(e);
 		}
 	}
 

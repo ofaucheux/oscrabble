@@ -72,6 +72,11 @@ public class Game implements IGame
 	 */
 	private ScheduledFuture<Void> endScheduler;
 
+	/**
+	 * Synchronize: to by synchronized by calls which change the state of the game
+	 */
+	final Object changing = new Object();
+
 	public Game(final Dictionary dictionary, final long randomSeed)
 	{
 		this.configuration = new Configuration();
@@ -117,224 +122,233 @@ public class Game implements IGame
 	@Override
 	public synchronized int play(final AbstractPlayer player, final IPlay action)
 	{
-		if (player != getPlayerToPlay())
+		synchronized (this.changing)
 		{
-			throw new IllegalStateException("The player " + player.toString() + " is not playing");
-		}
-
-		LOGGER.info(player.getName() + " plays " + action);
-		final PlayerInfo playerInfo = this.players.get(player);
-		boolean done = false;
-		int score = 0;
-		boolean actionRejected = false;
-		Set<Tile> drawn = null;
-		Grid.MoveMetaInformation moveMI = null;
-		try
-		{
-			final ArrayList<String> messages = new ArrayList<>(5);
-
-			if (action instanceof PlayTiles)
+			if (player != getPlayerToPlay())
 			{
-				final PlayTiles playTiles = (PlayTiles) action;
+				throw new IllegalStateException("The player " + player.toString() + " is not playing");
+			}
 
-				// check possibility
-				moveMI = this.grid.getMetaInformation(playTiles);
-				final TreeBag<Character> rackLetters = new TreeBag<>();
-				playerInfo.rack.forEach(stone -> {
-					if (!stone.isJoker())
-					{
-						rackLetters.add(stone.getChar(), 1);
-					}
-				});
+			LOGGER.info(player.getName() + " plays " + action);
+			final PlayerInfo playerInfo = this.players.get(player);
+			boolean done = false;
+			int score = 0;
+			boolean actionRejected = false;
+			Set<Tile> drawn = null;
+			Grid.MoveMetaInformation moveMI = null;
+			try
+			{
+				final ArrayList<String> messages = new ArrayList<>(5);
 
-				final Bag<Character> requiredLetters = moveMI.getRequiredLetters();
-				final Bag<Character> missingLetters = new HashBag<>(requiredLetters);
-				missingLetters.removeAll(rackLetters);
-				if (missingLetters.size() > playerInfo.rack.countJoker())
+				if (action instanceof PlayTiles)
 				{
-					final String details = "<html>Rack with " + rackLetters + "<br>has not the required stones " + requiredLetters;
-					player.onDispatchMessage(details);
-					throw new ScrabbleException(ScrabbleException.ERROR_CODE.MISSING_LETTER);
-				}
+					final PlayTiles playTiles = (PlayTiles) action;
 
-				// check touch
-				if (this.grid.isEmpty())
-				{
-					if (playTiles.word.length() < 2)
-					{
-						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "First word must have at least two letters");
-					}
-				}
-				else if (moveMI.crosswords.isEmpty() && requiredLetters.size() == playTiles.word.length())
-				{
-					throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "New word must touch another one");
-				}
-
-				// check dictionary
-				final Set<String> toTest = new LinkedHashSet<>();
-				toTest.add(playTiles.word);
-				toTest.addAll(moveMI.crosswords);
-				for (final String crossword : toTest)
-				{
-					if (!this.dictionary.containUpperCaseWord(crossword.toUpperCase()))
-					{
-						final String details = "Word \"" + crossword + "\" is not allowed";
-						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, details);
-					}
-				}
-
-				if (this.grid.isEmpty())
-				{
-					final Grid.Square center = this.grid.getCenter();
-					if (!playTiles.getSquares().containsKey(center))
-					{
-						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
-								"The first word must be on the center square");
-					}
-				}
-
-				Grid.Square square = playTiles.startSquare;
-				for (int i = 0; i < playTiles.word.length(); i++)
-				{
-					final char c = playTiles.word.charAt(i);
-					if (square.isEmpty())
-					{
-						final Tile tile =
-								playerInfo.rack.removeStones(
-										Collections.singletonList(playTiles.isPlayedByBlank(i) ? ' ' : c)
-								).get(0);
-						if (tile.isJoker())
+					// check possibility
+					moveMI = this.grid.getMetaInformation(playTiles);
+					final TreeBag<Character> rackLetters = new TreeBag<>();
+					playerInfo.rack.forEach(stone -> {
+						if (!stone.isJoker())
 						{
-							tile.setCharacter(c);
+							rackLetters.add(stone.getChar(), 1);
 						}
-						this.grid.set(square, tile);
-						tile.setSettingAction(action);
-					}
-					else
+					});
+
+					final Bag<Character> requiredLetters = moveMI.getRequiredLetters();
+					final Bag<Character> missingLetters = new HashBag<>(requiredLetters);
+					missingLetters.removeAll(rackLetters);
+					if (missingLetters.size() > playerInfo.rack.countJoker())
 					{
-						assert square.tile.getChar() == c; //  sollte schon oben getestet sein.
+						final String details = "<html>Rack with " + rackLetters + "<br>has not the required stones " + requiredLetters;
+						player.onDispatchMessage(details);
+						throw new ScrabbleException(ScrabbleException.ERROR_CODE.MISSING_LETTER);
 					}
-					square = square.getFollowing(playTiles.getDirection());
-				}
 
-				score = moveMI.getScore();
-				if (moveMI.isScrabble)
+					// check touch
+					if (this.grid.isEmpty())
+					{
+						if (playTiles.word.length() < 2)
+						{
+							throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "First word must have at least two letters");
+						}
+					}
+					else if (moveMI.crosswords.isEmpty() && requiredLetters.size() == playTiles.word.length())
+					{
+						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "New word must touch another one");
+					}
+
+					// check dictionary
+					final Set<String> toTest = new LinkedHashSet<>();
+					toTest.add(playTiles.word);
+					toTest.addAll(moveMI.crosswords);
+					for (final String crossword : toTest)
+					{
+						if (!this.dictionary.containUpperCaseWord(crossword.toUpperCase()))
+						{
+							final String details = "Word \"" + crossword + "\" is not allowed";
+							throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, details);
+						}
+					}
+
+					if (this.grid.isEmpty())
+					{
+						final Grid.Square center = this.grid.getCenter();
+						if (!playTiles.getSquares().containsKey(center))
+						{
+							throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
+									"The first word must be on the center square");
+						}
+					}
+
+					Grid.Square square = playTiles.startSquare;
+					for (int i = 0; i < playTiles.word.length(); i++)
+					{
+						final char c = playTiles.word.charAt(i);
+						if (square.isEmpty())
+						{
+							final Tile tile =
+									playerInfo.rack.removeStones(
+											Collections.singletonList(playTiles.isPlayedByBlank(i) ? ' ' : c)
+									).get(0);
+							if (tile.isJoker())
+							{
+								tile.setCharacter(c);
+							}
+							this.grid.set(square, tile);
+							tile.setSettingAction(action);
+						}
+						else
+						{
+							assert square.tile.getChar() == c; //  sollte schon oben getestet sein.
+						}
+						square = square.getFollowing(playTiles.getDirection());
+					}
+
+					score = moveMI.getScore();
+					if (moveMI.isScrabble)
+					{
+						messages.add(SCRABBLE_MESSAGE);
+					}
+					playerInfo.score += score;
+					LOGGER.info(player.getName() + " plays \"" + playTiles.getNotation() + "\" for " + score + " points");
+				}
+				else if (action instanceof Exchange)
 				{
-					messages.add(SCRABBLE_MESSAGE);
+					final Exchange exchange = (Exchange) action;
+					final List<Tile> stones1 = playerInfo.rack.removeStones(exchange.getChars());
+					this.bag.addAll(stones1);
+					Collections.shuffle(this.bag, this.random);
+					moveMI = null;
+					LOGGER.info(player.getName() + " exchanges " + exchange.getChars().size() + " stones");
 				}
-				playerInfo.score += score;
-				LOGGER.info(player.getName() + " plays \"" + playTiles.getNotation() + "\" for " + score + " points");
-			}
-			else if (action instanceof Exchange)
-			{
-				final Exchange exchange = (Exchange) action;
-				final List<Tile> stones1 = playerInfo.rack.removeStones(exchange.getChars());
-				this.bag.addAll(stones1);
-				Collections.shuffle(this.bag, this.random);
-				moveMI = null;
-				LOGGER.info(player.getName() + " exchanges " + exchange.getChars().size() + " stones");
-			}
-			else if (action instanceof SkipTurn)
-			{
-				LOGGER.info(player.getName() + " skips its turn");
-				this.dispatchMessage(player.getName() + " skips its turn");
-			}
-			else
-			{
-				throw new AssertionError("Command not treated: " + action);
-			}
+				else if (action instanceof SkipTurn)
+				{
+					LOGGER.info(player.getName() + " skips its turn");
+					this.dispatchMessage(player.getName() + " skips its turn");
+				}
+				else
+				{
+					throw new AssertionError("Command not treated: " + action);
+				}
 
-			playerInfo.isLastPlayError = false;
-			drawn = refillRack(player);
-			messages.forEach(message -> dispatchMessage(message));
+				playerInfo.isLastPlayError = false;
+				drawn = refillRack(player);
+				messages.forEach(message -> dispatchMessage(message));
 
-			LOGGER.debug("Grid after play move nr #" + this.playNr + ":\n" + this.grid.asASCIIArt());
-			actionRejected = false;
-			done = true;
-			return score;
-		}
-		catch (final ScrabbleException e)
-		{
-			LOGGER.info("Refuse play: " + action + ". Cause: " + e);
-			actionRejected = true;
-			player.onDispatchMessage(e.toString());
-			if (this.configuration.retryAccepted || e.acceptRetry())
-			{
-				player.onDispatchMessage("Retry accepted");
-				done = false;
-			}
-			else
-			{
-				dispatch(listener -> listener.afterRejectedAction(player, action));
+				LOGGER.debug("Grid after play move nr #" + this.playNr + ":\n" + this.grid.asASCIIArt());
+				actionRejected = false;
 				done = true;
-				playerInfo.isLastPlayError = true;
+				return score;
 			}
-			return 0;
-		}
-		finally
-		{
-			playerInfo.lastAction = action;
-			final int copyScore = score;
-			dispatch(toInform -> toInform.afterPlay(this.playNr, playerInfo, action, copyScore));
-			if (done)
+			catch (final ScrabbleException e)
 			{
-				final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
-				this.history.add(historyEntry);
-				this.toPlay.pop();
-				this.toPlay.add(player);
-				this.playNr++;
-
-				if (playerInfo.rack.isEmpty())
+				LOGGER.info("Refuse play: " + action + ". Cause: " + e);
+				actionRejected = true;
+				player.onDispatchMessage(e.toString());
+				if (this.configuration.retryAccepted || e.acceptRetry())
 				{
-					endGame(playerInfo, historyEntry);
+					player.onDispatchMessage("Retry accepted");
+					done = false;
 				}
-				else if (action == SkipTurn.SINGLETON)
+				else
 				{
-					// Quit if nobody can play
-					final AtomicBoolean canPlay = new AtomicBoolean(false);
-					this.players.forEach((p, mi) -> { if (mi.lastAction != SkipTurn.SINGLETON) canPlay.set(true);});
-					if (!canPlay.get())
+					dispatch(listener -> listener.afterRejectedAction(player, action));
+					done = true;
+					playerInfo.isLastPlayError = true;
+				}
+				return 0;
+			}
+			finally
+			{
+				playerInfo.lastAction = action;
+				final int copyScore = score;
+				dispatch(toInform -> toInform.afterPlay(this.playNr, playerInfo, action, copyScore));
+				if (done)
+				{
+					final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
+					this.history.add(historyEntry);
+					this.toPlay.pop();
+					this.toPlay.add(player);
+					this.playNr++;
+
+					if (playerInfo.rack.isEmpty())
 					{
-						endGame(null, historyEntry);
+						endGame(playerInfo, historyEntry);
+					}
+					else if (action == SkipTurn.SINGLETON)
+					{
+						// Quit if nobody can play
+						final AtomicBoolean canPlay = new AtomicBoolean(false);
+						this.players.forEach((p, mi) -> {
+							if (mi.lastAction != SkipTurn.SINGLETON) canPlay.set(true);
+						});
+						if (!canPlay.get())
+						{
+							endGame(null, historyEntry);
+						}
 					}
 				}
+				this.waitingForPlay.countDown();
 			}
-			this.waitingForPlay.countDown();
 		}
 	}
 
 	public synchronized void rollbackLastMove(final AbstractPlayer caller, final UUID callerKey) throws ScrabbleException
 	{
-		final HistoryEntry historyEntry = this.history.pollLast();
-		if (historyEntry == null)
+		synchronized (this.changing)
 		{
-			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "No move played for the time");
-		}
+			final HistoryEntry historyEntry = this.history.pollLast();
+			if (historyEntry == null)
+			{
+				throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "No move played for the time");
+			}
 
-		if (this.endScheduler != null)
-		{
-			this.endScheduler.cancel(true);
-			this.endScheduler = null;
+			if (this.endScheduler != null)
+			{
+				this.endScheduler.cancel(true);
+				this.endScheduler = null;
+				setState(State.STARTED);
+			}
+
+			final PlayerInfo playerInfo = this.players.get(historyEntry.player);
+			playerInfo.rack.removeAll(historyEntry.drawn);
+			historyEntry.metaInformation.getFilledSquares().forEach(
+					filled -> playerInfo.rack.add(filled.tile)
+			);
+			this.grid.remove(historyEntry.metaInformation);
+			this.players.forEach( (p,info) -> info.score -= historyEntry.scores.getOrDefault(p, 0));
+			assert this.toPlay.peekLast() == historyEntry.player;
+			this.toPlay.removeLast();
+			this.toPlay.addFirst(historyEntry.player);
+			this.playNr--;
+			LOGGER.info("Last move rollback on demand of " + caller);
 			setState(State.STARTED);
+			dispatch(toInform -> toInform.afterRollback());
+			dispatch(toInform -> toInform.onPlayRequired(historyEntry.player));
+
+			this.waitingForPlay.countDown();
 		}
 
-		final PlayerInfo playerInfo = this.players.get(historyEntry.player);
-		playerInfo.rack.removeAll(historyEntry.drawn);
-		historyEntry.metaInformation.getFilledSquares().forEach(
-				filled -> playerInfo.rack.add(filled.tile)
-		);
-		this.grid.remove(historyEntry.metaInformation);
-		this.players.forEach( (p,info) -> info.score += historyEntry.scores.getOrDefault(p, 0));
-		playerInfo.score -= historyEntry.metaInformation.getScore();
-		assert this.toPlay.peekLast() == historyEntry.player;
-		this.toPlay.removeLast();
-		this.toPlay.addFirst(historyEntry.player);
-		LOGGER.info("Last move rollback on demand of " + caller);
-		setState(State.STARTED);
-		dispatch(toInform -> toInform.afterRollback());
-		dispatch(toInform -> toInform.onPlayRequired(historyEntry.player));
-
-		this.waitingForPlay.countDown();
 	}
 
 	@Override
@@ -788,6 +802,7 @@ public class Game implements IGame
 		private AbstractPlayer player;
 		private final IPlay action;
 		private final boolean errorOccurred;
+		/** Points gained by this play for each player */
 		private final HashMap<AbstractPlayer, Integer> scores = new HashMap<>();
 		private final Set<Tile> drawn;  // to be used for rewind
 
