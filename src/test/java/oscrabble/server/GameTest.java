@@ -70,7 +70,7 @@ public class GameTest
 			this.game.listeners.add(new TestListener()
 			{
 				@Override
-				public void afterPlay(final int moveNr, final IPlayerInfo info, final IPlay action, final int score)
+				public void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score)
 				{
 					LOGGER.info("Played: " + action.toString());
 				}
@@ -143,9 +143,9 @@ public class GameTest
 				new TestListener()
 				{
 					@Override
-					public void afterPlay(final int moveNr, final IPlayerInfo info, final IPlay action, final int score)
+					public void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score)
 					{
-						switch (moveNr)
+						switch (playNr)
 						{
 							case 1:
 								Assert.assertEquals(78, GameTest.this.game.getPlayerInfo(GameTest.this.gustav).getScore());

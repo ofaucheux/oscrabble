@@ -741,12 +741,12 @@ public class Game implements IGame
 
 		/**
 		 *
-		 * @param moveNr number of the move which just have been played
+		 * @param playNr number of the play which just have been played
 		 * @param info
 		 * @param action
 		 * @param score
 		 */
-		default void afterPlay(final int moveNr, final IPlayerInfo info, final IPlay action, final int score) { }
+		default void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score) { }
 
 		default void beforeGameStart() { }
 

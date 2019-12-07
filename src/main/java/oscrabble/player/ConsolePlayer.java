@@ -35,7 +35,7 @@ public class ConsolePlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final int moveNr, final IPlayerInfo player, final IPlay action, final int score)
+	public void afterPlay(final int playNr, final IPlayerInfo player, final IPlay action, final int score)
 	{
 
 	}
