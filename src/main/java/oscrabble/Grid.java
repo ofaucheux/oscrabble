@@ -575,6 +575,7 @@ public class Grid
 		{
 			if (this.isEmpty() || this.tile.getChar() != c)
 			{
+				LOGGER.warn("Grid state:\n" + getGrid().asASCIIArt());
 				throw new ScrabbleException.ForbiddenPlayException("Square " + this.x + "," + this.y + " already occupied by " + this.tile.getChar());
 			}
 		}

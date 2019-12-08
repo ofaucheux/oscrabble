@@ -92,4 +92,19 @@ public interface IGame
 	 * @throws IllegalStateException if the player has never played for the time
 	 */
 	boolean isLastPlayError(AbstractPlayer player);
+
+	/**
+	 * Description of a play.
+	 */
+	class Play
+	{
+		public final UUID uuid = UUID.randomUUID();
+		protected final int number;
+
+		Play(final int number)
+		{
+			this.number = number;
+		}
+	}
+
 }

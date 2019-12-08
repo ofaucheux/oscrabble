@@ -324,6 +324,7 @@ public class Game implements IGame
 		{
 			LOGGER.info("Rollback last move on demand of " + caller);
 			final HistoryEntry historyEntry = this.history.pollLast();
+			LOGGER.info("Rollback " + historyEntry.formatAsString());
 			if (historyEntry == null)
 			{
 				throw new ScrabbleException.InvalidStateException( "No move played for the time");
