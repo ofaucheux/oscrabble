@@ -8,8 +8,6 @@ public class Play
 {
 	public final UUID uuid = UUID.randomUUID();
 
-	public final int roundNr;
-
 	public Action action;
 
 	public final AbstractPlayer player;
@@ -21,9 +19,8 @@ public class Play
 	 */
 	public boolean done;
 
-	public Play(final int roundNr, final AbstractPlayer player)
+	public Play(final AbstractPlayer player)
 	{
-		this.roundNr = roundNr;
 		this.player = player;
 	}
 }

@@ -58,9 +58,9 @@ public class Game implements IGame
 	private final Configuration configuration;
 
 	/**
-	 * Current play
+	 * Plays
 	 */
-	Play currentPlay;
+	final LinkedList<Play> plays = new LinkedList<>();
 
 	/**
 	 * History of the game, a line played move (even if it was an error).
@@ -129,14 +129,14 @@ public class Game implements IGame
 	{
 		synchronized (this.changing)
 		{
-			if (this.currentPlay != play)
+			if (this.plays.isEmpty() || this.plays.getLast() != play)
 			{
 				throw new ScrabbleException.InvalidStateException("Not current turn");
 			}
 
-			assert !this.currentPlay.done;
-			final AbstractPlayer player = this.currentPlay.player;
-			final PlayerInfo playerInfo = players.get(player);
+			assert !play.done;
+			final AbstractPlayer player = play.player;
+			final PlayerInfo playerInfo = this.players.get(player);
 			checkKey(player, clientKey);
 
 			LOGGER.info(player.getName() + " plays " + action);
@@ -260,9 +260,9 @@ public class Game implements IGame
 				drawn = refillRack(playerInfo.player);
 				messages.forEach(message -> dispatchMessage(message));
 
-				LOGGER.debug("Grid after play move nr #" + this.currentPlay.uuid + ":\n" + this.grid.asASCIIArt());
+				LOGGER.debug("Grid after play move nr #" + play.uuid + ":\n" + this.grid.asASCIIArt());
 				actionRejected = false;
-				this.currentPlay.done = true;
+				play.done = true;
 				return score;
 			}
 			catch (final ScrabbleException e)
@@ -273,11 +273,13 @@ public class Game implements IGame
 				if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
 				{
 					playerInfo.player.onDispatchMessage("Retry accepted");
+					final Play last = this.plays.removeLast();
+					assert last == play;
 				}
 				else
 				{
 					dispatch(listener -> listener.afterRejectedAction(playerInfo.player, action));
-					this.currentPlay.done = true;
+					play.done = true;
 					playerInfo.isLastPlayError = true;
 				}
 				return 0;
@@ -287,9 +289,9 @@ public class Game implements IGame
 				playerInfo.lastAction = action;
 				final int copyScore = score;
 				dispatch(toInform -> toInform.afterPlay(play));
-				if (this.currentPlay.done)
+				if (play.done)
 				{
-					final HistoryEntry historyEntry = new HistoryEntry(this.currentPlay, actionRejected, score, drawn, moveMI);
+					final HistoryEntry historyEntry = new HistoryEntry(play, actionRejected, score, drawn, moveMI);
 					this.history.add(historyEntry);
 					this.toPlay.pop();
 					this.toPlay.add(player);
@@ -344,10 +346,10 @@ public class Game implements IGame
 			assert this.toPlay.peekLast() == historyEntry.getPlayer();
 			this.toPlay.removeLast();
 			this.toPlay.addFirst(historyEntry.getPlayer());
-			this.currentPlay = new Play(historyEntry.play.roundNr, this.toPlay.getFirst());
+			this.plays.removeLast();
 			setState(State.STARTED);
 			dispatch(toInform -> toInform.afterRollback());
-			dispatch(toInform -> toInform.onPlayRequired(this.currentPlay));
+			dispatch(toInform -> toInform.onPlayRequired(this.plays.getLast()));
 
 			this.waitingForPlay.countDown();
 		}
@@ -490,15 +492,13 @@ public class Game implements IGame
 		{
 			while (this.state != State.ENDED && this.state != State.ENDING)
 			{
-				this.currentPlay = new Play(
-						this.currentPlay == null ? 1 : this.currentPlay.roundNr + (this.currentPlay.done ? 1 : 0),
-						this.toPlay.getFirst()
-				);
 				final AbstractPlayer player = this.toPlay.peekFirst();
 				assert  player != null;
 				LOGGER.info("Let's play " + player);
+				final Play play = new Play(player);
+				this.plays.add(play);
 				this.waitingForPlay = new CountDownLatch(1);
-				dispatch(p -> p.onPlayRequired(this.currentPlay));
+				dispatch(p -> p.onPlayRequired(play));
 				this.waitingForPlay.await();
 			}
 		}
@@ -677,7 +677,7 @@ public class Game implements IGame
 	void awaitEndOfPlay(final int roundNr, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
 	{
 		long maxTime = unit.toMillis(timeout) + System.currentTimeMillis();
-		while (this.currentPlay.roundNr <= roundNr)
+		while (getRoundNr() < roundNr || !this.plays.get(roundNr - 1).done)
 		{
 			Thread.sleep(100);
 			if (System.currentTimeMillis() > maxTime)
@@ -685,6 +685,11 @@ public class Game implements IGame
 				throw new TimeoutException("End of play " + roundNr + " still not reached after " + timeout + " " + unit);
 			}
 		}
+	}
+
+	public int getRoundNr()
+	{
+		return this.plays.size();
 	}
 
 	static class PlayerInfo implements IPlayerInfo

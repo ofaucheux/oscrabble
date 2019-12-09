@@ -118,7 +118,7 @@ public class GameTest
 								assert before != null;
 								GameTest.this.game.rollbackLastMove(caller, key);
 								final Snapshot after = collectInfos();
-								assertEquals("Wrong play nr", before.lastPlay.roundNr, after.lastPlay.roundNr);
+								assertEquals("Wrong play nr", before.roundNr, after.roundNr);
 								before.scores.forEach(
 										(player, beforeScore) -> assertEquals("Wrong score", beforeScore, after.scores.get(player))
 								);
@@ -137,7 +137,8 @@ public class GameTest
 				protected Snapshot collectInfos()
 				{
 					final Snapshot info = new Snapshot();
-					info.lastPlay = GameTest.this.game.currentPlay;
+					info.lastPlay = GameTest.this.game.plays.getLast();
+					info.roundNr = GameTest.this.game.getRoundNr();
 					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
 					{
 						info.scores.put(player.getName(), player.getScore());
@@ -151,7 +152,8 @@ public class GameTest
 				class Snapshot
 				{
 					public Play lastPlay;
-					final HashMap<String, Integer> scores = new HashMap<String, Integer>();
+					public int roundNr;
+					final HashMap<String, Integer> scores = new HashMap<>();
 				}
 			});
 			startGame(true);
@@ -222,7 +224,7 @@ public class GameTest
 					@Override
 					public void afterPlay(final Play play)
 					{
-						switch (play.roundNr)
+						switch (game.getRoundNr())
 						{
 							case 1:
 								Assert.assertEquals(78, GameTest.this.game.getPlayerInfo(GameTest.this.gustav).getScore());
@@ -234,24 +236,27 @@ public class GameTest
 
 		startGame(true);
 
+		// first rollback
+		final int maxRoundNr = this.game.getRoundNr();
 		assertFalse(this.grid.getSquare("8K").isEmpty());
 		assertFalse(this.grid.getSquare("8L").isEmpty());
 		assertFalse(this.grid.getSquare("8M").isEmpty());
 		this.game.rollbackLastMove(null, null);
-		Assert.assertTrue(this.grid.getSquare("8K").isEmpty());
+		assertEquals(maxRoundNr - 1, this.game.getRoundNr());
+		assertTrue(this.grid.getSquare("8K").isEmpty());
 		assertFalse(this.grid.getSquare("8L").isEmpty());
-		Assert.assertTrue(this.grid.getSquare("8M").isEmpty());
+		assertTrue(this.grid.getSquare("8M").isEmpty());
 
-		this.game.getPlayerInfo(this.john).getScore();
+		// second rollback
 		assertFalse(this.grid.getSquare("N10").isEmpty());
 		this.game.rollbackLastMove(null, null);
-		Assert.assertTrue(this.grid.getSquare("N10").isEmpty());
+		assertTrue(this.grid.getSquare("N10").isEmpty());
+		assertEquals(maxRoundNr - 2, this.game.getRoundNr());
 
-		final int playNr = this.game.currentPlay.roundNr;
+		// play both last moves again
 		this.gustav.addMove(PlayTiles.parseMove(this.grid, "N10 VENTA"));
 		this.john.addMove(PlayTiles.parseMove(this.grid, "8K HEM"));
-
-		this.game.awaitEndOfPlay(playNr + 2, 1, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(maxRoundNr + 2, 1, TimeUnit.SECONDS);
 		assertEquals(Game.State.ENDING, this.game.getState());
 
 		Thread.sleep(this.game.delayBeforeEnds * 1000 / 2 + 500);
@@ -265,13 +270,13 @@ public class GameTest
 		this.grid = this.game.getGrid();
 		this.game.getConfiguration().setValue("retryAccepted", true);
 		this.startGame(true);
-		assertEquals(1, this.game.currentPlay.roundNr);
+		assertEquals(1, this.game.getRoundNr());
 
 		this.gustav.addMove(PlayTiles.parseMove(this.grid, "H3 APPETEE"));
 		Thread.sleep(100);
 		assertEquals(this.game.getScore(this.gustav), 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
-		assertEquals(1, this.game.currentPlay.roundNr);
+		assertEquals(1, this.game.getRoundNr());
 
 		this.gustav.addMove(PlayTiles.parseMove(this.grid, "8H APTES"));
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
@@ -282,7 +287,6 @@ public class GameTest
 	@Test
 	public void rollback() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
 	{
-		// test retry accepted
 		this.grid = this.game.getGrid();
 		this.startGame(true);
 		final Rack startRack = ((Game.PlayerInfo) this.game.getPlayerInfo(this.gustav)).rack;
@@ -292,6 +296,7 @@ public class GameTest
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
 		this.game.rollbackLastMove(this.gustav, this.gustav.getKey());
+		assertEquals(this.game.getRoundNr(), 1);
 		assertEquals(this.game.getScore(this.gustav), 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(startRack, ((Game.PlayerInfo) this.game.getPlayerInfo(this.gustav)).rack);
