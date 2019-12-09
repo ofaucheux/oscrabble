@@ -1,14 +1,14 @@
 package oscrabble;
 
 import oscrabble.dictionary.Dictionary;
-import oscrabble.server.IPlay;
+import oscrabble.server.Action;
 
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PlayTiles implements IPlay
+public class PlayTiles implements Action
 {
 	public final Grid.Square startSquare;
 	final Direction direction;

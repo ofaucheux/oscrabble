@@ -1,6 +1,6 @@
 package oscrabble;
 
-import oscrabble.server.IPlay;
+import oscrabble.server.Action;
 
 /**
  * Definition eines Steins im Spiel: Letter (oder Blank), Wert usw.
@@ -16,7 +16,7 @@ public class Tile
 	/**
 	 * Der Spielzug, bei welchem der Stein gespielt wurde.
 	 */
-	private IPlay settingAction;
+	private Action settingAction;
 
 	public Tile(final Character c, final int point)
 	{
@@ -89,12 +89,12 @@ public class Tile
 		this.c = c;
 	}
 
-	public void setSettingAction(final IPlay settingAction)
+	public void setSettingAction(final Action settingAction)
 	{
 		this.settingAction = settingAction;
 	}
 
-	public IPlay getSettingAction()
+	public Action getSettingAction()
 	{
 		return this.settingAction;
 	}

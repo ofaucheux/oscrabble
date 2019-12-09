@@ -35,8 +35,7 @@ public class Rack extends HashSet<Tile>
 					Tile tile = searchLetter(c);
 					if (tile == null)
 					{
-						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
-								"Not in the rack: " + characters);
+						throw new ScrabbleException.InvalidStateException("Not in the rack: " + characters);
 					}
 					found.add(tile);
 					this.remove(tile);

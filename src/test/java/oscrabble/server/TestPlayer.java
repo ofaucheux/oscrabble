@@ -36,14 +36,14 @@ class TestPlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void onPlayRequired(final AbstractPlayer player)
+	public void onPlayRequired(final Play play)
 	{
-		if (player == this)
+		if (play.player == this)
 		{
 			try
 			{
 				final PlayTiles playTiles = this.nextPlayTiles.take();
-				this.server.play(this, playTiles);
+				this.server.play(this.playerKey, play, playTiles);
 			}
 			catch (InterruptedException e)
 			{
@@ -57,6 +57,11 @@ class TestPlayer extends AbstractPlayer
 				{
 					throw new Error(ex);
 				}
+			}
+			catch (ScrabbleException e)
+			{
+				LOGGER.error(e, e);
+				throw new Error(e);
 			}
 		}
 	}
@@ -72,9 +77,9 @@ class TestPlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score)
+	public void afterPlay(final Play play)
 	{
-		LOGGER.info(info.getName() + " played " + action + " - scored " + score);
+		LOGGER.info(play.player.getName() + " played " + play.action + " - scored " + play.score);
 	}
 
 	@Override

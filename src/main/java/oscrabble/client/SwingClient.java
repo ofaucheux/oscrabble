@@ -11,8 +11,9 @@ import oscrabble.dictionary.DictionaryException;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 import oscrabble.server.Game;
-import oscrabble.server.IPlay;
+import oscrabble.server.Action;
 import oscrabble.server.IPlayerInfo;
+import oscrabble.server.Play;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -70,8 +71,15 @@ public class SwingClient extends AbstractPlayer
 	/** Future to let the last played stone flash */
 	private ScheduledFuture<Object> flashFuture;
 
-	/** Listing of the history of the game */
+	/**
+	 * Listing of the history of the game
+	 */
 	private JList<Game.HistoryEntry> historyList;
+
+	/**
+	 * Currently played play.
+	 */
+	private Play currentPlay;
 
 	public SwingClient(final String name)
 	{
@@ -130,7 +138,7 @@ public class SwingClient extends AbstractPlayer
 			{
 				try
 				{
-					SwingClient.this.game.rollbackLastMove(SwingClient.this, playerKey);
+					SwingClient.this.game.rollbackLastMove(SwingClient.this, SwingClient.this.playerKey);
 				}
 				catch (final Throwable ex)
 				{
@@ -223,17 +231,18 @@ public class SwingClient extends AbstractPlayer
 	}
 
 	@Override
-	public void onPlayRequired(final AbstractPlayer currentPlayer)
+	public void onPlayRequired(final Play play)
 	{
+		this.currentPlay = play;
 		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
 		{
 			final IPlayerInfo playerInfo = entry.getKey();
 			final JScoreboard.ScorePanelLine line = entry.getValue();
-			line.currentPlaying.setVisible(playerInfo.getName().equals(currentPlayer.getName()));
+			line.currentPlaying.setVisible(this.currentPlay != null && playerInfo.getName().equals(this.currentPlay.player.getName()));
 		}
 
 		final Cursor cursor;
-		if (currentPlayer == this)
+		if (this.currentPlay.player == this)
 		{
 			this.jRack.update();
 			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
@@ -262,9 +271,9 @@ public class SwingClient extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score)
+	public void afterPlay(final Play play)
 	{
-		this.jGrid.lastAction = action;
+		this.jGrid.lastAction = play.action;
 		refreshUI();
 
 		this.flashFuture = this.executor.schedule(
@@ -330,7 +339,7 @@ public class SwingClient extends AbstractPlayer
 
 		void refreshDisplay()
 		{
-			for (final IPlayerInfo playerInfo : game.getPlayers())
+			for (final IPlayerInfo playerInfo : SwingClient.this.game.getPlayers())
 			{
 				this.scoreLabels.get(playerInfo).score.setText(playerInfo.getScore() + " pts");
 			}
@@ -488,7 +497,7 @@ public class SwingClient extends AbstractPlayer
 		private boolean hideNewStones;
 
 		/** Last played action */
-		private IPlay lastAction;
+		private Action lastAction;
 
 		/** Spielfeld des Scrabbles */
 		JGrid(final Grid grid, final Dictionary dictionary)
@@ -696,7 +705,7 @@ public class SwingClient extends AbstractPlayer
 						else
 						{
 							popup.add(menuItem);
-							StoneCell.this.showDefinitionAction.putValue(Action.NAME, "Show definition" + (words.size() > 1 ? "s" : ""));
+							StoneCell.this.showDefinitionAction.putValue(javax.swing.Action.NAME, "Show definition" + (words.size() > 1 ? "s" : ""));
 						}
 					}
 
@@ -950,7 +959,7 @@ public class SwingClient extends AbstractPlayer
 						{
 							chars.add(c);
 						}
-						SwingClient.this.game.play(SwingClient.this, new Exchange(chars));
+						SwingClient.this.game.play(SwingClient.this.playerKey, SwingClient.this.currentPlay, new Exchange(chars));
 						SwingClient.this.commandPrompt.setText("");
 					}
 					else
@@ -964,7 +973,7 @@ public class SwingClient extends AbstractPlayer
 					JOptionPane.showMessageDialog(SwingClient.this.jGrid, "It's not your turn!");
 				}
 			}
-			catch (final JokerPlacementException | ParseException ex)
+			catch (final ScrabbleException | JokerPlacementException | ParseException ex)
 			{
 				onDispatchMessage(ex.getMessage());
 				SwingClient.this.commandPrompt.setText("");
@@ -1375,9 +1384,9 @@ public class SwingClient extends AbstractPlayer
 	 * Play the move: inform the server about it and clear the client input field.
 	 * @param playTiles move to play
 	 */
-	private void play(final PlayTiles playTiles)
+	private void play(final PlayTiles playTiles) throws ScrabbleException
 	{
-		this.game.play(SwingClient.this, playTiles);
+		this.game.play(SwingClient.this.playerKey, this.currentPlay, playTiles);
 		this.commandPrompt.setText("");
 		resetPossibleMovesPanel();
 	}

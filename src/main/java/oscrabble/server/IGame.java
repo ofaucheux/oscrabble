@@ -19,9 +19,13 @@ public interface IGame
 	void addPlayer(AbstractPlayer player);
 
 	/**
-	 * @return score
+	 * Play an action. The player must call this function to inform the server of the action he plays.
+	 * @param clientKey key of the client
+	 * @param play references to the play
+	 * @param action action to be done
+	 * @return score score of this play
 	 */
-	int play(AbstractPlayer player, IPlay action);
+	int play(UUID clientKey, Play play, Action action) throws ScrabbleException;
 
 	/**
 	 *

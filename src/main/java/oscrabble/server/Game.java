@@ -58,9 +58,9 @@ public class Game implements IGame
 	private final Configuration configuration;
 
 	/**
-	 * Number of the current play move (Starting with 1).
+	 * Current play
 	 */
-	int playNr;
+	Play currentPlay;
 
 	/**
 	 * History of the game, a line played move (even if it was an error).
@@ -76,6 +76,11 @@ public class Game implements IGame
 	 * Synchronize: to by synchronized by calls which change the state of the game
 	 */
 	final Object changing = new Object();
+
+	/**
+	 * Secret to be transmitted to the currently playing player.
+	 */
+	private String currentSecret;
 
 	public Game(final Dictionary dictionary, final long randomSeed)
 	{
@@ -120,18 +125,21 @@ public class Game implements IGame
 	}
 
 	@Override
-	public synchronized int play(final AbstractPlayer player, final IPlay action)
+	public synchronized int play(final UUID clientKey, final Play play, final Action action) throws ScrabbleException
 	{
 		synchronized (this.changing)
 		{
-			if (player != getPlayerToPlay())
+			if (this.currentPlay != play)
 			{
-				throw new IllegalStateException("The player " + player.toString() + " is not playing");
+				throw new ScrabbleException.InvalidStateException("Not current turn");
 			}
 
+			assert !this.currentPlay.done;
+			final AbstractPlayer player = this.currentPlay.player;
+			final PlayerInfo playerInfo = players.get(player);
+			checkKey(player, clientKey);
+
 			LOGGER.info(player.getName() + " plays " + action);
-			final PlayerInfo playerInfo = this.players.get(player);
-			boolean done = false;
 			int score = 0;
 			boolean actionRejected = false;
 			Set<Tile> drawn = null;
@@ -159,9 +167,7 @@ public class Game implements IGame
 					missingLetters.removeAll(rackLetters);
 					if (missingLetters.size() > playerInfo.rack.countJoker())
 					{
-						final String details = "<html>Rack with " + rackLetters + "<br>has not the required stones " + requiredLetters;
-						player.onDispatchMessage(details);
-						throw new ScrabbleException(ScrabbleException.ERROR_CODE.MISSING_LETTER);
+						throw new ScrabbleException.ForbiddenPlayException("<html>Rack with " + rackLetters + "<br>has not the required stones " + requiredLetters);
 					}
 
 					// check touch
@@ -169,12 +175,12 @@ public class Game implements IGame
 					{
 						if (playTiles.word.length() < 2)
 						{
-							throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "First word must have at least two letters");
+							throw new ScrabbleException.ForbiddenPlayException("First word must have at least two letters");
 						}
 					}
 					else if (moveMI.crosswords.isEmpty() && requiredLetters.size() == playTiles.word.length())
 					{
-						throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "New word must touch another one");
+						throw new ScrabbleException.ForbiddenPlayException("New word must touch another one");
 					}
 
 					// check dictionary
@@ -186,7 +192,7 @@ public class Game implements IGame
 						if (!this.dictionary.containUpperCaseWord(crossword.toUpperCase()))
 						{
 							final String details = "Word \"" + crossword + "\" is not allowed";
-							throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, details);
+							throw new ScrabbleException.ForbiddenPlayException(details);
 						}
 					}
 
@@ -195,8 +201,7 @@ public class Game implements IGame
 						final Grid.Square center = this.grid.getCenter();
 						if (!playTiles.getSquares().containsKey(center))
 						{
-							throw new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN,
-									"The first word must be on the center square");
+							throw new ScrabbleException.ForbiddenPlayException("The first word must be on the center square");
 						}
 					}
 
@@ -230,7 +235,7 @@ public class Game implements IGame
 						messages.add(SCRABBLE_MESSAGE);
 					}
 					playerInfo.score += score;
-					LOGGER.info(player.getName() + " plays \"" + playTiles.getNotation() + "\" for " + score + " points");
+					LOGGER.info(playerInfo.getName() + " plays \"" + playTiles.getNotation() + "\" for " + score + " points");
 				}
 				else if (action instanceof Exchange)
 				{
@@ -239,12 +244,12 @@ public class Game implements IGame
 					this.bag.addAll(stones1);
 					Collections.shuffle(this.bag, this.random);
 					moveMI = null;
-					LOGGER.info(player.getName() + " exchanges " + exchange.getChars().size() + " stones");
+					LOGGER.info(playerInfo.getName() + " exchanges " + exchange.getChars().size() + " stones");
 				}
 				else if (action instanceof SkipTurn)
 				{
-					LOGGER.info(player.getName() + " skips its turn");
-					this.dispatchMessage(player.getName() + " skips its turn");
+					LOGGER.info(playerInfo.getName() + " skips its turn");
+					this.dispatchMessage(playerInfo.getName() + " skips its turn");
 				}
 				else
 				{
@@ -252,28 +257,27 @@ public class Game implements IGame
 				}
 
 				playerInfo.isLastPlayError = false;
-				drawn = refillRack(player);
+				drawn = refillRack(playerInfo.player);
 				messages.forEach(message -> dispatchMessage(message));
 
-				LOGGER.debug("Grid after play move nr #" + this.playNr + ":\n" + this.grid.asASCIIArt());
+				LOGGER.debug("Grid after play move nr #" + this.currentPlay.uuid + ":\n" + this.grid.asASCIIArt());
 				actionRejected = false;
-				done = true;
+				this.currentPlay.done = true;
 				return score;
 			}
 			catch (final ScrabbleException e)
 			{
 				LOGGER.info("Refuse play: " + action + ". Cause: " + e);
 				actionRejected = true;
-				player.onDispatchMessage(e.toString());
-				if (this.configuration.retryAccepted || e.acceptRetry())
+				playerInfo.player.onDispatchMessage(e.toString());
+				if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
 				{
-					player.onDispatchMessage("Retry accepted");
-					done = false;
+					playerInfo.player.onDispatchMessage("Retry accepted");
 				}
 				else
 				{
-					dispatch(listener -> listener.afterRejectedAction(player, action));
-					done = true;
+					dispatch(listener -> listener.afterRejectedAction(playerInfo.player, action));
+					this.currentPlay.done = true;
 					playerInfo.isLastPlayError = true;
 				}
 				return 0;
@@ -282,14 +286,13 @@ public class Game implements IGame
 			{
 				playerInfo.lastAction = action;
 				final int copyScore = score;
-				dispatch(toInform -> toInform.afterPlay(this.playNr, playerInfo, action, copyScore));
-				if (done)
+				dispatch(toInform -> toInform.afterPlay(play));
+				if (this.currentPlay.done)
 				{
-					final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
+					final HistoryEntry historyEntry = new HistoryEntry(this.currentPlay, actionRejected, score, drawn, moveMI);
 					this.history.add(historyEntry);
 					this.toPlay.pop();
 					this.toPlay.add(player);
-					this.playNr++;
 
 					if (playerInfo.rack.isEmpty())
 					{
@@ -317,10 +320,11 @@ public class Game implements IGame
 	{
 		synchronized (this.changing)
 		{
+			LOGGER.info("Rollback last move on demand of " + caller);
 			final HistoryEntry historyEntry = this.history.pollLast();
 			if (historyEntry == null)
 			{
-				throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "No move played for the time");
+				throw new ScrabbleException.InvalidStateException( "No move played for the time");
 			}
 
 			if (this.endScheduler != null)
@@ -330,21 +334,20 @@ public class Game implements IGame
 				setState(State.STARTED);
 			}
 
-			final PlayerInfo playerInfo = this.players.get(historyEntry.player);
+			final PlayerInfo playerInfo = this.players.get(historyEntry.getPlayer());
 			playerInfo.rack.removeAll(historyEntry.drawn);
 			historyEntry.metaInformation.getFilledSquares().forEach(
 					filled -> playerInfo.rack.add(filled.tile)
 			);
 			this.grid.remove(historyEntry.metaInformation);
 			this.players.forEach( (p,info) -> info.score -= historyEntry.scores.getOrDefault(p, 0));
-			assert this.toPlay.peekLast() == historyEntry.player;
+			assert this.toPlay.peekLast() == historyEntry.getPlayer();
 			this.toPlay.removeLast();
-			this.toPlay.addFirst(historyEntry.player);
-			this.playNr--;
-			LOGGER.info("Last move rollback on demand of " + caller);
+			this.toPlay.addFirst(historyEntry.getPlayer());
+			this.currentPlay = new Play(historyEntry.play.roundNr, this.toPlay.getFirst());
 			setState(State.STARTED);
 			dispatch(toInform -> toInform.afterRollback());
-			dispatch(toInform -> toInform.onPlayRequired(historyEntry.player));
+			dispatch(toInform -> toInform.onPlayRequired(this.currentPlay));
 
 			this.waitingForPlay.countDown();
 		}
@@ -440,7 +443,7 @@ public class Game implements IGame
 		final PlayerInfo info = this.players.get(player);
 		if (info == null)
 		{
-			throw new Error(new ScrabbleException(ScrabbleException.ERROR_CODE.FORBIDDEN, "No such player"));
+			throw new Error("No such player: " + player);
 		}
 		return info;
 	}
@@ -477,22 +480,25 @@ public class Game implements IGame
 	{
 		if (this.players.isEmpty())
 		{
-			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "Cannot start game: no player registered");
+			throw new IllegalStateException("Cannot start game: no player registered");
 		}
 
 		prepareGame();
 
 		setState(State.STARTED);
-		this.playNr = 1;
 		try
 		{
 			while (this.state != State.ENDED && this.state != State.ENDING)
 			{
+				this.currentPlay = new Play(
+						this.currentPlay == null ? 1 : this.currentPlay.roundNr + (this.currentPlay.done ? 1 : 0),
+						this.toPlay.getFirst()
+				);
 				final AbstractPlayer player = this.toPlay.peekFirst();
 				assert  player != null;
 				LOGGER.info("Let's play " + player);
 				this.waitingForPlay = new CountDownLatch(1);
-				dispatch(p -> p.onPlayRequired(player));
+				dispatch(p -> p.onPlayRequired(this.currentPlay));
 				this.waitingForPlay.await();
 			}
 		}
@@ -580,7 +586,7 @@ public class Game implements IGame
 		checkKey(player, clientKey);
 		if (player.isObserver())
 		{
-			throw new ScrabbleException(ScrabbleException.ERROR_CODE.PLAYER_IS_OBSERVER);
+			throw new ScrabbleException.InvalidStateException("Player " + player.getName() + " is observer");
 		}
 		return this.players.get(player).rack.copy();
 	}
@@ -649,7 +655,7 @@ public class Game implements IGame
 	{
 		if (clientKey == null || !clientKey.equals(this.players.get(player).key))
 		{
-			throw new ScrabbleException(ScrabbleException.ERROR_CODE.NOT_IDENTIFIED);
+			throw new ScrabbleException.InvalidSecretException();
 		}
 	}
 
@@ -661,27 +667,27 @@ public class Game implements IGame
 	/**
 	 * For test purposes: wait until the game has reached the end of a defined play.
 
-	 * @param playNr the play number to wait after the end of.
+	 * @param roundNr the play number to wait after the end of.
 	 * @param timeout the maximum time to wait
 	 * @param unit the time unit of the {@code timeout} argument
 	 * @throws TimeoutException  if the waiting time elapsed before the move has ended
 	 * @throws InterruptedException if the current thread is interrupted
 	 *         while waiting
 	 */
-	void awaitEndOfPlay(final int playNr, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
+	void awaitEndOfPlay(final int roundNr, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
 	{
 		long maxTime = unit.toMillis(timeout) + System.currentTimeMillis();
-		while (this.playNr <= playNr)
+		while (this.currentPlay.roundNr <= roundNr)
 		{
 			Thread.sleep(100);
 			if (System.currentTimeMillis() > maxTime)
 			{
-				throw new TimeoutException("End of play " + playNr + " still not reached after " + timeout + " " + unit);
+				throw new TimeoutException("End of play " + roundNr + " still not reached after " + timeout + " " + unit);
 			}
 		}
 	}
 
-	private static class PlayerInfo implements IPlayerInfo
+	static class PlayerInfo implements IPlayerInfo
 	{
 		AbstractPlayer player;
 
@@ -723,7 +729,7 @@ public class Game implements IGame
 		/**
 		 * Last played action.
 		 */
-		IPlay lastAction;
+		Action lastAction;
 	}
 
 	/**
@@ -744,8 +750,9 @@ public class Game implements IGame
 	{
 		/**
 		 * Sent to all players to indicate who now has to play.
+		 * @param play the play the concerned player has to play
 		 */
-		default void onPlayRequired(AbstractPlayer currentPlayer) { }
+		default void onPlayRequired(final Play play) { }
 
 		default void onDictionaryChange() { }
 
@@ -755,12 +762,9 @@ public class Game implements IGame
 
 		/**
 		 *
-		 * @param playNr number of the play which just have been played
-		 * @param info
-		 * @param action
-		 * @param score
+		 * @param played ended play
 		 */
-		default void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score) { }
+		default void afterPlay(final Play played) { }
 
 		default void beforeGameStart() { }
 
@@ -778,7 +782,7 @@ public class Game implements IGame
 		 * @param player
 		 * @param action
 		 */
-		default void afterRejectedAction(final AbstractPlayer player, final IPlay action){}
+		default void afterRejectedAction(final AbstractPlayer player, final Action action){}
 
 	}
 
@@ -799,8 +803,7 @@ public class Game implements IGame
 	 */
 	public static class HistoryEntry
 	{
-		private AbstractPlayer player;
-		private final IPlay action;
+		private Play play;
 		private final boolean errorOccurred;
 		/** Points gained by this play for each player */
 		private final HashMap<AbstractPlayer, Integer> scores = new HashMap<>();
@@ -811,22 +814,26 @@ public class Game implements IGame
 		 */
 		private final Grid.MoveMetaInformation metaInformation;
 
-		private HistoryEntry(final AbstractPlayer player, final IPlay action, final boolean errorOccurred, final int score, final Set<Tile> drawn, final Grid.MoveMetaInformation metaInformation)
+		private HistoryEntry(final Play play, final boolean errorOccurred, final int score, final Set<Tile> drawn, final Grid.MoveMetaInformation metaInformation)
 		{
-			this.player = player;
-			this.action = action;
+			this.play = play;
 			this.errorOccurred = errorOccurred;
-			this.scores.put(player, score);
+			this.scores.put(play.player, score);
 			this.drawn = drawn;
 			this.metaInformation = metaInformation;
 		}
 
 		public String formatAsString()
 		{
-			final StringBuilder sb = new StringBuilder(this.player.getName());
-			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((PlayTiles) this.action).getNotation());
-			sb.append(" ").append(this.scores.get(player)).append(" pts");
+			final StringBuilder sb = new StringBuilder(getPlayer().getName());
+			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((PlayTiles) this.play.action).getNotation());
+			sb.append(" ").append(this.scores.get(getPlayer())).append(" pts");
 			return sb.toString();
+		}
+
+		public final AbstractPlayer getPlayer()
+		{
+			return this.play.player;
 		}
 	}
 }

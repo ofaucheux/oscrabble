@@ -1,44 +1,49 @@
 package oscrabble;
 
-public class ScrabbleException extends Exception
+public abstract class ScrabbleException extends Exception
 {
-	public final ERROR_CODE code;
 
-	public ScrabbleException(final ERROR_CODE code, final Throwable cause, final String details)
+	public ScrabbleException(final String message)
 	{
-		super(code.message + (details == null || details.isEmpty() ? "" : "\n" + details), cause);
-		this.code = code;
+		this(message, null);
 	}
 
-	public boolean acceptRetry()
+	public ScrabbleException(final String message, final Throwable cause)
 	{
-		return this.code == ERROR_CODE.WHITE_POSITION_REQUIRED;
+		super(message, cause);
 	}
 
-	public ScrabbleException(final ERROR_CODE code, final String details)
+
+	/**
+	 * Exception reporting the use of an invalid secret.
+	 */
+	static public class InvalidSecretException extends ScrabbleException
 	{
-		this(code, null, details);
-	}
-
-	public ScrabbleException(final ERROR_CODE code)
-	{
-		this(code, null);
-	}
-
-	public enum ERROR_CODE
-	{
-		NOT_IDENTIFIED("caller not identified"),
-		PLAYER_IS_OBSERVER("player is an observer"),
-		FORBIDDEN("Forbidden"), MISSING_LETTER("Missing letter im Rack"),
-		ASSERTION_FAILED("Assertion failed"),
-		WHITE_POSITION_REQUIRED("Position of the white tiles required");
-
-		private final String message;
-
-		ERROR_CODE(final String message)
+		public InvalidSecretException()
 		{
-			this.message = message;
+			super("Invalid secret");
 		}
+	}
 
+	/**
+	 * Exception reporting a forbidden action.
+	 */
+	static public class ForbiddenPlayException extends ScrabbleException
+	{
+		public ForbiddenPlayException(final String message)
+		{
+			super(message);
+		}
+	}
+
+	/**
+	 * Exception reporting the use of a function at an time it is not valid to use it.
+	 */
+	static public class InvalidStateException extends ScrabbleException
+	{
+		public InvalidStateException(final String message)
+		{
+			super(message);
+		}
 	}
 }

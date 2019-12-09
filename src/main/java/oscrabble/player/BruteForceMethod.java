@@ -8,8 +8,9 @@ import oscrabble.*;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.server.IPlay;
+import oscrabble.server.Action;
 import oscrabble.server.IPlayerInfo;
+import oscrabble.server.Play;
 import oscrabble.server.SkipTurn;
 
 import javax.swing.*;
@@ -340,9 +341,9 @@ public class BruteForceMethod
 		}
 
 		@Override
-		public void onPlayRequired(final AbstractPlayer currentPlayer)
+		public void onPlayRequired(final Play play)
 		{
-			if (currentPlayer != this)
+			if (play.player != this)
 			{
 				return;
 			}
@@ -356,7 +357,7 @@ public class BruteForceMethod
 				if (playTiles.isEmpty())
 				{
 					this.game.sendMessage(this, "No possible moves anymore");
-					this.game.play(this, SkipTurn.SINGLETON);
+					this.game.play(this.playerKey, play, SkipTurn.SINGLETON);
 				}
 				else
 				{
@@ -369,7 +370,7 @@ public class BruteForceMethod
 					if (this.game.getPlayerToPlay().equals(this))  // check the player still is on turn and no rollback toke place.
 					{
 						LOGGER.info("Play " + toPlay);
-						this.game.play(this, toPlay);
+						this.game.play(this.playerKey, play, toPlay);
 					}
 				}
 			}
@@ -398,7 +399,7 @@ public class BruteForceMethod
 		}
 
 		@Override
-		public void afterPlay(final int playNr, final IPlayerInfo player, final IPlay action, final int score)
+		public void afterPlay(final Play play)
 		{
 			// nichts
 		}

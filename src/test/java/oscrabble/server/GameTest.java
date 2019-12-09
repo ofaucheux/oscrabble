@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.PlayTiles;
+import oscrabble.Rack;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Dictionary;
@@ -46,9 +47,9 @@ public class GameTest
 		this.grid = this.game.getGrid();
 		final int gameNr = RANDOM.nextInt(100);
 
-		this.gustav = new TestPlayer("Gustav " + gameNr, this.game);
-		this.john = new TestPlayer("John " + gameNr, this.game);
-		this.jurek = new TestPlayer("Jurek " + gameNr, this.game);
+		this.gustav = new TestPlayer("Gustav_" + gameNr, this.game);
+		this.john = new TestPlayer("John_" + gameNr, this.game);
+		this.jurek = new TestPlayer("Jurek_" + gameNr, this.game);
 		this.game.addPlayer(this.gustav);
 		this.game.addPlayer(this.john);
 		this.game.addPlayer(this.jurek);
@@ -71,9 +72,9 @@ public class GameTest
 			this.game.listeners.add(new TestListener()
 			{
 				@Override
-				public void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score)
+				public void afterPlay(final Play play)
 				{
-					LOGGER.info("Played: " + action.toString());
+					LOGGER.info("Played: " + play.action.toString());
 				}
 			});
 
@@ -99,13 +100,13 @@ public class GameTest
 				final LinkedList<Snapshot> snapshots = new LinkedList<>();
 
 				@Override
-				public void afterRejectedAction(final AbstractPlayer player, final IPlay action)
+				public void afterRejectedAction(final AbstractPlayer player, final Action action)
 				{
 					Assert.fail("Rejected action: " + action);
 				}
 
 				@Override
-				public void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score)
+				public void afterPlay(final Play play)
 				{
 						if (RANDOM.nextInt(10) == 0)
 						{
@@ -117,7 +118,7 @@ public class GameTest
 								assert before != null;
 								GameTest.this.game.rollbackLastMove(caller, key);
 								final Snapshot after = collectInfos();
-								assertEquals("Wrong play nr", before.playNr, after.playNr);
+								assertEquals("Wrong play nr", before.lastPlay.roundNr, after.lastPlay.roundNr);
 								before.scores.forEach(
 										(player, beforeScore) -> assertEquals("Wrong score", beforeScore, after.scores.get(player))
 								);
@@ -136,7 +137,7 @@ public class GameTest
 				protected Snapshot collectInfos()
 				{
 					final Snapshot info = new Snapshot();
-					info.playNr = GameTest.this.game.playNr;
+					info.lastPlay = GameTest.this.game.currentPlay;
 					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
 					{
 						info.scores.put(player.getName(), player.getScore());
@@ -149,7 +150,7 @@ public class GameTest
 				 */
 				class Snapshot
 				{
-					int playNr;
+					public Play lastPlay;
 					final HashMap<String, Integer> scores = new HashMap<String, Integer>();
 				}
 			});
@@ -219,9 +220,9 @@ public class GameTest
 				new TestListener()
 				{
 					@Override
-					public void afterPlay(final int playNr, final IPlayerInfo info, final IPlay action, final int score)
+					public void afterPlay(final Play play)
 					{
-						switch (playNr)
+						switch (play.roundNr)
 						{
 							case 1:
 								Assert.assertEquals(78, GameTest.this.game.getPlayerInfo(GameTest.this.gustav).getScore());
@@ -246,7 +247,7 @@ public class GameTest
 		this.game.rollbackLastMove(null, null);
 		Assert.assertTrue(this.grid.getSquare("N10").isEmpty());
 
-		final int playNr = this.game.playNr;
+		final int playNr = this.game.currentPlay.roundNr;
 		this.gustav.addMove(PlayTiles.parseMove(this.grid, "N10 VENTA"));
 		this.john.addMove(PlayTiles.parseMove(this.grid, "8K HEM"));
 
@@ -258,17 +259,44 @@ public class GameTest
 	}
 
 	@Test
-	public void retryAccepted() throws ScrabbleException, ParseException, InterruptedException
+	public void retryAccepted() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
 	{
 		// test retry accepted
 		this.grid = this.game.getGrid();
 		this.game.getConfiguration().setValue("retryAccepted", true);
 		this.startGame(true);
+		assertEquals(1, this.game.currentPlay.roundNr);
+
 		this.gustav.addMove(PlayTiles.parseMove(this.grid, "H3 APPETEE"));
+		Thread.sleep(100);
 		assertEquals(this.game.getScore(this.gustav), 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
-		this.gustav.addMove(PlayTiles.parseMove(this.grid, "H3 APTES"));
+		assertEquals(1, this.game.currentPlay.roundNr);
+
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "8H APTES"));
+		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
+		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		assertEquals(this.game.getScore(this.gustav), 16);
 	}
+
+	@Test
+	public void rollback() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
+	{
+		// test retry accepted
+		this.grid = this.game.getGrid();
+		this.startGame(true);
+		final Rack startRack = ((Game.PlayerInfo) this.game.getPlayerInfo(this.gustav)).rack;
+		this.gustav.addMove(PlayTiles.parseMove(this.grid, "8H APTES"));
+		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
+		assertEquals(this.game.getScore(this.gustav), 16);
+		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+
+		this.game.rollbackLastMove(this.gustav, this.gustav.getKey());
+		assertEquals(this.game.getScore(this.gustav), 0);
+		assertEquals(this.gustav, this.game.getPlayerToPlay());
+		assertEquals(startRack, ((Game.PlayerInfo) this.game.getPlayerInfo(this.gustav)).rack);
+	}
+
 
 	@Test
 	public void retryForbidden() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
@@ -278,7 +306,7 @@ public class GameTest
 		final TestListener listener = new TestListener()
 		{
 			@Override
-			public void afterRejectedAction(final AbstractPlayer player, final IPlay action)
+			public void afterRejectedAction(final AbstractPlayer player, final Action action)
 			{
 				playRejected.set(true);
 			}

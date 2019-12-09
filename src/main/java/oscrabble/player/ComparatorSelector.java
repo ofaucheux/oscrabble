@@ -32,7 +32,7 @@ public class ComparatorSelector implements IMoveSelector
 	{
 		if (playTiles.isEmpty())
 		{
-			throw new ScrabbleException(ScrabbleException.ERROR_CODE.ASSERTION_FAILED, "Move list is empty");
+			throw new IllegalArgumentException("Move list is empty");
 		}
 
 		final List<Element> list = new ArrayList<>();

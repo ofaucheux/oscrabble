@@ -1,7 +1,6 @@
 package oscrabble.player;
 
-import oscrabble.server.IPlay;
-import oscrabble.server.IPlayerInfo;
+import oscrabble.server.Play;
 
 import javax.swing.*;
 
@@ -13,9 +12,9 @@ public class ConsolePlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void onPlayRequired(final AbstractPlayer currentPlayer)
+	public void onPlayRequired(final Play play)
 	{
-		if (currentPlayer == this)
+		if (play.player == this)
 		{
 			final String move = JOptionPane.showInputDialog("New word?");
 			final String verticalPattern = "(\\a\\d) +(\\w+)";
@@ -35,7 +34,7 @@ public class ConsolePlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void afterPlay(final int playNr, final IPlayerInfo player, final IPlay action, final int score)
+	public void afterPlay(final Play play)
 	{
 
 	}

@@ -1,6 +1,6 @@
 package oscrabble.client;
 
-import oscrabble.server.IPlay;
+import oscrabble.server.Action;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Action für den Austausch von Buchsteben.
  */
-public class Exchange implements IPlay
+public class Exchange implements Action
 {
 	final List<Character> chars;
 
