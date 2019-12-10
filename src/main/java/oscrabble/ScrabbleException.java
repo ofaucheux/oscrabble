@@ -1,5 +1,7 @@
 package oscrabble;
 
+import oscrabble.player.AbstractPlayer;
+
 public abstract class ScrabbleException extends Exception
 {
 
@@ -44,6 +46,18 @@ public abstract class ScrabbleException extends Exception
 		public InvalidStateException(final String message)
 		{
 			super(message);
+		}
+
+	}
+
+	/**
+	 * Exception informing about the attempt of a player to play outside of his turn.
+	 */
+	public static class NotInTurn extends ScrabbleException
+	{
+		public NotInTurn(final AbstractPlayer player)
+		{
+			super(ERROR_CODE.FORBIDDEN, "The player " + player.toString() + " is not in turn");
 		}
 	}
 }

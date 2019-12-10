@@ -68,11 +68,6 @@ public class Game implements IGame
 	private final LinkedList<HistoryEntry> history = new LinkedList<>();
 
 	/**
-	 * Schedule task to change the state from ENDING to ENDED
-	 */
-	private ScheduledFuture<Void> endScheduler;
-
-	/**
 	 * Synchronize: to by synchronized by calls which change the state of the game
 	 */
 	final Object changing = new Object();
@@ -126,12 +121,13 @@ public class Game implements IGame
 
 	@Override
 	public synchronized int play(final UUID clientKey, final Play play, final Action action) throws ScrabbleException
+	public synchronized int play(final AbstractPlayer player, final IPlay action) throws ScrabbleException.NotInTurn
 	{
 		synchronized (this.changing)
 		{
 			if (this.plays.isEmpty() || this.plays.getLast() != play)
 			{
-				throw new ScrabbleException.InvalidStateException("Not current turn");
+				throw new ScrabbleException.NotInTurn(player);
 			}
 
 			assert !play.done;
@@ -324,18 +320,12 @@ public class Game implements IGame
 		{
 			LOGGER.info("Rollback last move on demand of " + caller);
 			final HistoryEntry historyEntry = this.history.pollLast();
-			LOGGER.info("Rollback " + historyEntry.formatAsString());
 			if (historyEntry == null)
 			{
 				throw new ScrabbleException.InvalidStateException( "No move played for the time");
 			}
-
-			if (this.endScheduler != null)
-			{
-				this.endScheduler.cancel(true);
-				this.endScheduler = null;
-				setState(State.STARTED);
-			}
+			LOGGER.info("Rollback " + historyEntry.formatAsString());
+			setState(State.STARTED);
 
 			final PlayerInfo playerInfo = this.players.get(historyEntry.getPlayer());
 			playerInfo.rack.removeAll(historyEntry.drawn);
@@ -353,6 +343,7 @@ public class Game implements IGame
 			dispatch(toInform -> toInform.onPlayRequired(this.plays.getLast()));
 
 			this.waitingForPlay.countDown();
+			this.changing.notify();
 		}
 
 	}
@@ -371,8 +362,6 @@ public class Game implements IGame
 	private synchronized void endGame(final PlayerInfo firstEndingPlayer, final HistoryEntry historyEntry)
 	{
 		LOGGER.info("Games ends. Player which have clear its rack: " + (firstEndingPlayer == null ? null : firstEndingPlayer.getName()));
-		assert this.endScheduler == null;
-		setState(State.ENDING);
 		final StringBuffer message = new StringBuffer();
 		if (firstEndingPlayer == null)
 		{
@@ -404,12 +393,7 @@ public class Game implements IGame
 				});
 
 		dispatch(c -> c.onDispatchMessage(message.toString()));
-		this.endScheduler = SERVICE.schedule(() -> {
-					setState(State.ENDED);
-					return null;
-				},
-				delayBeforeEnds,
-				TimeUnit.SECONDS);
+		setState(State.ENDED);
 	}
 
 
@@ -491,8 +475,20 @@ public class Game implements IGame
 		setState(State.STARTED);
 		try
 		{
-			while (this.state != State.ENDED && this.state != State.ENDING)
+			while (true)
 			{
+				if (this.state == State.ENDED)
+				{
+					synchronized (this.changing)
+					{
+						this.changing.wait(this.delayBeforeEnds * 1000L);
+						if (this.state == State.ENDED)
+						{
+							break;
+						}
+					}
+				}
+
 				final AbstractPlayer player = this.toPlay.peekFirst();
 				assert  player != null;
 				LOGGER.info("Let's play " + player);
@@ -742,7 +738,7 @@ public class Game implements IGame
 	 * State of the game
 	 */
 	enum  State
-	{BEFORE_START, STARTED, ENDING, ENDED}
+	{BEFORE_START, STARTED, ENDED}
 
 	public interface ScrabbleEvent extends Consumer<GameListener>
 	{

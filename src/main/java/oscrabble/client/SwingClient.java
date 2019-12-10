@@ -973,7 +973,7 @@ public class SwingClient extends AbstractPlayer
 					JOptionPane.showMessageDialog(SwingClient.this.jGrid, "It's not your turn!");
 				}
 			}
-			catch (final ScrabbleException | JokerPlacementException | ParseException ex)
+			catch (final ScrabbleException | JokerPlacementException | ParseException | ScrabbleException.NotInTurn ex)
 			{
 				onDispatchMessage(ex.getMessage());
 				SwingClient.this.commandPrompt.setText("");
@@ -1384,7 +1384,7 @@ public class SwingClient extends AbstractPlayer
 	 * Play the move: inform the server about it and clear the client input field.
 	 * @param playTiles move to play
 	 */
-	private void play(final PlayTiles playTiles) throws ScrabbleException
+	private void play(final PlayTiles playTiles) throws ScrabbleException.NotInTurn
 	{
 		this.game.play(SwingClient.this.playerKey, this.currentPlay, playTiles);
 		this.commandPrompt.setText("");

@@ -235,6 +235,7 @@ public class GameTest
 		);
 
 		startGame(true);
+		this.game.awaitEndOfPlay(21, 1, TimeUnit.MINUTES);
 
 		// first rollback
 		final int maxRoundNr = this.game.getRoundNr();
@@ -256,10 +257,10 @@ public class GameTest
 		// play both last moves again
 		this.gustav.addMove(PlayTiles.parseMove(this.grid, "N10 VENTA"));
 		this.john.addMove(PlayTiles.parseMove(this.grid, "8K HEM"));
-		this.game.awaitEndOfPlay(maxRoundNr + 2, 1, TimeUnit.SECONDS);
-		assertEquals(Game.State.ENDING, this.game.getState());
+		this.game.awaitEndOfPlay(maxRoundNr + 2, 5, TimeUnit.SECONDS);
+		assertEquals(Game.State.ENDED, this.game.getState());
 
-		Thread.sleep(this.game.delayBeforeEnds * 1000 / 2 + 500);
+		Thread.sleep(this.game.delayBeforeEnds * 5000 / 2 + 500);
 		assertEquals(Game.State.ENDED, this.game.getState());
 	}
 

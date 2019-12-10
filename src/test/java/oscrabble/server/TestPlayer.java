@@ -5,6 +5,7 @@ import oscrabble.PlayTiles;
 import oscrabble.ScrabbleException;
 import oscrabble.player.AbstractPlayer;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -40,10 +41,23 @@ class TestPlayer extends AbstractPlayer
 	{
 		if (play.player == this)
 		{
+			LOGGER.info("Play required");
+
 			try
 			{
+				Thread.sleep(300);
 				final PlayTiles playTiles = this.nextPlayTiles.take();
-				this.server.play(this.playerKey, play, playTiles);
+				try
+				{
+					this.server.play(this.playerKey, play, playTiles);
+				}
+				catch (ScrabbleException.NotInTurn notInTurn)
+				{
+					final ArrayList<PlayTiles> remainings = new ArrayList<>();
+					this.nextPlayTiles.drainTo(remainings);
+					this.nextPlayTiles.add(playTiles);
+					this.nextPlayTiles.addAll(remainings);
+				}
 			}
 			catch (InterruptedException e)
 			{

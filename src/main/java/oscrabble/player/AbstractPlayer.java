@@ -84,6 +84,7 @@ public abstract class AbstractPlayer implements Game.GameListener
 
 	public void afterGameEnd()
 	{
+		LOGGER.info("Destroy EDT of " + this.getName());
 		this.destroyEDT = true;
 		this.edt.interrupt();
 	}
