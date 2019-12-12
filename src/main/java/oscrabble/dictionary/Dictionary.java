@@ -118,8 +118,17 @@ public class Dictionary implements Tile.Generator
 					String line;
 					while ((line = reader.readLine()) != null)
 					{
-						admissible.add(line);
-						admissibleUppercase.add(toUpperCase(line));
+						final int comment = line.indexOf('#');
+						if (comment != -1)
+						{
+							line = line.substring(0, comment);
+						}
+						line = line.trim();
+						if (!line.isEmpty())
+						{
+							admissible.add(line);
+							admissibleUppercase.add(toUpperCase(line));
+						}
 					}
 
 					final SortedSet<String> sizeMatchingWords = sizeSortedWords.subSet(

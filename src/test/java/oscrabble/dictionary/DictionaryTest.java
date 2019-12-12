@@ -1,5 +1,9 @@
 package oscrabble.dictionary;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +29,7 @@ public class DictionaryTest
 	public void getWords()
 	{
 		assertTrue(this.french.getMutations().contains("ETERNUER"));
+		assertFalse(this.french.containUpperCaseWord("MEN"));
 	}
 
 
