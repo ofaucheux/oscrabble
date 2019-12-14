@@ -45,7 +45,7 @@ class TestPlayer extends AbstractPlayer
 
 			try
 			{
-				Thread.sleep(300);
+				Thread.sleep(100);
 				final PlayTiles playTiles = this.nextPlayTiles.take();
 				try
 				{
@@ -87,7 +87,7 @@ class TestPlayer extends AbstractPlayer
 	@Override
 	public void onDispatchMessage(final String msg)
 	{
-		LOGGER.info(msg);
+		LOGGER.trace(msg);
 	}
 
 	@Override

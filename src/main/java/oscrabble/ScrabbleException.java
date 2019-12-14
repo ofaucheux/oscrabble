@@ -57,7 +57,7 @@ public abstract class ScrabbleException extends Exception
 	{
 		public NotInTurn(final AbstractPlayer player)
 		{
-			super(ERROR_CODE.FORBIDDEN, "The player " + player.toString() + " is not in turn");
+			super("The player " + player.toString() + " is not in turn");
 		}
 	}
 }

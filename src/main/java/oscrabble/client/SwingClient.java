@@ -113,6 +113,7 @@ public class SwingClient extends AbstractPlayer
 		final JPanel panel1 = new JPanel();
 		panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
 		panel1.add(this.jScoreboard);
+		this.jScoreboard.addPropertyChangeListener("score", e -> {});
 		panel1.add(Box.createVerticalGlue());
 
 		final JPanel historyPanel = new JPanel();
@@ -129,7 +130,15 @@ public class SwingClient extends AbstractPlayer
 			}
 		});
 		historyPanel.setSize(new Dimension(200, 300));
-		historyPanel.add(new JScrollPane(this.historyList));
+		final JScrollPane scrollPane = new JScrollPane(this.historyList);
+		historyPanel.add(scrollPane);
+		this.historyList.addPropertyChangeListener("model", (e) -> {
+					SwingUtilities.invokeLater( () -> {
+						scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE);
+					});
+				}
+		);
+
 		panel1.add(historyPanel);
 		panel1.add(new JButton(new AbstractAction("Rollback")
 		{
@@ -187,9 +196,9 @@ public class SwingClient extends AbstractPlayer
 		rackFrame.pack();
 		rackFrame.setVisible(true);
 		rackFrame.setLocation(
-					gridFrame.getX() + gridFrame.getWidth(),
-					gridFrame.getY() + gridFrame.getHeight() / 2
-			);
+				gridFrame.getX() + gridFrame.getWidth(),
+				gridFrame.getY() + gridFrame.getHeight() / 2
+		);
 		rackFrame.setFocusableWindowState(false);
 		rackFrame.setFocusable(false);
 
@@ -900,13 +909,13 @@ public class SwingClient extends AbstractPlayer
 		CommandPromptAction()
 		{
 			this.commands.put(KEYWORD_HELP, new Command("display help", (args -> {
-				final StringBuffer sb = new StringBuffer();
-				sb.append("<table border=1>");
-				CommandPromptAction.this.commands.forEach(
-						(k, c) -> sb.append("<tr><td>").append(k).append("</td><td>").append(c.description).append("</td></tr>"));
-				sb.setLength(sb.length() - 1);
-				sb.append("</table>");
-				SwingClient.this.telnetFrame.appendConsoleText("blue", sb.toString(), false);
+						final StringBuffer sb = new StringBuffer();
+						sb.append("<table border=1>");
+						CommandPromptAction.this.commands.forEach(
+								(k, c) -> sb.append("<tr><td>").append(k).append("</td><td>").append(c.description).append("</td></tr>"));
+						sb.setLength(sb.length() - 1);
+						sb.append("</table>");
+						SwingClient.this.telnetFrame.appendConsoleText("blue", sb.toString(), false);
 						return null;
 					}))
 			);
@@ -973,7 +982,7 @@ public class SwingClient extends AbstractPlayer
 					JOptionPane.showMessageDialog(SwingClient.this.jGrid, "It's not your turn!");
 				}
 			}
-			catch (final ScrabbleException | JokerPlacementException | ParseException | ScrabbleException.NotInTurn ex)
+			catch (final JokerPlacementException | ParseException | ScrabbleException.NotInTurn | ScrabbleException.InvalidSecretException ex)
 			{
 				onDispatchMessage(ex.getMessage());
 				SwingClient.this.commandPrompt.setText("");
@@ -1384,7 +1393,7 @@ public class SwingClient extends AbstractPlayer
 	 * Play the move: inform the server about it and clear the client input field.
 	 * @param playTiles move to play
 	 */
-	private void play(final PlayTiles playTiles) throws ScrabbleException.NotInTurn
+	private void play(final PlayTiles playTiles) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
 	{
 		this.game.play(SwingClient.this.playerKey, this.currentPlay, playTiles);
 		this.commandPrompt.setText("");

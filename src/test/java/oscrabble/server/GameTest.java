@@ -191,26 +191,28 @@ public class GameTest
 	{
 		final List<TestPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
 		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
-				"H3 APPETES",
-				"G9 VIGIE",
-				"7C WOmBATS",
-				"3G FATIGUE",
-				"12A DETELAI",
-				"8A ABUS",
-				"13G ESTIMAIT",
-				"5G EPErONNA",
-				"O3 ECIMER",
-				"D3 KOUROS",
-				"L8 ECHOUA",
-				"3A FOLKS",
-				"A1 DEFUNT",
-				"1A DRAYOIR",
-				"L2 QUAND",
-				"1A DRAYOIRE",
-				"11I ENJOUE",
-				"B10 RIELS",
-				"N10 VENTA",
-				"8K HEM"));
+				/*  1 */ "H3 APPETES",
+				/*  2 */ "G9 VIGIE",
+				/*  3 */ "7C WOmBATS",
+				/*  4 */ "3G FATIGUE",
+				/*  5 */ "12A DETELAI",
+				/*  6 */ "8A ABUS",
+				/*  7 */ "13G ESTIMAIT",
+				/*  8 */ "5G EPErONNA",
+				/*  9 */ "O3 ECIMER",
+				/* 10 */ "D3 KOUROS",
+				/* 11 */ "L8 ECHOUA",
+				/* 12 */ "3A FOLKS",
+				/* 13 */ "A1 DEFUNT",
+				/* 14 */ "1A DRAYOIR",
+				/* 15 */ "L2 QUAND",
+				/* 16 */ "1A DRAYOIRE",
+				/* 17 */ "11I ENJOUE",
+				/* 18 */ "B10 RIELS",
+				/* 19 */ "N10 VENTA",
+				/* 20 */ "8K HEM"
+		));
+
 		for (int i = 0; i < moves.size(); i++)
 		{
 			players.get(i % players.size()).addMove(
@@ -224,7 +226,7 @@ public class GameTest
 					@Override
 					public void afterPlay(final Play play)
 					{
-						switch (game.getRoundNr())
+						switch (GameTest.this.game.getRoundNr())
 						{
 							case 1:
 								Assert.assertEquals(78, GameTest.this.game.getPlayerInfo(GameTest.this.gustav).getScore());
@@ -235,29 +237,28 @@ public class GameTest
 		);
 
 		startGame(true);
-		this.game.awaitEndOfPlay(21, 1, TimeUnit.MINUTES);
+		this.game.awaitEndOfPlay(moves.size(), 1, TimeUnit.MINUTES);
 
 		// first rollback
-		final int maxRoundNr = this.game.getRoundNr();
 		assertFalse(this.grid.getSquare("8K").isEmpty());
 		assertFalse(this.grid.getSquare("8L").isEmpty());
 		assertFalse(this.grid.getSquare("8M").isEmpty());
 		this.game.rollbackLastMove(null, null);
-		assertEquals(maxRoundNr - 1, this.game.getRoundNr());
 		assertTrue(this.grid.getSquare("8K").isEmpty());
 		assertFalse(this.grid.getSquare("8L").isEmpty());
 		assertTrue(this.grid.getSquare("8M").isEmpty());
+		assertEquals(this.john, this.game.getPlayerToPlay());
 
 		// second rollback
 		assertFalse(this.grid.getSquare("N10").isEmpty());
 		this.game.rollbackLastMove(null, null);
 		assertTrue(this.grid.getSquare("N10").isEmpty());
-		assertEquals(maxRoundNr - 2, this.game.getRoundNr());
+		assertEquals(this.gustav, this.game.getPlayerToPlay());
 
 		// play both last moves again
 		this.gustav.addMove(PlayTiles.parseMove(this.grid, "N10 VENTA"));
 		this.john.addMove(PlayTiles.parseMove(this.grid, "8K HEM"));
-		this.game.awaitEndOfPlay(maxRoundNr + 2, 5, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(moves.size(), 5, TimeUnit.SECONDS);
 		assertEquals(Game.State.ENDED, this.game.getState());
 
 		Thread.sleep(this.game.delayBeforeEnds * 5000 / 2 + 500);
@@ -293,12 +294,12 @@ public class GameTest
 		final Rack startRack = ((Game.PlayerInfo) this.game.getPlayerInfo(this.gustav)).rack;
 		this.gustav.addMove(PlayTiles.parseMove(this.grid, "8H APTES"));
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
-		assertEquals(this.game.getScore(this.gustav), 16);
+		assertEquals(16, this.game.getScore(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
 		this.game.rollbackLastMove(this.gustav, this.gustav.getKey());
-		assertEquals(this.game.getRoundNr(), 1);
-		assertEquals(this.game.getScore(this.gustav), 0);
+		assertEquals(1, this.game.getRoundNr());
+		assertEquals(0, this.game.getScore(this.gustav));
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(startRack, ((Game.PlayerInfo) this.game.getPlayerInfo(this.gustav)).rack);
 	}

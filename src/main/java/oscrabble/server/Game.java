@@ -120,17 +120,16 @@ public class Game implements IGame
 	}
 
 	@Override
-	public synchronized int play(final UUID clientKey, final Play play, final Action action) throws ScrabbleException
-	public synchronized int play(final AbstractPlayer player, final IPlay action) throws ScrabbleException.NotInTurn
+	public synchronized int play(final UUID clientKey, final Play play, final Action action) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
 	{
 		synchronized (this.changing)
 		{
 			if (this.plays.isEmpty() || this.plays.getLast() != play)
 			{
-				throw new ScrabbleException.NotInTurn(player);
+				throw new ScrabbleException.NotInTurn(play.player);
 			}
 
-			assert !play.done;
+			assert !play.isDone();
 			final AbstractPlayer player = play.player;
 			final PlayerInfo playerInfo = this.players.get(player);
 			checkKey(player, clientKey);
@@ -258,7 +257,6 @@ public class Game implements IGame
 
 				LOGGER.debug("Grid after play move nr #" + play.uuid + ":\n" + this.grid.asASCIIArt());
 				actionRejected = false;
-				play.done = true;
 				return score;
 			}
 			catch (final ScrabbleException e)
@@ -275,7 +273,6 @@ public class Game implements IGame
 				else
 				{
 					dispatch(listener -> listener.afterRejectedAction(playerInfo.player, action));
-					play.done = true;
 					playerInfo.isLastPlayError = true;
 				}
 				return 0;
@@ -283,32 +280,29 @@ public class Game implements IGame
 			finally
 			{
 				playerInfo.lastAction = action;
-				final int copyScore = score;
 				dispatch(toInform -> toInform.afterPlay(play));
-				if (play.done)
-				{
 					final HistoryEntry historyEntry = new HistoryEntry(play, actionRejected, score, drawn, moveMI);
-					this.history.add(historyEntry);
-					this.toPlay.pop();
-					this.toPlay.add(player);
+				this.history.add(historyEntry);
+				this.toPlay.pop();
+				this.toPlay.add(player);
 
-					if (playerInfo.rack.isEmpty())
+				if (playerInfo.rack.isEmpty())
+				{
+					endGame(playerInfo, historyEntry);
+				}
+				else if (action == SkipTurn.SINGLETON)
+				{
+					// Quit if nobody can play
+					final AtomicBoolean canPlay = new AtomicBoolean(false);
+					this.players.forEach((p, mi) -> {
+						if (mi.lastAction != SkipTurn.SINGLETON) canPlay.set(true);
+					});
+					if (!canPlay.get())
 					{
-						endGame(playerInfo, historyEntry);
-					}
-					else if (action == SkipTurn.SINGLETON)
-					{
-						// Quit if nobody can play
-						final AtomicBoolean canPlay = new AtomicBoolean(false);
-						this.players.forEach((p, mi) -> {
-							if (mi.lastAction != SkipTurn.SINGLETON) canPlay.set(true);
-						});
-						if (!canPlay.get())
-						{
-							endGame(null, historyEntry);
-						}
+						endGame(null, historyEntry);
 					}
 				}
+				play.action = action;
 				this.waitingForPlay.countDown();
 			}
 		}
@@ -325,22 +319,28 @@ public class Game implements IGame
 				throw new ScrabbleException.InvalidStateException( "No move played for the time");
 			}
 			LOGGER.info("Rollback " + historyEntry.formatAsString());
-			setState(State.STARTED);
 
-			final PlayerInfo playerInfo = this.players.get(historyEntry.getPlayer());
+			final AbstractPlayer rollbackedPlayer = historyEntry.getPlayer();
+			final PlayerInfo playerInfo = this.players.get(rollbackedPlayer);
 			playerInfo.rack.removeAll(historyEntry.drawn);
 			historyEntry.metaInformation.getFilledSquares().forEach(
 					filled -> playerInfo.rack.add(filled.tile)
 			);
 			this.grid.remove(historyEntry.metaInformation);
 			this.players.forEach( (p,info) -> info.score -= historyEntry.scores.getOrDefault(p, 0));
-			assert this.toPlay.peekLast() == historyEntry.getPlayer();
-			this.toPlay.removeLast();
-			this.toPlay.addFirst(historyEntry.getPlayer());
+			assert this.toPlay.peekLast() == rollbackedPlayer;
+
+			if (this.state == State.STARTED)
+			{
+				this.plays.removeLast();
+			}
 			this.plays.removeLast();
-			setState(State.STARTED);
+
+			this.toPlay.removeLast();
+			this.toPlay.addFirst(rollbackedPlayer);
 			dispatch(toInform -> toInform.afterRollback());
-			dispatch(toInform -> toInform.onPlayRequired(this.plays.getLast()));
+
+			setState(State.STARTED);
 
 			this.waitingForPlay.countDown();
 			this.changing.notify();
@@ -648,7 +648,7 @@ public class Game implements IGame
 		return mi.isLastPlayError;
 	}
 
-	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
+	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException.InvalidSecretException
 	{
 		if (clientKey == null || !clientKey.equals(this.players.get(player).key))
 		{
@@ -674,7 +674,7 @@ public class Game implements IGame
 	void awaitEndOfPlay(final int roundNr, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
 	{
 		long maxTime = unit.toMillis(timeout) + System.currentTimeMillis();
-		while (getRoundNr() < roundNr || !this.plays.get(roundNr - 1).done)
+		while (getRoundNr() < roundNr || !this.plays.get(roundNr - 1).isDone())
 		{
 			Thread.sleep(100);
 			if (System.currentTimeMillis() > maxTime)

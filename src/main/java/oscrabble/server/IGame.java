@@ -25,7 +25,7 @@ public interface IGame
 	 * @param action action to be done
 	 * @return score score of this play
 	 */
-	int play(UUID clientKey, Play play, Action action) throws ScrabbleException;
+	int play(UUID clientKey, Play play, Action action) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException;
 
 	/**
 	 *
@@ -92,19 +92,4 @@ public interface IGame
 	 * @throws IllegalStateException if the player has never played for the time
 	 */
 	boolean isLastPlayError(AbstractPlayer player);
-
-	/**
-	 * Description of a play.
-	 */
-	class Play
-	{
-		public final UUID uuid = UUID.randomUUID();
-		protected final int number;
-
-		Play(final int number)
-		{
-			this.number = number;
-		}
-	}
-
 }
