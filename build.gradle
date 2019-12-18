@@ -2,6 +2,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'application'
 }
 
 tasks.withType(JavaCompile) {
@@ -32,38 +33,9 @@ dependencies {
 }
 
 group = 'faucheux'
-version = '1.0_BUILD'
+version = '1.1'
 
-
-jar {
-    manifest {
-        attributes(
-                'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
-                'Main-Class': 'oscrabble.GameStarter'
-        )
-    }
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from(components.java)
-        }
-    }
-}
-
-// Deploy task: copy jar to destinations.
-task deploy(dependsOn: 'jar') {
-    doLast {
-
-        copy {
-            from jar
-            into 'build\\deployed'
-        }
-
-        copy {
-            from configurations.runtime
-            into 'build\\deployed'
-        }
-    }
+application
+{
+    mainClassName = 'oscrabble.GameStarter'
 }
