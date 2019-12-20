@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 import oscrabble.*;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.dictionary.DictionaryException;
+import oscrabble.dictionary.DictionaryComponent;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 import oscrabble.server.Game;
@@ -24,10 +24,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -217,12 +214,17 @@ public class SwingClient extends AbstractPlayer
 			this.commandPrompt.grabFocus();
 		});
 
-		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager() {
+		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager()
+		{
 			@Override
 			public boolean dispatchKeyEvent(final KeyEvent e)
 			{
-				SwingClient.this.commandPrompt.requestFocus();
-				e.setSource(SwingClient.this.commandPrompt);
+			// Snap the focus for the command prompt field
+				if (!(e.getSource() instanceof JTextComponent))
+				{
+					SwingClient.this.commandPrompt.requestFocus();
+					e.setSource(SwingClient.this.commandPrompt);
+				}
 				return super.dispatchKeyEvent(e);
 			}
 		});
@@ -498,6 +500,9 @@ public class SwingClient extends AbstractPlayer
 		private final Dictionary dictionary;
 		private final Map<Grid.Square, Tile> preparedMoveStones;
 
+		/** Frame für die Anzeige der Definition von Wärtern */
+		private final DictionaryComponent dictionaryComponent;
+
 		final JComponent background;
 
 		/** Client mit dem diese Grid verknüpft ist */
@@ -518,6 +523,7 @@ public class SwingClient extends AbstractPlayer
 			this.grid = grid;
 			final int numberOfRows = grid.getSize() + 2;
 			this.dictionary = dictionary;
+			this.dictionaryComponent = new DictionaryComponent(this.dictionary);
 
 			this.setLayout(new BorderLayout());
 			this.background = new JPanel();
@@ -619,70 +625,27 @@ public class SwingClient extends AbstractPlayer
 			repaint();
 		}
 
-
-		private JFrame descriptionFrame;
-		private JTabbedPane descriptionTabPanel;
-
 		/**
 		 * Holt und zeigt die Definitionen eines Wortes
 		 * @param word Wort
 		 */
 		private void showDefinition(final String word)
 		{
-			if (this.descriptionFrame == null)
+			Window dictionaryFrame = SwingUtilities.getWindowAncestor(this.dictionaryComponent);
+			if (dictionaryFrame == null)
 			{
-				this.descriptionFrame = new JFrame("Description");
-				this.descriptionFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				this.descriptionTabPanel = new JTabbedPane();
-				this.descriptionFrame.add(this.descriptionTabPanel);
-				this.descriptionFrame.setSize(600, 600);
-				this.descriptionFrame.setLocationRelativeTo(null);
+				dictionaryFrame = new JFrame("Description");
+				dictionaryFrame.add(this.dictionaryComponent);
+				dictionaryFrame.setSize(600,600);
 			}
 
 			final Dictionary dictionary = this.grid.getDictionary();
-			mutation:
 			for (final String mutation : dictionary.getMutations(word))
 			{
-				// tests if definition already displayed
-				final int tabCount = this.descriptionTabPanel.getTabCount();
-				for (int i = 0; i < tabCount; i++)
-				{
-					if (this.descriptionTabPanel.getTitleAt(i).equals(mutation))
-					{
-						this.descriptionTabPanel.setSelectedIndex(i);
-						continue mutation;
-					}
-				}
-
-				Iterable<String> descriptions;
-				try
-				{
-					descriptions = dictionary.getDescriptions(mutation);
-				}
-				catch (DictionaryException e)
-				{
-					descriptions = null;
-				}
-
-				final JPanel panel = new JPanel();
-				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-				if (descriptions == null)
-				{
-					panel.add(new JLabel(mutation + ": no definition found"));
-				}
-				else
-				{
-					descriptions.forEach(description -> panel.add(new JLabel(String.valueOf(description))));
-				}
-
-				final JScrollPane sp = new JScrollPane(panel);
-				this.descriptionTabPanel.addTab(mutation, sp);
-				this.descriptionTabPanel.setSelectedComponent(sp);
-
-				this.descriptionFrame.setVisible(true);
-				this.descriptionFrame.toFront();
+				this.dictionaryComponent.showDescription(mutation);
 			}
+			dictionaryFrame.setVisible(true);
+			dictionaryFrame.toFront();
 		}
 
 		class StoneCell extends JComponent
