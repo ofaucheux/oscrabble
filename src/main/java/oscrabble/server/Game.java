@@ -139,6 +139,7 @@ public class Game implements IGame
 			boolean actionRejected = false;
 			Set<Tile> drawn = null;
 			Grid.MoveMetaInformation moveMI = null;
+			boolean done = false;
 			try
 			{
 				final ArrayList<String> messages = new ArrayList<>(5);
@@ -257,6 +258,7 @@ public class Game implements IGame
 
 				LOGGER.debug("Grid after play move nr #" + play.uuid + ":\n" + this.grid.asASCIIArt());
 				actionRejected = false;
+				done = true;
 				return score;
 			}
 			catch (final ScrabbleException e)
@@ -266,44 +268,46 @@ public class Game implements IGame
 				playerInfo.player.onDispatchMessage(e.toString());
 				if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
 				{
-					playerInfo.player.onDispatchMessage("Retry accepted");
-					final Play last = this.plays.removeLast();
-					assert last == play;
+					player.getIncomingEventQueue().add(p -> { p.onPlayRequired(play);});
 				}
 				else
 				{
 					dispatch(listener -> listener.afterRejectedAction(playerInfo.player, action));
 					playerInfo.isLastPlayError = true;
+					done = true;
 				}
 				return 0;
 			}
 			finally
 			{
-				playerInfo.lastAction = action;
-				dispatch(toInform -> toInform.afterPlay(play));
+				if (done)
+				{
+					playerInfo.lastAction = action;
+					dispatch(toInform -> toInform.afterPlay(play));
 					final HistoryEntry historyEntry = new HistoryEntry(play, actionRejected, score, drawn, moveMI);
-				this.history.add(historyEntry);
-				this.toPlay.pop();
-				this.toPlay.add(player);
+					this.history.add(historyEntry);
+					this.toPlay.pop();
+					this.toPlay.add(player);
 
-				if (playerInfo.rack.isEmpty())
-				{
-					endGame(playerInfo, historyEntry);
-				}
-				else if (action == SkipTurn.SINGLETON)
-				{
-					// Quit if nobody can play
-					final AtomicBoolean canPlay = new AtomicBoolean(false);
-					this.players.forEach((p, mi) -> {
-						if (mi.lastAction != SkipTurn.SINGLETON) canPlay.set(true);
-					});
-					if (!canPlay.get())
+					if (playerInfo.rack.isEmpty())
 					{
-						endGame(null, historyEntry);
+						endGame(playerInfo, historyEntry);
 					}
+					else if (action == SkipTurn.SINGLETON)
+					{
+						// Quit if nobody can play
+						final AtomicBoolean canPlay = new AtomicBoolean(false);
+						this.players.forEach((p, mi) -> {
+							if (mi.lastAction != SkipTurn.SINGLETON) canPlay.set(true);
+						});
+						if (!canPlay.get())
+						{
+							endGame(null, historyEntry);
+						}
+					}
+					play.action = action;
+					this.waitingForPlay.countDown();
 				}
-				play.action = action;
-				this.waitingForPlay.countDown();
 			}
 		}
 	}
