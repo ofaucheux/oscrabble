@@ -11,17 +11,16 @@ import java.awt.*;
 
 public class SwingClientTest
 {
-	private Grid grid;
 
 	@Test
-	void layout()
+	void layout() throws InterruptedException
 	{
-		this.grid = new Grid(Grid.SCRABBLE_SIZE);
-		this.grid.set(this.grid.getSquare(1, 3), Tile.SIMPLE_GENERATOR.generateStone('A'));
+		final Grid grid = new Grid(Grid.SCRABBLE_SIZE);
+		grid.set(grid.getSquare(1, 3), Tile.SIMPLE_GENERATOR.generateStone('A'));
 		showGrid(grid);
 	}
 
-	public static void showGrid(final Grid grid)
+	public static void showGrid(final Grid grid) throws InterruptedException
 	{
 		final SwingClient.JGrid JGrid = new SwingClient.JGrid(grid, DictionaryTest.getTestDictionary());
 		final JFrame f = new JFrame();
@@ -46,6 +45,9 @@ public class SwingClientTest
 		});
 		th.setDaemon(true);
 		th.start();
+
+		Thread.sleep(10000L);
+		f.dispose();
 	}
 
 	@AfterAll
