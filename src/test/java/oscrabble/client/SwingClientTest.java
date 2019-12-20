@@ -7,6 +7,7 @@ import oscrabble.Tile;
 import oscrabble.dictionary.DictionaryTest;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 
 public class SwingClientTest
@@ -24,6 +25,7 @@ public class SwingClientTest
 	{
 		final SwingClient.JGrid JGrid = new SwingClient.JGrid(grid, DictionaryTest.getTestDictionary());
 		final JFrame f = new JFrame();
+		f.setLayout(new BorderLayout());
 		f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		f.add(JGrid);
 		f.setVisible(true);
@@ -46,7 +48,15 @@ public class SwingClientTest
 		th.setDaemon(true);
 		th.start();
 
-		Thread.sleep(10000L);
+		Thread.sleep(3000L);
+
+		f.setSize(1200,800);
+		final JList<Object> list = new JList<>();
+		f.add(list, BorderLayout.EAST);
+
+
+		Thread.sleep(3000L);
+
 		f.dispose();
 	}
 
