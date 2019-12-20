@@ -107,16 +107,22 @@ public class SwingClient extends AbstractPlayer
 		final JFrame gridFrame = new JFrame();
 		gridFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		gridFrame.setLayout(new BorderLayout());
-		gridFrame.add(this.jGrid);
+
+		final JPanel mainPanel_01 = new JPanel();
+		mainPanel_01.setLayout(new BoxLayout(mainPanel_01, BoxLayout.PAGE_AXIS));
+		mainPanel_01.add(this.jGrid);
+		mainPanel_01.add(this.commandPrompt);
+		gridFrame.add(mainPanel_01);
 
 		final JPanel eastPanel = new JPanel(new BorderLayout());
 		final JPanel panel1 = new JPanel();
+		panel1.setPreferredSize(new Dimension(200, 200));
 		panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
 		panel1.add(this.jScoreboard);
 		this.jScoreboard.addPropertyChangeListener("score", e -> {});
 		panel1.add(Box.createVerticalGlue());
 
-		final JPanel historyPanel = new JPanel();
+		final JPanel historyPanel = new JPanel(new BorderLayout());
 		historyPanel.setBorder(new TitledBorder("Moves"));
 		this.historyList = new JList<>();
 		this.historyList.setCellRenderer(new DefaultListCellRenderer()
@@ -129,10 +135,9 @@ public class SwingClient extends AbstractPlayer
 				return this;
 			}
 		});
-		historyPanel.setSize(new Dimension(200, 300));
 		final JScrollPane scrollPane = new JScrollPane(this.historyList);
 		historyPanel.add(scrollPane);
-		this.historyList.addPropertyChangeListener("model", (e) -> {
+		this.historyList.addPropertyChangeListener("model", (e) -> {   // scroll at end by content change
 					SwingUtilities.invokeLater( () -> {
 						scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE);
 					});
@@ -175,7 +180,6 @@ public class SwingClient extends AbstractPlayer
 		eastPanel.add(panel1, BorderLayout.CENTER);
 		gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
-		gridFrame.add(this.commandPrompt, BorderLayout.SOUTH);
 		gridFrame.pack();
 		gridFrame.setResizable(false);
 		gridFrame.setVisible(true);
