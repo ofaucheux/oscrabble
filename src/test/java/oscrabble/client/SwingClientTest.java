@@ -28,6 +28,7 @@ public class SwingClientTest
 		f.setLayout(new BorderLayout());
 		f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		f.add(JGrid);
+		JGrid.setPreferredSize(new Dimension(800, 800));
 		f.setVisible(true);
 		f.setSize(800,800);
 
@@ -50,9 +51,10 @@ public class SwingClientTest
 
 		Thread.sleep(3000L);
 
-		f.setSize(1200,800);
 		final JList<Object> list = new JList<>();
+		list.setPreferredSize(new Dimension(400, 0));
 		f.add(list, BorderLayout.EAST);
+		f.setSize(1200,800);
 
 
 		Thread.sleep(3000L);
