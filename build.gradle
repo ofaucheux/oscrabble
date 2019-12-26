@@ -38,4 +38,5 @@ version = '1.1'
 application
 {
     mainClassName = 'oscrabble.GameStarter'
+    applicationDefaultJvmArgs = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044']
 }
