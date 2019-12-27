@@ -2,7 +2,7 @@ package oscrabble.client;
 
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import oscrabble.*;
 import oscrabble.configuration.ConfigurationPanel;
@@ -48,6 +48,7 @@ public class SwingClient extends AbstractPlayer
 	public static final Logger LOGGER = Logger.getLogger(SwingClient.class);
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
+	private static final LinkedList<SwingClient> clients = new LinkedList<>();
 
 	private JGrid jGrid;
 	private JTextField commandPrompt;
@@ -81,6 +82,7 @@ public class SwingClient extends AbstractPlayer
 	public SwingClient(final String name)
 	{
 		super(name);
+		SwingClient.clients.add(this);
 	}
 
 	/**
@@ -91,7 +93,7 @@ public class SwingClient extends AbstractPlayer
 		this.jGrid = new JGrid(getGrid(), this.game.getDictionary());
 		this.jGrid.setClient(this);
 		this.jRack = new JRack();
-		this.jScoreboard = new JScoreboard();
+		this.jScoreboard = new JScoreboard(this.game);
 		this.commandPrompt = new JTextField();
 		final CommandPromptAction promptListener = new CommandPromptAction();
 		this.commandPrompt.addActionListener(promptListener);
@@ -135,9 +137,7 @@ public class SwingClient extends AbstractPlayer
 		final JScrollPane scrollPane = new JScrollPane(this.historyList);
 		historyPanel.add(scrollPane);
 		this.historyList.addPropertyChangeListener("model", (e) -> {   // scroll at end by content change
-					SwingUtilities.invokeLater( () -> {
-						scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE);
-					});
+					SwingUtilities.invokeLater( () -> scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE));
 				}
 		);
 
@@ -181,7 +181,9 @@ public class SwingClient extends AbstractPlayer
 		gridFrame.setResizable(false);
 		gridFrame.setVisible(true);
 
-		final Window rackFrame = new JDialog(gridFrame);
+		final JDialog rackFrame = new JDialog(gridFrame);
+		rackFrame.setTitle(this.getName());
+
 		rackFrame.setLayout(new BorderLayout());
 		rackFrame.add(this.jRack);
 
@@ -238,11 +240,6 @@ public class SwingClient extends AbstractPlayer
 		this.possibleMovePanel.repaint();
 		this.showPossibilitiesButton.setText(PossibleMoveDisplayer.LABEL_DISPLAY);
 		this.possibleMovePanel.add(this.showPossibilitiesButton, BorderLayout.SOUTH);
-	}
-
-	void setCommandPrompt(final String text)
-	{
-		this.commandPrompt.setText(text);
 	}
 
 	@Override
@@ -340,13 +337,14 @@ public class SwingClient extends AbstractPlayer
 	/**
 	 * Panel for the display of the actual score.
 	 */
-	private class JScoreboard extends JPanel
+	private static class JScoreboard extends JPanel
 	{
-
+		private final Game game;
 		private final HashMap<IPlayerInfo, ScorePanelLine> scoreLabels = new HashMap<>();
 
-		JScoreboard()
+		JScoreboard(final Game game)
 		{
+			this.game = game;
 			setPreferredSize(new Dimension(200, 0));
 			setLayout(new GridBagLayout());
 			setBorder(new TitledBorder("Score"));
@@ -354,7 +352,7 @@ public class SwingClient extends AbstractPlayer
 
 		void refreshDisplay()
 		{
-			for (final IPlayerInfo playerInfo : SwingClient.this.game.getPlayers())
+			for (final IPlayerInfo playerInfo : this.game.getPlayers())
 			{
 				this.scoreLabels.get(playerInfo).score.setText(playerInfo.getScore() + " pts");
 			}
@@ -366,7 +364,7 @@ public class SwingClient extends AbstractPlayer
 			final double BIG_WEIGHT = 10;
 
 			final Dimension buttonDim = new Dimension(20, 20);
-			final List<IPlayerInfo> players = SwingClient.this.game.getPlayers();
+			final List<IPlayerInfo> players = this.game.getPlayers();
 			final GridBagConstraints c = new GridBagConstraints();
 			for (final IPlayerInfo player : players)
 			{
@@ -408,7 +406,7 @@ public class SwingClient extends AbstractPlayer
 							@Override
 							protected Void doInBackground()
 							{
-								SwingClient.this.game.editParameters(SwingClient.this.playerKey, player);
+								JScoreboard.this.game.editParameters(SwingClient.clients.getFirst().playerKey, player);
 								return null;
 							}
 						};
@@ -429,7 +427,7 @@ public class SwingClient extends AbstractPlayer
 			getParent().validate();
 		}
 
-		private class ScorePanelLine
+		private static class ScorePanelLine
 		{
 			private JLabel score;
 			private JLabel currentPlaying;
@@ -729,6 +727,7 @@ public class SwingClient extends AbstractPlayer
 				Tile tile;
 				if (this.square.tile != null)
 				{
+					//noinspection StatementWithEmptyBody
 					if (JGrid.this.hideNewStones && this.square.tile.getSettingAction() == JGrid.this.lastAction)
 					{
 						// don't draw
@@ -834,7 +833,7 @@ public class SwingClient extends AbstractPlayer
 
 	/**
 	 * Set a cell as the start of the future tipped word.
-	 * @param cell
+	 * @param cell Cell
 	 */
 	private void setStartCell(final JGrid.StoneCell cell)
 	{
@@ -887,7 +886,7 @@ public class SwingClient extends AbstractPlayer
 					}))
 			);
 
-			this.commands.put("isvalid", new Command( "check if a word is valid", ( args -> {
+			this.commands.put("isValid", new Command( "check if a word is valid", ( args -> {
 				final String word = args[0];
 				final Collection<String> mutations = SwingClient.this.game.getDictionary().getMutations(
 						word.toUpperCase());
@@ -1152,7 +1151,7 @@ public class SwingClient extends AbstractPlayer
 		}
 
 		/**
-		 * Entfernt die Accente und liefert alles Uppercase.
+		 * Entfernt die Umlaute und liefert alles Uppercase.
 		 * TODO: für Frz. sinnvoll, für Deutsch aber sicherlich nicht..
 		 */
 		private String toUpperCase(String text)
