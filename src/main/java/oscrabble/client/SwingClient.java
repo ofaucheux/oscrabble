@@ -10,8 +10,8 @@ import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryComponent;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
-import oscrabble.server.Game;
 import oscrabble.server.Action;
+import oscrabble.server.Game;
 import oscrabble.server.IPlayerInfo;
 import oscrabble.server.Play;
 
@@ -50,18 +50,18 @@ public class SwingClient extends AbstractPlayer
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 	private static final LinkedList<SwingClient> clients = new LinkedList<>();
 
-	private JGrid jGrid;
-	private JTextField commandPrompt;
+	private static JGrid jGrid;
+	private static JTextField commandPrompt;
 	private JRack jRack;
-	private JScoreboard jScoreboard;
+	private static JScoreboard jScoreboard;
 
-	private TelnetFrame telnetFrame;
+	private static TelnetFrame telnetFrame;
 
 	/** Panel for the display of possible moves and corresponding buttons */
-	private JPanel possibleMovePanel;
+	private static JPanel possibleMovePanel;
 
 	/** Button to display / hide the possible moves */
-	private JButton showPossibilitiesButton;
+	private static JButton showPossibilitiesButton;
 
 	/** Thread executor */
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
@@ -77,7 +77,7 @@ public class SwingClient extends AbstractPlayer
 	/**
 	 * Currently played play.
 	 */
-	private Play currentPlay;
+	private static Play currentPlay;
 
 	public SwingClient(final String name)
 	{
@@ -90,18 +90,18 @@ public class SwingClient extends AbstractPlayer
 	 */
 	private void display()
 	{
-		this.jGrid = new JGrid(getGrid(), this.game.getDictionary());
-		this.jGrid.setClient(this);
+		jGrid = new JGrid(getGrid(), game.getDictionary());
+		jGrid.setClient(this);
 		this.jRack = new JRack();
-		this.jScoreboard = new JScoreboard(this.game);
-		this.commandPrompt = new JTextField();
+		jScoreboard = new JScoreboard(game);
+		commandPrompt = new JTextField();
 		final CommandPromptAction promptListener = new CommandPromptAction();
-		this.commandPrompt.addActionListener(promptListener);
-		this.commandPrompt.setFont(this.commandPrompt.getFont().deriveFont(20f));
-		final AbstractDocument document = (AbstractDocument) this.commandPrompt.getDocument();
+		commandPrompt.addActionListener(promptListener);
+		commandPrompt.setFont(commandPrompt.getFont().deriveFont(20f));
+		final AbstractDocument document = (AbstractDocument) commandPrompt.getDocument();
 		document.addDocumentListener(promptListener);
 		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
-		this.telnetFrame = new TelnetFrame("Help");
+		telnetFrame = new TelnetFrame("Help");
 
 		final JFrame gridFrame = new JFrame();
 		gridFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -109,16 +109,16 @@ public class SwingClient extends AbstractPlayer
 
 		final JPanel mainPanel_01 = new JPanel();
 		mainPanel_01.setLayout(new BoxLayout(mainPanel_01, BoxLayout.PAGE_AXIS));
-		mainPanel_01.add(this.jGrid);
-		mainPanel_01.add(this.commandPrompt);
+		mainPanel_01.add(jGrid);
+		mainPanel_01.add(commandPrompt);
 		gridFrame.add(mainPanel_01);
 
 		final JPanel eastPanel = new JPanel(new BorderLayout());
 		final JPanel panel1 = new JPanel();
 		panel1.setPreferredSize(new Dimension(200, 200));
 		panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
-		panel1.add(this.jScoreboard);
-		this.jScoreboard.addPropertyChangeListener("score", e -> {});
+		panel1.add(jScoreboard);
+		jScoreboard.addPropertyChangeListener("score", e -> {});
 		panel1.add(Box.createVerticalGlue());
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
@@ -149,7 +149,7 @@ public class SwingClient extends AbstractPlayer
 			{
 				try
 				{
-					SwingClient.this.game.rollbackLastMove(SwingClient.this, SwingClient.this.playerKey);
+					game.rollbackLastMove(SwingClient.this, SwingClient.this.playerKey);
 				}
 				catch (final Throwable ex)
 				{
@@ -159,19 +159,20 @@ public class SwingClient extends AbstractPlayer
 			}
 		}
 		));
-		this.possibleMovePanel = new JPanel();
-		this.possibleMovePanel.setBorder(new TitledBorder("Possible moves"));
-		this.possibleMovePanel.setSize(new Dimension(200, 300));
-		this.possibleMovePanel.setLayout(new BorderLayout());
-		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.game.getDictionary());
-		this.showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(bruteForceMethod));
-		this.showPossibilitiesButton.setFocusable(false);
+
+		possibleMovePanel = new JPanel();
+		possibleMovePanel.setBorder(new TitledBorder("Possible moves"));
+		possibleMovePanel.setSize(new Dimension(200, 300));
+		possibleMovePanel.setLayout(new BorderLayout());
+		final BruteForceMethod bruteForceMethod = new BruteForceMethod(game.getDictionary());
+		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(bruteForceMethod));
+		showPossibilitiesButton.setFocusable(false);
 		resetPossibleMovesPanel();
 
-		panel1.add(this.possibleMovePanel);
+		panel1.add(possibleMovePanel);
 		panel1.add(Box.createVerticalGlue());
 
-		final ConfigurationPanel configPanel = new ConfigurationPanel(this.game.getConfiguration());
+		final ConfigurationPanel configPanel = new ConfigurationPanel(game.getConfiguration());
 		panel1.add(configPanel);
 		configPanel.setBorder(new TitledBorder("Server configuration"));
 		eastPanel.add(panel1, BorderLayout.CENTER);
@@ -205,15 +206,15 @@ public class SwingClient extends AbstractPlayer
 		rackFrame.setFocusableWindowState(false);
 		rackFrame.setFocusable(false);
 
-		this.telnetFrame.frame.setVisible(false);
-		this.telnetFrame.frame.setSize(new Dimension(300, 300));
-		this.telnetFrame.frame.setLocationRelativeTo(rackFrame);
-		this.telnetFrame.frame.setLocation(rackFrame.getX(), rackFrame.getY() + rackFrame.getHeight());
+		telnetFrame.frame.setVisible(false);
+		telnetFrame.frame.setSize(new Dimension(300, 300));
+		telnetFrame.frame.setLocationRelativeTo(rackFrame);
+		telnetFrame.frame.setLocation(rackFrame.getX(), rackFrame.getY() + rackFrame.getHeight());
 
 		SwingUtilities.invokeLater(() -> {
 			gridFrame.requestFocus();
-			this.commandPrompt.requestFocusInWindow();
-			this.commandPrompt.grabFocus();
+			commandPrompt.requestFocusInWindow();
+			commandPrompt.grabFocus();
 		});
 
 		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager()
@@ -224,8 +225,8 @@ public class SwingClient extends AbstractPlayer
 			// Snap the focus for the command prompt field
 				if (!(e.getSource() instanceof JTextComponent))
 				{
-					SwingClient.this.commandPrompt.requestFocus();
-					e.setSource(SwingClient.this.commandPrompt);
+					commandPrompt.requestFocus();
+					e.setSource(commandPrompt);
 				}
 				return super.dispatchKeyEvent(e);
 			}
@@ -233,30 +234,34 @@ public class SwingClient extends AbstractPlayer
 
 	}
 
-	private void resetPossibleMovesPanel()
+	private static void resetPossibleMovesPanel()
 	{
-		this.possibleMovePanel.removeAll();
-		this.possibleMovePanel.invalidate();
-		this.possibleMovePanel.repaint();
-		this.showPossibilitiesButton.setText(PossibleMoveDisplayer.LABEL_DISPLAY);
-		this.possibleMovePanel.add(this.showPossibilitiesButton, BorderLayout.SOUTH);
+		possibleMovePanel.removeAll();
+		possibleMovePanel.invalidate();
+		possibleMovePanel.repaint();
+		showPossibilitiesButton.setText(PossibleMoveDisplayer.LABEL_DISPLAY);
+		possibleMovePanel.add(showPossibilitiesButton, BorderLayout.SOUTH);
 	}
 
 	@Override
 	public void onPlayRequired(final Play play)
 	{
-		this.currentPlay = play;
-		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
+		currentPlay = play;
+		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : jScoreboard.scoreLabels.entrySet())
 		{
 			final IPlayerInfo playerInfo = entry.getKey();
 			final JScoreboard.ScorePanelLine line = entry.getValue();
-			line.currentPlaying.setVisible(this.currentPlay != null && playerInfo.getName().equals(this.currentPlay.player.getName()));
+			line.currentPlaying.setVisible(currentPlay != null && playerInfo.getName().equals(currentPlay.player.getName()));
 		}
 
 		final Cursor cursor;
-		if (this.currentPlay.player == this)
+		if (currentPlay.player == this)
 		{
 			this.jRack.update();
+		}
+
+		if (play.player instanceof SwingClient && clients.contains(play.player))
+		{
 			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 		}
 		else
@@ -285,7 +290,7 @@ public class SwingClient extends AbstractPlayer
 	@Override
 	public void afterPlay(final Play play)
 	{
-		this.jGrid.lastAction = play.action;
+		jGrid.lastAction = play.action;
 		refreshUI();
 
 		this.flashFuture = this.executor.schedule(
@@ -293,11 +298,11 @@ public class SwingClient extends AbstractPlayer
 					for (int i = 0; i < 3; i++)
 					{
 						Thread.sleep(5 * 100);
-						SwingClient.this.jGrid.hideNewStones = !SwingClient.this.jGrid.hideNewStones;
-						SwingClient.this.jGrid.repaint();
+						jGrid.hideNewStones = !jGrid.hideNewStones;
+						jGrid.repaint();
 					}
-					SwingClient.this.jGrid.hideNewStones = false;
-					SwingClient.this.jGrid.repaint();
+					jGrid.hideNewStones = false;
+					jGrid.repaint();
 					this.flashFuture = null;
 					return null;
 				},
@@ -313,10 +318,10 @@ public class SwingClient extends AbstractPlayer
 			this.flashFuture.cancel(true);
 		}
 
-		this.jGrid.repaint();
-		this.jScoreboard.refreshDisplay();
+		jGrid.repaint();
+		jScoreboard.refreshDisplay();
 
-		this.historyList.setListData(IterableUtils.toList(this.game.getHistory()).toArray(new Game.HistoryEntry[0]));
+		this.historyList.setListData(IterableUtils.toList(game.getHistory()).toArray(new Game.HistoryEntry[0]));
 		this.jRack.update();
 	}
 
@@ -324,7 +329,7 @@ public class SwingClient extends AbstractPlayer
 	public void beforeGameStart()
 	{
 		this.display();
-		this.jScoreboard.prepareBoard();
+		jScoreboard.prepareBoard();
 		this.jRack.update();
 	}
 
@@ -455,7 +460,7 @@ public class SwingClient extends AbstractPlayer
 			try
 			{
 				final ArrayList<Tile> tiles = new ArrayList<>(
-						SwingClient.this.game.getRack(SwingClient.this, SwingClient.this.playerKey));
+						game.getRack(SwingClient.this, SwingClient.this.playerKey));
 
 				for (int i = 0; i < RACK_SIZE; i++)
 				{
@@ -472,7 +477,7 @@ public class SwingClient extends AbstractPlayer
 		}
 	}
 
-	private void showMessage(final Object message)
+	private static void showMessage(final Object message)
 	{
 		final KeyboardFocusManager previous = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager());
@@ -840,7 +845,7 @@ public class SwingClient extends AbstractPlayer
 		PlayTiles playTiles = null;
 		try
 		{
-			final String currentPrompt = this.commandPrompt.getText();
+			final String currentPrompt = commandPrompt.getText();
 			playTiles = PlayTiles.parseMove(getGrid(), currentPrompt, true);
 			if (playTiles.startSquare == cell.square)
 			{
@@ -861,12 +866,12 @@ public class SwingClient extends AbstractPlayer
 			playTiles = new PlayTiles(cell.square, PlayTiles.Direction.HORIZONTAL, "");
 		}
 
-		this.commandPrompt.setText(playTiles.getNotation() + (playTiles.word.isEmpty() ? " " : ""));
+		commandPrompt.setText(playTiles.getNotation() + (playTiles.word.isEmpty() ? " " : ""));
 
 	}
 
 
-	private class CommandPromptAction extends AbstractAction implements DocumentListener
+	private static class CommandPromptAction extends AbstractAction implements DocumentListener
 	{
 
 		static final String KEYWORD_HELP = "?";
@@ -881,17 +886,17 @@ public class SwingClient extends AbstractPlayer
 								(k, c) -> sb.append("<tr><td>").append(k).append("</td><td>").append(c.description).append("</td></tr>"));
 						sb.setLength(sb.length() - 1);
 						sb.append("</table>");
-						SwingClient.this.telnetFrame.appendConsoleText("blue", sb.toString(), false);
+						telnetFrame.appendConsoleText("blue", sb.toString(), false);
 						return null;
 					}))
 			);
 
-			this.commands.put("isValid", new Command( "check if a word is valid", ( args -> {
+			this.commands.put("isValid", new Command("check if a word is valid", (args -> {
 				final String word = args[0];
-				final Collection<String> mutations = SwingClient.this.game.getDictionary().getMutations(
+				final Collection<String> mutations = game.getDictionary().getMutations(
 						word.toUpperCase());
 				final boolean isValid = mutations != null && !mutations.isEmpty();
-				SwingClient.this.telnetFrame.appendConsoleText(
+				telnetFrame.appendConsoleText(
 						isValid ? "blue" : "red",
 						word + (isValid ? (" is valid " + mutations) : " is not valid"),
 						true);
@@ -902,7 +907,7 @@ public class SwingClient extends AbstractPlayer
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			String command = SwingClient.this.commandPrompt.getText();
+			String command = commandPrompt.getText();
 			if (command.isEmpty())
 			{
 				return;
@@ -917,14 +922,15 @@ public class SwingClient extends AbstractPlayer
 					keyword = KEYWORD_HELP;
 				}
 				Command c = this.commands.get(keyword);
-				SwingClient.this.telnetFrame.appendConsoleText("black", "> " + command, false);
+				telnetFrame.appendConsoleText("black", "> " + command, false);
 				c.action.apply(Arrays.copyOfRange(splits, 1, splits.length));
 				return;
 			}
 
 			try
 			{
-				if (SwingClient.this.game.getPlayerToPlay() == SwingClient.this)
+				final SwingClient swingPlayer = getCurrentSwingPlayer();
+				if (swingPlayer != null && game.getPlayerToPlay() == swingPlayer)
 				{
 					final Matcher m;
 					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
@@ -934,8 +940,8 @@ public class SwingClient extends AbstractPlayer
 						{
 							chars.add(c);
 						}
-						SwingClient.this.game.play(SwingClient.this.playerKey, SwingClient.this.currentPlay, new Exchange(chars));
-						SwingClient.this.commandPrompt.setText("");
+						game.play(swingPlayer.playerKey, currentPlay, new Exchange(chars));
+						commandPrompt.setText("");
 					}
 					else
 					{
@@ -945,19 +951,25 @@ public class SwingClient extends AbstractPlayer
 				}
 				else
 				{
-					JOptionPane.showMessageDialog(SwingClient.this.jGrid, "It's not your turn!");
+					JOptionPane.showMessageDialog(jGrid, "It's not your turn!");
 				}
 			}
 			catch (final JokerPlacementException | ParseException | ScrabbleException.NotInTurn | ScrabbleException.InvalidSecretException ex)
 			{
-				onDispatchMessage(ex.getMessage());
-				SwingClient.this.commandPrompt.setText("");
+				showMessage(ex.getMessage());
+				commandPrompt.setText("");
 			}
 		}
 
-		private PlayTiles getPreparedMove() throws JokerPlacementException, ParseException
+		private static PlayTiles getPreparedMove() throws JokerPlacementException, ParseException
 		{
-			String command = SwingClient.this.commandPrompt.getText();
+			final SwingClient player = getCurrentSwingPlayer();
+			if (player == null)
+			{
+				throw new IllegalStateException("Player is not current one");
+			}
+
+			String command = commandPrompt.getText();
 			final StringBuilder sb = new StringBuilder();
 
 
@@ -983,7 +995,7 @@ public class SwingClient extends AbstractPlayer
 				final Rack rack;
 				try
 				{
-					rack = SwingClient.this.game.getRack(SwingClient.this, SwingClient.this.playerKey);
+					rack = game.getRack(player, player.playerKey);
 				}
 				catch (ScrabbleException e)
 				{
@@ -991,7 +1003,7 @@ public class SwingClient extends AbstractPlayer
 					throw new JokerPlacementException("Error placing Joker", e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				playTiles = PlayTiles.parseMove(SwingClient.this.game.getGrid(), inputWord.toString(), true);
+				playTiles = PlayTiles.parseMove(game.getGrid(), inputWord.toString(), true);
 
 				//
 				// Check if jokers are needed and try to position them
@@ -1082,14 +1094,14 @@ public class SwingClient extends AbstractPlayer
 				playTiles = null;
 			}
 
-			SwingClient.this.jGrid.setPreparedPlayTiles(playTiles);
-			SwingClient.this.jGrid.repaint();
+			jGrid.setPreparedPlayTiles(playTiles);
+			jGrid.repaint();
 		}
 
 		/**
 		 * Ein Befehl und seine Antwort
 		 */
-		private class Command
+		private static class Command
 		{
 			final String description;
 			final Function<String[], Void> action;
@@ -1205,7 +1217,7 @@ public class SwingClient extends AbstractPlayer
 	/**
 	 * This action display the list of possible and authorized moves.
 	 */
-	private class PossibleMoveDisplayer extends AbstractAction
+	private static class PossibleMoveDisplayer extends AbstractAction
 	{
 		static final String LABEL_DISPLAY = "Display";
 		static final String LABEL_HIDE = "Hide";
@@ -1251,7 +1263,7 @@ public class SwingClient extends AbstractPlayer
 						break;
 					}
 				}
-				SwingClient.this.jGrid.setPreparedPlayTiles(playTiles);
+				jGrid.setPreparedPlayTiles(playTiles);
 			});
 
 			this.moveList.addMouseListener(new MouseAdapter()
@@ -1292,12 +1304,19 @@ public class SwingClient extends AbstractPlayer
 				if (this.moveList.isDisplayable())
 				{
 					resetPossibleMovesPanel();
-					SwingClient.this.showPossibilitiesButton.setText(LABEL_DISPLAY);
+					showPossibilitiesButton.setText(LABEL_DISPLAY);
+					return;
+				}
+
+				final SwingClient player = getCurrentSwingPlayer();
+				if (player == null)
+				{
+					showMessage("Player not at turn!");
 					return;
 				}
 
 				final Set<PlayTiles> playTiles = this.bruteForceMethod.getLegalMoves(getGrid(),
-						SwingClient.this.game.getRack(SwingClient.this, SwingClient.this.playerKey));
+						game.getRack(player, player.playerKey));
 				this.legalMoves = new ArrayList<>();
 
 				for (final PlayTiles playTile : playTiles)
@@ -1305,23 +1324,23 @@ public class SwingClient extends AbstractPlayer
 					this.legalMoves.add(getGrid().getMetaInformation(playTile));
 				}
 
-				SwingClient.this.possibleMovePanel.add(
+				possibleMovePanel.add(
 						new JScrollPane(this.moveList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
 				);
 
 				final JPanel orderMethodPanel = new JPanel();
-				SwingClient.this.possibleMovePanel.add(orderMethodPanel, BorderLayout.NORTH);
+				possibleMovePanel.add(orderMethodPanel, BorderLayout.NORTH);
 				orderMethodPanel.add(new OrderButton("Score", Grid.MoveMetaInformation.SCORE_COMPARATOR));
 				orderMethodPanel.add(new OrderButton("Length", Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
 				this.orderButGroup.getElements().asIterator().next().doClick();
-				SwingClient.this.possibleMovePanel.validate();
+				possibleMovePanel.validate();
 			}
 			catch (ScrabbleException e1)
 			{
 				e1.printStackTrace();
 			}
 
-			SwingClient.this.showPossibilitiesButton.setText(LABEL_HIDE);
+			showPossibilitiesButton.setText(LABEL_HIDE);
 		}
 
 		/**
@@ -1350,20 +1369,34 @@ public class SwingClient extends AbstractPlayer
 		}
 	}
 
-	private Grid getGrid()
+	private static Grid getGrid()
 	{
-		return SwingClient.this.game.getGrid();
+		return game.getGrid();
 	}
 
 	/**
 	 * Play the move: inform the server about it and clear the client input field.
 	 * @param playTiles move to play
 	 */
-	private void play(final PlayTiles playTiles) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
+	private static void play(final PlayTiles playTiles) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
 	{
-		this.game.play(SwingClient.this.playerKey, this.currentPlay, playTiles);
-		this.commandPrompt.setText("");
+		final SwingClient player = getCurrentSwingPlayer();
+		assert player != null;
+		game.play(player.playerKey, currentPlay, playTiles);
+		commandPrompt.setText("");
 		resetPossibleMovesPanel();
+	}
+
+	/**
+	 * @return the current player or {@code null} when current not Swing one
+	 */
+	private static SwingClient getCurrentSwingPlayer()
+	{
+		if (!(currentPlay.player instanceof SwingClient))
+		{
+			return null;
+		}
+		return (SwingClient) currentPlay.player;
 	}
 
 	/**

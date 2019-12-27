@@ -15,7 +15,7 @@ public abstract class AbstractPlayer implements Game.GameListener
 	private String name;
 
 	protected UUID playerKey;
-	protected Game game;
+	protected static Game game;
 
 	/**
 	 * Queue to receive events from server
@@ -33,7 +33,7 @@ public abstract class AbstractPlayer implements Game.GameListener
 
 	public void setGame(final Game game)
 	{
-		this.game = game;
+		AbstractPlayer.game = game;
 
 		this.edt = new Thread(() -> {
 			while (!this.destroyEDT)
@@ -113,16 +113,4 @@ public abstract class AbstractPlayer implements Game.GameListener
 		throw new AssertionError("Default implementation has no editable parameter");
 	}
 
-	/**
-	 * @return ob dieser Spieler gerade am Ball ist.
-	 */
-	public final boolean isPlaying()
-	{
-		if (this.game == null)
-		{
-			throw new IllegalStateException("Game not set");
-		}
-
-		return this.game.getPlayerToPlay() == this;
-	}
 }

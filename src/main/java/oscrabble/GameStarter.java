@@ -12,7 +12,7 @@ import java.io.File;
 
 public class GameStarter
 {
-	public static void main(String[] args) throws ScrabbleException
+	public static void main(String[] args)
 	{
 		BasicConfigurator.configure();
 		final Game game = new Game(Dictionary.getDictionary(Dictionary.Language.FRENCH));
@@ -26,7 +26,8 @@ public class GameStarter
 			final BruteForceMethod method = new BruteForceMethod(dictionary);
 			game.addPlayer(method.new Player("Computer"));
 			game.addPlayer(method.new Player("Computer2"));
-			game.addPlayer(new SwingClient("Swing"));
+			game.addPlayer(new SwingClient("Olivier"));
+			game.addPlayer(new SwingClient("Pascal"));
 			game.startGame();
 		}
 		catch (final Throwable e)
