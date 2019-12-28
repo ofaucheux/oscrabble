@@ -47,8 +47,8 @@ public class  GameStarter
 			final Set<String> playerNames = new HashSet<>();
 			getSubProperties(allProperties, "player").stringPropertyNames().forEach(k ->
 			{
-				 Matcher m = keyPart.matcher(k);
-				if (m.matches())
+				Matcher m = keyPart.matcher(k);
+				if (m.find())
 				{
 					playerNames.add(m.group(1));
 				}
@@ -56,7 +56,7 @@ public class  GameStarter
 
 			for (final String name : playerNames)
 			{
-				final Properties playerProps = getSubProperties(allProperties, name);
+				final Properties playerProps = getSubProperties(allProperties, "player." + name);
 				final AbstractPlayer player;
 				final String methodName = playerProps.getProperty("method");
 				switch (PlayerType.valueOf(methodName.toUpperCase()))
@@ -66,7 +66,7 @@ public class  GameStarter
 						break;
 					case BRUTE_FORCE:
 						player = new BruteForceMethod(dictionary).new Player(name);
-//						player.loadConfiguration()
+						((BruteForceMethod.Player) player).loadConfiguration(playerProps);
 						break;
 					default:
 						throw new ConfigurationException("Unknown method: " + methodName);
@@ -88,12 +88,12 @@ public class  GameStarter
 	 *
 	 * @param source original property set
 	 * @param prefix searched prefix
-	 * @return the new porperty set.
+	 * @return the new property set.
 	 */
 	private static Properties getSubProperties(final Properties source, final String prefix)
 	{
 		final Properties result = new Properties();
-		final Pattern keyPattern = Pattern.compile(Pattern.quote(source + ".") + "(.*)");
+		final Pattern keyPattern = Pattern.compile(Pattern.quote(prefix) + "\\.+(.*)");
 		for (final String key : source.stringPropertyNames())
 		{
 			final Matcher m = keyPattern.matcher(key);

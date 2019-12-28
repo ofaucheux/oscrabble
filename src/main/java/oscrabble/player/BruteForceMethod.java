@@ -449,11 +449,15 @@ public class BruteForceMethod
 			this.selector = new ComparatorSelector(gridSupplier, this.configuration.strategy.valuator);
 			this.selector.setMean(this.configuration.force / 100f);
 		}
-	}
 
-	public void loadConfiguration(final Properties properties)
-	{
-//		this.con
+		/**
+		 * Load or update the configuration from a properties set.
+		 * @param properties properties to configure the player with.
+		 */
+		public void loadConfiguration(final Properties properties)
+		{
+			this.configuration.loadProperties(properties);
+		}
 	}
 
 	static class Configuration extends oscrabble.configuration.Configuration

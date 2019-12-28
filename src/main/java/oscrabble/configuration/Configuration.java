@@ -61,7 +61,7 @@ public abstract class Configuration
 	{
 		try
 		{
-			final Field field = FieldUtils.getDeclaredField(getClass(), propertyName, true);
+			final Field field = getField(propertyName);
 			field.setAccessible(true);
 			final Object oldValue = field.get(this);
 			if (newValue == oldValue)
@@ -80,6 +80,17 @@ public abstract class Configuration
 	}
 
 	/**
+	 * Get the field matching a property.
+	 *
+	 * @param property the name of the property
+	 * @return the field, {@code null} if no such one
+	 */
+	protected Field getField(final String property)
+	{
+		return FieldUtils.getDeclaredField(getClass(), property, true);
+	}
+
+	/**
 	 * Set the values from a properties source.
 	 * @param properties the properties ot set.
 	 */
@@ -88,7 +99,10 @@ public abstract class Configuration
 		properties.stringPropertyNames().forEach(
 				k -> {
 					final Object newValue = properties.get(k);
-					setValue(k, newValue);
+					if (getField(k) != null)
+					{
+						setValue(k, newValue);
+					}
 				}
 		);
 	}
