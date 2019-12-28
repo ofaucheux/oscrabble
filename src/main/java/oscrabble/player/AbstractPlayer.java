@@ -1,7 +1,6 @@
 package oscrabble.player;
 
 import org.apache.log4j.Logger;
-import oscrabble.client.SwingPlayer;
 import oscrabble.server.Game;
 
 import java.util.Queue;
@@ -16,9 +15,7 @@ public abstract class AbstractPlayer implements Game.GameListener
 	private String name;
 
 	protected UUID playerKey;
-	protected static Game game;
-
-	private SwingPlayer firstClient;
+	protected Game game;
 
 	/**
 	 * Queue to receive events from server
@@ -36,7 +33,7 @@ public abstract class AbstractPlayer implements Game.GameListener
 
 	public void setGame(final Game game)
 	{
-		AbstractPlayer.game = game;
+		this.game = game;
 
 		this.edt = new Thread(() -> {
 			while (!this.destroyEDT)
