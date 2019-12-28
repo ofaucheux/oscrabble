@@ -316,7 +316,11 @@ class Playground
 		this.jGrid.repaint();
 		this.jScoreboard.refreshDisplay();
 
-		this.historyList.setListData(IterableUtils.toList(this.game.getHistory()).toArray(new Game.HistoryEntry[0]));
+		final Iterable<Game.HistoryEntry> history = this.game.getHistory();
+		synchronized (history)
+		{
+			this.historyList.setListData(IterableUtils.toList(history).toArray(new Game.HistoryEntry[0]));
+		}
 	}
 
 	/**

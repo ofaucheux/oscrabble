@@ -65,7 +65,7 @@ public class Game implements IGame
 	/**
 	 * History of the game, a line played move (even if it was an error).
 	 */
-	private final LinkedList<HistoryEntry> history = new LinkedList<>();
+	private final List<HistoryEntry> history = Collections.synchronizedList(new LinkedList<>());
 
 	/**
 	 * Synchronize: to by synchronized by calls which change the state of the game
@@ -313,11 +313,11 @@ public class Game implements IGame
 		synchronized (this.changing)
 		{
 			LOGGER.info("Rollback last move on demand of " + caller);
-			final HistoryEntry historyEntry = this.history.pollLast();
-			if (historyEntry == null)
+			if (this.history.isEmpty())
 			{
 				throw new ScrabbleException.InvalidStateException( "No move played for the time");
 			}
+			final HistoryEntry historyEntry = this.history.remove(this.history.size() - 1);
 			LOGGER.info("Rollback " + historyEntry.formatAsString());
 
 			final AbstractPlayer rollbackedPlayer = historyEntry.getPlayer();
