@@ -45,6 +45,7 @@ public class SwingPlayer extends AbstractPlayer
 	private void createUI()
 	{
 		this.rackFrame = new JDialog(playground.gridFrame);
+		this.rackFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.rackFrame.setTitle(this.getName());
 
 		this.rackFrame.setLayout(new BorderLayout());
@@ -134,6 +135,7 @@ public class SwingPlayer extends AbstractPlayer
 		{
 			final JFrame frame = new JFrame("Exchange");
 			frame.setLayout(new BorderLayout());
+			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 			final JPanel carpet = new JPanel();
 			carpet.setBackground(Playground.SCRABBLE_GREEN);

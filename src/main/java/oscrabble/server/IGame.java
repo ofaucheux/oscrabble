@@ -12,6 +12,8 @@ import java.util.UUID;
 
 public interface IGame
 {
+	void setState(Game.State state);
+
 	/**
 	 * Registriert einen neuen Spieler.
 	 * @param player der Spieler
@@ -95,4 +97,10 @@ public interface IGame
 	{
 		throw new UnsupportedOperationException();
 	}
+
+	/**
+	 * State of the game
+	 */
+	enum  State
+	{BEFORE_START, STARTED, ENDED}
 }

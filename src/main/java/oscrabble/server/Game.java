@@ -86,7 +86,8 @@ public class Game implements IGame
 		LOGGER.info("Created game with random seed " + randomSeed);
 	}
 
-	private void setState(final State state)
+	@Override
+	public void setState(final State state)
 	{
 		if (this.state != state)
 		{
@@ -725,12 +726,6 @@ public class Game implements IGame
 		 */
 		Action lastAction;
 	}
-
-	/**
-	 * State of the game
-	 */
-	enum  State
-	{BEFORE_START, STARTED, ENDED}
 
 	public interface ScrabbleEvent extends Consumer<GameListener>
 	{

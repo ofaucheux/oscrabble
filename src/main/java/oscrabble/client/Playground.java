@@ -23,10 +23,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.text.Normalizer;
 import java.text.ParseException;
@@ -134,10 +131,25 @@ class Playground
 		document.addDocumentListener(promptListener);
 		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
 		telnetFrame = new TelnetFrame("Help");
+		telnetFrame.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		this.gridFrame = new JFrame();
-		this.gridFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		this.gridFrame.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosing(final WindowEvent e)
+			{
+				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, "Quit the game?", "Confirm quit", JOptionPane.YES_NO_OPTION);
+				if (confirm == JOptionPane.YES_OPTION)
+				{
+					Playground.this.game.setState(IGame.State.ENDED);
+					Playground.this.gridFrame.dispose();
+				}
+			}
+		});
+		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
+
 
 		final JPanel mainPanel_01 = new JPanel();
 		mainPanel_01.setLayout(new BoxLayout(mainPanel_01, BoxLayout.PAGE_AXIS));
@@ -196,7 +208,7 @@ class Playground
 		possibleMovePanel.setBorder(new TitledBorder("Possible moves"));
 		possibleMovePanel.setSize(new Dimension(200, 300));
 		possibleMovePanel.setLayout(new BorderLayout());
-		final BruteForceMethod bruteForceMethod = new BruteForceMethod(this.game.getDictionary());
+		final BruteForceMethod bruteForceMethod = new BruteForceMethod(	this.game.getDictionary());
 		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(bruteForceMethod));
 		showPossibilitiesButton.setFocusable(false);
 		resetPossibleMovesPanel();
