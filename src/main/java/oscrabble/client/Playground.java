@@ -396,13 +396,14 @@ class Playground
 	public synchronized void uiCreated(final SwingPlayer player)
 	{
 		this.playersWithUI.add(player);
-		final int gap = 150;
-		if (this.playersWithUI.size() == this.swingPlayers.size())
+		final int numberSwingPlayers = this.swingPlayers.size();
+		if (this.playersWithUI.size() == numberSwingPlayers)
 		{
+			final int gap = 150;
 			final int basePosX = this.gridFrame.getX() + this.gridFrame.getWidth();
-			final int basePosY = this.gridFrame.getY() + (this.gridFrame.getHeight() / 2) - ( (gap + this.swingPlayers.get(0).rackFrame.getHeight()) * (this.swingPlayers.size() - 1) / 2);
+			final int basePosY = this.gridFrame.getY() + (this.gridFrame.getHeight() / 2) - ( (gap + this.swingPlayers.get(0).rackFrame.getHeight()) * (numberSwingPlayers - 1) / 2);
 
-			for (int i = 0; i < this.swingPlayers.size(); i++)
+			for (int i = 0; i < numberSwingPlayers; i++)
 			{
 				final JDialog rackFrame = this.swingPlayers.get(i).rackFrame;
 				rackFrame.setLocation(
