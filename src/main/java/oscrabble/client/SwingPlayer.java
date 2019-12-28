@@ -7,9 +7,11 @@ import oscrabble.server.Game;
 import oscrabble.server.Play;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
 public class SwingPlayer extends AbstractPlayer
@@ -63,7 +65,7 @@ public class SwingPlayer extends AbstractPlayer
 		this.rackFrame.setFocusableWindowState(false);
 		this.rackFrame.setFocusable(false);
 
-		playground.uiCreated(this);
+		playground.afterUiCreated(this);
 	}
 
 	public void updateRack()
@@ -188,6 +190,14 @@ public class SwingPlayer extends AbstractPlayer
 	@Override
 	public void onPlayRequired(final Play play)
 	{
+		if (playground.getNumberSwingPlayers() > 1)
+		{
+			this.jRack.setBorder(play.player == this
+					? new LineBorder(Color.green.darker(), 6)
+					: null);
+			this.rackFrame.pack();
+		}
+
 		playground.onPlayRequired(this, play);
 	}
 }

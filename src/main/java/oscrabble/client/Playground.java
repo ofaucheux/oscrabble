@@ -289,7 +289,7 @@ class Playground
 
 	}
 
-	protected void refreshUI(final SwingPlayer caller)
+	protected synchronized void refreshUI(final SwingPlayer caller)
 	{
 		if (!isFirstRegistered(caller))
 		{
@@ -393,10 +393,10 @@ class Playground
 	 * Inform that the ui of a player has been created.
 	 * @param player player
 	 */
-	public synchronized void uiCreated(final SwingPlayer player)
+	public synchronized void afterUiCreated(final SwingPlayer player)
 	{
 		this.playersWithUI.add(player);
-		final int numberSwingPlayers = this.swingPlayers.size();
+		final int numberSwingPlayers = getNumberSwingPlayers();
 		if (this.playersWithUI.size() == numberSwingPlayers)
 		{
 			final int gap = 150;
@@ -412,6 +412,14 @@ class Playground
 				);
 			}
 		}
+	}
+
+	/**
+	 * @return the number of Swing Players registered for this playground.
+	 */
+	int getNumberSwingPlayers()
+	{
+		return this.swingPlayers.size();
 	}
 
 	/**
