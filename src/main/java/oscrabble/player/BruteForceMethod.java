@@ -68,7 +68,6 @@ public class BruteForceMethod
 		}
 	}
 
-
 	Set<Grid.Square> getAnchors(final Grid grid)
 	{
 		final LinkedHashSet<Grid.Square> anchors = new LinkedHashSet<>();
@@ -450,6 +449,11 @@ public class BruteForceMethod
 			this.selector = new ComparatorSelector(gridSupplier, this.configuration.strategy.valuator);
 			this.selector.setMean(this.configuration.force / 100f);
 		}
+	}
+
+	public void loadConfiguration(final Properties properties)
+	{
+//		this.con
 	}
 
 	static class Configuration extends oscrabble.configuration.Configuration
