@@ -15,7 +15,8 @@ import java.util.UUID;
 public class SwingPlayer extends AbstractPlayer
 {
 	static Playground playground;
-	JRack jRack;
+	private JRack jRack;
+	JDialog rackFrame;
 
 	public SwingPlayer(final String name)
 	{
@@ -42,11 +43,11 @@ public class SwingPlayer extends AbstractPlayer
 
 	private void createUI()
 	{
-		final JDialog rackFrame = new JDialog(playground.gridFrame);
-		rackFrame.setTitle(this.getName());
+		this.rackFrame = new JDialog(playground.gridFrame);
+		this.rackFrame.setTitle(this.getName());
 
-		rackFrame.setLayout(new BorderLayout());
-		rackFrame.add(this.jRack);
+		this.rackFrame.setLayout(new BorderLayout());
+		this.rackFrame.add(this.jRack);
 
 		final JButton exchangeButton = new JButton((new ExchangeTilesAction()));
 		exchangeButton.setToolTipText(exchangeButton.getText());
@@ -56,16 +57,13 @@ public class SwingPlayer extends AbstractPlayer
 		exchangeButton.setPreferredSize(dim);
 		exchangeButton.setIcon(exchangeButton.getIcon());
 
-		rackFrame.add(exchangeButton, BorderLayout.AFTER_LINE_ENDS);
-		rackFrame.pack();
-		rackFrame.setVisible(true);
-		rackFrame.setLocation(
-				playground.gridFrame.getX() + playground.gridFrame.getWidth(),
-				playground.gridFrame.getY() + playground.gridFrame.getHeight() / 2
-		);
-		rackFrame.setFocusableWindowState(false);
-		rackFrame.setFocusable(false);
+		this.rackFrame.add(exchangeButton, BorderLayout.AFTER_LINE_ENDS);
+		this.rackFrame.pack();
+		this.rackFrame.setVisible(true);
+		this.rackFrame.setFocusableWindowState(false);
+		this.rackFrame.setFocusable(false);
 
+		playground.uiCreated(this);
 	}
 
 	public void updateRack()

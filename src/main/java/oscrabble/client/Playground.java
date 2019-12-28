@@ -9,8 +9,8 @@ import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryComponent;
 import oscrabble.player.BruteForceMethod;
-import oscrabble.server.*;
 import oscrabble.server.Action;
+import oscrabble.server.*;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -381,6 +381,35 @@ class Playground
 		for (final Frame frame : Frame.getFrames())
 		{
 			frame.setCursor(cursor);
+		}
+	}
+
+	/**
+	 * Players which UI has been created.
+	 */
+	private final Set<SwingPlayer> playersWithUI = new HashSet<>();
+
+	/**
+	 * Inform that the ui of a player has been created.
+	 * @param player player
+	 */
+	public synchronized void uiCreated(final SwingPlayer player)
+	{
+		this.playersWithUI.add(player);
+		final int gap = 150;
+		if (this.playersWithUI.size() == this.swingPlayers.size())
+		{
+			final int basePosX = this.gridFrame.getX() + this.gridFrame.getWidth();
+			final int basePosY = this.gridFrame.getY() + (this.gridFrame.getHeight() / 2) - ( (gap + this.swingPlayers.get(0).rackFrame.getHeight()) * (this.swingPlayers.size() - 1) / 2);
+
+			for (int i = 0; i < this.swingPlayers.size(); i++)
+			{
+				final JDialog rackFrame = this.swingPlayers.get(i).rackFrame;
+				rackFrame.setLocation(
+						basePosX,
+						basePosY + gap * i
+				);
+			}
 		}
 	}
 

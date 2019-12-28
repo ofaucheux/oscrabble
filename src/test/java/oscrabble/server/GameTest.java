@@ -452,14 +452,7 @@ public class GameTest
 		{
 			final AtomicReference<ScrabbleException> exception = new AtomicReference<>();
 			new Thread(() -> {
-				try
-				{
-					this.game.startGame();
-				}
-				catch (ScrabbleException e)
-				{
-					exception.set(e);
-				}
+				this.game.startGame();
 			}).start();
 			Thread.sleep(300);
 			if (exception.get() != null)
