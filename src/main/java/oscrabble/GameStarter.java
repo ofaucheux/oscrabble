@@ -2,7 +2,7 @@ package oscrabble;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.BasicConfigurator;
-import oscrabble.client.SwingClient;
+import oscrabble.client.SwingPlayer;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.BruteForceMethod;
 import oscrabble.server.Game;
@@ -26,8 +26,8 @@ public class GameStarter
 			final BruteForceMethod method = new BruteForceMethod(dictionary);
 			game.addPlayer(method.new Player("Computer"));
 			game.addPlayer(method.new Player("Computer2"));
-			game.addPlayer(new SwingClient("Olivier"));
-			game.addPlayer(new SwingClient("Pascal"));
+			game.addPlayer(new SwingPlayer("Olivier"));
+			game.addPlayer(new SwingPlayer("Pascal"));
 			game.startGame();
 		}
 		catch (final Throwable e)

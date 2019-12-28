@@ -1,6 +1,7 @@
 package oscrabble.player;
 
 import org.apache.log4j.Logger;
+import oscrabble.client.SwingPlayer;
 import oscrabble.server.Game;
 
 import java.util.Queue;
@@ -16,6 +17,8 @@ public abstract class AbstractPlayer implements Game.GameListener
 
 	protected UUID playerKey;
 	protected static Game game;
+
+	private SwingPlayer firstClient;
 
 	/**
 	 * Queue to receive events from server

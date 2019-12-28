@@ -3,18 +3,19 @@ package oscrabble.client;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
+import oscrabble.ScrabbleException;
 import oscrabble.Tile;
 import oscrabble.dictionary.DictionaryTest;
+import oscrabble.server.DummyGame;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 
-public class SwingClientTest
+public class PlaygroundTest
 {
 
 	@Test
-	void layout() throws InterruptedException
+	void displayGrid() throws InterruptedException
 	{
 		final Grid grid = new Grid(Grid.SCRABBLE_SIZE);
 		grid.set(grid.getSquare(1, 3), Tile.SIMPLE_GENERATOR.generateStone('A'));
@@ -23,7 +24,7 @@ public class SwingClientTest
 
 	public static void showGrid(final Grid grid) throws InterruptedException
 	{
-		final SwingClient.JGrid JGrid = new SwingClient.JGrid(grid, DictionaryTest.getTestDictionary());
+		final Playground.JGrid JGrid = new Playground.JGrid(grid, DictionaryTest.getTestDictionary());
 		final JFrame f = new JFrame();
 		f.setLayout(new BorderLayout());
 		f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -71,6 +72,26 @@ public class SwingClientTest
 			{
 				Thread.sleep(100);
 			}
+		}
+	}
+
+	@Test
+	public void display() throws InterruptedException
+	{
+		final Playground playground = new Playground();
+		final DummyGame game = new DummyGame();
+		game.addPlayer(new SwingPlayer("Koala"));
+		game.addPlayer(new SwingPlayer("Rhesusaffe"));
+		playground.setGame(game);
+		try
+		{
+			game.startGame();
+			Thread.sleep(10 * 1000);
+
+		}
+		finally
+		{
+			playground.gridFrame.dispose();
 		}
 	}
 }

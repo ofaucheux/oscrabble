@@ -5,7 +5,7 @@ import org.apache.commons.collections4.bag.TreeBag;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import oscrabble.client.SwingClientTest;
+import oscrabble.client.PlaygroundTest;
 import oscrabble.dictionary.Dictionary;
 
 import java.awt.*;
@@ -22,7 +22,7 @@ class GridTest
 
 		Grid.MoveMetaInformation metaInformation;
 		PlayTiles playTiles;
-		SwingClientTest.showGrid(grid);
+		PlaygroundTest.showGrid(grid);
 
 		// erster Test
 		playTiles = PlayTiles.parseMove(grid, "A1 FINIT");

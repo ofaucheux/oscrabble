@@ -22,12 +22,6 @@ public class ConsolePlayer extends AbstractPlayer
 	}
 
 	@Override
-	public void onDictionaryChange()
-	{
-
-	}
-
-	@Override
 	public void onDispatchMessage(final String msg)
 	{
 

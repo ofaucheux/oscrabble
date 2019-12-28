@@ -40,8 +40,6 @@ public interface IGame
 	 */
 	Iterable<Game.HistoryEntry> getHistory();
 
-	void markAsIllegal(final String word);
-
 	Dictionary getDictionary();
 
 	Grid getGrid();
@@ -92,4 +90,9 @@ public interface IGame
 	 * @throws IllegalStateException if the player has never played for the time
 	 */
 	boolean isLastPlayError(AbstractPlayer player);
+
+	default void rollbackLastMove(AbstractPlayer caller, UUID callerKey) throws ScrabbleException
+	{
+		throw new UnsupportedOperationException();
+	}
 }

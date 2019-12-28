@@ -8,8 +8,6 @@ import oscrabble.*;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.server.Action;
-import oscrabble.server.IPlayerInfo;
 import oscrabble.server.Play;
 import oscrabble.server.SkipTurn;
 
@@ -384,12 +382,6 @@ public class BruteForceMethod
 				// TODO inform server
 				Thread.currentThread().interrupt();
 			}
-		}
-
-		@Override
-		public void onDictionaryChange()
-		{
-			loadDictionary(this.game.getDictionary());
 		}
 
 		@Override

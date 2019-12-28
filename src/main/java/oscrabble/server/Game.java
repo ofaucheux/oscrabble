@@ -72,11 +72,6 @@ public class Game implements IGame
 	 */
 	final Object changing = new Object();
 
-	/**
-	 * Secret to be transmitted to the currently playing player.
-	 */
-	private String currentSecret;
-
 	public Game(final Dictionary dictionary, final long randomSeed)
 	{
 		this.configuration = new Configuration();
@@ -268,7 +263,7 @@ public class Game implements IGame
 				playerInfo.player.onDispatchMessage(e.toString());
 				if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
 				{
-					player.getIncomingEventQueue().add(p -> { p.onPlayRequired(play);});
+					player.getIncomingEventQueue().add(p -> p.onPlayRequired(play));
 				}
 				else
 				{
@@ -460,14 +455,7 @@ public class Game implements IGame
 		return drawn;
 	}
 
-	@Override
-	public void markAsIllegal(final String word)
-	{
-		this.getDictionary().markAsIllegal(word);
-		dispatch(GameListener::onDictionaryChange);
-	}
-
-	public void startGame() throws ScrabbleException
+	public void startGame()
 	{
 		if (this.players.isEmpty())
 		{
@@ -760,8 +748,6 @@ public class Game implements IGame
 		 */
 		default void onPlayRequired(final Play play) { }
 
-		default void onDictionaryChange() { }
-
 		default void onDispatchMessage(String msg) { }
 
 		default void afterRollback() { }
@@ -785,8 +771,8 @@ public class Game implements IGame
 
 		/**
 		 * Called after a player has (definitively) play an non admissible play
-		 * @param player
-		 * @param action
+		 * @param player player having played the non admissible play
+		 * @param action the action which lead to the problem
 		 */
 		default void afterRejectedAction(final AbstractPlayer player, final Action action){}
 
@@ -831,6 +817,7 @@ public class Game implements IGame
 
 		public String formatAsString()
 		{
+			//noinspection StringBufferReplaceableByString
 			final StringBuilder sb = new StringBuilder(getPlayer().getName());
 			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((PlayTiles) this.play.action).getNotation());
 			sb.append(" ").append(this.scores.get(getPlayer())).append(" pts");
