@@ -11,7 +11,6 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.UUID;
 
 public class SwingPlayer extends AbstractPlayer
@@ -105,7 +104,7 @@ public class SwingPlayer extends AbstractPlayer
 			}
 			catch (ScrabbleException e)
 			{
-				playground.showMessage(null, e.getMessage());
+				playground.showMessage(e.getMessage());
 			}
 		}
 	}
@@ -162,7 +161,7 @@ public class SwingPlayer extends AbstractPlayer
 	@Override
 	public void onDispatchMessage(final String msg)
 	{
-		playground.showMessage(this, msg);
+		playground.showMessage(msg);
 	}
 
 	@Override
@@ -195,7 +194,7 @@ public class SwingPlayer extends AbstractPlayer
 			this.jRack.setBorder(play.player == this
 					? new LineBorder(Color.green.darker(), 6)
 					: null);
-			this.rackFrame.pack();
+			SwingUtilities.invokeLater(() -> this.rackFrame.pack());
 		}
 
 		playground.onPlayRequired(this, play);

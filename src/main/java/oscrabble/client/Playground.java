@@ -523,18 +523,25 @@ class Playground
 		}
 	}
 
+	private DisplayedMessage lastMessage;
+
 	/**
-	 * Display a message. Nothing ist nevertheless displayed if the caller is not null and not the first registered.
+	 * Display a message. It will not be displayed if the same message has been displayed some seconds ago and no other one since.
 	 *
-	 * @param caller  caller of the function
 	 * @param message message to display
 	 */
-	void showMessage(final SwingPlayer caller, final Object message)
+	void showMessage(final Object message)
 	{
-		if (!isFirstRegistered(caller))
+		if (this.lastMessage != null
+				&& this.lastMessage.message.equals(message)
+				&& System.currentTimeMillis() < this.lastMessage.displayTime + 5000)
 		{
 			return;
 		}
+
+		this.lastMessage = new DisplayedMessage();
+		this.lastMessage.message = message;
+		this.lastMessage.displayTime = System.currentTimeMillis();
 
 		final KeyboardFocusManager previous = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager());
@@ -1028,7 +1035,7 @@ class Playground
 			}
 			catch (final JokerPlacementException | ParseException | ScrabbleException.NotInTurn | ScrabbleException.InvalidSecretException ex)
 			{
-				showMessage(null, ex.getMessage());
+				showMessage(ex.getMessage());
 				Playground.this.commandPrompt.setText("");
 			}
 		}
@@ -1384,7 +1391,7 @@ class Playground
 				final SwingPlayer player = getCurrentSwingPlayer();
 				if (player == null)
 				{
-					showMessage(null, "Player not at turn!");
+					showMessage("Player not at turn!");
 					return;
 				}
 
@@ -1466,5 +1473,14 @@ class Playground
 			return null;
 		}
 		return (SwingPlayer) this.currentPlay.player;
+	}
+
+	/**
+	 * A message and the time it was displayed.
+	 */
+	private final static class DisplayedMessage
+	{
+		Object message;
+		long displayTime;
 	}
 }

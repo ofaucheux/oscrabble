@@ -260,7 +260,7 @@ public class Game implements IGame
 			{
 				LOGGER.info("Refuse play: " + action + ". Cause: " + e);
 				actionRejected = true;
-				playerInfo.player.onDispatchMessage(e.toString());
+				playerInfo.player.onDispatchMessage(e.getLocalizedMessage());
 				if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
 				{
 					player.getIncomingEventQueue().add(p -> p.onPlayRequired(play));
