@@ -3,7 +3,6 @@ package oscrabble.client;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
-import oscrabble.ScrabbleException;
 import oscrabble.Tile;
 import oscrabble.dictionary.DictionaryTest;
 import oscrabble.server.DummyGame;

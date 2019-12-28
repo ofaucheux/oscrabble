@@ -410,7 +410,7 @@ public class GameTest
 			assertEquals(22, this.game.getScore(anton));
 			anton.addMove(PlayTiles.parseMove(this.game.getGrid(),
 					RANDOM.nextBoolean() ? "F4 NIERa" : "F4 NIERA"));
-			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
+			this.game.awaitEndOfPlay(move, 1, TimeUnit.SECONDS);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
 		}
@@ -427,7 +427,7 @@ public class GameTest
 			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
 			assertEquals(14, this.game.getScore(anton));
 			anton.addMove(PlayTiles.parseMove(this.game.getGrid(), "D7 CAISSE"));
-			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
+			this.game.awaitEndOfPlay(move, 1, TimeUnit.SECONDS);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
 		}
@@ -451,9 +451,7 @@ public class GameTest
 		if (fork)
 		{
 			final AtomicReference<ScrabbleException> exception = new AtomicReference<>();
-			new Thread(() -> {
-				this.game.startGame();
-			}).start();
+			new Thread(() -> this.game.startGame()).start();
 			Thread.sleep(300);
 			if (exception.get() != null)
 			{
