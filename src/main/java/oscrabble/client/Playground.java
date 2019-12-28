@@ -1304,8 +1304,8 @@ class Playground
 	 */
 	private class PossibleMoveDisplayer extends AbstractAction
 	{
-		static final String LABEL_DISPLAY = "Display";
-		static final String LABEL_HIDE = "Hide";
+		static final String LABEL_DISPLAY = "Show possibilities";
+		static final String LABEL_HIDE = "Hide possibilities";
 
 		private final BruteForceMethod bruteForceMethod;
 
