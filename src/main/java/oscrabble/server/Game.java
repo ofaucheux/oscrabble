@@ -21,7 +21,6 @@ public class Game implements IGame
 
 	public final static int RACK_SIZE = 7;
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
-	public static final ScheduledExecutorService SERVICE = Executors.newScheduledThreadPool(3);
 
 	/**
 	 *  Seed initially used to create the random generator.
@@ -489,7 +488,13 @@ public class Game implements IGame
 				this.plays.add(play);
 				this.waitingForPlay = new CountDownLatch(1);
 				dispatch(p -> p.onPlayRequired(play));
-				this.waitingForPlay.await();
+				while (!this.waitingForPlay.await(500, TimeUnit.MILLISECONDS))
+				{
+					if (this.state != State.STARTED)
+					{
+						break;
+					}
+				}
 			}
 		}
 		catch (InterruptedException e)
