@@ -1,6 +1,7 @@
 package oscrabble;
 
 import oscrabble.client.SwingPlayer;
+import oscrabble.configuration.PropertyUtils;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
@@ -45,7 +46,7 @@ public class  GameStarter
 
 			final Pattern keyPart = Pattern.compile("([^.]*)");
 			final Set<String> playerNames = new HashSet<>();
-			getSubProperties(allProperties, "player").stringPropertyNames().forEach(k ->
+			PropertyUtils.getSubProperties(allProperties, "player").stringPropertyNames().forEach(k ->
 			{
 				Matcher m = keyPart.matcher(k);
 				if (m.find())
@@ -56,7 +57,7 @@ public class  GameStarter
 
 			for (final String name : playerNames)
 			{
-				final Properties playerProps = getSubProperties(allProperties, "player." + name);
+				final Properties playerProps = PropertyUtils.getSubProperties(allProperties, "player." + name);
 				final AbstractPlayer player;
 				final String methodName = playerProps.getProperty("method");
 				switch (PlayerType.valueOf(methodName.toUpperCase()))
@@ -81,28 +82,6 @@ public class  GameStarter
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, e, "Error occurred", JOptionPane.ERROR_MESSAGE);
 		}
-	}
-
-	/**
-	 * Return a set of the properties which keys start with a prefix. The keys in the new set don't contain the prefix anymore.
-	 *
-	 * @param source original property set
-	 * @param prefix searched prefix
-	 * @return the new property set.
-	 */
-	private static Properties getSubProperties(final Properties source, final String prefix)
-	{
-		final Properties result = new Properties();
-		final Pattern keyPattern = Pattern.compile(Pattern.quote(prefix) + "\\.+(.*)");
-		for (final String key : source.stringPropertyNames())
-		{
-			final Matcher m = keyPattern.matcher(key);
-			if (m.matches())
-			{
-				result.setProperty(m.group(1), source.getProperty(key));
-			}
-		}
-		return result;
 	}
 
 	/**
