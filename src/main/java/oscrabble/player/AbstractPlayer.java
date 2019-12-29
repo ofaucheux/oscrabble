@@ -1,6 +1,7 @@
 package oscrabble.player;
 
 import org.apache.log4j.Logger;
+import oscrabble.configuration.Configuration;
 import oscrabble.server.Game;
 
 import java.util.Queue;
@@ -12,6 +13,12 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractPlayer implements Game.GameListener
 {
 	public static final Logger LOGGER = Logger.getLogger(AbstractPlayer.class);
+
+	/**
+	 * Configuration of the player.
+	 */
+	final Configuration configuration;
+
 	private String name;
 
 	protected UUID playerKey;
@@ -26,14 +33,20 @@ public abstract class AbstractPlayer implements Game.GameListener
 	/** Event dispatching thread */
 	private Thread edt;
 
-	protected AbstractPlayer(final String name)
+	protected AbstractPlayer(final Configuration configuration, final String name)
 	{
+		this.configuration = configuration;
 		this.name = name;
 	}
 
 	public void setGame(final Game game)
 	{
 		this.game = game;
+		final Configuration configuration = this.getConfiguration();
+		if (configuration != null)
+		{
+			configuration.addChangeListener((unused) -> game.playerConfigHasChanged(this, this.playerKey));
+		}
 
 		this.edt = new Thread(() -> {
 			while (!this.destroyEDT)
@@ -55,6 +68,14 @@ public abstract class AbstractPlayer implements Game.GameListener
 		this.edt.setName(this.name + " EDT");
 		this.destroyEDT = false;
 		this.edt.start();
+	}
+
+	/**
+	 * @return the configuration object of this player, {@code null} if no such one.
+	 */
+	public Configuration getConfiguration()
+	{
+		return this.configuration;
 	}
 
 	public final String getName()
@@ -113,4 +134,8 @@ public abstract class AbstractPlayer implements Game.GameListener
 		throw new AssertionError("Default implementation has no editable parameter");
 	}
 
+	/**
+	 * @return type of the player
+	 */
+	public abstract Game.PlayerType getType();
 }

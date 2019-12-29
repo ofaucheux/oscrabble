@@ -1,5 +1,7 @@
 package oscrabble.player;
 
+import oscrabble.configuration.Configuration;
+import oscrabble.server.Game;
 import oscrabble.server.Play;
 
 import javax.swing.*;
@@ -8,7 +10,7 @@ public class ConsolePlayer extends AbstractPlayer
 {
 	ConsolePlayer()
 	{
-		super("Console");
+		super(null, "Console");
 	}
 
 	@Override
@@ -34,6 +36,12 @@ public class ConsolePlayer extends AbstractPlayer
 	}
 
 	@Override
+	public Configuration getConfiguration()
+	{
+		return null;
+	}
+
+	@Override
 	public void beforeGameStart()
 	{
 
@@ -43,5 +51,11 @@ public class ConsolePlayer extends AbstractPlayer
 	public boolean isObserver()
 	{
 		return false;
+	}
+
+	@Override
+	public Game.PlayerType getType()
+	{
+		return null;// TODO
 	}
 }

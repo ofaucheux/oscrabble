@@ -99,6 +99,14 @@ public interface IGame
 	}
 
 	/**
+	 * Inform the server about the configuration change of a client.
+	 *
+	 * @param player the player which configuration has changed
+	 * @param playerKey key of the client
+	 */
+	void playerConfigHasChanged(AbstractPlayer player, UUID playerKey);
+
+	/**
 	 * State of the game
 	 */
 	enum  State

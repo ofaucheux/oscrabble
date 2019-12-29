@@ -2,6 +2,7 @@ package oscrabble.client;
 
 import oscrabble.ScrabbleException;
 import oscrabble.Tile;
+import oscrabble.configuration.Configuration;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.server.Game;
 import oscrabble.server.Play;
@@ -21,7 +22,7 @@ public class SwingPlayer extends AbstractPlayer
 
 	public SwingPlayer(final String name)
 	{
-		super(name);
+		super(null, name);
 		if (playground == null)
 		{
 			playground = new Playground();
@@ -40,6 +41,12 @@ public class SwingPlayer extends AbstractPlayer
 	{
 		super.setGame(game);
 		playground.setGame(game);
+	}
+
+	@Override
+	public Configuration getConfiguration()
+	{
+		return null;
 	}
 
 	private void createUI()
@@ -93,7 +100,7 @@ public class SwingPlayer extends AbstractPlayer
 			try
 			{
 				final ArrayList<Tile> tiles = new ArrayList<>(
-						game.getRack(SwingPlayer.this, SwingPlayer.this.playerKey));
+						SwingPlayer.this.game.getRack(SwingPlayer.this, SwingPlayer.this.playerKey));
 
 				for (int i = 0; i < RACK_SIZE; i++)
 				{
@@ -185,6 +192,12 @@ public class SwingPlayer extends AbstractPlayer
 	public boolean isObserver()
 	{
 		return false;
+	}
+
+	@Override
+	public Game.PlayerType getType()
+	{
+		return Game.PlayerType.SWING;
 	}
 
 

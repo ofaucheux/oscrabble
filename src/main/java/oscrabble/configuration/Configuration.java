@@ -3,6 +3,7 @@ package oscrabble.configuration;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.log4j.Logger;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
 import java.util.Properties;
@@ -43,6 +44,15 @@ public abstract class Configuration
 				}
 			}
 		}
+	}
+
+	/**
+	 * Add a listener for change of any property.
+	 * @param listener listener to add
+	 */
+	public void addChangeListener(final PropertyChangeListener listener)
+	{
+		this.changeListeners.addPropertyChangeListener(listener);
 	}
 
 	@FunctionalInterface
@@ -105,6 +115,19 @@ public abstract class Configuration
 					}
 				}
 		);
+	}
+
+	/**
+	 *
+	 * @return the values of this configuration in form of properties.
+	 */
+	public Properties asProperties()
+	{
+		final Properties properties = new Properties();
+		doOnParameters( (p,v) -> {
+			properties.setProperty(p.getName(), String.valueOf(p.get(this)));
+		});
+		return properties;
 	}
 
 }

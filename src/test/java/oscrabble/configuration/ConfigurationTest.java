@@ -8,6 +8,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Properties;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,6 +63,11 @@ class ConfigurationTest
 		LOGGER.info(config1.data);
 		LOGGER.info(config1.allowError);
 		LOGGER.info(config1.happines);
+
+		final Properties properties = config1.asProperties();
+		final StringWriter sw = new StringWriter();
+		properties.list(new PrintWriter(sw));
+		LOGGER.info(sw.toString());
 	}
 
 	private static class Config1 extends Configuration

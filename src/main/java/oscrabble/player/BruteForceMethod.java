@@ -8,6 +8,7 @@ import oscrabble.*;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
+import oscrabble.server.Game;
 import oscrabble.server.Play;
 import oscrabble.server.SkipTurn;
 
@@ -328,13 +329,11 @@ public class BruteForceMethod
 	public class Player extends AbstractPlayer
 	{
 
-		protected Configuration configuration = new Configuration();
-
 		private ComparatorSelector selector;
 
 		public Player(final String name)
 		{
-			super(name);
+			super(new Configuration(), name);
 		}
 
 		@Override
@@ -358,10 +357,11 @@ public class BruteForceMethod
 				}
 				else
 				{
-					if (this.configuration.throttle > 0)
+					final Configuration configuration = this.getConfiguration();
+					if (configuration.throttle > 0)
 					{
-						LOGGER.trace("Wait " + this.configuration.throttle + " seconds...");
-						Thread.sleep(this.configuration.throttle * 1000);
+						LOGGER.trace("Wait " + configuration.throttle + " seconds...");
+						Thread.sleep(configuration.throttle * 1000);
 					}
 					final PlayTiles toPlay = this.selector.select(playTiles);
 					if (this.game.getPlayerToPlay().equals(this))  // check the player still is on turn and no rollback toke place.
@@ -443,11 +443,18 @@ public class BruteForceMethod
 			updateConfiguration();
 		}
 
+		@Override
+		public Game.PlayerType getType()
+		{
+			return Game.PlayerType.BRUTE_FORCE;
+		}
+
 		protected void updateConfiguration()
 		{
 			final Supplier<Grid> gridSupplier = () -> Player.this.game.getGrid();
-			this.selector = new ComparatorSelector(gridSupplier, this.configuration.strategy.valuator);
-			this.selector.setMean(this.configuration.force / 100f);
+			final Configuration configuration = getConfiguration();
+			this.selector = new ComparatorSelector(gridSupplier, configuration.strategy.valuator);
+			this.selector.setMean(configuration.force / 100f);
 		}
 
 		/**
@@ -457,6 +464,12 @@ public class BruteForceMethod
 		public void loadConfiguration(final Properties properties)
 		{
 			this.configuration.loadProperties(properties);
+		}
+
+		@Override
+		public Configuration getConfiguration()
+		{
+			return (Configuration) this.configuration;
 		}
 	}
 

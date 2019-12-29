@@ -6,14 +6,20 @@ import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
 import oscrabble.*;
 import oscrabble.client.Exchange;
+import oscrabble.client.SwingPlayer;
 import oscrabble.configuration.Parameter;
+import oscrabble.configuration.PropertyUtils;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
+import oscrabble.player.BruteForceMethod;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Game implements IGame
 {
@@ -21,6 +27,10 @@ public class Game implements IGame
 
 	public final static int RACK_SIZE = 7;
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
+	public static final ScheduledExecutorService SERVICE = Executors.newScheduledThreadPool(3);
+	private static final String PLAYER_PREFIX = "player.";
+	private static final String KEY_METHOD = "method";
+	public static final File DEFAULT_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".scrabble.properties");
 
 	/**
 	 *  Seed initially used to create the random generator.
@@ -71,8 +81,14 @@ public class Game implements IGame
 	 */
 	final Object changing = new Object();
 
+	/**
+	 * File to save and read the game configuration
+	 */
+	private File propertyFile;
+
 	public Game(final Dictionary dictionary, final long randomSeed)
 	{
+		this.propertyFile = DEFAULT_PROPERTIES_FILE;
 		this.configuration = new Configuration();
 		this.configuration.setValue("retryAccepted", true);
 		this.dictionary = dictionary;
@@ -345,6 +361,12 @@ public class Game implements IGame
 			this.changing.notify();
 		}
 
+	}
+
+	@Override
+	public void playerConfigHasChanged(final AbstractPlayer player, final UUID playerKey)
+	{
+		saveConfiguration();
 	}
 
 	@Override
@@ -635,6 +657,108 @@ public class Game implements IGame
 		return this.configuration;
 	}
 
+	public void setPropertyFile(final File propertyFile)
+	{
+		this.propertyFile = propertyFile;
+	}
+
+	/**
+	 *
+	 * @param propertyFile file containing the properties. {@code null} for the default one.
+	 * @return a new game
+	 * @throws IOException
+	 * @throws ConfigurationException
+	 */
+	public static Game fromProperties(File propertyFile) throws IOException, ConfigurationException
+	{
+		if (propertyFile == null)
+		{
+			propertyFile = DEFAULT_PROPERTIES_FILE;
+		}
+
+		final Properties properties = new Properties();
+
+		if (propertyFile.exists())
+		{
+			try (FileReader reader = new FileReader(propertyFile))
+			{
+				properties.load(reader);
+			}
+		}
+
+		final String language = properties.getProperty("LANGUAGE", "FRENCH");
+		Dictionary dictionary;
+		try
+		{
+			dictionary = Dictionary.getDictionary(Dictionary.Language.valueOf(language));
+		}
+		catch (IllegalArgumentException e)
+		{
+			throw new ConfigurationException("Not known language: " + language);
+		}
+		final Game game = new Game(dictionary);
+
+		//
+		// Players
+		//
+
+		final Pattern keyPart = Pattern.compile("([^.]*)");
+		final Set<String> playerNames = new HashSet<>();
+		PropertyUtils.getSubProperties(properties, "player").stringPropertyNames().forEach(k ->
+		{
+			Matcher m = keyPart.matcher(k);
+			if (m.find())
+			{
+				playerNames.add(m.group(1));
+			}
+		});
+
+		for (final String name : playerNames)
+		{
+			final Properties playerProps = PropertyUtils.getSubProperties(properties, PLAYER_PREFIX + name);
+			final AbstractPlayer player;
+			final String methodName = playerProps.getProperty(KEY_METHOD);
+			switch (PlayerType.valueOf(methodName.toUpperCase()))
+			{
+				case SWING:
+					player = new SwingPlayer(name);
+					break;
+				case BRUTE_FORCE:
+					player = new BruteForceMethod(dictionary).new Player(name);
+					((BruteForceMethod.Player) player).loadConfiguration(playerProps);
+					break;
+				default:
+					throw new ConfigurationException("Unknown method: " + methodName);
+			}
+			game.addPlayer(player);
+		}
+		return game;
+	}
+
+	private void saveConfiguration()
+	{
+		try (final PrintWriter writer = new PrintWriter(new FileWriter(this.propertyFile)))
+		{
+			final Properties properties = getConfiguration().asProperties();
+			for (final PlayerInfo pi : this.players.values())
+			{
+				final oscrabble.configuration.Configuration pc = pi.player.getConfiguration();
+				final Properties sp = pc == null ? new Properties() : pc.asProperties();
+				sp.setProperty(KEY_METHOD, pi.player.getType().name());
+				PropertyUtils.addAsSubProperties(
+						properties,
+						sp,
+						"player." + pi.getName()
+				);
+			}
+			properties.list(writer);
+		}
+		catch (IOException e)
+		{
+			throw new IOError(e);
+		}
+	}
+
 	@Override
 	public boolean isLastPlayError(final AbstractPlayer player)
 	{
@@ -779,7 +903,7 @@ public class Game implements IGame
 	}
 
 	/**
-	 * Configuration parameters.
+	 * Configuration parameters of a game. The list of players is not part of the configuration.
 	 */
 	private static class Configuration extends oscrabble.configuration.Configuration
 	{
@@ -829,4 +953,29 @@ public class Game implements IGame
 			return this.play.player;
 		}
 	}
+
+
+	/**
+	 * Problem occurring while reading / writing the configuration.
+	 */
+	private static final class ConfigurationException extends ScrabbleException
+	{
+		/**
+		 * Constructor
+		 * @param message message to display.
+		 */
+		private ConfigurationException(final String message)
+		{
+			super(message);
+		}
+	}
+
+
+	/** Player types */
+	public enum PlayerType
+	{
+		SWING,
+		BRUTE_FORCE
+	}
+
 }

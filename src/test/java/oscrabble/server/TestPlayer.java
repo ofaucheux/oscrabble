@@ -21,7 +21,7 @@ class TestPlayer extends AbstractPlayer
 
 	TestPlayer(final String name, final Game server)
 	{
-		super(name);
+		super(null, name);
 		this.server = server;
 		this.nextPlayTiles = new ArrayBlockingQueue<>(1024);
 	}
