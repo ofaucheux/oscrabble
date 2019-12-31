@@ -1,15 +1,18 @@
 package oscrabble.configuration;
 
-import javafx.scene.control.ButtonBar;
 import org.apache.log4j.Logger;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.Properties;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,9 +23,9 @@ class ConfigurationTest
 	public static final Logger LOGGER = Logger.getLogger(ConfigurationTest.class);
 
 	@Test
-	void configuration() throws InterruptedException
+	void configuration() throws InterruptedException, IOException
 	{
-		final Config1 config1 = new Config1();
+		final Config config1 = new Config();
 
 		final AtomicBoolean closed = new AtomicBoolean(false);
 		final WindowAdapter closeAdapter = new WindowAdapter()
@@ -60,7 +63,7 @@ class ConfigurationTest
 			Thread.sleep(100);
 		}
 
-		LOGGER.info(config1.data);
+		LOGGER.info(config1.date);
 		LOGGER.info(config1.allowError);
 		LOGGER.info(config1.happines);
 
@@ -68,12 +71,18 @@ class ConfigurationTest
 		final StringWriter sw = new StringWriter();
 		properties.list(new PrintWriter(sw));
 		LOGGER.info(sw.toString());
+
+		properties.clear();
+		final Config config2 = new Config();
+		properties.load(new StringReader(sw.toString()));
+		config2.loadProperties(properties);
+		Assert.assertEquals(config1.happines, config2.happines);
 	}
 
-	private static class Config1 extends Configuration
+	private static class Config extends Configuration
 	{
 		@Parameter(label = "Date")
-		ButtonBar.ButtonData data;
+		Date date;
 
 		@Parameter(label = "Allow error")
 		boolean allowError;

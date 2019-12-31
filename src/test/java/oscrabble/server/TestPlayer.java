@@ -102,4 +102,10 @@ class TestPlayer extends AbstractPlayer
 	{
 		return false;
 	}
+
+	@Override
+	public Game.PlayerType getType()
+	{
+		return Game.PlayerType.BRUTE_FORCE;
+	}
 }

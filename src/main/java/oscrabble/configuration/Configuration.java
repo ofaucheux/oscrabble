@@ -5,8 +5,12 @@ import org.apache.log4j.Logger;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.Properties;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.function.BiFunction;
 
 /**
  * Sammlung von Parameters, die zusammen eine Konfiguration darstellen.
@@ -17,8 +21,53 @@ public abstract class Configuration
 
 	private final static Logger LOGGER = Logger.getLogger(Configuration.class);
 
-	/** listener to inform after a parameter has been changed */
+	/**
+	 * listener to inform after a parameter has been changed
+	 */
 	PropertyChangeSupport changeListeners = new PropertyChangeSupport(new Object());
+
+
+	/**
+	 * Functions to create an object with known type from a string value. If the creation is possible, the value is returned.
+	 * Elsewhere the return value is {@code null}.
+	 */
+	private final static List<BiFunction<Class<?>, String, Object>> INSTANTIATORS = Arrays.asList(
+			(fieldClass, property) -> String.class.equals(fieldClass) ? property : null,
+			(fieldClass, property) ->
+			{
+				try
+				{
+					final Method valueOfMethod = fieldClass.getMethod("valueOf", String.class);
+					return valueOfMethod.invoke(null, property);
+				}
+				catch (NoSuchMethodException e)
+				{
+					return null;
+				}
+				catch (IllegalAccessException | InvocationTargetException e)
+				{
+					throw new Error(e);
+				}
+			},
+			(fieldClass, property) ->
+			{
+				final Constructor<?> constructor;
+				try
+				{
+					constructor = fieldClass.getConstructor(String.class);
+					return constructor.newInstance(property);
+				}
+				catch (NoSuchMethodException e)
+				{
+					return null;
+				}
+				catch (IllegalAccessException | InstantiationException | InvocationTargetException e)
+				{
+					throw new Error(e);
+				}
+			}
+	);
+
 
 	/**
 	 * Führt eine Aktion auf alle Felder aus, die mit der Annotation  {@code Parameter} versehen sind.
@@ -90,14 +139,14 @@ public abstract class Configuration
 	}
 
 	/**
-	 * Get the field matching a property.
+	 * Get a field by its name.
 	 *
-	 * @param property the name of the property
+	 * @param fieldName name of the field
 	 * @return the field, {@code null} if no such one
 	 */
-	protected Field getField(final String property)
+	protected Field getField(final String fieldName)
 	{
-		return FieldUtils.getDeclaredField(getClass(), property, true);
+		return FieldUtils.getDeclaredField(getClass(), fieldName, true);
 	}
 
 	/**
@@ -106,15 +155,40 @@ public abstract class Configuration
 	 */
 	public void loadProperties(final Properties properties)
 	{
+
+		final Set<String> errors = new HashSet<>();
 		properties.stringPropertyNames().forEach(
-				k -> {
-					final Object newValue = properties.get(k);
-					if (getField(k) != null)
+				key -> {
+					final String property = properties.getProperty(key);
+					final Field field = getField(key);
+					if (field != null)
 					{
-						setValue(k, newValue);
+						Object newValue = null;
+						final Class<?> type = field.getType();
+						for (final BiFunction<Class<?>, String, Object> instantiator : INSTANTIATORS)
+						{
+							newValue = instantiator.apply(type, property);
+							if (newValue != null)
+							{
+								break;
+							}
+						}
+						if (newValue != null)
+						{
+							setValue(key, newValue);
+						}
+						else
+						{
+							errors.add("Cannot instantiate " + key + " with value " + property);
+						}
 					}
 				}
 		);
+
+		if (!errors.isEmpty())
+		{
+			throw new ConfigurationException("Cannot read the properties", new Error(errors.size() + " errors: " + errors.toString()));
+		}
 	}
 
 	/**
@@ -124,9 +198,7 @@ public abstract class Configuration
 	public Properties asProperties()
 	{
 		final Properties properties = new Properties();
-		doOnParameters( (p,v) -> {
-			properties.setProperty(p.getName(), String.valueOf(p.get(this)));
-		});
+		doOnParameters( (p,v) -> properties.setProperty(p.getName(), String.valueOf(p.get(this))));
 		return properties;
 	}
 
