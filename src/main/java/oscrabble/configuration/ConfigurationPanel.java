@@ -1,5 +1,8 @@
 package oscrabble.configuration;
 
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
+import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -10,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 
 /**
  * Panel für die Anzeige und Änderung der Parameter durch Swing.
@@ -31,6 +35,12 @@ public final class ConfigurationPanel extends JPanel
 
 		this.listener = new Listener()
 		{
+			@Override
+			public void dateChanged(final DateChangeEvent event)
+			{
+				setFromSource(event.getSource());
+			}
+
 			@Override
 			public void actionPerformed(final ActionEvent e)
 			{
@@ -89,6 +99,10 @@ public final class ConfigurationPanel extends JPanel
 		else if (source instanceof JSlider)
 		{
 			return ((JSlider) source).getValue();
+		}
+		else if (source instanceof DatePicker)
+		{
+			return ((DatePicker) source).getDate();
 		}
 		throw new IllegalArgumentException("Cannot treat: " + source.getClass());
 	}
@@ -163,6 +177,12 @@ public final class ConfigurationPanel extends JPanel
 				listener = evt -> ((JSpinner) paramComponent).setValue(((Integer) evt.getNewValue()));
 			}
 		}
+		else if (type == LocalDate.class)
+		{
+			paramComponent = new DatePicker();
+			((DatePicker) paramComponent).addDateChangeListener(this.listener);
+			listener = evt -> ((DatePicker) paramComponent).setDate((LocalDate) evt.getNewValue());
+		}
 		else
 		{
 			throw new IllegalArgumentException("Cannot treat type " + type);
@@ -176,7 +196,7 @@ public final class ConfigurationPanel extends JPanel
 	/**
 	 * Listener
 	 */
-	private abstract static class Listener implements ActionListener, ChangeListener
+	private abstract static class Listener implements ActionListener, ChangeListener, DateChangeListener
 	{
 	}
 

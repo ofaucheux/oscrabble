@@ -8,7 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.HashSet;
+import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class ConfigurationTest
@@ -78,5 +78,11 @@ class ConfigurationTest
 
 		@Parameter(label = "Seconds", isSlide = false, lowerBound = 0, upperBound = 100)
 		int seconds;
+
+		@Parameter(label = "Birth day")
+		LocalDate birthDay;
+
+		@Parameter(label = "Wedding day")
+		LocalDate wedding;
 	}
 }

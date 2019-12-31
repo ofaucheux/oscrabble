@@ -14,6 +14,8 @@ import java.util.Properties;
 public abstract class Configuration
 {
 
+	private final static Logger LOGGER = Logger.getLogger(Configuration.class);
+
 	/** listener to inform after a parameter has been changed */
 	PropertyChangeSupport changeListeners = new PropertyChangeSupport(new Object());
 
@@ -23,7 +25,6 @@ public abstract class Configuration
 	 */
 	void doOnParameters(final FieldConsumer function)
 	{
-		Logger LOGGER = Logger.getLogger(Configuration.class);
 		for (final Field field : this.getClass().getDeclaredFields())
 		{
 			final Parameter annotation = field.getAnnotation(Parameter.class);
@@ -50,6 +51,12 @@ public abstract class Configuration
 		void accept(final Field field, final Parameter annotation) throws IllegalAccessException;
 	}
 
+	/**
+	 * Set the value of a property and inform the listeners. The listeners are only informed if the value really has changed.
+	 * @param propertyName name of the property
+	 * @param newValue neu value.
+	 * @throws ConfigurationException if any problem occurs.
+	 */
 	public void setValue(final String propertyName, final Object newValue) throws ConfigurationException
 	{
 		try
@@ -60,7 +67,7 @@ public abstract class Configuration
 			if (newValue == oldValue)
 			{
 				return;
-			}
+		 	}
 
 			field.set(this, newValue);
 
