@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.util.Set;
 
 /**
  * Panel für die Anzeige und Änderung der Parameter durch Swing.
@@ -27,7 +28,25 @@ public final class ConfigurationPanel extends JPanel
 	private final static Icon falseIcon = new ImageIcon(ConfigurationPanel.class.getResource("checkboxFalse.png"));
 	private final Listener listener;
 
+	/**
+	 * Create a panel with all fields visible.
+	 * @param configuration configuration linked with the panel.
+	 */
 	public ConfigurationPanel(final Configuration configuration)
+	{
+		this(configuration, null, null);
+	}
+
+	/**
+	 * Crete a panel.
+	 * @param configuration configuration linked with the panel.
+	 * @param readOnly		list of fields which to be displayed as read-only (see {@link JComponent#setEnabled(boolean)}, or {@code null}
+	 * @param hidden        list of the fields to hide, or {@code null}
+	 */
+	public ConfigurationPanel(
+			final Configuration configuration,
+			final Set<String> readOnly,
+			final Set<String> hidden)
 	{
 		super();
 		this.configuration = configuration;
@@ -65,7 +84,14 @@ public final class ConfigurationPanel extends JPanel
 			}
 		};
 
-		this.configuration.doOnParameters((field, annotation)->addField(field, annotation));
+		this.configuration.doOnParameters((field, annotation) -> {
+			final String fieldName = field.getName();
+			if (hidden == null || !hidden.contains(fieldName))
+			{
+				final Component fieldComponent = addField(field, annotation);
+				fieldComponent.setEnabled(readOnly == null || !readOnly.contains(fieldName));
+			}
+		});
 	}
 
 	/**
@@ -110,8 +136,9 @@ public final class ConfigurationPanel extends JPanel
 
 	/**
 	 * Fügt zu einem Panel die Widgets für ein Parameter Feld hinzu.
+	 * @return the created field
 	 */
-	private void addField(final Field field, final Parameter annotation) throws IllegalAccessException
+	private Component addField(final Field field, final Parameter annotation) throws IllegalAccessException
 	{
 		final Object value;
 		value = field.get(this.configuration);
@@ -192,6 +219,7 @@ public final class ConfigurationPanel extends JPanel
 		paramComponent.setName(fieldName);
 		this.configuration.changeListeners.addPropertyChangeListener(fieldName, listener);
 		add(paramComponent);
+		return paramComponent;
 	}
 
 	/**

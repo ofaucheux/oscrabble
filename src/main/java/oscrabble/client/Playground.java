@@ -216,7 +216,11 @@ class Playground
 		panel1.add(possibleMovePanel);
 		panel1.add(Box.createVerticalGlue());
 
-		final ConfigurationPanel configPanel = new ConfigurationPanel(this.game.getConfiguration());
+		final ConfigurationPanel configPanel = new ConfigurationPanel(
+				this.game.getConfiguration(),
+				null,
+				Collections.singleton("dictionary")
+		);
 		panel1.add(configPanel);
 		configPanel.setBorder(new TitledBorder("Server configuration"));
 		eastPanel.add(panel1, BorderLayout.CENTER);
