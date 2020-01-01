@@ -14,7 +14,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
-import java.util.Date;
 
 /**
  * Panel für die Anzeige und Änderung der Parameter durch Swing.
@@ -95,6 +94,7 @@ public final class ConfigurationPanel extends JPanel
 		}
 		else if (source instanceof JComboBox)
 		{
+			//noinspection rawtypes
 			return ((JComboBox) source).getSelectedItem();
 		}
 		else if (source instanceof JSlider)
@@ -177,16 +177,6 @@ public final class ConfigurationPanel extends JPanel
 				((JSpinner) paramComponent).addChangeListener(this.listener);
 				listener = evt -> ((JSpinner) paramComponent).setValue(((Integer) evt.getNewValue()));
 			}
-		}
-		else if (type == Date.class)
-		{
-			final J cb = new JCheckBox((String) null, (Boolean) value);
-			paramComponent = cb;
-			cb.setIcon(falseIcon);
-			cb.setSelectedIcon(trueIcon);
-			cb.addActionListener(this.listener);
-			listener = evt -> cb.setSelected(((Boolean) evt.getNewValue()));
-
 		}
 		else if (type == LocalDate.class)
 		{

@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Date;
 import java.util.Properties;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,9 +62,8 @@ class ConfigurationTest
 			Thread.sleep(100);
 		}
 
-		LOGGER.info(config1.date);
 		LOGGER.info(config1.allowError);
-		LOGGER.info(config1.happines);
+		LOGGER.info(config1.happiness);
 
 		final Properties properties = config1.asProperties();
 		final StringWriter sw = new StringWriter();
@@ -76,19 +74,16 @@ class ConfigurationTest
 		final Config config2 = new Config();
 		properties.load(new StringReader(sw.toString()));
 		config2.loadProperties(properties);
-		Assert.assertEquals(config1.happines, config2.happines);
+		Assert.assertEquals(config1.happiness, config2.happiness);
 	}
 
 	private static class Config extends Configuration
 	{
-		@Parameter(label = "Date")
-		Date date;
-
 		@Parameter(label = "Allow error")
 		boolean allowError;
 
 		@Parameter(label = "Happiness", isSlide = true)
-		int happines;
+		int happiness;
 
 		@Parameter(label = "Sadless", isSlide = true, lowerBound = -50, upperBound = 100)
 		int sadless;
