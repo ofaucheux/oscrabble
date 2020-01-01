@@ -8,7 +8,7 @@ import oscrabble.server.Game;
 import javax.swing.*;
 import java.util.Random;
 
-public class  GameStarter
+public class GameStarter
 {
 	public static void main(String[] args)
 	{
@@ -17,7 +17,7 @@ public class  GameStarter
 			final Game game;
 			if (Game.DEFAULT_PROPERTIES_FILE.exists())
 			{
-				game = Game.fromProperties(null);
+				game = Game.fromProperties(Game.DEFAULT_PROPERTIES_FILE);
 			}
 			else
 			{

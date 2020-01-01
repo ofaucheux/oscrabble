@@ -7,7 +7,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
@@ -116,67 +115,68 @@ public abstract class Configuration
 	{
 
 		final Set<String> errors = new HashSet<>();
-		final String dummy_1536 = "DUMMY_1536";
 		properties.stringPropertyNames().forEach(
 				key -> {
 					final String propertyValue = properties.getProperty(key);
 					final Field field = getField(key);
-					if (field != null)
+					try
 					{
-						final Class<?> fieldClass = field.getType();
-						Object newValue = dummy_1536;
-						// Primitives
+						if (field != null)
+						{
+							final Class<?> fieldClass = field.getType();
+							final Object newValue;
+							// Primitives
 
-						if ("null".equals(propertyValue))
-						{
-							newValue = null;
-						}
-						else if (fieldClass == String.class)
-						{
-							newValue = propertyValue;
-						}
-						else if (fieldClass == int.class)
-						{
-							newValue = Integer.valueOf(propertyValue);
-						}
-						else if (fieldClass == long.class)
-						{
-							newValue = Long.valueOf(propertyValue);
-						}
-						else if (fieldClass == float.class)
-						{
-							newValue = Float.valueOf(propertyValue);
-						}
-						else if (fieldClass == double.class)
-						{
-							newValue = Double.valueOf(propertyValue);
-						}
-						else if (fieldClass == boolean.class)
-						{
-							newValue = Boolean.valueOf(propertyValue);
-						}
-						else if (fieldClass == LocalDate.class)
-						{
-							LocalDate.parse(propertyValue, DateTimeFormatter.ISO_LOCAL_DATE);
-						}
-						else
-						{
-							// other classes: use the constructor
-							try
+							if ("null".equals(propertyValue))
 							{
+								newValue = null;
+							}
+							else if (fieldClass == String.class)
+							{
+								newValue = propertyValue;
+							}
+							else if (fieldClass == int.class)
+							{
+								newValue = Integer.valueOf(propertyValue);
+							}
+							else if (fieldClass == long.class)
+							{
+								newValue = Long.valueOf(propertyValue);
+							}
+							else if (fieldClass == float.class)
+							{
+								newValue = Float.valueOf(propertyValue);
+							}
+							else if (fieldClass == double.class)
+							{
+								newValue = Double.valueOf(propertyValue);
+							}
+							else if (fieldClass == boolean.class)
+							{
+								newValue = Boolean.valueOf(propertyValue);
+							}
+							else if (fieldClass == LocalDate.class)
+							{
+								newValue = LocalDate.parse(propertyValue, DateTimeFormatter.ISO_LOCAL_DATE);
+							}
+							else if (fieldClass.isEnum())
+							{
+								//noinspection unchecked,rawtypes
+								newValue = Enum.valueOf( (Class<? extends Enum>) fieldClass, propertyValue);
+							}
+							else
+							{
+								// other classes: use the constructor
 								final Constructor<?> constructor = ((Class<?>) fieldClass).getConstructor(String.class);
 								newValue = constructor.newInstance(propertyValue);
 							}
-							catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e)
-							{
-								errors.add("Cannot read " + key + "=" + propertyValue + " : " + e);
-							}
-						}
 
-						if (!dummy_1536.equals(newValue))
-						{
 							setValue(key, newValue);
 						}
+					}
+					catch (Throwable e)
+					{
+						errors.add("Cannot read " + key + "=" + propertyValue + " : " + e);
 					}
 				}
 		);
@@ -194,7 +194,10 @@ public abstract class Configuration
 	public Properties asProperties()
 	{
 		final Properties properties = new Properties();
-		doOnParameters( (p,v) -> properties.setProperty(p.getName(), String.valueOf(p.get(this))));
+		doOnParameters( (p,v) -> {
+			final String value = v instanceof  Enum ? ((Enum<?>) v).name() : String.valueOf(p.get(this));
+			properties.setProperty(p.getName(), value);
+		});
 		return properties;
 	}
 
