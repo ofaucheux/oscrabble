@@ -911,13 +911,13 @@ public class Game implements IGame
 	 */
 	private static class Configuration extends oscrabble.configuration.Configuration
 	{
-		@Parameter(label = "Dictionary", description = "Dictionary of the game")
+		@Parameter(label = "Dictionary", description = "#dictionary.of.the.game")
 		Dictionary.Language dictionary = Dictionary.Language.FRENCH;
 
 		/**
 		 * Accept a new attempt after a player has tried a forbidden move
 		 */
-		@Parameter(label = "Retry allowed", description = "Allow retry on error")
+		@Parameter(label = "Retry allowed", description = "#allow.retry.on.error")
 		private boolean retryAccepted;
 	}
 

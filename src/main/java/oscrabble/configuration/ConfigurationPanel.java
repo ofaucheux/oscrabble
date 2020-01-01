@@ -4,6 +4,7 @@ import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import org.apache.log4j.Logger;
+import oscrabble.server.Game;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -142,8 +143,9 @@ public final class ConfigurationPanel extends JPanel
 	{
 		final Object value;
 		value = field.get(this.configuration);
-		final JLabel label = new JLabel(annotation.label());
-		label.setToolTipText(annotation.description().isEmpty() ? annotation.label() : annotation.description());
+		final String labelText = i18n(annotation.label());
+		final JLabel label = new JLabel(labelText);
+		label.setToolTipText(annotation.description().isEmpty() ? labelText : i18n(annotation.description()));
 		add(label);
 		final Class<?> type = field.getType();
 		final Component paramComponent;
@@ -220,6 +222,23 @@ public final class ConfigurationPanel extends JPanel
 		this.configuration.changeListeners.addPropertyChangeListener(fieldName, listener);
 		add(paramComponent);
 		return paramComponent;
+	}
+
+	/**
+	 * Translate a text if starting with {@code #}.
+	 * @param text text to translate
+	 * @return the translation, or the text itself.
+	 */
+	private static String i18n(final String text)
+	{
+		if (text.startsWith("#"))
+		{
+			return Game.MESSAGES.getString(text.substring(1));
+		}
+		else
+		{
+			return text;
+		}
 	}
 
 	/**

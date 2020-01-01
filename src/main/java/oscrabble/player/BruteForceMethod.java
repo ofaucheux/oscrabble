@@ -475,13 +475,13 @@ public class BruteForceMethod
 
 	static class Configuration extends oscrabble.configuration.Configuration
 	{
-		@Parameter(label = "Strategy")
+		@Parameter(label = "#strategy")
 		Strategy strategy = Strategy.BEST_SCORE;
 
-		@Parameter(label = "Throttle (seconds)", lowerBound = 0, upperBound = 30)
+		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
 		int throttle = 2;
 
-		@Parameter(label = "Force", isSlide = true, lowerBound = 0, upperBound = 100)
+		@Parameter(label = "#force", isSlide = true, lowerBound = 0, upperBound = 100)
 		int force = 90;
 	}
 
