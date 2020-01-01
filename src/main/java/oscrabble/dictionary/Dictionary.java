@@ -24,6 +24,9 @@ public class Dictionary implements Tile.Generator
 	private static final CSVFormat letterFileFormat = CSVFormat.newFormat(',')
 			.withFirstRecordAsHeader();
 
+	/** Already loaded dictionaries */
+	public static final HashMap<Language, Dictionary> LOADED_DICTIONARIES = new HashMap<>();
+
 	private final String name;
 	/** Die Wörter: key: Wörter ohne Accent, großgeschrieben. Values: die selben keingeschrieben und mit accent */
 	private final MultiValuedMap<String, String> words;
@@ -36,7 +39,13 @@ public class Dictionary implements Tile.Generator
 
 	public static Dictionary getDictionary(final Language language)
 	{
-		return new Dictionary(language.directoryName);
+		Dictionary dictionary = LOADED_DICTIONARIES.get(language);
+		if (dictionary ==null)
+		{
+			dictionary = new Dictionary(language.directoryName);
+			LOADED_DICTIONARIES.put(language, dictionary);
+		}
+		return dictionary;
 	}
 
 	private Dictionary(final String name)
