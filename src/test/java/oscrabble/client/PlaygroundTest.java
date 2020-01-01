@@ -84,7 +84,7 @@ public class PlaygroundTest
 		playground.setGame(game);
 		try
 		{
-			game.startGame();
+			game.play();
 			Thread.sleep(10 * 1000);
 
 		}

@@ -6,7 +6,6 @@ import oscrabble.player.BruteForceMethod;
 import oscrabble.server.Game;
 
 import javax.swing.*;
-import java.util.Random;
 
 public class GameStarter
 {
@@ -22,7 +21,7 @@ public class GameStarter
 				game.addPlayer(new SwingPlayer("Emil"));
 				game.addPlayer(new BruteForceMethod(dictionary).new Player("R2D2"));
 			}
-			game.startGame();
+			game.play();
 		}
 		catch (final Throwable e)
 		{

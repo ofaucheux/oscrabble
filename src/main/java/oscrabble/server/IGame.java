@@ -21,6 +21,12 @@ public interface IGame
 	void addPlayer(AbstractPlayer player);
 
 	/**
+	 * Register a listener.
+	 * @param listener listener to register
+	 */
+	void addListener(Game.GameListener listener);
+
+	/**
 	 * Play an action. The player must call this function to inform the server of the action he plays.
 	 * @param clientKey key of the client
 	 * @param play references to the play

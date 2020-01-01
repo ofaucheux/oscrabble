@@ -2,6 +2,7 @@ package oscrabble.client;
 
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import oscrabble.*;
@@ -351,6 +352,22 @@ class Playground
 			throw new AssertionError("Game already set");
 		}
 		this.game = game;
+		this.game.addListener(new Game.GameListener()
+		{
+			private final CircularFifoQueue<Game.ScrabbleEvent> dummyQueue = new CircularFifoQueue<>(1);
+
+			@Override
+			public Queue<Game.ScrabbleEvent> getIncomingEventQueue()
+			{
+				return this.dummyQueue;
+			}
+
+			@Override
+			public void afterGameEnd()
+			{
+				Playground.this.executor.shutdown();
+			}
+		});
 	}
 
 	/**

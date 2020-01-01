@@ -33,7 +33,6 @@ public class Game implements IGame
 
 	public final static int RACK_SIZE = 7;
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
-	public static final ScheduledExecutorService SERVICE = Executors.newScheduledThreadPool(3);
 	private static final String PLAYER_PREFIX = "player.";
 	private static final String KEY_METHOD = "method";
 	public static final File DEFAULT_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".scrabble.properties");
@@ -203,6 +202,12 @@ public class Game implements IGame
 		this.players.put(newPlayer, info);
 		this.listeners.add(newPlayer);
 		newPlayer.setGame(this);
+	}
+
+	@Override
+	public void addListener(final GameListener listener)
+	{
+		this.listeners.add(listener);
 	}
 
 	@Override
@@ -506,7 +511,7 @@ public class Game implements IGame
 	@Override
 	public List<IPlayerInfo> getPlayers()
 	{
-		return List.copyOf(this.players.values());
+		return new ArrayList<>(this.players.values());
 	}
 
 	@Override
@@ -552,7 +557,10 @@ public class Game implements IGame
 		return drawn;
 	}
 
-	public void startGame()
+	/**
+	 * Start the game and play it until it ends.
+	 */
+	public void play()
 	{
 		if (this.players.isEmpty())
 		{
