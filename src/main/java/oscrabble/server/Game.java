@@ -14,6 +14,7 @@ import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,6 +24,11 @@ import java.util.regex.Pattern;
 
 public class Game implements IGame
 {
+	/**
+	 * Resource Bundle
+	 */
+	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
+
 	private final static Logger LOGGER = Logger.getLogger(Game.class);
 
 	public final static int RACK_SIZE = 7;
@@ -243,7 +249,7 @@ public class Game implements IGame
 					missingLetters.removeAll(rackLetters);
 					if (missingLetters.size() > playerInfo.rack.countJoker())
 					{
-						throw new ScrabbleException.ForbiddenPlayException("<html>Rack with " + rackLetters + "<br>has not the required stones " + requiredLetters);
+						throw new ScrabbleException.ForbiddenPlayException(MessageFormat.format(MESSAGES.getString("html.rack.with.0.br.has.not.the.required.stones.1"), rackLetters, requiredLetters));
 					}
 
 					// check touch
@@ -251,12 +257,12 @@ public class Game implements IGame
 					{
 						if (playTiles.word.length() < 2)
 						{
-							throw new ScrabbleException.ForbiddenPlayException("First word must have at least two letters");
+							throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("first.word.must.have.at.least.two.letters"));
 						}
 					}
 					else if (moveMI.crosswords.isEmpty() && requiredLetters.size() == playTiles.word.length())
 					{
-						throw new ScrabbleException.ForbiddenPlayException("New word must touch another one");
+						throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("new.word.must.touch.another.one"));
 					}
 
 					// check dictionary
@@ -267,7 +273,7 @@ public class Game implements IGame
 					{
 						if (!this.dictionary.containUpperCaseWord(crossword.toUpperCase()))
 						{
-							final String details = "Word \"" + crossword + "\" is not allowed";
+							final String details = MessageFormat.format(MESSAGES.getString("word.0.is.not.allowed"), crossword);
 							throw new ScrabbleException.ForbiddenPlayException(details);
 						}
 					}
@@ -277,7 +283,7 @@ public class Game implements IGame
 						final Grid.Square center = this.grid.getCenter();
 						if (!playTiles.getSquares().containsKey(center))
 						{
-							throw new ScrabbleException.ForbiddenPlayException("The first word must be on the center square");
+							throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("the.first.word.must.be.on.the.center.square"));
 						}
 					}
 
@@ -311,7 +317,7 @@ public class Game implements IGame
 						messages.add(SCRABBLE_MESSAGE);
 					}
 					playerInfo.score += score;
-					LOGGER.info(playerInfo.getName() + " plays \"" + playTiles.getNotation() + "\" for " + score + " points");
+					LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), playerInfo.getName(), playTiles.getNotation(), score));
 				}
 				else if (action instanceof Exchange)
 				{
@@ -325,7 +331,7 @@ public class Game implements IGame
 				else if (action instanceof SkipTurn)
 				{
 					LOGGER.info(playerInfo.getName() + " skips its turn");
-					this.dispatchMessage(playerInfo.getName() + " skips its turn");
+					this.dispatchMessage(MessageFormat.format(MESSAGES.getString("0.skips.its.turn"), playerInfo.getName()));
 				}
 				else
 				{
@@ -399,7 +405,7 @@ public class Game implements IGame
 			LOGGER.info("Rollback last move on demand of " + caller);
 			if (this.history.isEmpty())
 			{
-				throw new ScrabbleException.InvalidStateException( "No move played for the time");
+				throw new ScrabbleException.InvalidStateException(MESSAGES.getString("no.move.played.for.the.time"));
 			}
 			final HistoryEntry historyEntry = this.history.remove(this.history.size() - 1);
 			LOGGER.info("Rollback " + historyEntry.formatAsString());
@@ -455,11 +461,11 @@ public class Game implements IGame
 		final StringBuffer message = new StringBuffer();
 		if (firstEndingPlayer == null)
 		{
-			message.append("Game ends without any player have cleared its rack");
+			message.append(MESSAGES.getString("game.ends.without.any.player.have.cleared.its.rack"));
 		}
 		else
 		{
-			message.append(firstEndingPlayer.getName()).append(" has cleared its rack.\n");
+			message.append(MessageFormat.format(MESSAGES.getString("0.has.cleared.its.rack"), firstEndingPlayer.getName())).append('\n');
 		}
 		this.players.forEach(
 				(player, info) ->
@@ -478,7 +484,7 @@ public class Game implements IGame
 							firstEndingPlayer.score += gift;
 							historyEntry.scores.put(firstEndingPlayer.player, historyEntry.scores.get(firstEndingPlayer.player) + gift);
 						}
-						message.append(info.getName()).append(" gives ").append(gift).append(" points\n");
+						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), info.getName(), gift)).append("\n");
 					}
 				});
 
@@ -550,7 +556,7 @@ public class Game implements IGame
 	{
 		if (this.players.isEmpty())
 		{
-			throw new IllegalStateException("Cannot start game: no player registered");
+			throw new IllegalStateException(MESSAGES.getString("cannot.start.game.no.player.registered"));
 		}
 
 		prepareGame();
@@ -672,7 +678,7 @@ public class Game implements IGame
 		checkKey(player, clientKey);
 		if (player.isObserver())
 		{
-			throw new ScrabbleException.InvalidStateException("Player " + player.getName() + " is observer");
+			throw new ScrabbleException.InvalidStateException(MessageFormat.format(MESSAGES.getString("player.0.is.observer"), player.getName()));
 		}
 		return this.players.get(player).rack.copy();
 	}
@@ -699,14 +705,14 @@ public class Game implements IGame
 	@Override
 	public void sendMessage(final AbstractPlayer sender, final String message)
 	{
-		dispatchMessage("Message of " + sender.getName() + ": " + message);
+		dispatchMessage(MessageFormat.format(MESSAGES.getString("message.of.0.1"), sender.getName(), message));
 	}
 
 	@Override
 	public void quit(final AbstractPlayer player, final UUID key, final String message) throws ScrabbleException
 	{
 		checkKey(player, key);
-		final String msg = "Player " + player + " quits with message \"" + message + "\"";
+		final String msg = MessageFormat.format(MESSAGES.getString("player.0.quits.with.message.1"), player, message);
 		LOGGER.info(msg);
 		dispatchMessage(msg);
 		setState(State.ENDED);
@@ -799,7 +805,7 @@ public class Game implements IGame
 			Thread.sleep(100);
 			if (System.currentTimeMillis() > maxTime)
 			{
-				throw new TimeoutException("End of play " + roundNr + " still not reached after " + timeout + " " + unit);
+				throw new TimeoutException(MessageFormat.format(MESSAGES.getString("end.of.play.0.still.not.reached.after.1.2"), roundNr, timeout, unit));
 			}
 		}
 	}

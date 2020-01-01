@@ -46,6 +46,8 @@ class Playground
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
 	static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
+	public static final ResourceBundle MESSAGES = Game.MESSAGES;
+
 	/**
 	 * The game
 	 */
@@ -139,7 +141,7 @@ class Playground
 			@Override
 			public void windowClosing(final WindowEvent e)
 			{
-				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, "Quit the game?", "Confirm quit", JOptionPane.YES_NO_OPTION);
+				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, MESSAGES.getString("quit.the.game"), MESSAGES.getString("confirm.quit"), JOptionPane.YES_NO_OPTION);
 				if (confirm == JOptionPane.YES_OPTION)
 				{
 					Playground.this.game.setState(IGame.State.ENDED);
@@ -165,7 +167,7 @@ class Playground
 		panel1.add(Box.createVerticalGlue());
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
-		historyPanel.setBorder(new TitledBorder("Moves"));
+		historyPanel.setBorder(new TitledBorder(MESSAGES.getString("moves")));
 		this.historyList = new JList<>();
 		this.historyList.setCellRenderer(new DefaultListCellRenderer()
 		{
@@ -185,7 +187,7 @@ class Playground
 		);
 
 		panel1.add(historyPanel);
-		panel1.add(new JButton(new AbstractAction("Rollback")
+		panel1.add(new JButton(new AbstractAction(MESSAGES.getString("rollback"))
 		{
 			@Override
 			public void actionPerformed(final ActionEvent e)
@@ -205,7 +207,7 @@ class Playground
 		));
 
 		possibleMovePanel = new JPanel();
-		possibleMovePanel.setBorder(new TitledBorder("Possible moves"));
+		possibleMovePanel.setBorder(new TitledBorder(MESSAGES.getString("possible.moves")));
 		possibleMovePanel.setSize(new Dimension(200, 300));
 		possibleMovePanel.setLayout(new BorderLayout());
 		final BruteForceMethod bruteForceMethod = new BruteForceMethod(	this.game.getDictionary());
@@ -222,7 +224,7 @@ class Playground
 				Collections.singleton("dictionary")
 		);
 		panel1.add(configPanel);
-		configPanel.setBorder(new TitledBorder("Server configuration"));
+		configPanel.setBorder(new TitledBorder(MESSAGES.getString("server.configuration")));
 		eastPanel.add(panel1, BorderLayout.CENTER);
 		this.gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
@@ -267,7 +269,7 @@ class Playground
 		possibleMovePanel.removeAll();
 		possibleMovePanel.invalidate();
 		possibleMovePanel.repaint();
-		showPossibilitiesButton.setText(PossibleMoveDisplayer.LABEL_DISPLAY);
+		showPossibilitiesButton.setText(LABEL_DISPLAY);
 		possibleMovePanel.add(showPossibilitiesButton, BorderLayout.SOUTH);
 	}
 
@@ -735,7 +737,7 @@ class Playground
 			Window dictionaryFrame = SwingUtilities.getWindowAncestor(this.dictionaryComponent);
 			if (dictionaryFrame == null)
 			{
-				dictionaryFrame = new JFrame("Description");
+				dictionaryFrame = new JFrame(MESSAGES.getString("description"));
 				dictionaryFrame.add(this.dictionaryComponent);
 				dictionaryFrame.setSize(600, 600);
 			}
@@ -782,7 +784,7 @@ class Playground
 						else
 						{
 							popup.add(menuItem);
-							StoneCell.this.showDefinitionAction.putValue(javax.swing.Action.NAME, "Show definition" + (words.size() > 1 ? "s" : ""));
+							StoneCell.this.showDefinitionAction.putValue(javax.swing.Action.NAME, (words.size() > 1 ? MESSAGES.getString("show.definitions") : MESSAGES.getString("show.definition")));
 						}
 					}
 
@@ -1050,7 +1052,7 @@ class Playground
 				}
 				else
 				{
-					JOptionPane.showMessageDialog(Playground.this.jGrid, "It's not your turn!");
+					JOptionPane.showMessageDialog(Playground.this.jGrid, MESSAGES.getString("it.s.not.your.turn"));
 				}
 			}
 			catch (final JokerPlacementException | ParseException | ScrabbleException.NotInTurn | ScrabbleException.InvalidSecretException ex)
@@ -1099,7 +1101,7 @@ class Playground
 				catch (ScrabbleException e)
 				{
 					LOGGER.error(e);
-					throw new JokerPlacementException("Error placing Joker", e);
+					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
 				playTiles = PlayTiles.parseMove(Playground.this.game.getGrid(), inputWord.toString(), true);
@@ -1137,7 +1139,7 @@ class Playground
 					{
 						if (remainingJokers < missing)
 						{
-							throw new JokerPlacementException("No enough jokers", null);
+							throw new JokerPlacementException(MESSAGES.getString("no.enough.jokers"), null);
 						}
 
 						if (missing == required)
@@ -1151,7 +1153,7 @@ class Playground
 						else
 						{
 							throw new JokerPlacementException(
-									"Cannot place the jokers: several emplacement possible. Use the *A notation.",
+									MESSAGES.getString("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
 									null);
 						}
 					}
@@ -1307,13 +1309,14 @@ class Playground
 
 	}
 
+	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
+	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
+
 	/**
 	 * This action display the list of possible and authorized moves.
 	 */
 	private class PossibleMoveDisplayer extends AbstractAction
 	{
-		static final String LABEL_DISPLAY = "Show possibilities";
-		static final String LABEL_HIDE = "Hide possibilities";
 
 		private final BruteForceMethod bruteForceMethod;
 
@@ -1411,7 +1414,7 @@ class Playground
 				final SwingPlayer player = getCurrentSwingPlayer();
 				if (player == null)
 				{
-					showMessage("Player not at turn!");
+					showMessage(MESSAGES.getString("player.not.at.turn"));
 					return;
 				}
 
@@ -1430,8 +1433,8 @@ class Playground
 
 				final JPanel orderMethodPanel = new JPanel();
 				possibleMovePanel.add(orderMethodPanel, BorderLayout.NORTH);
-				orderMethodPanel.add(new OrderButton("Score", Grid.MoveMetaInformation.SCORE_COMPARATOR));
-				orderMethodPanel.add(new OrderButton("Length", Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
+				orderMethodPanel.add(new OrderButton(MESSAGES.getString("score"), Grid.MoveMetaInformation.SCORE_COMPARATOR));
+				orderMethodPanel.add(new OrderButton(MESSAGES.getString("length"), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
 				this.orderButGroup.getElements().asIterator().next().doClick();
 				possibleMovePanel.validate();
 			}
