@@ -15,14 +15,10 @@ public class GameStarter
 		try
 		{
 			final Game game;
-			if (Game.DEFAULT_PROPERTIES_FILE.exists())
+			final Dictionary dictionary = Dictionary.getDictionary(Dictionary.Language.FRENCH);
+			game = new Game(Game.DEFAULT_PROPERTIES_FILE);
+			if (game.getPlayers().isEmpty())
 			{
-				game = Game.fromProperties(Game.DEFAULT_PROPERTIES_FILE);
-			}
-			else
-			{
-				final Dictionary dictionary = Dictionary.getDictionary(Dictionary.Language.FRENCH);
-				game = new Game(dictionary, new Random().nextLong());
 				game.addPlayer(new SwingPlayer("Emil"));
 				game.addPlayer(new BruteForceMethod(dictionary).new Player("R2D2"));
 			}

@@ -9,9 +9,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Sammlung von Parameters, die zusammen eine Konfiguration darstellen.
@@ -193,10 +191,31 @@ public abstract class Configuration
 	 */
 	public Properties asProperties()
 	{
-		final Properties properties = new Properties();
-		doOnParameters( (p,v) -> {
-			final String value = v instanceof  Enum ? ((Enum<?>) v).name() : String.valueOf(p.get(this));
-			properties.setProperty(p.getName(), value);
+		final Properties properties = new Properties()
+		{
+			private boolean recurse;
+
+			@Override
+			public synchronized Set<Map.Entry<Object, Object>> entrySet()
+			{
+				if (this.recurse)
+				{
+					return super.entrySet();
+				}
+				else
+				{
+					this.recurse = true;
+					final TreeMap<Object, Object> treeMap = new TreeMap<>(this);
+					final Set<Map.Entry<Object, Object>> entries = treeMap.entrySet();
+					this.recurse = false;
+					return entries;
+				}
+			}
+		};
+		doOnParameters((field, annotation) -> {
+			final Object value = field.get(this);
+			final String stringValue = value instanceof Enum ? ((Enum<?>) value).name() : String.valueOf(value);
+			properties.setProperty(field.getName(), stringValue);
 		});
 		return properties;
 	}
