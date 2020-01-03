@@ -91,7 +91,7 @@ public class Game implements IGame
 	 */
 	private final File propertyFile;
 
-	public Game(final File propertyFile) throws IOException, ConfigurationException
+	public Game(final File propertyFile) throws ConfigurationException
 	{
 		if (propertyFile == null)
 		{
@@ -108,6 +108,12 @@ public class Game implements IGame
 		try (FileReader reader = new FileReader(propertyFile))
 		{
 			properties.load(reader);
+		}
+		catch (final IOException ex)
+		{
+			final ConfigurationException configurationException = new ConfigurationException("Cannot read the configuration file: " + ex.toString(), ex);
+			LOGGER.error(configurationException);
+			throw configurationException;
 		}
 
 		this.configuration = new Configuration();
@@ -170,6 +176,33 @@ public class Game implements IGame
 
 		setState(State.BEFORE_START);
 		LOGGER.info("Created game with random seed " + this.random);
+	}
+
+	/**
+	 * Constructor for test purposes a game without player.
+	 *
+	 * @param dictionary dictionary
+	 * @param randomSeed seed to initialize the random generator
+	 */
+	public Game(final Dictionary dictionary, final long randomSeed)
+	{
+		this.randomSeed = randomSeed;
+		this.random = new Random(randomSeed);
+		this.dictionary = dictionary;
+		this.grid = new Grid(dictionary);
+		this.propertyFile = null;
+		this.configuration = null;
+	}
+
+	/**
+	 * Constructor for test purposes.
+	 *
+	 * @see #Game(Dictionary, long)
+	 * @param dictionary dictionary
+	 */
+	public Game(final Dictionary dictionary)
+	{
+		this(dictionary, new Random().nextLong());
 	}
 
 	/**
@@ -978,10 +1011,16 @@ public class Game implements IGame
 		/**
 		 * Constructor
 		 * @param message message to display.
+		 * @param cause the cause, if any
 		 */
+		private ConfigurationException(final String message, final Throwable cause)
+		{
+			super(message, cause);
+		}
+
 		private ConfigurationException(final String message)
 		{
-			super(message);
+			this(message, null);
 		}
 	}
 

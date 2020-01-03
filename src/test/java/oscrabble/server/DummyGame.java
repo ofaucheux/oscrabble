@@ -1,6 +1,6 @@
 package oscrabble.server;
 
-import java.io.IOException;
+import oscrabble.ScrabbleException;
 
 /**
  * Game for test purposes
@@ -8,7 +8,7 @@ import java.io.IOException;
 public class DummyGame extends Game
 {
 
-	public DummyGame() throws IOException, ConfigurationException
+	public DummyGame() throws ScrabbleException
 	{
 		super(Game.DEFAULT_PROPERTIES_FILE);
 	}

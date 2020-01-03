@@ -3,6 +3,7 @@ package oscrabble.client;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
+import oscrabble.ScrabbleException;
 import oscrabble.Tile;
 import oscrabble.dictionary.DictionaryTest;
 import oscrabble.server.DummyGame;
@@ -75,7 +76,7 @@ public class PlaygroundTest
 	}
 
 	@Test
-	public void display() throws InterruptedException
+	public void display() throws InterruptedException, ScrabbleException
 	{
 		final Playground playground = new Playground();
 		final DummyGame game = new DummyGame();
