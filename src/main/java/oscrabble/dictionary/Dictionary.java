@@ -94,12 +94,12 @@ public class Dictionary implements Tile.Generator
 
 			this.words = new HashSetValuedHashMap<>();
 
-			try (InputStream is = Dictionary.class.getResourceAsStream(namePrefix + "word_list.txt"))
+			try (final BufferedReader reader = getResourceAsReader(namePrefix + "word_list.txt"))
 			{
-				final BufferedReader r;
-				r = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+				assert reader != null;
+
 				String line;
-				while ((line = r.readLine()) != null)
+				while ((line = reader.readLine()) != null)
 				{
 					this.words.put(toUpperCase(line), line);
 				}
@@ -113,26 +113,18 @@ public class Dictionary implements Tile.Generator
 
 			for (int wordLength = 2; wordLength < 15; wordLength++)
 			{
-				try (InputStream is = Dictionary.class.getResourceAsStream(
-						namePrefix + "admissible_" + wordLength + "_chars.txt"))
+				try (final BufferedReader reader = getResourceAsReader(namePrefix + "admissible_" + wordLength + "_chars.txt"))
 				{
-					if (is == null)
+					if (reader == null)
 					{
 						continue;
 					}
-					LOGGER.info("Read Admissible for " + wordLength + " characters");
+					LOGGER.debug("Read Admissible for " + wordLength + " characters");
 					final LinkedHashSet<String> admissible = new LinkedHashSet<>();
 					final HashSet<String> admissibleUppercase = new HashSet<>();
-					final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 					String line;
 					while ((line = reader.readLine()) != null)
 					{
-						final int comment = line.indexOf('#');
-						if (comment != -1)
-						{
-							line = line.substring(0, comment);
-						}
-						line = line.trim();
 						if (!line.isEmpty())
 						{
 							admissible.add(line);
@@ -148,7 +140,7 @@ public class Dictionary implements Tile.Generator
 					{
 						if (!admissibleUppercase.contains(toUpperCase(word)))
 						{
-							LOGGER.trace("Remove not accepted word " + word);
+							LOGGER.debug("Remove not accepted word " + word);
 							this.words.remove(word);
 						}
 					}
@@ -203,6 +195,43 @@ public class Dictionary implements Tile.Generator
 			this.metainformationProvider = new UnMotDotNet();
 //			((Wikitionary) this.metainformationProvider).setHtmlWidth(200);
 		}
+	}
+
+	/**
+	 * Create a reader one a resource file. The {@code #readLine()} function will strip the comments and trim the line before returning it.
+	 *
+	 * @param resourceName name of the resource
+	 * @return the reader, or {@code null} if no such resource
+	 */
+	private BufferedReader getResourceAsReader(final String resourceName)
+	{
+		final InputStream is = Dictionary.class.getResourceAsStream(resourceName);
+		if (is == null)
+		{
+			return null;
+		}
+
+		//noinspection UnnecessaryLocalVariable
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
+		{
+			@Override
+			public String readLine() throws IOException
+			{
+				String line = super.readLine();
+				if (line != null)
+				{
+					final int comment = line.indexOf('#');
+					if (comment != -1)
+					{
+						line = line.substring(0, comment);
+					}
+					line = line.trim();
+				}
+				return line;
+			}
+		};
+
+		return reader;
 	}
 
 	/* from StringUtils, modified */

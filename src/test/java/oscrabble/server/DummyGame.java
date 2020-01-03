@@ -1,6 +1,6 @@
 package oscrabble.server;
 
-import oscrabble.dictionary.Dictionary;
+import java.io.IOException;
 
 /**
  * Game for test purposes
@@ -8,8 +8,8 @@ import oscrabble.dictionary.Dictionary;
 public class DummyGame extends Game
 {
 
-	public DummyGame()
+	public DummyGame() throws IOException, ConfigurationException
 	{
-		super(Dictionary.getDictionary(Dictionary.Language.TEST));
+		super(Game.DEFAULT_PROPERTIES_FILE);
 	}
 }
