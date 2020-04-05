@@ -1000,6 +1000,23 @@ public class Game implements IGame
 		{
 			return this.play.player;
 		}
+
+		/**
+		 * @return ob der Spielzug ein neu gelegtes Wort war
+		 */
+		public final boolean isPlayTileAction()
+		{
+			return this.play.action instanceof PlayTiles;
+		}
+
+		/**
+		 * @return die Buchstaben des letzten Spielzugs
+		 * @throws Error wenn der Spielzug nicht passt.
+		 */
+		public final PlayTiles getPlayTiles()
+		{
+			return ((PlayTiles) this.play.action);
+		}
 	}
 
 

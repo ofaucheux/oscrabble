@@ -18,10 +18,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
+import javax.swing.event.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -186,6 +183,26 @@ class Playground
 					SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE));
 				}
 		);
+
+		// highlight the selected item in the list
+		this.historyList.addListSelectionListener(event -> {
+			if (event.getValueIsAdjusting())
+			{
+				return;
+			}
+			for (int index = event.getFirstIndex() ; index <= event.getLastIndex(); index++)
+			{
+				if (historyList.isSelectedIndex(index))
+				{
+					final Game.HistoryEntry selected = this.historyList.getModel().getElementAt(index);
+					if (selected.isPlayTileAction())
+					{
+						final PlayTiles playTiles = selected.getPlayTiles();
+						this.jGrid.highlightWord(new ArrayList<>(playTiles.getSquares().keySet()));
+					}
+				}
+			}
+		});
 
 		panel1.add(historyPanel);
 		panel1.add(new JButton(new AbstractAction(MESSAGES.getString("rollback"))
@@ -709,21 +726,32 @@ class Playground
 		 *
 		 * @param playTiles der Zug zu zeigen. {@code null} für gar keinen Zug.
 		 */
-		void setPreparedPlayTiles(final PlayTiles playTiles)
+		void highlightMove(final PlayTiles playTiles)
 		{
 			this.preparedPlayTiles = playTiles;
 			this.preparedMoveStones.clear();
-			// Calculate the border for prepared word
-			this.specialBorders.clear();
 			if (playTiles != null)
 			{
-				this.preparedMoveStones.putAll(playTiles.getStones(this.grid, this.dictionary));
-				final int INSET = 4;
-				final Color preparedMoveColor = Color.RED;
-				final boolean isHorizontal = playTiles.getDirection() == PlayTiles.Direction.HORIZONTAL;
 				final ArrayList<Grid.Square> squares = new ArrayList<>(this.preparedMoveStones.keySet());
+				this.preparedMoveStones.putAll(playTiles.getStones(this.grid, this.dictionary));
+				highlightWord(squares);
+			}
+		}
+
+		private void highlightWord(final ArrayList<Grid.Square> squares)
+		{
+			final int INSET = 4;
+			final Color preparedMoveColor = Color.RED;
+			this.specialBorders.clear();
+
+			if (!squares.isEmpty())
+			{
+				boolean isHorizontal = squares.size() == 1
+						|| squares.get(1).getX() == squares.get(0).getX() + 1;
+
 				for (int i = 0; i < squares.size(); i++)
 				{
+
 					final int top = (isHorizontal || i == 0) ? INSET : 0;
 					final int left = (!isHorizontal || i == 0) ? INSET : 0;
 					final int bottom = (isHorizontal || i == squares.size() - 1) ? INSET : 0;
@@ -1212,7 +1240,7 @@ class Playground
 				playTiles = null;
 			}
 
-			Playground.this.jGrid.setPreparedPlayTiles(playTiles);
+			Playground.this.jGrid.highlightMove(playTiles);
 			Playground.this.jGrid.repaint();
 		}
 
@@ -1383,7 +1411,7 @@ class Playground
 						break;
 					}
 				}
-				Playground.this.jGrid.setPreparedPlayTiles(playTiles);
+				Playground.this.jGrid.highlightMove(playTiles);
 			});
 
 			this.moveList.addMouseListener(new MouseAdapter()
