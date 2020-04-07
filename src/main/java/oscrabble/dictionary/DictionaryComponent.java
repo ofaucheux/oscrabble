@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Component mit Reitern. Jeder Reiter zeigt die Definition eines Wortes.
@@ -11,6 +13,11 @@ import java.awt.event.MouseEvent;
 public class DictionaryComponent extends JTabbedPane
 {
 	private final Dictionary dictionary;
+
+	/**
+	 * Liste der gefundenen Definition
+	 */
+	private final Set<String> found = new HashSet<>();
 
 	/**
 	 * Erstellt ein {@link DictionaryComponent}-
@@ -57,8 +64,15 @@ public class DictionaryComponent extends JTabbedPane
 		{
 			if (getTitleAt(i).equals(word))
 			{
-				setSelectedIndex(i);
-				return;
+				if (this.found.contains(word))
+				{
+					setSelectedIndex(i);
+					return;
+				}
+				else
+				{
+					remove(i);
+				}
 			}
 		}
 
@@ -66,6 +80,7 @@ public class DictionaryComponent extends JTabbedPane
 		try
 		{
 			descriptions = this.dictionary.getDescriptions(word);
+			this.found.add(word);
 		}
 		catch (DictionaryException e)
 		{
