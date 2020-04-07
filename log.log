@@ -127,3 +127,13 @@ e               e
 2020-04-05 14:49:01 INFO  Game:624 - Let's play Emil
 2020-04-05 14:49:20 INFO  AbstractPlayer:108 - Destroy EDT of R2D2
 2020-04-05 14:49:20 INFO  AbstractPlayer:108 - Destroy EDT of Emil
+2020-04-07 13:50:08 INFO  Dictionary:53 - Create dictionary french
+2020-04-07 13:50:14 INFO  Game:178 - Created game with random seed java.util.Random@2aceadd4
+2020-04-07 13:50:14 INFO  Game:624 - Let's play R2D2
+2020-04-07 13:50:14 INFO  BruteForceMethod:150 - 3516 legal moves calculated
+2020-04-07 13:50:16 INFO  AbstractPlayer:369 - Play 8D MAGoTS
+2020-04-07 13:50:16 INFO  Game:261 - R2D2 plays 8D MAGoTS
+2020-04-07 13:50:16 INFO  Game:358 - R2D2 joue "8D MAGoTS" pour 18 points
+2020-04-07 13:50:16 INFO  Game:624 - Let's play Emil
+2020-04-07 13:52:06 INFO  Dictionary:53 - Create dictionary french
+2020-04-07 13:52:45 INFO  Dictionary:53 - Create dictionary french

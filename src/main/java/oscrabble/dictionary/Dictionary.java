@@ -94,14 +94,22 @@ public class Dictionary implements Tile.Generator
 
 			this.words = new HashSetValuedHashMap<>();
 
-			try (final BufferedReader reader = getResourceAsReader(namePrefix + "word_list.txt"))
+			String wordLists = properties.getProperty("word.list.files");
+			if (wordLists == null)
 			{
-				assert reader != null;
-
-				String line;
-				while ((line = reader.readLine()) != null)
+				wordLists = "word_list.txt";
+			}
+			for (final String wordList : wordLists.split(";"))
+			{
+				try (final BufferedReader reader = getResourceAsReader(namePrefix + wordList))
 				{
-					this.words.put(toUpperCase(line), line);
+					assert reader != null;
+
+					String line;
+					while ((line = reader.readLine()) != null)
+					{
+						this.words.put(toUpperCase(line), line);
+					}
 				}
 			}
 

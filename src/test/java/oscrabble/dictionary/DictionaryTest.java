@@ -44,6 +44,7 @@ public class DictionaryTest
 		assertTrue(this.french.containUpperCaseWord("LIVREE"));
 		assertTrue(this.french.containUpperCaseWord("MIMEES"));
 		assertFalse(this.french.containUpperCaseWord("livrée"));
+		assertTrue(this.french.containUpperCaseWord("YETI"));
 	}
 
 	public static Dictionary getTestDictionary()
