@@ -113,6 +113,18 @@ public interface IGame
 	void playerConfigHasChanged(AbstractPlayer player, UUID playerKey);
 
 	/**
+	 * @return the number of tiles still in the bag
+	 */
+	int getNumberTilesInBag();
+
+	/**
+	 * An exchange of tiles is forbidden, if the number of remaining tiles is strictly smaller as this minimum.
+	 *
+	 * @return the minimum
+	 */
+	int getRequiredTilesInBagForExchange();
+
+	/**
 	 * State of the game
 	 */
 	enum  State

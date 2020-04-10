@@ -359,6 +359,11 @@ public class Game implements IGame
 				}
 				else if (action instanceof Exchange)
 				{
+					if (getNumberTilesInBag() < getRequiredTilesInBagForExchange())
+					{
+						throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("not.enough.tiles.in.bag.for.exchange"));
+					}
+
 					final Exchange exchange = (Exchange) action;
 					final List<Tile> stones1 = playerInfo.rack.removeStones(exchange.getChars());
 					this.bag.addAll(stones1);
@@ -480,6 +485,21 @@ public class Game implements IGame
 	public void playerConfigHasChanged(final AbstractPlayer player, final UUID playerKey)
 	{
 		saveConfiguration();
+	}
+
+	@Override
+	public int getNumberTilesInBag()
+	{
+		return this.bag.size();
+	}
+
+	@Override
+	public int getRequiredTilesInBagForExchange()
+	{
+		// This limit is 7 for French and German Scrabble, could be another one of other languages.
+		// see https://www.fisf.net/scrabble/decouverte-du-scrabble/formules-de-jeu.html
+		// and Turnierspielordnung of Scrabble Deutschland e.V.
+		return 7;
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -58,15 +59,38 @@ public class SwingPlayer extends AbstractPlayer
 		this.rackFrame.setLayout(new BorderLayout());
 		this.rackFrame.add(this.jRack);
 
-		final JButton exchangeButton = new JButton((new ExchangeTilesAction()));
-		exchangeButton.setToolTipText(exchangeButton.getText());
-		exchangeButton.setHideActionText(true);
-		final Dimension dim = new Dimension(30, 20);
-		exchangeButton.setMaximumSize(dim);
-		exchangeButton.setPreferredSize(dim);
-		exchangeButton.setIcon(exchangeButton.getIcon());
+		final JMenu moreActionMenu = new JMenu("...");
+		this.rackFrame.add(moreActionMenu);
+		moreActionMenu.add(new AbstractAction(Game.MESSAGES.getString("exchange.tiles...."))
+		{
+			@Override
+			public void actionPerformed(final ActionEvent actionEvent)
+			{
+				final int remaining = SwingPlayer.this.game.getNumberTilesInBag();
+				final int minimum = SwingPlayer.this.game.getRequiredTilesInBagForExchange();
+				if (remaining < minimum)
+				{
+					playground.showMessage(MessageFormat.format(
+							Game.MESSAGES.getString("exchange.of.tiles.not.authorized.because.number.of.tiles.in.bag.(1).smaller.as(2)"),
+							remaining,
+							minimum)
+					);
+				}
+				else
+				{
+					playground.showMessage(Game.MESSAGES.getString("to.exchange.tiles.enter.-.letters.to.exchange.p.ex.-ABC"));
+				}
+			}
+		});
+		moreActionMenu.add(new AbstractAction(Game.MESSAGES.getString("pass.the.turn"))
+		{
+			@Override
+			public void actionPerformed(final ActionEvent actionEvent)
+			{
+				playground.showMessage(Game.MESSAGES.getString("to.pass.the.turn.enter.-"));
+			}
+		});
 
-		this.rackFrame.add(exchangeButton, BorderLayout.AFTER_LINE_ENDS);
 		this.rackFrame.pack();
 		this.rackFrame.setVisible(true);
 		this.rackFrame.setFocusableWindowState(false);
@@ -123,49 +147,6 @@ public class SwingPlayer extends AbstractPlayer
 		playground.refreshUI(this);
 	}
 
-
-	/**
-	 *
-	 */
-	private class ExchangeTilesAction extends AbstractAction
-	{
-		ExchangeTilesAction()
-		{
-			super(
-					"Exchange tiles",
-					new ImageIcon(Playground.class.getResource("exchangeTiles.png"))
-			);
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent e)
-		{
-			final JFrame frame = new JFrame("Exchange");
-			frame.setLayout(new BorderLayout());
-			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-			final JPanel carpet = new JPanel();
-			carpet.setBackground(Playground.SCRABBLE_GREEN);
-			final Dimension carpetDimension = new Dimension(250, 250);
-			carpet.setPreferredSize(carpetDimension);
-			carpet.setSize(carpetDimension);
-			frame.add(carpet, BorderLayout.NORTH);
-			frame.add(new JButton(new AbstractAction("Exchange them!")
-			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
-//					exchange(); TODO
-					frame.dispose();
-				}
-			}), BorderLayout.SOUTH);
-
-			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			frame.setVisible(true);
-			frame.setLocationRelativeTo(SwingPlayer.this.jRack);
-			frame.pack();
-		}
-	}
 
 	@Override
 	public void onDispatchMessage(final String msg)
