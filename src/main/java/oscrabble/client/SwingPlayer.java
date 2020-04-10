@@ -61,7 +61,7 @@ public class SwingPlayer extends AbstractPlayer
 
 		final JMenu moreActionMenu = new JMenu("...");
 		this.rackFrame.add(moreActionMenu);
-		moreActionMenu.add(new AbstractAction(Game.MESSAGES.getString("exchange.tiles...."))
+		moreActionMenu.add(new AbstractAction(Game.MESSAGES.getString("exchange.tiles"))
 		{
 			@Override
 			public void actionPerformed(final ActionEvent actionEvent)
@@ -71,14 +71,14 @@ public class SwingPlayer extends AbstractPlayer
 				if (remaining < minimum)
 				{
 					playground.showMessage(MessageFormat.format(
-							Game.MESSAGES.getString("exchange.of.tiles.not.authorized.because.number.of.tiles.in.bag.(1).smaller.as(2)"),
+							Game.MESSAGES.getString("exchange.of.tiles.not.authorized.because.number.of.tiles.in.bag.0.smaller.as.1"),
 							remaining,
 							minimum)
 					);
 				}
 				else
 				{
-					playground.showMessage(Game.MESSAGES.getString("to.exchange.tiles.enter.-.letters.to.exchange.p.ex.-ABC"));
+					playground.showMessage(Game.MESSAGES.getString("to.exchange.tiles.enter.letters.to.exchange.p.ex.abc"));
 				}
 			}
 		});
@@ -87,7 +87,7 @@ public class SwingPlayer extends AbstractPlayer
 			@Override
 			public void actionPerformed(final ActionEvent actionEvent)
 			{
-				playground.showMessage(Game.MESSAGES.getString("to.pass.the.turn.enter.-"));
+				playground.showMessage(Game.MESSAGES.getString("to.pass.the.turn.enter"));
 			}
 		});
 
