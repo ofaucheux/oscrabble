@@ -60,8 +60,8 @@ public class SwingPlayer extends AbstractPlayer
 		this.rackFrame.add(this.jRack);
 
 		final JMenu moreActionMenu = new JMenu("...");
-		this.rackFrame.add(moreActionMenu);
-		moreActionMenu.add(new AbstractAction(Game.MESSAGES.getString("exchange.tiles"))
+		this.rackFrame.add(moreActionMenu, BorderLayout.AFTER_LINE_ENDS);
+		moreActionMenu.add(new JMenuItem(new AbstractAction(Game.MESSAGES.getString("exchange.tiles"))
 		{
 			@Override
 			public void actionPerformed(final ActionEvent actionEvent)
@@ -81,15 +81,15 @@ public class SwingPlayer extends AbstractPlayer
 					playground.showMessage(Game.MESSAGES.getString("to.exchange.tiles.enter.letters.to.exchange.p.ex.abc"));
 				}
 			}
-		});
-		moreActionMenu.add(new AbstractAction(Game.MESSAGES.getString("pass.the.turn"))
+		}));
+		moreActionMenu.add(new JMenuItem(new AbstractAction(Game.MESSAGES.getString("pass.the.turn"))
 		{
 			@Override
 			public void actionPerformed(final ActionEvent actionEvent)
 			{
 				playground.showMessage(Game.MESSAGES.getString("to.pass.the.turn.enter"));
 			}
-		});
+		}));
 
 		this.rackFrame.pack();
 		this.rackFrame.setVisible(true);
