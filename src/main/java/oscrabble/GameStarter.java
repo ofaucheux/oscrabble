@@ -1,5 +1,6 @@
 package oscrabble;
 
+import org.apache.log4j.Logger;
 import oscrabble.client.SwingPlayer;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.BruteForceMethod;
@@ -9,8 +10,13 @@ import javax.swing.*;
 
 public class GameStarter
 {
+	/** Logger */
+	public static final Logger LOGGER = Logger.getLogger(GameStarter.class);
+
 	public static void main(String[] args)
 	{
+		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> LOGGER.fatal("Uncaught exception", throwable));
+
 		try
 		{
 			final Game game;
