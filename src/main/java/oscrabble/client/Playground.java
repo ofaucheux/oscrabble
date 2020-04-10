@@ -44,6 +44,7 @@ class Playground
 	private final static int CELL_SIZE = 40;
 	public static final Logger LOGGER = Logger.getLogger(Playground.class);
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
+	private static final Pattern PATTERN_PASS_COMMAND = Pattern.compile("-\\s*");
 	static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
 	public static final ResourceBundle MESSAGES = Game.MESSAGES;
@@ -194,7 +195,7 @@ class Playground
 			}
 			for (int index = event.getFirstIndex() ; index <= event.getLastIndex(); index++)
 			{
-				if (historyList.isSelectedIndex(index))
+				if (this.historyList.isSelectedIndex(index))
 				{
 					final Game.HistoryEntry selected = this.historyList.getModel().getElementAt(index);
 					if (selected.isPlayTileAction())
@@ -343,10 +344,7 @@ class Playground
 		this.jScoreboard.refreshDisplay();
 
 		final Iterable<Game.HistoryEntry> history = this.game.getHistory();
-		synchronized (history)
-		{
-			this.historyList.setListData(IterableUtils.toList(history).toArray(new Game.HistoryEntry[0]));
-		}
+		this.historyList.setListData(IterableUtils.toList(history).toArray(new Game.HistoryEntry[0]));
 	}
 
 	/**
@@ -1089,13 +1087,18 @@ class Playground
 							chars.add(c);
 						}
 						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, new Exchange(chars));
-						Playground.this.commandPrompt.setText("");
+					}
+					else if (PATTERN_PASS_COMMAND.matcher(command).matches())
+					{
+						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, SkipTurn.SINGLETON);
 					}
 					else
 					{
 						final PlayTiles preparedPlayTiles = getPreparedMove();
 						play(preparedPlayTiles);
 					}
+					Playground.this.commandPrompt.setText("");
+					resetPossibleMovesPanel();
 				}
 				else
 				{
@@ -1437,6 +1440,7 @@ class Playground
 
 								final PlayTiles playTiles = selection.get(0).getPlayTiles();
 								play(playTiles);
+								Playground.this.commandPrompt.setText("");
 
 								return null;
 							}
@@ -1529,8 +1533,6 @@ class Playground
 		final SwingPlayer player = getCurrentSwingPlayer();
 		assert player != null;
 		this.game.play(player.getPlayerKey(), this.currentPlay, playTiles);
-		this.commandPrompt.setText("");
-		resetPossibleMovesPanel();
 	}
 
 	/**
