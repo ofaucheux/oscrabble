@@ -993,14 +993,18 @@ class Playground
 		try
 		{
 			final String currentPrompt = this.commandPrompt.getText();
-			playTiles = PlayTiles.parseMove(getGrid(), currentPrompt, true);
-			if (playTiles.startSquare == cell.square)
+			final Action action = PlayTiles.parseMove(getGrid(), currentPrompt, true);
+			if (action instanceof PlayTiles)
 			{
-				playTiles = playTiles.getInvertedDirectionCopy();
-			}
-			else
-			{
-				playTiles = playTiles.getTranslatedCopy(cell.square);
+				playTiles = (PlayTiles) action;
+				if (playTiles.startSquare == cell.square)
+				{
+					playTiles = playTiles.getInvertedDirectionCopy();
+				}
+				else
+				{
+					playTiles = playTiles.getTranslatedCopy(cell.square);
+				}
 			}
 		}
 		catch (ParseException e)
@@ -1082,12 +1086,7 @@ class Playground
 					final Matcher m;
 					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
 					{
-						final ArrayList<Character> chars = new ArrayList<>();
-						for (final char c : m.group(1).toCharArray())
-						{
-							chars.add(c);
-						}
-						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, new Exchange(chars));
+						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, new Exchange(m.group(1)));
 					}
 					else if (PATTERN_PASS_COMMAND.matcher(command).matches())
 					{
@@ -1095,7 +1094,7 @@ class Playground
 					}
 					else
 					{
-						final PlayTiles preparedPlayTiles = getPreparedMove();
+						final PlayTiles preparedPlayTiles = ((PlayTiles) getPreparedMove());
 						play(preparedPlayTiles);
 					}
 					Playground.this.commandPrompt.setText("");
@@ -1113,7 +1112,7 @@ class Playground
 			}
 		}
 
-		private PlayTiles getPreparedMove() throws JokerPlacementException, ParseException
+		private Action getPreparedMove() throws JokerPlacementException, ParseException
 		{
 			final SwingPlayer player = getCurrentSwingPlayer();
 			if (player == null)
@@ -1141,7 +1140,7 @@ class Playground
 
 			final Pattern playCommandPattern = Pattern.compile("(?:play\\s+)?(.*)", Pattern.CASE_INSENSITIVE);
 			Matcher matcher;
-			PlayTiles playTiles;
+			Action action;
 			if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
 			{
 				final Rack rack;
@@ -1155,68 +1154,71 @@ class Playground
 					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				playTiles = PlayTiles.parseMove(Playground.this.game.getGrid(), inputWord.toString(), true);
+				action = PlayTiles.parseMove(Playground.this.game.getGrid(), inputWord.toString(), true);
 
 				//
 				// Check if jokers are needed and try to position them
 				//
-
-				LOGGER.debug("Word before positioning jokers: " + playTiles.word);
-				int remainingJokers = rack.countJoker();
-				final HashSetValuedHashMap<Character, Integer> requiredLetters = new HashSetValuedHashMap<>();
-				int i = inputWord.indexOf(" ") + 1;
-				for (final Map.Entry<Grid.Square, Character> square : playTiles.getSquares().entrySet())
+				if (action instanceof PlayTiles)
 				{
-					if (square.getKey().isEmpty())
+					final PlayTiles playTiles = (PlayTiles) action;
+					LOGGER.debug("Word before positioning jokers: " + playTiles.word);
+					int remainingJokers = rack.countJoker();
+					final HashSetValuedHashMap<Character, Integer> requiredLetters = new HashSetValuedHashMap<>();
+					int i = inputWord.indexOf(" ") + 1;
+					for (final Map.Entry<Grid.Square, Character> square : playTiles.getSquares().entrySet())
 					{
-						if (Character.isLowerCase(inputWord.charAt(i)))
+						if (square.getKey().isEmpty())
 						{
-							remainingJokers--;
-						}
-						else
-						{
-							requiredLetters.put(square.getValue(), i);
-						}
-					}
-					i++;
-				}
-
-				for (final Character letter : requiredLetters.keys())
-				{
-					final int inRack = rack.countLetter(letter);
-					final int required = requiredLetters.get(letter).size();
-					final int missing = required - inRack;
-					if (missing > 0)
-					{
-						if (remainingJokers < missing)
-						{
-							throw new JokerPlacementException(MESSAGES.getString("no.enough.jokers"), null);
-						}
-
-						if (missing == required)
-						{
-							for (final Integer pos : requiredLetters.get(letter))
+							if (Character.isLowerCase(inputWord.charAt(i)))
 							{
-								inputWord.replace(pos, pos + 1, Character.toString(Character.toLowerCase(letter)));
+								remainingJokers--;
 							}
-							remainingJokers -= missing;
+							else
+							{
+								requiredLetters.put(square.getValue(), i);
+							}
 						}
-						else
+						i++;
+					}
+
+					for (final Character letter : requiredLetters.keys())
+					{
+						final int inRack = rack.countLetter(letter);
+						final int required = requiredLetters.get(letter).size();
+						final int missing = required - inRack;
+						if (missing > 0)
 						{
-							throw new JokerPlacementException(
-									MESSAGES.getString("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
-									null);
+							if (remainingJokers < missing)
+							{
+								throw new JokerPlacementException(MESSAGES.getString("no.enough.jokers"), null);
+							}
+
+							if (missing == required)
+							{
+								for (final Integer pos : requiredLetters.get(letter))
+								{
+									inputWord.replace(pos, pos + 1, Character.toString(Character.toLowerCase(letter)));
+								}
+								remainingJokers -= missing;
+							}
+							else
+							{
+								throw new JokerPlacementException(
+										MESSAGES.getString("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
+										null);
+							}
 						}
 					}
 				}
-				playTiles = PlayTiles.parseMove(getGrid(), inputWord.toString(), true);
+				action = PlayTiles.parseMove(getGrid(), inputWord.toString(), true);
 				LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 			}
 			else
 			{
-				playTiles = null;
+				action = null;
 			}
-			return playTiles;
+			return action;
 		}
 
 
@@ -1235,18 +1237,25 @@ class Playground
 		@Override
 		public void changedUpdate(final DocumentEvent e)
 		{
-			PlayTiles playTiles;
+			Action action;
 			try
 			{
-				playTiles = getPreparedMove();
+				action = getPreparedMove();
+				if (action instanceof PlayTiles)
+				{
+					action = null;
+				}
 			}
 			catch (JokerPlacementException | ParseException e1)
 			{
 				LOGGER.debug(e1.getMessage());
-				playTiles = null;
+				action = null;
 			}
 
-			Playground.this.jGrid.highlightMove(playTiles);
+			if (action instanceof PlayTiles)
+			{
+				Playground.this.jGrid.highlightMove((PlayTiles) action);
+			}
 			Playground.this.jGrid.repaint();
 		}
 

@@ -1,21 +1,18 @@
 package oscrabble.action;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Action für den Austausch von Buchstaben.
  */
 public class Exchange implements Action
 {
-	final List<Character> chars;
+	final char[] chars;
 
-	public Exchange(final ArrayList<Character> chars)
+	public Exchange(final String chars)
 	{
-		this.chars = chars;
+		this.chars = chars.toCharArray();
 	}
 
-	public List<Character> getChars()
+	public char[] getChars()
 	{
 		return this.chars;
 	}
@@ -25,7 +22,10 @@ public class Exchange implements Action
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append("- ");
-		this.chars.forEach(c -> sb.append(c));
+		for (final char c : this.chars)
+		{
+			sb.append(c);
+		}
 		return sb.toString();
 	}
 }

@@ -31,6 +31,8 @@ public class PlayTiles implements Action
 		this.word = word.toUpperCase();
 	}
 
+	public static final Pattern PASS_TURN = Pattern.compile("-");
+	public static final Pattern EXCHANGE = Pattern.compile("-\\s+\\S+");
 	public static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("((\\d+)(\\w))(\\s+(\\S*))?");
 	public static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("((\\w)(\\d+))(\\s+(\\S*))?");
 
@@ -89,7 +91,7 @@ public class PlayTiles implements Action
 	 * @return der Spielzug
 	 * @throws ParseException wenn aus der Beschreibung keinen Spielzug zu finden ist.
 	 */
-	public static PlayTiles parseMove(final Grid grid, final String coordinate) throws ParseException
+	public static Action parseMove(final Grid grid, final String coordinate) throws ParseException
 	{
 		return parseMove(grid, coordinate, false);
 	}
@@ -104,12 +106,20 @@ public class PlayTiles implements Action
 	 * @return der Spielzug
 	 * @throws ParseException wenn aus der Beschreibung keinen Spielzug zu finden ist.
 	 */
-	public static PlayTiles parseMove(final Grid grid, final String coordinate, final boolean acceptEmptyWord) throws ParseException
+	public static Action parseMove(final Grid grid, final String coordinate, final boolean acceptEmptyWord) throws ParseException
 	{
 		final PlayTiles.Direction direction;
 		final int groupX;
 		final int groupY;
 		Matcher matcher;
+		if (PASS_TURN.matcher(coordinate).matches())
+		{
+			return SkipTurn.SINGLETON;
+		}
+		else if ((matcher = EXCHANGE.matcher(coordinate)).matches())
+		{
+			return new Exchange(matcher.group(1));
+		}
 		if ((matcher = HORIZONTAL_COORDINATE_PATTERN.matcher(coordinate)).matches())
 		{
 			direction = PlayTiles.Direction.HORIZONTAL;
