@@ -9,6 +9,7 @@ import oscrabble.*;
 import oscrabble.action.Action;
 import oscrabble.action.Exchange;
 import oscrabble.action.PlayTiles;
+import oscrabble.action.SkipTurn;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryComponent;
