@@ -1,4 +1,4 @@
-package oscrabble.server;
+package oscrabble.action;
 
 /**
  * Action of skipping its turn.

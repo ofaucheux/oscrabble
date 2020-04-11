@@ -1,5 +1,6 @@
 package oscrabble.server;
 
+import oscrabble.action.Action;
 import oscrabble.player.AbstractPlayer;
 
 import java.util.UUID;

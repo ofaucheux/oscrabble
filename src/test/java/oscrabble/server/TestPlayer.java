@@ -1,8 +1,8 @@
 package oscrabble.server;
 
 import org.apache.log4j.Logger;
-import oscrabble.PlayTiles;
 import oscrabble.ScrabbleException;
+import oscrabble.action.PlayTiles;
 import oscrabble.player.AbstractPlayer;
 
 import java.util.ArrayList;

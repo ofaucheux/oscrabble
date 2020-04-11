@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quinto.dawg.DAWGNode;
 import oscrabble.*;
+import oscrabble.action.PlayTiles;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.client.TextClient;
 

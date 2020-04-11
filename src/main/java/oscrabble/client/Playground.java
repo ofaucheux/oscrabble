@@ -6,11 +6,13 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import oscrabble.*;
+import oscrabble.action.Action;
+import oscrabble.action.Exchange;
+import oscrabble.action.PlayTiles;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryComponent;
 import oscrabble.player.BruteForceMethod;
-import oscrabble.server.Action;
 import oscrabble.server.*;
 
 import javax.swing.*;

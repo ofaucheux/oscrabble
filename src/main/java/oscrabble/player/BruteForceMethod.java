@@ -5,12 +5,13 @@ import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import oscrabble.*;
+import oscrabble.action.PlayTiles;
+import oscrabble.action.SkipTurn;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.Game;
 import oscrabble.server.Play;
-import oscrabble.server.SkipTurn;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;

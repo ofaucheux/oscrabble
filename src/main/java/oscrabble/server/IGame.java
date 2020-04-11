@@ -3,6 +3,7 @@ package oscrabble.server;
 import oscrabble.Grid;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
+import oscrabble.action.Action;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;

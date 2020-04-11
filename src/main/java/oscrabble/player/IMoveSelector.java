@@ -1,6 +1,6 @@
 package oscrabble.player;
 
-import oscrabble.PlayTiles;
+import oscrabble.action.PlayTiles;
 import oscrabble.ScrabbleException;
 
 import java.util.Set;

@@ -1,4 +1,4 @@
-package oscrabble.server;
+package oscrabble.action;
 
 /**
  * Interface for plays a player can play.

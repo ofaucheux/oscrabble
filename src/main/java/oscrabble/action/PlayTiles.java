@@ -1,7 +1,8 @@
-package oscrabble;
+package oscrabble.action;
 
+import oscrabble.Grid;
+import oscrabble.Tile;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.server.Action;
 
 import java.text.ParseException;
 import java.util.*;

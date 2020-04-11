@@ -1,6 +1,7 @@
-package oscrabble;
+package oscrabble.action;
 
 import org.junit.jupiter.api.Test;
+import oscrabble.Grid;
 
 import java.text.ParseException;
 

@@ -1,12 +1,10 @@
-package oscrabble.client;
-
-import oscrabble.server.Action;
+package oscrabble.action;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Action für den Austausch von Buchsteben.
+ * Action für den Austausch von Buchstaben.
  */
 public class Exchange implements Action
 {

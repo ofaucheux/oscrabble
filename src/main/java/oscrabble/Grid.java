@@ -3,6 +3,7 @@ package oscrabble;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
+import oscrabble.action.PlayTiles;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.server.Game;
 
@@ -263,7 +264,7 @@ public class Grid
 				final StringBuilder crossword = new StringBuilder();
 				Square cursor;
 				cursor = sq;
-				final PlayTiles.Direction crossDirection = playTiles.direction.other();
+				final PlayTiles.Direction crossDirection = playTiles.getDirection().other();
 				int crosswordScore = 0;
 				while (!(cursor = cursor.getPrevious(crossDirection)).isBorder() && !cursor.isEmpty())
 				{
@@ -294,7 +295,7 @@ public class Grid
 				mmi.score += sq.tile.getPoints();
 			}
 
-			switch (playTiles.direction)
+			switch (playTiles.getDirection())
 			{
 				case HORIZONTAL:
 					x++;
@@ -358,7 +359,7 @@ public class Grid
 				sq.assertContainChar(c);
 			}
 
-			switch (playTiles.direction)
+			switch (playTiles.getDirection())
 			{
 				case HORIZONTAL:
 					x++;

@@ -1,6 +1,6 @@
 package oscrabble;
 
-import oscrabble.server.Action;
+import oscrabble.action.Action;
 
 /**
  * Definition eines Steins im Spiel: Letter (oder Blank), Wert usw.
