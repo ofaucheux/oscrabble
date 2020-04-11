@@ -188,9 +188,7 @@ public class PlayTiles implements Action
 		return getNotation();
 	}
 
-	/**
-	 * @return die Standardnotation des Spielschritt z.B. {@code B4 WAGEN}. Blanks werden als Kleinbuchstaben dargestellt.
-	 */
+	@Override
 	public String getNotation()
 	{
 		final String column = Character.toString((char) ('A' - 1 + this.startSquare.getX()));

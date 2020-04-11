@@ -5,4 +5,9 @@ package oscrabble.action;
  */
 public interface Action
 {
+
+	/**
+	 * @return die Standardnotation des Spielschritt z.B. {@code B4 WAGEN}. Blanks werden als Kleinbuchstaben dargestellt.
+	 */
+	String getNotation();
 }

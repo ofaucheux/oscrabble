@@ -19,4 +19,13 @@ public class Exchange implements Action
 	{
 		return this.chars;
 	}
+
+	@Override
+	public String getNotation()
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append("- ");
+		this.chars.forEach(c -> sb.append(c));
+		return sb.toString();
+	}
 }

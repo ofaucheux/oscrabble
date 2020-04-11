@@ -1014,7 +1014,7 @@ public class Game implements IGame
 		{
 			//noinspection StringBufferReplaceableByString
 			final StringBuilder sb = new StringBuilder(getPlayer().getName());
-			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(((PlayTiles) this.play.action).getNotation());
+			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(this.play.action.getNotation());
 			sb.append(" ").append(this.scores.get(getPlayer())).append(" pts");
 			return sb.toString();
 		}

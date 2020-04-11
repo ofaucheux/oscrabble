@@ -10,5 +10,11 @@ public class SkipTurn implements Action
 	 */
 	public static final SkipTurn SINGLETON = new SkipTurn();
 
-	private SkipTurn(){};
+	private SkipTurn(){}
+
+	@Override
+	public String getNotation()
+	{
+		return "-";
+	}
 }
