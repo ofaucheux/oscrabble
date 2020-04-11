@@ -10,7 +10,7 @@ import oscrabble.server.Play;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -59,9 +59,39 @@ public class SwingPlayer extends AbstractPlayer
 		this.rackFrame.setLayout(new BorderLayout());
 		this.rackFrame.add(this.jRack);
 
-		final JMenu moreActionMenu = new JMenu("...");
+		final JButton moreActionMenu = new JButton();
+		final JPopupMenu popupMenu = new JPopupMenu();
+		this.rackFrame.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosing(final WindowEvent e)
+			{
+				popupMenu.setVisible(false);
+			}
+		});
+		moreActionMenu.setAction(new AbstractAction("...")
+		{
+			@Override
+			public void actionPerformed(final ActionEvent actionEvent)
+			{
+				popupMenu.setVisible(!popupMenu.isVisible());
+				final Point p = moreActionMenu.getLocationOnScreen().getLocation();
+				p.translate(moreActionMenu.getWidth(), 0);
+				popupMenu.setLocation(p);
+				popupMenu.validate();
+			}
+		});
+		moreActionMenu.addComponentListener(new ComponentAdapter()
+		{
+			@Override
+			public void componentHidden(final ComponentEvent e)
+			{
+				popupMenu.setVisible(false);
+			}
+		});
 		this.rackFrame.add(moreActionMenu, BorderLayout.AFTER_LINE_ENDS);
-		moreActionMenu.add(new JMenuItem(new AbstractAction(Game.MESSAGES.getString("exchange.tiles"))
+
+		popupMenu.add(new JMenuItem(new AbstractAction(Game.MESSAGES.getString("exchange.tiles"))
 		{
 			@Override
 			public void actionPerformed(final ActionEvent actionEvent)
@@ -82,7 +112,7 @@ public class SwingPlayer extends AbstractPlayer
 				}
 			}
 		}));
-		moreActionMenu.add(new JMenuItem(new AbstractAction(Game.MESSAGES.getString("pass.the.turn"))
+		popupMenu.add(new JMenuItem(new AbstractAction(Game.MESSAGES.getString("pass.the.turn"))
 		{
 			@Override
 			public void actionPerformed(final ActionEvent actionEvent)
