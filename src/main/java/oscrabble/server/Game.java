@@ -336,7 +336,7 @@ public class Game implements IGame
 						{
 							final Tile tile =
 									playerInfo.rack.removeStones(
-											Collections.singletonList(playTiles.isPlayedByBlank(i) ? ' ' : c)
+											new char[] { playTiles.isPlayedByBlank(i) ? ' ' : c }
 									).get(0);
 							if (tile.isJoker())
 							{
@@ -372,7 +372,7 @@ public class Game implements IGame
 					this.bag.addAll(stones1);
 					Collections.shuffle(this.bag, this.random);
 					moveMI = null;
-					LOGGER.info(playerInfo.getName() + " exchanges " + exchange.getChars().size() + " stones");
+					LOGGER.info(playerInfo.getName() + " exchanges " + exchange.getChars().length + " stones");
 				}
 				else if (action instanceof SkipTurn)
 				{

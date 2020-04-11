@@ -17,7 +17,7 @@ public class Rack extends HashSet<Tile>
 	 *                   entfernt.
 	 * @throws ScrabbleException falls nicht vorhanden.
 	 */
-	public List<Tile> removeStones(final List<Character> characters) throws ScrabbleException
+	public List<Tile> removeStones(final char[] characters) throws ScrabbleException
 	{
 		final ArrayList<Tile> found = new ArrayList<>();
 		boolean success = false;
@@ -35,7 +35,7 @@ public class Rack extends HashSet<Tile>
 					Tile tile = searchLetter(c);
 					if (tile == null)
 					{
-						throw new ScrabbleException.InvalidStateException("Not in the rack: " + characters);
+						throw new ScrabbleException.InvalidStateException("Not in the rack: " + c);
 					}
 					found.add(tile);
 					this.remove(tile);
@@ -113,10 +113,7 @@ public class Rack extends HashSet<Tile>
 	public Rack copy()
 	{
 		final Rack copy = new Rack();
-		for (final Tile tile : this)
-		{
-			copy.add(tile);
-		}
+		copy.addAll(this);
 		return copy;
 	}
 

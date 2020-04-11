@@ -179,7 +179,7 @@ public class Grid
 	 */
 	public Square getSquare(final String coordinate) throws ParseException
 	{
-		final PlayTiles playTiles = PlayTiles.parseMove(this, coordinate, true);
+		final PlayTiles playTiles = (PlayTiles) PlayTiles.parseMove(this, coordinate, true);
 		assert playTiles.word.isEmpty();
 		return playTiles.startSquare;
 	}
