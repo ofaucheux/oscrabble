@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 public class JsonMessage
 {
@@ -15,6 +16,9 @@ public class JsonMessage
 	private String game;
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
+
+	private Map<String, String> parameters;
+
 	static
 	{
 		MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
@@ -38,5 +42,10 @@ public class JsonMessage
 	public String getGame()
 	{
 		return this.game;
+	}
+
+	public Map<String, String> getParameters()
+	{
+		return this.parameters;
 	}
 }

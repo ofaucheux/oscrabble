@@ -1,16 +1,13 @@
 package oscrabble.json;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.lf5.util.StreamUtils;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 class JsonMessageTest
 {
@@ -18,8 +15,22 @@ class JsonMessageTest
 	@Test
 	void parse() throws IOException
 	{
-		final String json = IOUtils.toString(JsonMessageTest.class.getResourceAsStream("JsonMessageTest/quitCommand.json"));
-		final JsonMessage message = JsonMessage.parse(json);
+
+		JsonMessage message;
+
+		message = getJsonMessage("quitCommand.json");
 		Assert.assertEquals(new Date(119, Calendar.DECEMBER, 25, 12, 36, 32), message.getDate());
+		Assert.assertNull(message.getParameters());
+
+		message = getJsonMessage("addPlayer.json");
+		Assert.assertEquals(1, message.getParameters().size());
+		Assert.assertEquals("player1", message.getParameters().get("player"));
 	}
+
+	private JsonMessage getJsonMessage(final String filename) throws IOException
+	{
+		final String json = IOUtils.toString(JsonMessageTest.class.getResourceAsStream("JsonMessageTest/" + filename), Charset.defaultCharset());
+		return JsonMessage.parse(json);
+	}
+
 }
