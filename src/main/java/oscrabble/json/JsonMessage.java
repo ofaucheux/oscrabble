@@ -1,23 +1,28 @@
 package oscrabble.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOError;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * Representation of a message
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonMessage
 {
 	/**
 	 * Mapper for serialisation
 	 */
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+	static final ObjectMapper MAPPER = new ObjectMapper();
 	static
 	{
 		MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
@@ -136,5 +141,19 @@ public class JsonMessage
 	public int hashCode()
 	{
 		return Objects.hash(this.date, this.command, this.game, this.to, this.parameters);
+	}
+
+	public String toJson()
+	{
+		try
+		{
+			final StringWriter w = new StringWriter();
+			MAPPER.writeValue(w, this);
+			return w.toString();
+		}
+		catch (IOException e)
+		{
+			throw new IOError(e);
+		}
 	}
 }
