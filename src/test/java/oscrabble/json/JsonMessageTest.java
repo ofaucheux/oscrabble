@@ -20,6 +20,7 @@ class JsonMessageTest
 
 		message = getJsonMessage("quitCommand.json");
 		Assert.assertEquals(new Date(119, Calendar.DECEMBER, 25, 12, 36, 32), message.getDate());
+		Assert.assertEquals("quit", message.getCommand());
 		Assert.assertNull(message.getParameters());
 
 		message = getJsonMessage("addPlayer.json");
