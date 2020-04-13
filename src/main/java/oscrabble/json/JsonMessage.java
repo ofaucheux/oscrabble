@@ -7,8 +7,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Representation of a message
@@ -38,6 +37,11 @@ public class JsonMessage
 	 * ID of the game, if any
 	 */
 	private String game;
+
+	/**
+	 * ID of the recipient
+	 */
+	private String recipient;
 
 	/**
 	 * Parameters for the call of the function, if any
@@ -77,5 +81,43 @@ public class JsonMessage
 	public Map<String, String> getParameters()
 	{
 		return this.parameters;
+	}
+
+	/**
+	 * Create a message.
+	 *
+	 * @param game
+	 * @param recipient
+	 * @param command
+	 * @param parameters
+	 * @return the new message
+	 */
+	public static JsonMessage newMessage(final UUID game, final UUID recipient, final String command, final Map<String, String> parameters)
+	{
+		final JsonMessage m = new JsonMessage();
+		m.game = game.toString();
+		m.recipient = recipient.toString();
+		m.command = command;
+		m.parameters = new TreeMap<>(parameters);
+		return m;
+	}
+
+	@Override
+	public boolean equals(final Object o)
+	{
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		final JsonMessage that = (JsonMessage) o;
+		return Objects.equals(this.date, that.date) &&
+				Objects.equals(this.command, that.command) &&
+				Objects.equals(this.game, that.game) &&
+				Objects.equals(this.recipient, that.recipient) &&
+				Objects.equals(this.parameters, that.parameters);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(this.date, this.command, this.game, this.recipient, this.parameters);
 	}
 }
