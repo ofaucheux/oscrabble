@@ -30,8 +30,8 @@ class JsonMessageProviderTest
 		final UUID player1 = UUID.randomUUID();
 		final UUID player2 = UUID.randomUUID();
 
-		final JsonMessage message = JsonMessage.newMessage(game, server, "getScore", Collections.singletonMap("player", "player2"));
-		this.provider.publish(player1, server, message);
+		final JsonMessage message = JsonMessage.newMessage(game, player1, server, "getScore", Collections.singletonMap("player", "player2"));
+		this.provider.publish(message);
 		try
 		{
 			this.provider.readNext(player1, 500, TimeUnit.MILLISECONDS);

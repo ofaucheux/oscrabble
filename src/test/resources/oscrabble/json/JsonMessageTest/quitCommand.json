@@ -1,5 +1,7 @@
 {
   "date": "2019-12-25 12:36:32",
+  "from": "client_ABC",
+  "to": "server_1234",
   "game": "game_1",
   "command": "quit"
 }

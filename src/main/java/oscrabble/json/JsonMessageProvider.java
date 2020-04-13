@@ -12,11 +12,10 @@ public interface JsonMessageProvider
 	/**
 	 * Write a json message on the queue
 	 *
-	 * @param to      recipient
 	 * @param message published message
 	 * @return generated ID of the message
 	 */
-	UUID publish(UUID from, UUID to, JsonMessage message);
+	UUID publish(JsonMessage message);
 
 	/**
 	 * Read the next json message from the queue for a given recipient.

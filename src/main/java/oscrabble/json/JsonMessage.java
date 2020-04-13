@@ -39,9 +39,14 @@ public class JsonMessage
 	private String game;
 
 	/**
+	 * ID of the sender.
+	 */
+	private String from;
+
+	/**
 	 * ID of the recipient
 	 */
-	private String recipient;
+	private String to;
 
 	/**
 	 * Parameters for the call of the function, if any
@@ -78,6 +83,16 @@ public class JsonMessage
 		return this.game;
 	}
 
+	public String getFrom()
+	{
+		return this.from;
+	}
+
+	public String getTo()
+	{
+		return this.to;
+	}
+
 	public Map<String, String> getParameters()
 	{
 		return this.parameters;
@@ -87,16 +102,17 @@ public class JsonMessage
 	 * Create a message.
 	 *
 	 * @param game
-	 * @param recipient
+	 * @param to
 	 * @param command
 	 * @param parameters
 	 * @return the new message
 	 */
-	public static JsonMessage newMessage(final UUID game, final UUID recipient, final String command, final Map<String, String> parameters)
+	public static JsonMessage newMessage(final UUID game, final UUID from, final UUID to, final String command, final Map<String, String> parameters)
 	{
 		final JsonMessage m = new JsonMessage();
 		m.game = game.toString();
-		m.recipient = recipient.toString();
+		m.from = from.toString();
+		m.to = to.toString();
 		m.command = command;
 		m.parameters = new TreeMap<>(parameters);
 		return m;
@@ -111,13 +127,14 @@ public class JsonMessage
 		return Objects.equals(this.date, that.date) &&
 				Objects.equals(this.command, that.command) &&
 				Objects.equals(this.game, that.game) &&
-				Objects.equals(this.recipient, that.recipient) &&
+				Objects.equals(this.from, that.from) &&
+				Objects.equals(this.to, that.to) &&
 				Objects.equals(this.parameters, that.parameters);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(this.date, this.command, this.game, this.recipient, this.parameters);
+		return Objects.hash(this.date, this.command, this.game, this.to, this.parameters);
 	}
 }
