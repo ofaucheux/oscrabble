@@ -8,27 +8,31 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import oscrabble.player.BruteForceMethod;
+import oscrabble.player.IPlayer;
 
 import java.io.IOError;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class HttpClient implements JsonMessageProvider
+public class HttpClient
 {
 	final CloseableHttpClient client = HttpClients.createDefault();
 
 	private final URI uri;
+
+	private IPlayer player;
 
 	public HttpClient(final URI uri)
 	{
 		this.uri = uri;
 	}
 
-	@Override
 	public UUID publish(final JsonMessage message)
 	{
 		try
@@ -48,7 +52,6 @@ public class HttpClient implements JsonMessageProvider
 		}
 	}
 
-	@Override
 	public JsonMessage readNext(final UUID to, final int maxWait, final TimeUnit maxWaitUnit) throws TimeoutException
 	{
 		final HttpGet get = new HttpGet(this.uri.resolve("next/" + to));
@@ -70,10 +73,17 @@ public class HttpClient implements JsonMessageProvider
 
 	}
 
-	@Override
 	public JsonMessage readMessage(final UUID messageId) throws IllegalArgumentException
 	{
-		return null;// TODO
+		try
+		{
+			final HttpPost post = new HttpPost();
+			client.execute(post);
+			return null;// TODO
+		}
+		catch (IOException e)
+		{
+			throw new IOError(e);
+		}
 	}
-
 }

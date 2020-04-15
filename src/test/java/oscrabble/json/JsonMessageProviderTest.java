@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import oscrabble.json.messages.AddPlayer;
+import oscrabble.json.messages.PoolMessage;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -15,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @RunWith(Parameterized.class)
 class JsonMessageProviderTest
 {
-	private final JsonMessageProvider provider;
+	private final HttpServer provider;
 
-	public JsonMessageProviderTest(JsonMessageProvider provider)
+	public JsonMessageProviderTest(HttpServer provider)
 	{
 		this.provider = provider;
 	}
@@ -30,8 +32,8 @@ class JsonMessageProviderTest
 		final UUID player1 = UUID.randomUUID();
 		final UUID player2 = UUID.randomUUID();
 
-		final JsonMessage message = JsonMessage.newMessage(game, player1, server, "getScore", Collections.singletonMap("player", "player2"));
-		this.provider.publish(message);
+		final JsonMessage message = new PoolMessage(game, player1, server);
+		this.provider.treat(message);
 		try
 		{
 			this.provider.readNext(player1, 500, TimeUnit.MILLISECONDS);

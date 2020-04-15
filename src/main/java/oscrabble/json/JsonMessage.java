@@ -1,6 +1,7 @@
 package oscrabble.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,19 +11,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * Representation of a message
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JsonMessage
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+public abstract class JsonMessage
 {
 	/**
 	 * Mapper for serialisation
 	 */
 	static final ObjectMapper MAPPER = new ObjectMapper();
+
 	static
 	{
 		MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
@@ -34,43 +39,53 @@ public class JsonMessage
 	private Date date;
 
 	/**
-	 * command
-	 */
-	private String command;
-
-	/**
 	 * ID of the game, if any
 	 */
-	private String game;
+	private UUID game;
 
 	/**
 	 * ID of the sender.
 	 */
-	private String from;
+	private UUID from;
 
 	/**
 	 * ID of the recipient
 	 */
-	private String to;
-
-	/**
-	 * Parameters for the call of the function, if any
-	 */
-	private Map<String, String> parameters;
+	private UUID to;
 
 	/**
 	 * Parse a message
+	 *
 	 * @param json the message
 	 * @return the parsed message
-	 *
-	 * @throws JsonParseException if underlying input contains invalid content
-	 *    of type {@link JsonParser} supports (JSON for default case)
-	 * @throws JsonMappingException if the input JSON structure does not match structure
-	 *   expected for result type (or has other mismatch issues)
+	 * @throws JsonParseException   if underlying input contains invalid content of type {@link JsonParser} supports (JSON for default case)
+	 * @throws JsonMappingException if the input JSON structure does not match structure expected for result type (or has other mismatch issues)
 	 */
 	public static JsonMessage parse(final String json) throws JsonProcessingException
 	{
 		return MAPPER.readValue(json, JsonMessage.class);
+	}
+
+	public static JsonMessage instantiate(final Class<? extends JsonMessage> clazz, final UUID game, final UUID from, final UUID to)
+	{
+		try
+		{
+			final JsonMessage m = clazz.getConstructor().newInstance();
+			m.setGame(game);
+			m.setFrom(from);
+			m.setTo(to);
+			m.setDate(new Date());
+			return m;
+		}
+		catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
+		{
+			throw new Error(e);
+		}
+	}
+
+	protected void setDate(final Date date)
+	{
+		this.date = date;
 	}
 
 	public Date getDate()
@@ -78,69 +93,19 @@ public class JsonMessage
 		return this.date;
 	}
 
-	public String getCommand()
-	{
-		return this.command;
-	}
-
-	public String getGame()
+	public UUID getGame()
 	{
 		return this.game;
 	}
 
-	public String getFrom()
+	public UUID getFrom()
 	{
 		return this.from;
 	}
 
-	public String getTo()
+	public UUID getTo()
 	{
 		return this.to;
-	}
-
-	public Map<String, String> getParameters()
-	{
-		return this.parameters;
-	}
-
-	/**
-	 * Create a message.
-	 *
-	 * @param game
-	 * @param to
-	 * @param command
-	 * @param parameters
-	 * @return the new message
-	 */
-	public static JsonMessage newMessage(final UUID game, final UUID from, final UUID to, final String command, final Map<String, String> parameters)
-	{
-		final JsonMessage m = new JsonMessage();
-		m.game = game.toString();
-		m.from = from.toString();
-		m.to = to.toString();
-		m.command = command;
-		m.parameters = new TreeMap<>(parameters);
-		return m;
-	}
-
-	@Override
-	public boolean equals(final Object o)
-	{
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		final JsonMessage that = (JsonMessage) o;
-		return Objects.equals(this.date, that.date) &&
-				Objects.equals(this.command, that.command) &&
-				Objects.equals(this.game, that.game) &&
-				Objects.equals(this.from, that.from) &&
-				Objects.equals(this.to, that.to) &&
-				Objects.equals(this.parameters, that.parameters);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(this.date, this.command, this.game, this.to, this.parameters);
 	}
 
 	public String toJson()
@@ -156,4 +121,56 @@ public class JsonMessage
 			throw new IOError(e);
 		}
 	}
+
+	public void setFrom(final UUID from)
+	{
+		this.from = from;
+	}
+
+	public void setGame(final UUID game)
+	{
+		this.game = game;
+	}
+
+	public String getCommand()
+	{
+		return this.getClass().getSimpleName();
+	}
+
+	public void setTo(final UUID to)
+	{
+		this.to = to;
+	}
+
+//	enum Command
+//	{
+//		POLL_MESSAGE,
+//
+//		// Commands send to a player
+//		EDIT_PARAMETERS,
+//		GET_CONFIGURATION,
+//		GET_NAME,
+//		GET_PLAYER_KEY,
+//		GET_TYPE,
+//		HAS_EDITABLE_PARAMETERS,
+//		IS_OBSERVER,
+//		SET_PLAYER_KEY,
+//		SET_GAME,
+//
+//		// Commands send to a server
+//		SET_STATE,
+//		ADD_PLAYER,
+//		PLAY,
+//		GET_PLAYER_TO_PLAY,
+//		GET_PLAYERS,
+//		GET_HISTORY,
+//		GET_GRID,
+//		GET_RACK,
+//		GET_SCORE,
+//		QUIT,
+//		IS_LAST_PLAY_ERROR,
+//		ROLLBACK_LAST_MOVE,
+//		PLAYER_CONFIG_HAS_CHANGED,
+//		GET_REQUIRED_TILES_IN_BAG_FOR_EXCHANGE,
+//	}
 }

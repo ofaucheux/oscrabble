@@ -43,6 +43,11 @@ public interface IPlayer extends Server.GameListener
 	void editParameters();
 
 	/**
+	 * @return key of the player
+	 */
+	UUID getPlayerKey();
+
+	/**
 	 * @return type of the player
 	 */
 	Server.PlayerType getType();
