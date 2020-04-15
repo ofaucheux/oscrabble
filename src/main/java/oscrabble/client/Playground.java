@@ -5,23 +5,32 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import oscrabble.*;
+import oscrabble.Grid;
+import oscrabble.Rack;
+import oscrabble.ScrabbleException;
+import oscrabble.Tile;
 import oscrabble.action.Action;
 import oscrabble.action.Exchange;
 import oscrabble.action.PlayTiles;
 import oscrabble.action.SkipTurn;
 import oscrabble.configuration.ConfigurationPanel;
-import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.DictionaryComponent;
+import oscrabble.dictionary.ScrabbleLanguageInformation;
 import oscrabble.player.BruteForceMethod;
-import oscrabble.server.*;
+import oscrabble.server.Game;
+import oscrabble.server.IGame;
+import oscrabble.server.IPlayerInfo;
+import oscrabble.server.Play;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -29,6 +38,7 @@ import java.awt.geom.AffineTransform;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -124,7 +134,7 @@ class Playground
 	{
 		assert this.jGrid == null;
 
-		this.jGrid = new JGrid(getGrid(), this.game.getDictionary());
+		this.jGrid = new JGrid(getGrid(), this.game.getScrabbleLanguageInformation(), this.game);
 		this.jGrid.setClient(this);
 		this.jScoreboard = new JScoreboard(this.game);
 		this.commandPrompt = new JTextField();
@@ -621,7 +631,12 @@ class Playground
 		private final HashMap<Grid.Square, MatteBorder> specialBorders = new HashMap<>();
 
 		private final Grid grid;
-		private final Dictionary dictionary;
+		private final ScrabbleLanguageInformation sli;
+		/**
+		 *
+		 */
+		private final IGame game;
+
 		private final Map<Grid.Square, Tile> preparedMoveStones;
 
 		/**
@@ -651,15 +666,17 @@ class Playground
 		 */
 		private Action lastAction;
 
+
 		/**
 		 * Spielfeld des Scrabbles
 		 */
-		JGrid(final Grid grid, final Dictionary dictionary)
+		JGrid(final Grid grid, final ScrabbleLanguageInformation sli, final IGame game)
 		{
 			this.grid = grid;
+			this.game = game;
 			final int numberOfRows = grid.getSize() + 2;
-			this.dictionary = dictionary;
-			this.dictionaryComponent = new DictionaryComponent(this.dictionary);
+			this.sli = sli;
+			this.dictionaryComponent = new DictionaryComponent(game);
 
 			this.setLayout(new BorderLayout());
 			this.background = new JPanel();
@@ -734,7 +751,7 @@ class Playground
 			if (playTiles != null)
 			{
 				final ArrayList<Grid.Square> squares = new ArrayList<>(this.preparedMoveStones.keySet());
-				this.preparedMoveStones.putAll(playTiles.getStones(this.grid, this.dictionary));
+				this.preparedMoveStones.putAll(playTiles.getStones(this.grid, this.sli));
 				highlightWord(squares);
 			}
 		}
@@ -788,8 +805,8 @@ class Playground
 				dictionaryFrame.setSize(600, 600);
 			}
 
-			final Dictionary dictionary = this.grid.getDictionary();
-			for (final String mutation : dictionary.getMutations(word))
+
+			for (final String mutation : this.game.getMutations(word))
 			{
 				this.dictionaryComponent.showDescription(mutation);
 			}
@@ -1237,25 +1254,15 @@ class Playground
 		@Override
 		public void changedUpdate(final DocumentEvent e)
 		{
-			Action action;
 			try
 			{
-				action = getPreparedMove();
-				if (action instanceof PlayTiles)
-				{
-					action = null;
-				}
+				getPreparedMove();
 			}
 			catch (JokerPlacementException | ParseException e1)
 			{
 				LOGGER.debug(e1.getMessage());
-				action = null;
 			}
 
-			if (action instanceof PlayTiles)
-			{
-				Playground.this.jGrid.highlightMove((PlayTiles) action);
-			}
 			Playground.this.jGrid.repaint();
 		}
 

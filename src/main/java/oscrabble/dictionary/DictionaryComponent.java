@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,7 +13,6 @@ import java.util.Set;
  */
 public class DictionaryComponent extends JTabbedPane
 {
-	private final Dictionary dictionary;
 
 	/**
 	 * Liste der gefundenen Definition
@@ -20,13 +20,17 @@ public class DictionaryComponent extends JTabbedPane
 	private final Set<String> found = new HashSet<>();
 
 	/**
-	 * Erstellt ein {@link DictionaryComponent}-
-	 * @param dictionary Zu benutzendes Wörterbuch
+	 * Provider
 	 */
-	public DictionaryComponent(final Dictionary dictionary)
-	{
-		this.dictionary = dictionary;
+	private final WordMetainformationProvider wmip;
 
+	/**
+	 * Erstellt ein {@link DictionaryComponent}-
+	 * @param wmip Provider
+	 */
+	public DictionaryComponent(final WordMetainformationProvider wmip)
+	{
+		this.wmip = wmip;
 		// add a word
 		insertTab("+", null,null, "Search a word...", 0);
 		addMouseListener(new MouseAdapter()
@@ -77,14 +81,21 @@ public class DictionaryComponent extends JTabbedPane
 		}
 
 		Iterable<String> descriptions;
-		try
+		if (this.wmip != null)
 		{
-			descriptions = this.dictionary.getDescriptions(word);
-			this.found.add(word);
+			try
+			{
+				descriptions = this.wmip.getDefinitions(word);
+				this.found.add(word);
+			}
+			catch (DictionaryException e)
+			{
+				descriptions = null;
+			}
 		}
-		catch (DictionaryException e)
+		else
 		{
-			descriptions = null;
+			descriptions = Collections.singleton("No word meta info provider");
 		}
 
 		final JPanel panel = new JPanel();

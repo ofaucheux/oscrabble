@@ -5,6 +5,7 @@ import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
 import oscrabble.action.PlayTiles;
 import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.ScrabbleLanguageInformation;
 import oscrabble.server.Game;
 
 import java.text.ParseException;
@@ -44,9 +45,9 @@ public class Grid
 		this.stoneGenerator = stoneGenerator;
 	}
 
-	public Grid(final Dictionary dictionary)
+	public Grid(final ScrabbleLanguageInformation sli)
 	{
-		this(dictionary, SCRABBLE_SIZE);
+		this(sli, SCRABBLE_SIZE);
 	}
 
 	/**
@@ -140,15 +141,6 @@ public class Grid
 			square.neighbours = Collections.unmodifiableSet(square.neighbours);
 		}
 		return square.neighbours;
-	}
-
-	public Dictionary getDictionary()
-	{
-		if (!(this.stoneGenerator instanceof Dictionary))
-		{
-			throw new IllegalStateException("No dictionary associated with this grid");
-		}
-		return ((Dictionary) this.stoneGenerator);
 	}
 
 	/**

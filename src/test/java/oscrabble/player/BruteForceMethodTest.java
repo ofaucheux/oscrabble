@@ -7,6 +7,7 @@ import oscrabble.*;
 import oscrabble.action.PlayTiles;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.client.TextClient;
+import oscrabble.dictionary.Language;
 
 import java.text.ParseException;
 import java.util.*;
@@ -22,7 +23,7 @@ class BruteForceMethodTest
 	@BeforeEach
 	public void BruteForceTest()
 	{
-		final Dictionary french = Dictionary.getDictionary(Dictionary.Language.FRENCH);
+		final Dictionary french = Dictionary.getDictionary(Language.FRENCH);
 		this.instance = new BruteForceMethod(french);
 		this.instance.loadDictionary(french);
 	}

@@ -2,10 +2,10 @@ package oscrabble.action;
 
 import oscrabble.Grid;
 import oscrabble.Tile;
-import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.ScrabbleLanguageInformation;
 
 import java.text.ParseException;
-import java.util.*;
+import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,10 +39,10 @@ public class PlayTiles implements Action
 	/**
 	 *
 	 * @param grid grid of game
-	 * @param dictionary dictionary of game
+	 * @param sli dictionary of game
 	 * @return all stones of the move, even if they already are on the board.
 	 */
-	public LinkedHashMap<Grid.Square, Tile> getStones(final Grid grid, final Dictionary dictionary)
+	public LinkedHashMap<Grid.Square, Tile> getStones(final Grid grid, final ScrabbleLanguageInformation sli)
 	{
 		final LinkedHashMap<Grid.Square, Tile> stones = new LinkedHashMap<>();
 		int y = this.startSquare.getY();
@@ -50,7 +50,7 @@ public class PlayTiles implements Action
 		for (int i = 0; i < this.word.length(); i++)
 		{
 			char c = this.originalWord.charAt(i);
-			stones.put(grid.getSquare(x, y), dictionary.generateStone(Character.isLowerCase(c) ? null : c));
+			stones.put(grid.getSquare(x, y), sli.generateStone(Character.isLowerCase(c) ? null : c));
 			if (this.direction == Direction.HORIZONTAL)
 			{
 				x += 1;
@@ -87,7 +87,7 @@ public class PlayTiles implements Action
 	 * Parse die Beschreibung eines Spielzuges.
 	 *
 	 * @param grid            die
-	 * @param coordinate      die Beschreibung, z.B. {@code B4 WAGEN} für Honizontal, B, 4 Wort WAGEN.
+	 * @param coordinate      die Beschreibung, z.B. {@code B4 WAGEN} für Horizontal, B, 4 Wort WAGEN.
 	 * @return der Spielzug
 	 * @throws ParseException wenn aus der Beschreibung keinen Spielzug zu finden ist.
 	 */
@@ -101,8 +101,8 @@ public class PlayTiles implements Action
 	 * Parse die Beschreibung eines Spielzuges.
 	 *
 	 * @param grid          die
-	 * @param coordinate    die Beschreibung, z.B. {@code B4 WAGEN} für Honizontal, B, 4 Wort WAGEN.
-	 * @param acceptEmptyWord
+	 * @param coordinate    die Beschreibung, z.B. {@code B4 WAGEN} für Horizontal, B, 4 Wort WAGEN.
+	 * @param acceptEmptyWord -
 	 * @return der Spielzug
 	 * @throws ParseException wenn aus der Beschreibung keinen Spielzug zu finden ist.
 	 */
@@ -150,8 +150,7 @@ public class PlayTiles implements Action
 		{
 			throw new ParseException("Missing word", 0);
 		}
-		final PlayTiles playTiles = new PlayTiles(grid.getSquare(x, y), direction, word == null ? "" : word);
-		return playTiles;
+		return new PlayTiles(grid.getSquare(x, y), direction, word == null ? "" : word);
 	}
 
 	public Direction getDirection()

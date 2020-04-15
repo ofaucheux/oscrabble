@@ -4,12 +4,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import oscrabble.Tile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -17,12 +13,11 @@ import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class Dictionary implements Tile.Generator
+public class Dictionary
 {
 
 	private static final Logger LOGGER = Logger.getLogger(Dictionary.class);
-	private static final CSVFormat letterFileFormat = CSVFormat.newFormat(',')
-			.withFirstRecordAsHeader();
+
 
 	/** Already loaded dictionaries */
 	public static final HashMap<Language, Dictionary> LOADED_DICTIONARIES = new HashMap<>();
@@ -30,9 +25,7 @@ public class Dictionary implements Tile.Generator
 	private final String name;
 	/** Die Wörter: key: Wörter ohne Accent, großgeschrieben. Values: die selben keingeschrieben und mit accent */
 	private final MultiValuedMap<String, String> words;
-	private final Map<Character, Letter> letters;
 	private final Pattern stripAccentPattern;
-	private int numberBlanks;
 
 	public String md5;
 	private WordMetainformationProvider metainformationProvider;
@@ -167,30 +160,6 @@ public class Dictionary implements Tile.Generator
 				this.md5 = DigestUtils.md5Hex(this.words.toString());
 			}
 
-			this.letters = new LinkedHashMap<>();
-			try (InputStream is = Dictionary.class.getResourceAsStream(namePrefix + "tiles.csv"))
-			{
-				for (final CSVRecord record : new CSVParser(new InputStreamReader(is), letterFileFormat).getRecords())
-				{
-					final Letter letter = new Letter();
-					final String character = record.get("character");
-					if ("blank".equals(character.toLowerCase()))
-					{
-						this.numberBlanks = Integer.parseInt(record.get("prevalence"));
-					}
-					else
-					{
-						if (character.length() != 1)
-						{
-							throw new AssertionError("False character: " + character);
-						}
-						letter.c = character.charAt(0);
-						letter.prevalence = Integer.parseInt(record.get("prevalence"));
-						letter.points = Integer.parseInt(record.get("points"));
-						this.letters.put(letter.c, letter);
-					}
-				}
-			}
 		}
 		catch (IOException e)
 		{
@@ -203,6 +172,11 @@ public class Dictionary implements Tile.Generator
 			this.metainformationProvider = new UnMotDotNet();
 //			((Wikitionary) this.metainformationProvider).setHtmlWidth(200);
 		}
+	}
+
+	public WordMetainformationProvider getMetainformationProvider()
+	{
+		return this.metainformationProvider;
 	}
 
 	/**
@@ -274,28 +248,6 @@ public class Dictionary implements Tile.Generator
 		return contains;
 	}
 
-	/**
-	 * Liefert die Definitionen eines Wortes.
-	 * @return die gefundenen Definitionen, {@code null} wenn keine gefunden.
-	 */
-	public Iterable<String> getDescriptions(final String word) throws DictionaryException
-	{
-		if (this.metainformationProvider != null)
-		{
-			return this.metainformationProvider.getDefinitions(word);
-		}
-		else
-		{
-			return null;
-		}
-	}
-
-
-	public Collection<Letter> getLetters()
-	{
-		return this.letters.values();
-	}
-
 	public String getName()
 	{
 		return this.name;
@@ -306,26 +258,6 @@ public class Dictionary implements Tile.Generator
 		// TODO
 	}
 
-	@Override
-	public Tile generateStone(final Character c)
-	{
-		final Tile tile;
-		if (c == null)
-		{
-			tile = new Tile(null, 0);
-		}
-		else
-		{
-			if (!Character.isUpperCase(c))
-			{
-				throw new AssertionError("Character must be uppercase: " + c);
-			}
-
-			final Letter letter = this.letters.get(c);
-			tile = new Tile(letter.c, letter.points);
-		}
-		return tile;
-	}
 
 	/**
 	 * @param word Ein Wort, großgeschrieben, z.B. {@code CHANTE}
@@ -335,32 +267,4 @@ public class Dictionary implements Tile.Generator
 	{
 		return Collections.unmodifiableCollection(this.words.get(word));
 	}
-
-	public int getNumberBlanks()
-	{
-		return this.numberBlanks;
-	}
-
-	public static class Letter
-	{
-		public char c;
-		public int prevalence;
-		int points;
-	}
-
-
-	public enum Language
-	{
-		FRENCH("french"),
-		GERMAN("german"),
-		TEST("test")
-		;
-		final String directoryName;
-
-		Language(final String directoryName)
-		{
-			this.directoryName = directoryName;
-		}
-	}
-
 }

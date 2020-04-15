@@ -6,12 +6,15 @@ import oscrabble.ScrabbleException;
 import oscrabble.action.Action;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.ScrabbleLanguageInformation;
+import oscrabble.dictionary.WordMetainformationProvider;
 import oscrabble.player.AbstractPlayer;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public interface IGame
+public interface IGame extends WordMetainformationProvider
 {
 	void setState(Game.State state);
 
@@ -50,6 +53,8 @@ public interface IGame
 	Iterable<Game.HistoryEntry> getHistory();
 
 	Dictionary getDictionary();
+
+	ScrabbleLanguageInformation getScrabbleLanguageInformation();
 
 	Grid getGrid();
 
@@ -124,6 +129,13 @@ public interface IGame
 	 * @return the minimum
 	 */
 	int getRequiredTilesInBagForExchange();
+
+	/**
+	 * Which real words are known having these tiles?
+	 * @param word
+	 * @return all mutations
+	 */
+	Collection<String> getMutations(String word);
 
 	/**
 	 * State of the game

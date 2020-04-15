@@ -4,7 +4,10 @@ import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
-import oscrabble.*;
+import oscrabble.Grid;
+import oscrabble.Rack;
+import oscrabble.ScrabbleException;
+import oscrabble.Tile;
 import oscrabble.action.Action;
 import oscrabble.action.Exchange;
 import oscrabble.action.PlayTiles;
@@ -12,6 +15,7 @@ import oscrabble.action.SkipTurn;
 import oscrabble.client.SwingPlayer;
 import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
+import oscrabble.dictionary.*;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
@@ -61,6 +65,7 @@ public class Game implements IGame
 	private CountDownLatch waitingForPlay;
 	private final LinkedList<Tile> bag = new LinkedList<>();
 	private final Dictionary dictionary;
+	private final ScrabbleLanguageInformation sli;
 
 	final List<GameListener> listeners = new ArrayList<>();
 
@@ -123,11 +128,12 @@ public class Game implements IGame
 		this.configuration.loadProperties(properties);
 		try
 		{
-			this.dictionary = Dictionary.getDictionary(this.configuration.dictionary);
+			this.dictionary = Dictionary.getDictionary(this.configuration.language);
+			this.sli = new ScrabbleLanguageInformation(this.configuration.language);
 		}
 		catch (IllegalArgumentException e)
 		{
-			throw new ConfigurationException("Not known language: " + this.configuration.dictionary);
+			throw new ConfigurationException("Not known language: " + this.configuration.language);
 		}
 		this.configuration.addChangeListener(evt -> saveConfiguration());
 
@@ -171,7 +177,7 @@ public class Game implements IGame
 			}
 		}
 
-		this.grid = new Grid(this.dictionary);
+		this.grid = new Grid(this.sli);
 		this.random = new Random();
 		this.randomSeed = this.random.nextLong();
 		this.random.setSeed(this.randomSeed);
@@ -187,12 +193,13 @@ public class Game implements IGame
 	 * @param dictionary dictionary
 	 * @param randomSeed seed to initialize the random generator
 	 */
-	public Game(final Dictionary dictionary, final long randomSeed)
+	public Game(final Language language, final Dictionary dictionary, final long randomSeed)
 	{
 		this.randomSeed = randomSeed;
 		this.random = new Random(randomSeed);
 		this.dictionary = dictionary;
-		this.grid = new Grid(dictionary);
+		this.sli = new ScrabbleLanguageInformation(language);
+		this.grid = new Grid(this.sli);
 		this.propertyFile = null;
 		this.configuration = null;
 	}
@@ -200,12 +207,13 @@ public class Game implements IGame
 	/**
 	 * Constructor for test purposes.
 	 *
-	 * @see #Game(Dictionary, long)
+	 * @see #Game(Language, Dictionary, long)
+	 * @param language language
 	 * @param dictionary dictionary
 	 */
-	public Game(final Dictionary dictionary)
+	public Game(final Language language, final Dictionary dictionary)
 	{
-		this(dictionary, new Random().nextLong());
+		this(language, dictionary, new Random().nextLong());
 	}
 
 	/**
@@ -506,6 +514,12 @@ public class Game implements IGame
 	}
 
 	@Override
+	public Collection<String> getMutations(final String word)
+	{
+		return this.dictionary.getMutations(word);
+	}
+
+	@Override
 	public synchronized AbstractPlayer getPlayerToPlay()
 	{
 		return this.toPlay.getFirst();
@@ -697,17 +711,16 @@ public class Game implements IGame
 	private void fillBag()
 	{
 		// Fill bag
-		final Dictionary dictionary = this.getDictionary();
-		for (final Dictionary.Letter letter : dictionary.getLetters())
+		for (final ScrabbleLanguageInformation.Letter letter : this.sli.getLetters())
 		{
 			for (int i = 0; i < letter.prevalence; i++)
 			{
-				this.bag.add(dictionary.generateStone(letter.c));
+				this.bag.add(this.sli.generateStone(letter.c));
 			}
 		}
-		for (int i = 0; i < dictionary.getNumberBlanks(); i++)
+		for (int i = 0; i < this.sli.getNumberBlanks(); i++)
 		{
-			this.bag.add(dictionary.generateStone(null));
+			this.bag.add(this.sli.generateStone(null));
 		}
 		Collections.shuffle(this.bag, this.random);
 	}
@@ -727,6 +740,19 @@ public class Game implements IGame
 	public Dictionary getDictionary()
 	{
 		return this.dictionary;
+	}
+
+	@Override
+	public ScrabbleLanguageInformation getScrabbleLanguageInformation()
+	{
+		return this.sli;
+	}
+
+	@Override
+	public Iterable<String> getDefinitions(final String word) throws DictionaryException
+	{
+		final WordMetainformationProvider provider = this.dictionary.getMetainformationProvider();
+		return provider == null ? null : provider.getDefinitions(word);
 	}
 
 	@Override
@@ -976,7 +1002,7 @@ public class Game implements IGame
 	private static class Configuration extends oscrabble.configuration.Configuration
 	{
 		@Parameter(label = "Dictionary", description = "#dictionary.of.the.game")
-		Dictionary.Language dictionary = Dictionary.Language.FRENCH;
+		Language language = Language.FRENCH;
 
 		/**
 		 * Accept a new attempt after a player has tried a forbidden move

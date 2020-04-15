@@ -13,6 +13,7 @@ import oscrabble.action.Action;
 import oscrabble.action.PlayTiles;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.Language;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
@@ -38,7 +39,7 @@ public class GameTest
 	private TestPlayer gustav;
 	private TestPlayer john;
 	private TestPlayer jurek;
-	public static final Dictionary FRENCH_DICTIONARY = Dictionary.getDictionary(Dictionary.Language.FRENCH);
+	public static final Dictionary FRENCH_DICTIONARY = Dictionary.getDictionary(Language.FRENCH);
 
 	@BeforeEach
 	public void initialize()
