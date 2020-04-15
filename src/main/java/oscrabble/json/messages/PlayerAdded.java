@@ -2,12 +2,10 @@ package oscrabble.json.messages;
 
 import oscrabble.json.JsonMessage;
 
-import java.util.UUID;
-
 /**
  * Response of server to the client after an {@link AddPlayer}
  */
-public class PlayerAddedMessage extends JsonMessage
+public class PlayerAdded extends JsonMessage
 {
 	/**
 	 * Name of the new player

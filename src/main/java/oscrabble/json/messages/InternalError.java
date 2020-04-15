@@ -5,7 +5,7 @@ import oscrabble.json.JsonMessage;
 /**
  * Message reporting an internal error
  */
-public class InternalErrorMessage extends JsonMessage
+public class InternalError extends JsonMessage
 {
 	/**
 	 * The error message

@@ -7,6 +7,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.json.messages.*;
+import oscrabble.json.messages.InternalError;
 import oscrabble.server.IServer;
 import oscrabble.server.Server;
 
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
+@SuppressWarnings("unused")
 public class HttpServer extends AbstractHandler
 {
 	public static final String PARAM_MAX_WAIT = "maxWait";
@@ -71,8 +73,8 @@ public class HttpServer extends AbstractHandler
 			final StringWriter stack = new StringWriter();
 			e.printStackTrace(new PrintWriter(stack));
 
-			responseMessage = JsonMessage.instantiate(InternalErrorMessage.class, post.getGame(), this.server.getUUID().toString(), post.getTo());
-			((InternalErrorMessage) responseMessage).setErrorMessage(e.toString() + "\n\n" + stack);
+			responseMessage = JsonMessage.instantiate(InternalError.class, post.getGame(), this.server.getUUID().toString(), post.getTo());
+			((InternalError) responseMessage).setErrorMessage(e.toString() + "\n\n" + stack);
 		}
 		response.getWriter().write(responseMessage.toJson());
 		response.setStatus(HttpServletResponse.SC_OK);
@@ -88,12 +90,12 @@ public class HttpServer extends AbstractHandler
 	JsonMessage treat(final JsonMessage post) throws Exception
 	{
 		//noinspection unchecked
-		final Class<JsonMessage> postMessageClass = (Class<JsonMessage>) Class.forName(NoMessageMessage.class.getPackageName() + "." + post.getCommand());
-		final Method treat = this.getClass().getMethod("treat", postMessageClass);
+		final Class<JsonMessage> postMessageClass = (Class<JsonMessage>) Class.forName(NoMessage.class.getPackageName() + "." + post.getCommand());
+		final Method treat = this.getClass().getMethod("treat" + postMessageClass.getSimpleName(), postMessageClass);
 		return (JsonMessage) treat.invoke(this, post);
 	}
 
-	public JsonMessage treat(final PoolMessage post) throws InterruptedException
+	public JsonMessage treatPoolMessage(final PoolMessage post) throws InterruptedException
 	{
 		final ArrayBlockingQueue<JsonMessage> queue =
 				this.queues.getOrDefault(post.getGame(), new HashMap<>()).getOrDefault(post.getFrom(), new ArrayBlockingQueue<>(256));
@@ -104,15 +106,15 @@ public class HttpServer extends AbstractHandler
 		);
 		final String game = post.getGame();
 		return waitingMessageForClient == null
-				? JsonMessage.instantiate(NoMessageMessage.class, game, this.server.getUUID().toString(), post.getFrom())
+				? JsonMessage.instantiate(NoMessage.class, game, this.server.getUUID().toString(), post.getFrom())
 				: waitingMessageForClient;
 	}
 
-	public JsonMessage treat(final AddPlayer post)
+	public JsonMessage treatAddPlayer(final AddPlayer post)
 	{
 		final PlayerStub stub = new PlayerStub();
 		this.server.addPlayer(stub);
-		return JsonMessage.instantiate(PlayerAddedMessage.class,
+		return JsonMessage.instantiate(PlayerAdded.class,
 				post.getGame(),
 				this.server.getUUID().toString(),
 				post.getFrom()
