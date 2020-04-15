@@ -35,7 +35,7 @@ public class HttpServer extends AbstractHandler
 	 * Mapping receiver->queue
 	 */
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-	final private Map<String, Map<String, ArrayBlockingQueue<JsonMessage>>> queues = new HashMap();
+	final private Map<String, Map<String, ArrayBlockingQueue<JsonMessage>>> queues = new HashMap<>();
 
 	public HttpServer(final IServer server)
 	{
@@ -115,11 +115,14 @@ public class HttpServer extends AbstractHandler
 	{
 		final PlayerStub stub = new PlayerStub();
 		this.server.addPlayer(stub);
-		return JsonMessage.instantiate(PlayerAdded.class,
+		final PlayerAdded response = JsonMessage.instantiate(PlayerAdded.class,
 				post.getGame(),
 				this.server.getUUID().toString(),
 				post.getFrom()
 		);
+		response.setPlayerName(stub.getName());
+		response.setPlayerKey(stub.getPlayerKey().toString());
+		return response;
 	}
 
 	public static void main(String[] args) throws Exception

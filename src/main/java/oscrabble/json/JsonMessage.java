@@ -65,11 +65,11 @@ public abstract class JsonMessage
 		return MAPPER.readValue(json, JsonMessage.class);
 	}
 
-	public static JsonMessage instantiate(final Class<? extends JsonMessage> clazz, final String game, final String from, final String to)
+	public static <A extends JsonMessage> A instantiate(final Class<A> clazz, final String game, final String from, final String to)
 	{
 		try
 		{
-			final JsonMessage m = clazz.getConstructor().newInstance();
+			final A m = clazz.getConstructor().newInstance();
 			m.setGame(game);
 			m.setFrom(from);
 			m.setTo(to);
