@@ -19,7 +19,9 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 @SuppressWarnings("unused")
 public class HttpServer extends AbstractHandler
@@ -28,14 +30,10 @@ public class HttpServer extends AbstractHandler
 	public static final String PARAM_MAX_WAIT_UNIT = "maxWaitUnit";
 
 	public static final Logger LOGGER = Logger.getLogger(HttpServer.class);
+	public static final int DEFAULT_PORT = 8080;
 
 	private final IServer server;
-
-	/**
-	 * Mapping receiver->queue
-	 */
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-	final private Map<String, Map<String, ArrayBlockingQueue<JsonMessage>>> queues = new HashMap<>();
+	private final HashMap<String, PlayerStub> playerStubs = new HashMap<>();
 
 	public HttpServer(final IServer server)
 	{
@@ -98,8 +96,7 @@ public class HttpServer extends AbstractHandler
 
 	public JsonMessage treatPoolMessage(final PoolMessage post) throws InterruptedException
 	{
-		final ArrayBlockingQueue<JsonMessage> queue =
-				this.queues.getOrDefault(post.getGame(), new HashMap<>()).getOrDefault(post.getFrom(), new ArrayBlockingQueue<>(256));
+		final BlockingQueue<JsonMessage> queue = this.playerStubs.get(post.getFrom()).getIncomingEventQueue();
 
 		final JsonMessage waitingMessageForClient = queue.poll(
 				post.getTimeout(),
@@ -120,7 +117,9 @@ public class HttpServer extends AbstractHandler
 				this.server.getUUID().toString(),
 				post.getFrom()
 		);
-		response.setPlayerName(stub.getName());
+		final String name = stub.getName();
+		this.playerStubs.put(post.getFrom(), stub);
+		response.setPlayerName(name);
 		response.setPlayerKey(stub.getPlayerKey().toString());
 		return response;
 	}
@@ -130,7 +129,7 @@ public class HttpServer extends AbstractHandler
 		oscrabble.server.Server scrabbleServer = new Server(Dictionary.getDictionary(Dictionary.Language.FRENCH));
 		final HttpServer httpServer = new HttpServer(scrabbleServer);
 
-		int port = 8080;
+		int port = DEFAULT_PORT;
 		final org.eclipse.jetty.server.Server jettyServer = new org.eclipse.jetty.server.Server(port);
 		jettyServer.setHandler(httpServer);
 		jettyServer.start();
