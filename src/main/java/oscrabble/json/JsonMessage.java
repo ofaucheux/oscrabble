@@ -14,7 +14,6 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * Representation of a message
@@ -41,17 +40,17 @@ public abstract class JsonMessage
 	/**
 	 * ID of the game, if any
 	 */
-	private UUID game;
+	private String game;
 
 	/**
 	 * ID of the sender.
 	 */
-	private UUID from;
+	private String from;
 
 	/**
 	 * ID of the recipient
 	 */
-	private UUID to;
+	private String to;
 
 	/**
 	 * Parse a message
@@ -66,7 +65,7 @@ public abstract class JsonMessage
 		return MAPPER.readValue(json, JsonMessage.class);
 	}
 
-	public static JsonMessage instantiate(final Class<? extends JsonMessage> clazz, final UUID game, final UUID from, final UUID to)
+	public static JsonMessage instantiate(final Class<? extends JsonMessage> clazz, final String game, final String from, final String to)
 	{
 		try
 		{
@@ -93,17 +92,17 @@ public abstract class JsonMessage
 		return this.date;
 	}
 
-	public UUID getGame()
+	public String getGame()
 	{
 		return this.game;
 	}
 
-	public UUID getFrom()
+	public String getFrom()
 	{
 		return this.from;
 	}
 
-	public UUID getTo()
+	public String getTo()
 	{
 		return this.to;
 	}
@@ -122,12 +121,12 @@ public abstract class JsonMessage
 		}
 	}
 
-	public void setFrom(final UUID from)
+	public void setFrom(final String from)
 	{
 		this.from = from;
 	}
 
-	public void setGame(final UUID game)
+	public void setGame(final String game)
 	{
 		this.game = game;
 	}
@@ -137,7 +136,7 @@ public abstract class JsonMessage
 		return this.getClass().getSimpleName();
 	}
 
-	public void setTo(final UUID to)
+	public void setTo(final String to)
 	{
 		this.to = to;
 	}

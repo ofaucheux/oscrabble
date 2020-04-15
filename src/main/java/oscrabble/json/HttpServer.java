@@ -10,7 +10,6 @@ import oscrabble.json.messages.*;
 import oscrabble.server.IServer;
 import oscrabble.server.Server;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -19,16 +18,13 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.regex.Pattern;
 
 public class HttpServer extends AbstractHandler
 {
 	public static final String PARAM_MAX_WAIT = "maxWait";
 	public static final String PARAM_MAX_WAIT_UNIT = "maxWaitUnit";
 
-	public static final Pattern NEXT_PATTERN = Pattern.compile("/next/(.*)");
 	public static final Logger LOGGER = Logger.getLogger(HttpServer.class);
 
 	private final IServer server;
@@ -36,7 +32,8 @@ public class HttpServer extends AbstractHandler
 	/**
 	 * Mapping receiver->queue
 	 */
-	final private Map<UUID, Map<UUID, ArrayBlockingQueue<JsonMessage>>> queues = new HashMap();
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+	final private Map<String, Map<String, ArrayBlockingQueue<JsonMessage>>> queues = new HashMap();
 
 	public HttpServer(final IServer server)
 	{
@@ -44,7 +41,7 @@ public class HttpServer extends AbstractHandler
 	}
 
 	@Override
-	public void handle(final String target, final Request baseRequest, final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException
+	public void handle(final String target, final Request baseRequest, final HttpServletRequest request, final HttpServletResponse response) throws IOException
 	{
 		final String posted = IOUtils.toString(baseRequest.getReader());
 		final JsonMessage post;
@@ -74,7 +71,7 @@ public class HttpServer extends AbstractHandler
 			final StringWriter stack = new StringWriter();
 			e.printStackTrace(new PrintWriter(stack));
 
-			responseMessage = JsonMessage.instantiate(InternalErrorMessage.class, post.getGame(), server.getUUID(), post.getTo());
+			responseMessage = JsonMessage.instantiate(InternalErrorMessage.class, post.getGame(), this.server.getUUID().toString(), post.getTo());
 			((InternalErrorMessage) responseMessage).setErrorMessage(e.toString() + "\n\n" + stack);
 		}
 		response.getWriter().write(responseMessage.toJson());
@@ -90,6 +87,7 @@ public class HttpServer extends AbstractHandler
 	 */
 	JsonMessage treat(final JsonMessage post) throws Exception
 	{
+		//noinspection unchecked
 		final Class<JsonMessage> postMessageClass = (Class<JsonMessage>) Class.forName(NoMessageMessage.class.getPackageName() + "." + post.getCommand());
 		final Method treat = this.getClass().getMethod("treat", postMessageClass);
 		return (JsonMessage) treat.invoke(this, post);
@@ -104,19 +102,19 @@ public class HttpServer extends AbstractHandler
 				post.getTimeout(),
 				post.getTimeoutUnit()
 		);
-		final UUID game = post.getGame();
+		final String game = post.getGame();
 		return waitingMessageForClient == null
-				? JsonMessage.instantiate(NoMessageMessage.class, game, this.server.getUUID(), post.getFrom())
+				? JsonMessage.instantiate(NoMessageMessage.class, game, this.server.getUUID().toString(), post.getFrom())
 				: waitingMessageForClient;
 	}
 
-	private JsonMessage treat(final AddPlayer post)
+	public JsonMessage treat(final AddPlayer post)
 	{
 		final PlayerStub stub = new PlayerStub();
 		this.server.addPlayer(stub);
 		return JsonMessage.instantiate(PlayerAddedMessage.class,
 				post.getGame(),
-				this.server.getUUID(),
+				this.server.getUUID().toString(),
 				post.getFrom()
 		);
 	}
