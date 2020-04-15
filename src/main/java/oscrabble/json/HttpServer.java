@@ -77,6 +77,7 @@ public class HttpServer extends AbstractHandler
 			((InternalError) responseMessage).setErrorMessage(e.toString() + "\n\n" + stack);
 		}
 		response.getWriter().write(responseMessage.toJson());
+		response.setContentType("application/json");
 		response.setStatus(HttpServletResponse.SC_OK);
 		baseRequest.setHandled(true);
 	}
