@@ -6,8 +6,9 @@ import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import oscrabble.dictionary.Dictionary;
-import oscrabble.json.messages.*;
+import oscrabble.dictionary.Language;
 import oscrabble.json.messages.InternalError;
+import oscrabble.json.messages.*;
 import oscrabble.server.IServer;
 import oscrabble.server.Server;
 
@@ -18,9 +19,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 @SuppressWarnings("unused")
@@ -126,7 +124,8 @@ public class HttpServer extends AbstractHandler
 
 	public static void main(String[] args) throws Exception
 	{
-		oscrabble.server.Server scrabbleServer = new Server(Dictionary.getDictionary(Dictionary.Language.FRENCH));
+		final Language language = Language.FRENCH;
+		oscrabble.server.Server scrabbleServer = new Server(language, Dictionary.getDictionary(language));
 		final HttpServer httpServer = new HttpServer(scrabbleServer);
 
 		int port = DEFAULT_PORT;
