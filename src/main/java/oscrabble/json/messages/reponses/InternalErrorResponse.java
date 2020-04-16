@@ -1,11 +1,11 @@
-package oscrabble.json.messages;
+package oscrabble.json.messages.reponses;
 
 import oscrabble.json.JsonMessage;
 
 /**
  * Message reporting an internal error
  */
-public class InternalError extends JsonMessage
+public class InternalErrorResponse extends JsonMessage
 {
 	/**
 	 * The error message

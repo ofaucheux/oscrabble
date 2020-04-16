@@ -1,11 +1,13 @@
-package oscrabble.json.messages;
+package oscrabble.json.messages.reponses;
 
 import oscrabble.json.JsonMessage;
+import oscrabble.json.messages.ResponseMessage;
+import oscrabble.json.messages.requests.AddPlayer;
 
 /**
  * Response of server to the client after an {@link AddPlayer}
  */
-public class PlayerAdded extends JsonMessage
+public class AddPlayerResponse extends ResponseMessage
 {
 	/**
 	 * Name of the new player

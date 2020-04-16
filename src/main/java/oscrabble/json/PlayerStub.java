@@ -1,10 +1,11 @@
 package oscrabble.json;
 
 import oscrabble.configuration.Configuration;
+import oscrabble.json.messages.requests.GetName;
 import oscrabble.player.IPlayer;
 import oscrabble.server.Server;
 
-import java.util.Date;
+import java.net.InetSocketAddress;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -12,15 +13,26 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Representation of a remote player for the local server.
  */
-public class PlayerStub implements IPlayer
+public class PlayerStub extends Stub implements IPlayer
 {
 
-	private final ArrayBlockingQueue<JsonMessage> incomingEventQueue = new ArrayBlockingQueue<>(128);
+	private final ArrayBlockingQueue<Server.ScrabbleEvent> incomingEventQueue = new ArrayBlockingQueue<>(128);
 
 	private UUID playerKey;
-	private Server server;
+
+	public PlayerStub(final InetSocketAddress remotePlayer)
+	{
+		super(remotePlayer);
+
+		final Thread daemon = new Thread(() -> {
+			// TODO read the event queue and send it as a JsonMessage
+		});
+		daemon.setDaemon(true);
+		daemon.start();
+	}
 
 	@Override
+
 	public Configuration getConfiguration()
 	{
 		throw new AssertionError("Not implemented"); // TODO
@@ -29,15 +41,13 @@ public class PlayerStub implements IPlayer
 	@Override
 	public void setPlayerKey(final UUID key)
 	{
-		final SetPlayerKey message = new SetPlayerKey();
-		message.setKey(key.toString());
-		this.incomingEventQueue.add(message);
+		this.playerKey = key;
 	}
 
 	@Override
 	public String getName()
 	{
-		throw new AssertionError("Not implemented"); // TODO
+		return sendRequest(new GetName()).getName();
 	}
 
 	@Override
@@ -77,22 +87,12 @@ public class PlayerStub implements IPlayer
 	}
 
 	@Override
-	public BlockingQueue<JsonMessage> getIncomingEventQueue()
+	public void destroy() { }
+
+	@Override
+	public BlockingQueue<Server.ScrabbleEvent> getIncomingEventQueue()
 	{
 		return this.incomingEventQueue;
-	}
-
-	/**
-	 * Fill the headers of the message and add it as message for the client.
-	 *
-	 * @param message the message
-	 */
-	private void addMessage(final JsonMessage message)
-	{
-		message.setFrom(this.server.getUUID().toString());
-		message.setTo(this.playerKey.toString());
-		message.setDate(new Date());
-		this.incomingEventQueue.add(message);
 	}
 
 }

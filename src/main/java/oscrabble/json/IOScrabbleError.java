@@ -14,4 +14,13 @@ public class IOScrabbleError extends Error
 	{
 		super(message, cause);
 	}
+
+	/**
+	 *
+	 * @param message -
+	 */
+	public IOScrabbleError(final String message)
+	{
+		this(message, null);
+	}
 }

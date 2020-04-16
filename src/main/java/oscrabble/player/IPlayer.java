@@ -56,4 +56,9 @@ public interface IPlayer extends Server.GameListener
 	 * @return {@code true} wenn manche Parameters editierbar sind.
 	 */
 	boolean hasEditableParameters();
+
+	/**
+	 * Destroy this player and all its resources
+	 */
+	default void destroy() {};
 }

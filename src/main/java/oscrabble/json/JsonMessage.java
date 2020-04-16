@@ -7,13 +7,23 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.StringContentProvider;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Representation of a message
@@ -141,35 +151,46 @@ public abstract class JsonMessage
 		this.to = to;
 	}
 
-//	enum Command
-//	{
-//		POLL_MESSAGE,
-//
-//		// Commands send to a player
-//		EDIT_PARAMETERS,
-//		GET_CONFIGURATION,
-//		GET_NAME,
-//		GET_PLAYER_KEY,
-//		GET_TYPE,
-//		HAS_EDITABLE_PARAMETERS,
-//		IS_OBSERVER,
-//		SET_PLAYER_KEY,
-//		SET_GAME,
-//
-//		// Commands send to a server
-//		SET_STATE,
-//		ADD_PLAYER,
-//		PLAY,
-//		GET_PLAYER_TO_PLAY,
-//		GET_PLAYERS,
-//		GET_HISTORY,
-//		GET_GRID,
-//		GET_RACK,
-//		GET_SCORE,
-//		QUIT,
-//		IS_LAST_PLAY_ERROR,
-//		ROLLBACK_LAST_MOVE,
-//		PLAYER_CONFIG_HAS_CHANGED,
-//		GET_REQUIRED_TILES_IN_BAG_FOR_EXCHANGE,
-//	}
+
+	/**
+	 * Send the message and read the response.
+	 *
+	 * @param destination
+	 * @throws IOScrabbleError
+	 */
+	public JsonMessage send(final HttpClient sender, final InetSocketAddress destination) throws IOScrabbleError
+	{
+		try
+		{
+			final Request request = sender.newRequest(new URI("http://" + destination.getHostString() + ":" + destination.getPort()));
+			final String input = toJson();
+			request.content(new StringContentProvider(input, "application/json"));
+			final ContentResponse response = request.send();
+			final String output = response.getContentAsString();
+			if (response.getStatus() != HttpServletResponse.SC_OK)
+			{
+				final StringBuffer sb = new StringBuffer();
+				sb.append("Connection with server returned status ").append(response.getStatus()).append("\n");
+				sb.append("\nInput:\n").append(input);
+				sb.append("\nOuput:\n");
+				sb.append(output);
+				throw new IOScrabbleError(sb.toString(), null);
+			}
+
+			try
+			{
+				return output == null || output.isEmpty()
+						? null
+						: JsonMessage.parse(output);
+			}
+			catch (JsonProcessingException e)
+			{
+				throw new IOScrabbleError("Cannot parse response\n\n" + output, e);
+			}
+		}
+		catch (URISyntaxException | InterruptedException | TimeoutException | ExecutionException e)
+		{
+			throw new IOScrabbleError(e.getMessage(), e);
+		}
+	}
 }

@@ -1,6 +1,7 @@
-package oscrabble.json.messages;
+package oscrabble.json.messages.requests;
 
 import oscrabble.json.JsonMessage;
+import oscrabble.json.messages.reponses.VoidResponse;
 
 import java.util.concurrent.TimeUnit;
 
@@ -10,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class PoolMessage extends JsonMessage
 {
 	/**
-	 * Time out before a {@link NoMessage} is returned
+	 * Time out before a {@link VoidResponse} is returned
 	 */
 	private int timeout;
 

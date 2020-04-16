@@ -1,10 +1,10 @@
-package oscrabble.json.messages;
+package oscrabble.json.messages.reponses;
 
 import oscrabble.json.JsonMessage;
 
 /**
  * To inform a client there is not message to deliver for it.
  */
-public class NoMessage extends JsonMessage
+public class VoidResponse extends JsonMessage
 {
 }

@@ -4,10 +4,8 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import oscrabble.json.messages.AddPlayer;
-import oscrabble.json.messages.PoolMessage;
+import oscrabble.json.messages.requests.PoolMessage;
 
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;

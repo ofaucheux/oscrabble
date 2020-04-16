@@ -1,28 +1,24 @@
 package oscrabble.json;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
-import oscrabble.json.messages.InternalError;
-import oscrabble.json.messages.*;
+import oscrabble.json.messages.reponses.AddPlayerResponse;
+import oscrabble.json.messages.reponses.VoidResponse;
+import oscrabble.json.messages.requests.AddPlayer;
+import oscrabble.json.messages.requests.PoolMessage;
 import oscrabble.server.IServer;
 import oscrabble.server.Server;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
-public class HttpServer extends AbstractHandler
+public class HttpServer extends MessageHandler
 {
 	public static final String PARAM_MAX_WAIT = "maxWait";
 	public static final String PARAM_MAX_WAIT_UNIT = "maxWaitUnit";
@@ -38,79 +34,52 @@ public class HttpServer extends AbstractHandler
 		this.server = server;
 	}
 
-	@Override
-	public void handle(final String target, final Request baseRequest, final HttpServletRequest request, final HttpServletResponse response) throws IOException
-	{
-		final String posted = IOUtils.toString(baseRequest.getReader());
-		final JsonMessage post;
-		try
-		{
-			post = JsonMessage.parse(posted);
-		}
-		catch (JsonProcessingException e)
-		{
-			final StringWriter stack = new StringWriter();
-			e.printStackTrace(new PrintWriter(stack));
-
-			LOGGER.info(e.getMessage() + " with content:\n" + posted);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot parse posted message\n\n" + e.toString() + "\n" + stack);
-			return;
-		}
-
-		JsonMessage responseMessage;
-		try
-		{
-			responseMessage = treat(post);
-		}
-		catch (Throwable e)
-		{
-			LOGGER.error("Treatment failed", e);
-
-			final StringWriter stack = new StringWriter();
-			e.printStackTrace(new PrintWriter(stack));
-
-			responseMessage = JsonMessage.instantiate(InternalError.class, post.getGame(), this.server.getUUID().toString(), post.getTo());
-			((InternalError) responseMessage).setErrorMessage(e.toString() + "\n\n" + stack);
-		}
-		response.getWriter().write(responseMessage.toJson());
-		response.setContentType("application/json");
-		response.setStatus(HttpServletResponse.SC_OK);
-		baseRequest.setHandled(true);
-	}
-
 	/**
 	 * Treat a message. This method delegate the treatment to the particular #treat methods.
 	 *
 	 * @param post message to treat
 	 * @return json response
 	 */
-	JsonMessage treat(final JsonMessage post) throws Exception
+	protected JsonMessage treat(final JsonMessage post) throws Exception
 	{
 		//noinspection unchecked
-		final Class<JsonMessage> postMessageClass = (Class<JsonMessage>) Class.forName(NoMessage.class.getPackageName() + "." + post.getCommand());
+		final Class<JsonMessage> postMessageClass = (Class<JsonMessage>) Class.forName(VoidResponse.class.getPackageName() + "." + post.getCommand());
 		final Method treat = this.getClass().getMethod("treat" + postMessageClass.getSimpleName(), postMessageClass);
 		return (JsonMessage) treat.invoke(this, post);
 	}
 
 	public JsonMessage treatPoolMessage(final PoolMessage post) throws InterruptedException
 	{
-		final BlockingQueue<JsonMessage> queue = this.playerStubs.get(post.getFrom()).getIncomingEventQueue();
+		final BlockingQueue<Server.ScrabbleEvent> queue = this.playerStubs.get(post.getFrom()).getIncomingEventQueue();
 
-		final JsonMessage waitingMessageForClient = queue.poll(
+		final Server.ScrabbleEvent event = queue.poll(
 				post.getTimeout(),
 				post.getTimeoutUnit()
 		);
 		final String game = post.getGame();
-		return waitingMessageForClient == null
-				? JsonMessage.instantiate(NoMessage.class, game, this.server.getUUID().toString(), post.getFrom())
-				: waitingMessageForClient;
+		if (event == null)
+		{
+			JsonMessage.instantiate(VoidResponse.class, game, this.server.getUUID().toString(), post.getFrom());
+			return new VoidResponse(); // TODO: should be something else
+		}
+		else
+		{
+			return null; // TODO: pack the event in a message and send it.
+		}
 	}
 
-	public JsonMessage treatAddPlayer(final AddPlayer post)
+	public AddPlayerResponse treatAddPlayer(final AddPlayer post)
 	{
-		final PlayerStub stub = new PlayerStub();
+		final Matcher m = Pattern.compile("(.*):(.*)").matcher(post.getInetSocketAddress());
+		if (!m.matches())
+		{
+			throw new IOScrabbleError("Incorrect formatted socket address: " + post.getInetSocketAddress());
+		}
+
+		final PlayerStub stub = new PlayerStub(new InetSocketAddress(m.group(1), Integer.parseInt(m.group(2))));
 		this.server.addPlayer(stub);
-		final PlayerAdded response = JsonMessage.instantiate(PlayerAdded.class,
+//		this.server.addListener(new JsonGameListener(stub));  // TODO
+		final AddPlayerResponse response = JsonMessage.instantiate(AddPlayerResponse.class,
 				post.getGame(),
 				this.server.getUUID().toString(),
 				post.getFrom()

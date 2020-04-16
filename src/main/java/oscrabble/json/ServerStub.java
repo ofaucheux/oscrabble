@@ -1,33 +1,57 @@
 package oscrabble.json;
 
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.NetworkConnector;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import oscrabble.Grid;
 import oscrabble.Rack;
+import oscrabble.ScrabbleException;
 import oscrabble.action.Action;
 import oscrabble.configuration.Configuration;
-import oscrabble.dictionary.Dictionary;
-import oscrabble.json.messages.AddPlayer;
+import oscrabble.dictionary.DictionaryException;
+import oscrabble.dictionary.ScrabbleLanguageInformation;
+import oscrabble.json.messages.reponses.AddPlayerResponse;
+import oscrabble.json.messages.requests.AddPlayer;
 import oscrabble.player.IPlayer;
 import oscrabble.server.IPlayerInfo;
 import oscrabble.server.IServer;
 import oscrabble.server.Play;
 import oscrabble.server.Server;
 
-import javax.servlet.http.HttpServletResponse;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+import java.net.InetSocketAddress;
+import java.util.*;
 
-public class ServerStub implements IServer
+public class ServerStub extends Stub implements IServer
 {
+	/**
+	 * Listening server for incoming requests
+	 */
+	private final org.eclipse.jetty.server.Server jettyServer;
 
-	private final org.eclipse.jetty.client.HttpClient httpClient = new HttpClient();
+	/**
+	 * Registered listeners
+	 */
+	private final HashSet<Server.GameListener> listeners = new HashSet<>();
+	private String playerKey;
+
+	public ServerStub(final InetSocketAddress serverAddress)
+	{
+		super(serverAddress);
+
+		// start server
+		final int listeningPort = new Random().nextInt(2000) + 1024;
+		this.jettyServer = new org.eclipse.jetty.server.Server(listeningPort);
+//		jettyServer.setHandler(); // TODO
+		try
+		{
+			jettyServer.start();
+			jettyServer.join();
+		}
+		catch (Exception e)
+		{
+			throw new Error(e);
+		}
+	}
 
 	@Override
 	public void setState(final State state)
@@ -38,146 +62,132 @@ public class ServerStub implements IServer
 	@Override
 	public void addPlayer(final IPlayer player)
 	{
-		final AddPlayer message = new AddPlayer();
-		message.setName(player.getName());
-		send(message);
+		assert player instanceof PlayerStub;
+		final AddPlayer request = new AddPlayer();
+		request.setName(player.getName());
+		final NetworkConnector c = (NetworkConnector) this.jettyServer.getConnectors()[0];
+		request.setInetSocketAddress(c.getHost() + ":" + c.getPort());
+		final AddPlayerResponse response = sendRequest(request);
+		this.playerKey = response.getPlayerKey();
 	}
 
 	@Override
 	public void addListener(final Server.GameListener listener)
 	{
-		send(ADD_LISTENER, listener);
+		// TODO
 	}
 
 	@Override
-	public int play(final UUID clientKey, final Pla+y play, final Action action)
+	public int play(final UUID clientKey, final Play play, final Action action)
 	{
-		return (int) send(PLAY, clientKey, play, action);
+		return 0;// TODO
 	}
 
 	@Override
 	public IPlayer getPlayerToPlay()
 	{
-		return (IPlayer) send(GET_PLAYER_TO_PLAY);
+		return null;// TODO
 	}
 
 	@Override
 	public List<IPlayerInfo> getPlayers()
 	{
-		return (List<IPlayerInfo>) send(GET_PLAYERS);
+		return null;// TODO
 	}
 
 	@Override
 	public Iterable<Server.HistoryEntry> getHistory()
 	{
-		return (Iterable<Server.HistoryEntry>) send(GET_HISTORY);
+		return null;// TODO
 	}
 
 	@Override
-	public Dictionary getDictionary()
+	public ScrabbleLanguageInformation getScrabbleLanguageInformation()
 	{
-		return (Dictionary) send(GET_DICTIONARY);
+		return null;// TODO
 	}
 
 	@Override
 	public Grid getGrid()
 	{
-		return (Grid) send(GET_GRID);
+		return null;// TODO
 	}
 
 	@Override
 	public Rack getRack(final IPlayer player, final UUID clientKey)
 	{
-		return (Rack) send(GET_RACK, player, clientKey);
+		return null;// TODO
 	}
 
 	@Override
 	public int getScore(final IPlayer player)
 	{
-		return (int) send(GET_SCORE, player);
+		return 0;// TODO
 	}
 
 	@Override
 	public void editParameters(final UUID caller, final IPlayerInfo player)
 	{
-		send(EDIT_PARAMETERS, caller, player);
+		// TODO
 	}
 
 	@Override
 	public void sendMessage(final IPlayer sender, final String message)
 	{
-		send(SEND_MESSAGE, sender, message);
+		// TODO
 	}
 
 	@Override
 	public void quit(final IPlayer player, final UUID key, final String message)
 	{
-		send(QUIT, player, key, message);
+		// TODO
 	}
 
 	@Override
 	public Configuration getConfiguration()
 	{
-		return (Configuration) send(GET_CONFIGURATION);
+		return null;// TODO
 	}
 
 	@Override
 	public boolean isLastPlayError(final IPlayer player)
 	{
-		return (boolean) send(IS_LAST_PLAY_ERROR, player);
+		return false;// TODO
 	}
 
 	@Override
 	public void playerConfigHasChanged(final IPlayer player, final UUID playerKey)
 	{
-		send(PLAYER_CONFIG_HAS_CHANGED, player, playerKey);
+		// TODO
 	}
 
 	@Override
 	public int getNumberTilesInBag()
 	{
-		return (int) send(GET_NUMBER_TILES_IN_BAG);
+		return 0;// TODO
 	}
 
 	@Override
 	public int getRequiredTilesInBagForExchange()
 	{
-		return (int) send(GET_REQUIRED_TILES_IN_BAG_FOR_EXCHANGE);
+		return 0;// TODO
 	}
 
 	@Override
 	public UUID getUUID()
 	{
-		throw new AssertionError();
-//		return null;// TODO
+		return null;// TODO
 	}
 
-	/**
-	 * Send a message to the server.
-	 * @param message message to send
-	 */
-	private void send(final JsonMessage message) throws IOScrabbleError
+	@Override
+	public Collection<String> getMutations(final String word)
 	{
-		try
-		{
-			final Request request = this.httpClient.newRequest(new URI("http://localhost:" + HttpServer.DEFAULT_PORT));
-			final String input = message.toJson();
-			request.content(new StringContentProvider(input, "application/json"));
-			final ContentResponse response = request.send();
-			final String output = response.getContentAsString();
-			if (response.getStatus() != HttpServletResponse.SC_OK)
-			{
-				final StringBuffer sb = new StringBuffer();
-				sb.append("Connection with server returned status ").append(response.getStatus()).append("\n");
-				sb.append("\nInput:\n").append(input);
-				sb.append("\nOuput:\n");
-				sb.append(output);
-				throw new IOScrabbleError(sb.toString(), null);
-			}
-		}
-		catch (URISyntaxException | InterruptedException | TimeoutException | ExecutionException e)
-		{
-			throw new IOScrabbleError(e.getMessage(), e);
-		}
+		return null;// TODO
+	}
+
+	@Override
+	public Iterable<String> getDefinitions(final String word) throws DictionaryException
+	{
+		return null;// TODO
 	}
 }
