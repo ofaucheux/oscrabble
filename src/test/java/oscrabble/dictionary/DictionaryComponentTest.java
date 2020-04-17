@@ -11,7 +11,7 @@ class DictionaryComponentTest
 	public void test() throws InterruptedException
 	{
 		final JFrame dictionaryFrame = new JFrame();
-		final DictionaryComponent dico = new DictionaryComponent(Dictionary.getDictionary(Language.TEST));
+		final DictionaryComponent dico = new DictionaryComponent(new UnMotDotNet());
 		dictionaryFrame.add(dico);
 		dictionaryFrame.setVisible(true);
 		dictionaryFrame.setSize(300, 200);

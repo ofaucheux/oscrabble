@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test;
 import oscrabble.Grid;
 import oscrabble.ScrabbleException;
 import oscrabble.Tile;
-import oscrabble.dictionary.DictionaryTest;
+import oscrabble.dictionary.Language;
+import oscrabble.dictionary.ScrabbleLanguageInformation;
 import oscrabble.server.DummyGame;
 
 import javax.swing.*;
@@ -15,16 +16,16 @@ public class PlaygroundTest
 {
 
 	@Test
-	void displayGrid() throws InterruptedException
+	void displayGrid() throws InterruptedException, ScrabbleException
 	{
 		final Grid grid = new Grid(Grid.SCRABBLE_SIZE);
 		grid.set(grid.getSquare(1, 3), Tile.SIMPLE_GENERATOR.generateStone('A'));
 		showGrid(grid);
 	}
 
-	public static void showGrid(final Grid grid) throws InterruptedException
+	public static void showGrid(final Grid grid) throws InterruptedException, ScrabbleException
 	{
-		final Playground.JGrid JGrid = new Playground.JGrid(grid, DictionaryTest.getTestDictionary());
+		final Playground.JGrid JGrid = new Playground.JGrid(grid, new ScrabbleLanguageInformation(Language.FRENCH), new DummyGame());
 		final JFrame f = new JFrame();
 		f.setLayout(new BorderLayout());
 		f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -91,7 +92,10 @@ public class PlaygroundTest
 		}
 		finally
 		{
-			playground.gridFrame.dispose();
+			if (playground.gridFrame != null)
+			{
+				playground.gridFrame.dispose();
+			}
 		}
 	}
 }

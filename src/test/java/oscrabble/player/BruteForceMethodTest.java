@@ -95,7 +95,7 @@ class BruteForceMethodTest
 	void testBlank() throws ParseException, ScrabbleException
 	{
 		final Grid grid = new Grid(16);
-		grid.put(PlayTiles.parseMove(grid, "J2 ELEPHANT"));
+		grid.put((PlayTiles) PlayTiles.parseMove(grid, "J2 ELEPHANT"));
 		final Rack rack = new Rack();
 		for (final char c : "ASMETH".toCharArray())
 		{

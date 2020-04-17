@@ -201,7 +201,7 @@ public class Game implements IGame
 		this.sli = new ScrabbleLanguageInformation(language);
 		this.grid = new Grid(this.sli);
 		this.propertyFile = null;
-		this.configuration = null;
+		this.configuration = new Configuration();
 	}
 
 	/**

@@ -29,13 +29,6 @@ public class DictionaryTest
 		assertFalse(this.french.containUpperCaseWord("MEN"));
 	}
 
-
-	@Test
-	public void getLetters()
-	{
-		this.french.getLetters();
-	}
-
 	@Test
 	public void containUpperCaseWord()
 	{

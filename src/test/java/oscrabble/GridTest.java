@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import oscrabble.action.PlayTiles;
 import oscrabble.client.PlaygroundTest;
-import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
+import oscrabble.dictionary.ScrabbleLanguageInformation;
 
 import java.awt.*;
 import java.text.ParseException;
@@ -20,21 +20,21 @@ class GridTest
 	@Test
 	void getMetaInformation() throws ScrabbleException, ParseException, InterruptedException
 	{
-		final Grid grid = new Grid(Dictionary.getDictionary(Language.FRENCH));
+		final Grid grid = new Grid(new ScrabbleLanguageInformation(Language.FRENCH));
 
 		Grid.MoveMetaInformation metaInformation;
 		PlayTiles playTiles;
 		PlaygroundTest.showGrid(grid);
 
 		// erster Test
-		playTiles = PlayTiles.parseMove(grid, "A1 FINIT");
+		playTiles = (PlayTiles) PlayTiles.parseMove(grid, "A1 FINIT");
 		metaInformation = grid.getMetaInformation(playTiles);
 		assertEquals(27, metaInformation.score);
 		Assertions.assertEquals(0, metaInformation.crosswords.size());
 		assertBagContent(metaInformation.getRequiredLetters(), "FINIT");
 		grid.put(playTiles);
 
-		playTiles = PlayTiles.parseMove(grid,"1A FEMME");
+		playTiles = (PlayTiles) PlayTiles.parseMove(grid,"1A FEMME");
 		assertBagContent(
 				grid.getMetaInformation(playTiles).getRequiredLetters(),
 				"EMME"
@@ -42,14 +42,14 @@ class GridTest
 		grid.put(playTiles);
 
 		// erster Test
-		playTiles = PlayTiles.parseMove(grid, "J2 ELEPHANT");
+		playTiles = (PlayTiles) PlayTiles.parseMove(grid, "J2 ELEPHANT");
 		metaInformation = grid.getMetaInformation(playTiles);
 		assertEquals(23, metaInformation.score);
 		Assertions.assertEquals(0, metaInformation.crosswords.size());
 		grid.put(playTiles);
 
 		// Cross word
-		playTiles = PlayTiles.parseMove(grid, "B5 ELU");
+		playTiles = (PlayTiles) PlayTiles.parseMove(grid, "B5 ELU");
 		metaInformation = grid.getMetaInformation(playTiles);
 		Assertions.assertEquals(1, metaInformation.crosswords.size());
 		assertEquals(7, metaInformation.score);
@@ -57,14 +57,14 @@ class GridTest
 		grid.put(playTiles);
 
 		// Cross word mit cross auf Bonus
-		playTiles = PlayTiles.parseMove(grid, "C7 SUE");
+		playTiles = (PlayTiles) PlayTiles.parseMove(grid, "C7 SUE");
 		metaInformation = grid.getMetaInformation(playTiles);
 		assertEquals(1, metaInformation.crosswords.size());
 		assertEquals(8, metaInformation.score);
 		grid.put(playTiles);
 
 		// Blank
-		playTiles = PlayTiles.parseMove(grid, "5J PhASME");
+		playTiles = (PlayTiles) PlayTiles.parseMove(grid, "5J PhASME");
 		metaInformation = grid.getMetaInformation(playTiles);
 		assertEquals(16, metaInformation.score);
 		grid.put(playTiles);
