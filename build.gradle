@@ -30,9 +30,9 @@ dependencies {
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
     compile group: 'com.github.lgooddatepicker', name: 'LGoodDatePicker', version: '10.3.1'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.5.2'
-    implementation 'junit:junit:4.12'
+    testCompile 'junit:junit:4.13'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    implementation 'junit:junit:4.13'
 }
 
 group = 'faucheux'
