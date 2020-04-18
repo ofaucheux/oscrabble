@@ -1,2 +1,15 @@
 subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    group = 'faucheux'
+    version = '1.1'
+
+    sourceCompatibility = 1.9
+    targetCompatibility = 1.9
 }

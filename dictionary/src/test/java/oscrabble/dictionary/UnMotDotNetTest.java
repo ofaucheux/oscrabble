@@ -2,7 +2,6 @@ package oscrabble.dictionary;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class UnMotDotNetTest
 			{
 				final JLabel label = new JLabel(description);
 				label.setSize(400, 0);
-				JOptionPane.showMessageDialog(null, label);
+//				JOptionPane.showMessageDialog(null, label);
 			}
 		}
 

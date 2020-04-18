@@ -9,14 +9,6 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-repositories {
-    mavenLocal()
-    maven {
-        url = 'https://repo.maven.apache.org/maven2'
-    }
-}
-
-
 dependencies {
     implementation project(':dictionary')
 
@@ -36,11 +28,6 @@ dependencies {
     implementation 'junit:junit:4.13'
 }
 
-group = 'faucheux'
-version = '1.1'
-
-sourceCompatibility = 1.9
-targetCompatibility = 1.9
 
 application
 {

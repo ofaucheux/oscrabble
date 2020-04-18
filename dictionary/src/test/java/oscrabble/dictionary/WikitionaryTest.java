@@ -30,9 +30,7 @@ public class WikitionaryTest
 		jFrame.setLocationRelativeTo(null);
 
 		jFrame.setVisible(true);
-		while (jFrame.isVisible())
-		{
-			Thread.sleep(500);
-		}
+		Thread.sleep(1000);
+		jFrame.dispose();
 	}
 }
