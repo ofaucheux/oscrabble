@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DictionaryTest
 {
 
-	@Test
+	@org.junit.jupiter.api.Test
 	public void toUpperCase()
 	{
 		final Dictionary german = Dictionary.getDictionary(Language.GERMAN);

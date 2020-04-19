@@ -11,6 +11,16 @@ subprojects {
         testImplementation 'junit:junit:4.12'
     }
 
+    test {
+        useJUnitPlatform()
+
+        // Show test results.
+        testLogging {
+            events "passed", "skipped", "failed"
+        }
+    }
+
+
     group = 'faucheux'
     version = '1.1'
 
