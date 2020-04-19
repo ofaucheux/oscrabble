@@ -1,9 +1,10 @@
 package oscrabble.dictionary;
 
+import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.comparators.ComparatorChain;
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +25,9 @@ public class Dictionary
 	public static final HashMap<Language, Dictionary> LOADED_DICTIONARIES = new HashMap<>();
 
 	private final String name;
-	/** Die Wörter: key: Wörter ohne Accent, großgeschrieben. Values: die selben keingeschrieben und mit accent */
-	private final MultiValuedMap<String, String> words;
+
+	final HashMap<String, UpperCaseWord> words = new HashMap<>();
+
 	private final Pattern stripAccentPattern;
 
 	public String md5;
@@ -86,8 +88,6 @@ public class Dictionary
 			this.stripAccentPattern = Pattern.compile(regex.toString());
 
 
-			this.words = new HashSetValuedHashMap<>();
-
 			String wordLists = properties.getProperty("word.list.files");
 			if (wordLists == null)
 			{
@@ -102,7 +102,8 @@ public class Dictionary
 					String line;
 					while ((line = reader.readLine()) != null)
 					{
-						this.words.put(toUpperCase(line), line);
+						final String uc = toUpperCase(line);
+						this.words.computeIfAbsent(uc, s -> new UpperCaseWord(uc)).mutations.add(line);
 					}
 				}
 			}
@@ -122,38 +123,24 @@ public class Dictionary
 						continue;
 					}
 					LOGGER.debug("Read Admissible for " + wordLength + " characters");
-					final LinkedHashSet<String> admissible = new LinkedHashSet<>();
-					final HashSet<String> admissibleUppercase = new HashSet<>();
-					String line;
-					while ((line = reader.readLine()) != null)
-					{
-						if (!line.isEmpty())
-						{
-							admissible.add(line);
-							admissibleUppercase.add(toUpperCase(line));
-						}
-					}
+					final List<String> admissibleWords = IOUtils.readLines(reader);
 
-					final SortedSet<String> sizeMatchingWords = sizeSortedWords.subSet(
+					final Set<String> refusedWords = new HashSet<>(sizeSortedWords.subSet(
 							StringUtils.repeat('A', wordLength),
 							StringUtils.repeat('A', wordLength + 1)
-					);
-					for (final String word : sizeMatchingWords)
-					{
-						if (!admissibleUppercase.contains(toUpperCase(word)))
-						{
-							LOGGER.debug("Remove not accepted word " + word);
-							this.words.remove(word);
-						}
-					}
+					));
+					refusedWords.removeAll(admissibleWords);
 
-					for (final String word : admissible)
+					for (final String refused : refusedWords)
 					{
-						final String upperCase = toUpperCase(word);
-						if (!this.words.containsKey(upperCase))
+						final UpperCaseWord uc;
+						if ((uc = this.words.get(toUpperCase(refused))) != null)
 						{
-							LOGGER.trace("Add admissible word " + word);
-							this.words.put(upperCase, word);
+							uc.mutations.remove(refused);
+							if (uc.mutations.isEmpty())
+							{
+								this.words.remove(uc.uppercase);
+							}
 						}
 					}
 				}
@@ -266,6 +253,21 @@ public class Dictionary
 	 */
 	public Collection<String> getMutations(final String word)
 	{
-		return Collections.unmodifiableCollection(this.words.get(word));
+		return Collections.unmodifiableCollection(this.words.get(word).mutations);
+	}
+
+	/**
+	 * A word and its mutations
+	 */
+	@Data
+	static class UpperCaseWord
+	{
+		public final String uppercase;
+		public final HashSet<String> mutations = new HashSet<>();
+
+		UpperCaseWord(final String uppercase)
+		{
+			this.uppercase = uppercase;
+		}
 	}
 }

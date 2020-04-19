@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Collection;
-import java.util.HashMap;
 
+@SuppressWarnings("unused")
 @org.springframework.stereotype.Controller
 public class Controller
 {
@@ -16,7 +16,7 @@ public class Controller
 	 * Testet if a word is accepted as scrabble word.
 	 *
 	 * @param language Language
-	 * @param word word to test, with accents
+	 * @param word     word to test, with accents
 	 * @return 200 with list of variants if the word is accepted, 404 else.
 	 */
 	@GetMapping("/isAdmissibleInScrabble/{language}/{word}")
@@ -47,4 +47,13 @@ public class Controller
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
+
+	@GetMapping("/getAllAdmissibleWords/{language}")
+	public ResponseEntity<Collection<Dictionary.UpperCaseWord>> getAllAdmissibleWords(
+			@PathVariable("language") final String language
+	)
+	{
+		return new ResponseEntity<>(Dictionary.getDictionary(Language.valueOf(language)).words.values(), HttpStatus.OK);
+	}
+
 }
