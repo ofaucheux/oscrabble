@@ -1,7 +1,8 @@
 package oscrabble.dictionary;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -9,7 +10,7 @@ import java.util.Collections;
 
 public class Wikitionary implements WordMetainformationProvider
 {
-	public final static Logger LOGGER = Logger.getLogger(Wikitionary.class);
+	public final static Logger LOGGER = LoggerFactory.getLogger(Wikitionary.class);
 
 	private final String serverUrl;
 	int width = 0;
