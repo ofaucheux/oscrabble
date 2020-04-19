@@ -1,7 +1,7 @@
 package oscrabble.dictionary;
 
 import org.apache.log4j.Logger;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import javax.swing.*;
 

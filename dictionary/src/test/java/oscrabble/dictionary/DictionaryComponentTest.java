@@ -1,6 +1,6 @@
 package oscrabble.dictionary;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import javax.swing.*;
 
