@@ -1,5 +1,6 @@
 package oscrabble.dictionary;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -8,6 +9,7 @@ class DictionaryComponentTest
 {
 
 	@Test
+	@Disabled("swing tests are disabled")
 	public void test() throws InterruptedException
 	{
 		final JFrame dictionaryFrame = new JFrame();

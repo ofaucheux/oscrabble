@@ -1,6 +1,7 @@
 package oscrabble.dictionary;
 
 import org.apache.log4j.Logger;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -13,6 +14,7 @@ public class WikitionaryTest
 	public static final Logger LOGGER = Logger.getLogger(WikitionaryTest.class);
 
 	@Test
+	@Disabled("swing tests are disabled")
 	public void getDescription() throws InterruptedException, DictionaryException
 	{
 		final int width = 200;

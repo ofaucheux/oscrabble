@@ -1,14 +1,14 @@
 package oscrabble.dictionary;
 
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DictionaryTest
 {
 
-	@org.junit.jupiter.api.Test
+	@Test
 	public void toUpperCase()
 	{
 		final Dictionary german = Dictionary.getDictionary(Language.GERMAN);
