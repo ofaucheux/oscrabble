@@ -12,9 +12,13 @@ import java.util.HashMap;
 public class Controller
 {
 
-	public static final HashMap<Language, ScrabbleLanguageInformation> SLI_MAP = new HashMap<>();
-	public static final HashMap<Language, Dictionary> DICTIONARY_MAP = new HashMap<>();
-
+	/**
+	 * Testet if a word is accepted as scrabble word.
+	 *
+	 * @param language Language
+	 * @param word word to test, with accents
+	 * @return 200 with list of variants if the word is accepted, 404 else.
+	 */
 	@GetMapping("/isAdmissibleInScrabble/{language}/{word}")
 	public ResponseEntity<Collection<String>> isAdmissible(
 			final @PathVariable("language") String language,
