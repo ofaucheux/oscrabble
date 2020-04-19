@@ -15,6 +15,7 @@ subprojects {
 
     test {
         useJUnitPlatform()
+        maxParallelForks = Runtime.runtime.availableProcessors()
 
         // Show test results.
         testLogging {
