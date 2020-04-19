@@ -5,7 +5,8 @@ import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +17,7 @@ import java.util.regex.Pattern;
 public class Dictionary
 {
 
-	private static final Logger LOGGER = Logger.getLogger(Dictionary.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Dictionary.class);
 
 
 	/** Already loaded dictionaries */
