@@ -11,7 +11,6 @@ import oscrabble.action.Action;
 import oscrabble.action.Exchange;
 import oscrabble.action.PlayTiles;
 import oscrabble.action.SkipTurn;
-import oscrabble.client.SwingPlayer;
 import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
 import oscrabble.dictionary.*;
@@ -515,12 +514,6 @@ public class Game implements IGame
 		// see https://www.fisf.net/scrabble/decouverte-du-scrabble/formules-de-jeu.html
 		// and Turnierspielordnung of Scrabble Deutschland e.V.
 		return 7;
-	}
-
-	@Override
-	public Collection<String> getMutations(final String word)
-	{
-		return this.dictionary.getMutations(word);
 	}
 
 	@Override

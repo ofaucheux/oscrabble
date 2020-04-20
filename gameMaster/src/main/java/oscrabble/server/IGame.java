@@ -132,13 +132,6 @@ public interface IGame extends WordMetainformationProvider
 	int getRequiredTilesInBagForExchange();
 
 	/**
-	 * Which real words are known having these tiles?
-	 * @param word
-	 * @return all mutations
-	 */
-	Collection<String> getMutations(String word);
-
-	/**
 	 *
 	 * @param tile a set tile
 	 * @return the action which set the tile

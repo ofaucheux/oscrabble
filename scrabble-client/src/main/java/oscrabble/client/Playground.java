@@ -705,22 +705,22 @@ class Playground
 						final Color cellColor;
 						switch (cell.square.getBonus())
 						{
-							case NONE:
+							case Bonus.NONE:
 								cellColor = SCRABBLE_GREEN;
 								break;
-							case BORDER:
+							case Bonus.BORDER:
 								cellColor = Color.black;
 								break;
-							case LIGHT_BLUE:
+							case Bonus.LIGHT_BLUE:
 								cellColor = Color.decode("0x00BFFF");
 								break;
-							case DARK_BLUE:
+							case Bonus.DARK_BLUE:
 								cellColor = Color.blue;
 								break;
-							case RED:
+							case Bonus.RED:
 								cellColor = Color.red;
 								break;
-							case ROSE:
+							case Bonus.ROSE:
 								cellColor = Color.decode("#F6CEF5").darker();
 								break;
 							default:
@@ -932,10 +932,10 @@ class Playground
 					final AffineTransform saved = ((Graphics2D) g).getTransform();
 					switch (JGrid.this.preparedPlayTiles.getDirection())
 					{
-						case VERTICAL:
+						case Direction.VERTICAL:
 							g2.translate(h / 2f, 6f);
 							break;
-						case HORIZONTAL:
+						case Direction.HORIZONTAL:
 							g2.rotate(-Math.PI / 2);
 							g2.translate(-h / 2f, 6f);
 							break;

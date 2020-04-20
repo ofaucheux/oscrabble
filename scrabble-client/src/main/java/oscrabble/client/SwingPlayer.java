@@ -1,6 +1,7 @@
 package oscrabble.client;
 
 import oscrabble.ScrabbleException;
+import oscrabble.client.configuration.Configuration;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Tile;
 import oscrabble.player.AbstractPlayer;
