@@ -162,9 +162,6 @@ public class Game implements IGame
 			final String methodName = playerProps.getProperty(KEY_METHOD);
 			switch (PlayerType.valueOf(methodName.toUpperCase()))
 			{
-				case SWING:
-					player = new SwingPlayer(name);
-					break;
 				case BRUTE_FORCE:
 					player = new BruteForceMethod(this.dictionary).new Player(name);
 					((BruteForceMethod.Player) player).loadConfiguration(playerProps);
