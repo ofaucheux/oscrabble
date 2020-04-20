@@ -5,17 +5,12 @@ import oscrabble.Rack;
 import oscrabble.ScrabbleException;
 import oscrabble.action.Action;
 import oscrabble.configuration.Configuration;
-import oscrabble.dictionary.Dictionary;
-import oscrabble.dictionary.ScrabbleLanguageInformation;
-import oscrabble.dictionary.Tile;
-import oscrabble.dictionary.WordMetainformationProvider;
 import oscrabble.player.AbstractPlayer;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public interface IGame extends WordMetainformationProvider
+public interface IGame
 {
 	void setState(Game.State state);
 
@@ -53,9 +48,7 @@ public interface IGame extends WordMetainformationProvider
 	 */
 	Iterable<Game.HistoryEntry> getHistory();
 
-	Dictionary getDictionary();
-
-	ScrabbleLanguageInformation getScrabbleLanguageInformation();
+	IDictionary getDictionary();
 
 	Grid getGrid();
 

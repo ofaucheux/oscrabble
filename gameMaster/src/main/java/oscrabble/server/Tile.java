@@ -1,4 +1,4 @@
-package oscrabble.dictionary;
+package oscrabble.server;
 
 /**
  * Definition eines Steins im Spiel: Letter (oder Blank), Wert usw.

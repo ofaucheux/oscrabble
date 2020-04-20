@@ -31,9 +31,8 @@ subprojects {
     targetCompatibility = 1.9
 }
 
-
-project(':scrabble-client') {
+project(':gameMaster') {
     dependencies {
-        implementation project(':dictionary')
+        compile project(':dictionary')
     }
 }

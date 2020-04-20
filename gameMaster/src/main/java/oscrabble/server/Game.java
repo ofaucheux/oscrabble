@@ -13,12 +13,11 @@ import oscrabble.action.PlayTiles;
 import oscrabble.action.SkipTurn;
 import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
-import oscrabble.dictionary.*;
-import oscrabble.dictionary.Dictionary;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
 import java.io.*;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -62,8 +61,8 @@ public class Game implements IGame
 	private final Random random;
 	private CountDownLatch waitingForPlay;
 	private final LinkedList<Tile> bag = new LinkedList<>();
-	private final Dictionary dictionary;
-	private final ScrabbleLanguageInformation sli;
+	private final IDictionary dictionary;
+//	private final Tile.Generator sli;
 
 	final List<GameListener> listeners = new ArrayList<>();
 
@@ -101,6 +100,7 @@ public class Game implements IGame
 	 * Map of the set tiles and the action which set them
 	 */
 	private final LinkedHashMap<Tile, Action> settingActions = new LinkedHashMap<>();
+	private IDictionary.LetterInformation letterInformation;
 
 	public Game(final File propertyFile) throws ConfigurationException
 	{
@@ -131,8 +131,10 @@ public class Game implements IGame
 		this.configuration.loadProperties(properties);
 		try
 		{
-			this.dictionary = Dictionary.getDictionary(this.configuration.language);
-			this.sli = new ScrabbleLanguageInformation(this.configuration.language);
+			this.dictionary = new MicroServiceDictionary(
+					URI.create("http://localhost:8080/"),
+					this.configuration.language
+			);
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -177,7 +179,7 @@ public class Game implements IGame
 			}
 		}
 
-		this.grid = new Grid(this.sli);
+		this.grid = new Grid(15);
 		this.random = new Random();
 		this.randomSeed = this.random.nextLong();
 		this.random.setSeed(this.randomSeed);
@@ -193,13 +195,13 @@ public class Game implements IGame
 	 * @param dictionary dictionary
 	 * @param randomSeed seed to initialize the random generator
 	 */
-	public Game(final Language language, final Dictionary dictionary, final long randomSeed)
+	public Game(final IDictionary dictionary, final long randomSeed)
 	{
 		this.randomSeed = randomSeed;
 		this.random = new Random(randomSeed);
 		this.dictionary = dictionary;
-		this.sli = new ScrabbleLanguageInformation(language);
-		this.grid = new Grid(this.sli);
+//		this.sli = new ScrabbleLanguageInformation(language);
+		this.grid = new Grid(15);
 		this.propertyFile = null;
 		this.configuration = new Configuration();
 	}
@@ -207,13 +209,12 @@ public class Game implements IGame
 	/**
 	 * Constructor for test purposes.
 	 *
-	 * @see #Game(Language, Dictionary, long)
-	 * @param language language
+	 * @see #Game(IDictionary, long)
 	 * @param dictionary dictionary
 	 */
-	public Game(final Language language, final Dictionary dictionary)
+	public Game(final IDictionary dictionary)
 	{
-		this(language, dictionary, new Random().nextLong());
+		this(dictionary, new Random().nextLong());
 	}
 
 	/**
@@ -320,7 +321,7 @@ public class Game implements IGame
 					toTest.addAll(moveMI.crosswords);
 					for (final String crossword : toTest)
 					{
-						if (!this.dictionary.containUpperCaseWord(crossword.toUpperCase()))
+						if (!this.dictionary.isAdmissible(crossword.toUpperCase()))
 						{
 							final String details = MessageFormat.format(MESSAGES.getString("word.0.is.not.allowed"), crossword);
 							throw new ScrabbleException.ForbiddenPlayException(details);
@@ -606,6 +607,28 @@ public class Game implements IGame
 		return info;
 	}
 
+	public Tile generateStone(final Character c)
+	{
+		final Tile tile;
+		if (c == null)
+		{
+			tile = new Tile(null, 0);
+		}
+		else
+		{
+			if (!Character.isUpperCase(c))
+			{
+				throw new AssertionError("Characte" +
+						"r must be uppercase: " + c);
+			}
+
+			final IDictionary.LetterMetaInfo letter = this.letterInformation.letters.get(c);
+			tile = new Tile(letter.c, letter.point);
+		}
+		return tile;
+	}
+
+
 	/**
 	 * Refill the rack of a player.
 	 *
@@ -711,16 +734,16 @@ public class Game implements IGame
 	private void fillBag()
 	{
 		// Fill bag
-		for (final ScrabbleLanguageInformation.Letter letter : this.sli.getLetters())
+		for (final IDictionary.LetterMetaInfo letter : this.letterInformation.letters.values())
 		{
 			for (int i = 0; i < letter.prevalence; i++)
 			{
-				this.bag.add(this.sli.generateStone(letter.c));
+				this.bag.add(generateStone(letter.c));
 			}
 		}
-		for (int i = 0; i < this.sli.getNumberBlanks(); i++)
+		for (int i = 0; i < this.letterInformation.numberBlanks; i++)
 		{
-			this.bag.add(this.sli.generateStone(null));
+			this.bag.add(generateStone(null));
 		}
 		Collections.shuffle(this.bag, this.random);
 	}
@@ -737,22 +760,9 @@ public class Game implements IGame
 	}
 
 	@Override
-	public Dictionary getDictionary()
+	public IDictionary getDictionary()
 	{
 		return this.dictionary;
-	}
-
-	@Override
-	public ScrabbleLanguageInformation getScrabbleLanguageInformation()
-	{
-		return this.sli;
-	}
-
-	@Override
-	public Iterable<String> getDefinitions(final String word) throws DictionaryException
-	{
-		final WordMetainformationProvider provider = this.dictionary.getMetainformationProvider();
-		return provider == null ? null : provider.getDefinitions(word);
 	}
 
 	@Override
@@ -1002,7 +1012,7 @@ public class Game implements IGame
 	private static class Configuration extends oscrabble.configuration.Configuration
 	{
 		@Parameter(label = "Dictionary", description = "#dictionary.of.the.game")
-		Language language = Language.FRENCH;
+		String language = "FRENCH";
 
 		/**
 		 * Accept a new attempt after a player has tried a forbidden move

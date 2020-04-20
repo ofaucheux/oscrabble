@@ -14,7 +14,7 @@ import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class Dictionary
+class Dictionary
 {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Dictionary.class);

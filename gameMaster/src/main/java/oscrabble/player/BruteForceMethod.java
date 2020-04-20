@@ -4,14 +4,16 @@ import org.apache.log4j.Logger;
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
-import oscrabble.*;
+import oscrabble.Grid;
+import oscrabble.Rack;
+import oscrabble.ScrabbleException;
 import oscrabble.action.PlayTiles;
 import oscrabble.action.SkipTurn;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
-import oscrabble.dictionary.Dictionary;
-import oscrabble.dictionary.Tile;
+import oscrabble.server.Tile;
 import oscrabble.server.Game;
+import oscrabble.server.IDictionary;
 import oscrabble.server.Play;
 
 import javax.swing.*;
@@ -27,14 +29,15 @@ public class BruteForceMethod
 
 	CompressedDAWGSet automaton;
 
-	public BruteForceMethod(final Dictionary dictionary)
+	public BruteForceMethod(final IDictionary dictionary)
 	{
 		loadDictionary(dictionary);
 	}
 
-	void loadDictionary(final Dictionary dictionary)
+	void loadDictionary(final IDictionary dictionary)
 	{
-		final File fff = new File("C:\\temp\\" + dictionary.getName() + "_" + dictionary.md5 + ".dawg");
+		final Set<String> admissibleWords = new HashSet<>(dictionary.getAdmissibleWords());
+		final File fff = new File("C:\\temp\\scrabble_dawg_" + admissibleWords.hashCode() + ".dawg");
 		if (fff.exists())
 		{
 			try (ObjectInputStream fis = new ObjectInputStream(new FileInputStream(fff)))
@@ -48,10 +51,8 @@ public class BruteForceMethod
 		}
 		else
 		{
-			final Set<String> mutations = new HashSet<>(dictionary.getMutations());
-
 			// remove words with one letter
-			final Iterator<String> it = mutations.iterator();
+			final Iterator<String> it = admissibleWords.iterator();
 			it.forEachRemaining(w -> {
 				if (w.length() == 1)
 				{
@@ -59,7 +60,7 @@ public class BruteForceMethod
 				}
 			});
 
-			this.automaton = new ModifiableDAWGSet(mutations).compress();
+			this.automaton = new ModifiableDAWGSet(admissibleWords).compress();
 			try (ObjectOutputStream oss = new ObjectOutputStream(new FileOutputStream(fff)))
 			{
 				oss.writeObject(this.automaton);

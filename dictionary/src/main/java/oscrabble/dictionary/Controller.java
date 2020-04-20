@@ -40,12 +40,29 @@ public class Controller
 		}
 	}
 
-	@GetMapping("/getAllAdmissibleWords/{language}")
-	public ResponseEntity<Collection<Dictionary.UpperCaseWord>> getAllAdmissibleWords(
+	/**
+	 * @param language language
+	 * @return list of the admissible words (all uppercase)
+	 * @throws UnknownLanguage
+	 */
+	@GetMapping("/{language}/getAdmissibleWords")
+	public ResponseEntity<Collection<String>> getAdmissibleWords(
 			@PathVariable("language") final String language
 	) throws UnknownLanguage
 	{
-		return new ResponseEntity<>(Dictionary.getDictionary(getLanguage(language)).words.values(), HttpStatus.OK);
+		return new ResponseEntity<>(Dictionary.getDictionary(getLanguage(language)).words.keySet(), HttpStatus.OK);
+	}
+
+	/**
+	 * @return list of the letters and their properties
+	 * @throws UnknownLanguage
+	 */
+	@GetMapping("/{language}/getLetterInformation")
+	public ResponseEntity<ScrabbleLetterInformation> getScrabbleLetterInformation(
+			@PathVariable("language") final String language
+	) throws UnknownLanguage
+	{
+		return new ResponseEntity<>(new ScrabbleLetterInformation(getLanguage(language)), HttpStatus.OK);
 	}
 
 	/**

@@ -1,8 +1,7 @@
 package oscrabble.action;
 
 import oscrabble.Grid;
-import oscrabble.dictionary.ScrabbleLanguageInformation;
-import oscrabble.dictionary.Tile;
+import oscrabble.server.Tile;
 
 import java.text.ParseException;
 import java.util.LinkedHashMap;
@@ -42,7 +41,7 @@ public class PlayTiles implements Action
 	 * @param sli dictionary of game
 	 * @return all stones of the move, even if they already are on the board.
 	 */
-	public LinkedHashMap<Grid.Square, Tile> getStones(final Grid grid, final ScrabbleLanguageInformation sli)
+	public LinkedHashMap<Grid.Square, Tile> getStones(final Grid grid, final Tile.Generator sli)
 	{
 		final LinkedHashMap<Grid.Square, Tile> stones = new LinkedHashMap<>();
 		int y = this.startSquare.getY();

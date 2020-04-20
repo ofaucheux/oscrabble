@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.quinto.dawg.DAWGNode;
 import oscrabble.*;
 import oscrabble.action.PlayTiles;
-import oscrabble.dictionary.Dictionary;
 import oscrabble.client.TextClient;
 import oscrabble.dictionary.Language;
-import oscrabble.dictionary.Tile;
+import oscrabble.server.Tile;
 
 import java.text.ParseException;
 import java.util.*;

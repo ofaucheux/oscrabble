@@ -1,7 +1,7 @@
 package oscrabble;
 
 
-import oscrabble.dictionary.Tile;
+import oscrabble.server.Tile;
 
 import java.util.ArrayList;
 import java.util.HashSet;

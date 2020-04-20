@@ -4,9 +4,7 @@ import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
 import oscrabble.action.PlayTiles;
-import oscrabble.dictionary.Dictionary;
-import oscrabble.dictionary.ScrabbleLanguageInformation;
-import oscrabble.dictionary.Tile;
+import oscrabble.server.Tile;
 import oscrabble.server.Game;
 
 import java.text.ParseException;
@@ -46,9 +44,9 @@ public class Grid
 		this.stoneGenerator = stoneGenerator;
 	}
 
-	public Grid(final ScrabbleLanguageInformation sli)
+	public Grid(final Tile.Generator tileGenerator)
 	{
-		this(sli, SCRABBLE_SIZE);
+		this(tileGenerator, SCRABBLE_SIZE);
 	}
 
 	/**

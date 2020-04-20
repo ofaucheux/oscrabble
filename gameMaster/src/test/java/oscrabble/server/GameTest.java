@@ -12,7 +12,6 @@ import oscrabble.ScrabbleException;
 import oscrabble.action.Action;
 import oscrabble.action.PlayTiles;
 import oscrabble.configuration.Configuration;
-import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
@@ -45,7 +44,7 @@ public class GameTest
 	public void initialize()
 	{
 
-		this.game = new Game(Language.FRENCH, FRENCH_DICTIONARY, -3300078916872261882L);
+		this.game = new Game(FRENCH_DICTIONARY, -3300078916872261882L);
 		this.grid = this.game.getGrid();
 		final int gameNr = RANDOM.nextInt(100);
 
@@ -68,7 +67,7 @@ public class GameTest
 	{
 		for (int gameNr = 0; gameNr < 10; gameNr++)
 		{
-			this.game = new Game(Language.FRENCH, FRENCH_DICTIONARY);
+			this.game = new Game(FRENCH_DICTIONARY);
 			this.game.delayBeforeEnds = 0;
 			final BruteForceMethod method = new BruteForceMethod(FRENCH_DICTIONARY);
 			this.game.listeners.add(new TestListener()
@@ -370,7 +369,7 @@ public class GameTest
 	public void testScore() throws ScrabbleException, InterruptedException, ParseException, TimeoutException
 	{
 		// dieser seed gibt die Buchstaben "[F, T, I, N, O, A,  - joker - ]"
-		this.game = new Game(Language.FRENCH, FRENCH_DICTIONARY, 2346975568742590367L);
+		this.game = new Game(FRENCH_DICTIONARY, 2346975568742590367L);
 		final TestPlayer p = new TestPlayer("Etienne", this.game);
 		this.game.addPlayer(p);
 		startGame(true);
@@ -402,7 +401,7 @@ public class GameTest
 		{
 			// Joker on normal case
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
-			this.game = new Game(Language.FRENCH, FRENCH_DICTIONARY, -6804219371477742897L);
+			this.game = new Game(FRENCH_DICTIONARY, -6804219371477742897L);
 			final TestPlayer anton = new TestPlayer("Anton", this.game);
 			this.game.addPlayer(anton);
 			startGame(true);
@@ -420,7 +419,7 @@ public class GameTest
 		{
 			// Joker on blue case
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
-			this.game = new Game(Language.FRENCH, FRENCH_DICTIONARY, -6804219371477742897L);
+			this.game = new Game(FRENCH_DICTIONARY, -6804219371477742897L);
 			final TestPlayer anton = new TestPlayer("Anton", this.game);
 			this.game.addPlayer(anton);
 			startGame(true);

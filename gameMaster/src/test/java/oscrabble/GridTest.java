@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import oscrabble.action.PlayTiles;
 import oscrabble.client.PlaygroundTest;
 import oscrabble.dictionary.Language;
-import oscrabble.dictionary.ScrabbleLanguageInformation;
+import oscrabble.dictionary.ScrabbleLetterInformation;
 
 import java.awt.*;
 import java.text.ParseException;
@@ -20,7 +20,7 @@ class GridTest
 	@Test
 	void getMetaInformation() throws ScrabbleException, ParseException, InterruptedException
 	{
-		final Grid grid = new Grid(new ScrabbleLanguageInformation(Language.FRENCH));
+		final Grid grid = new Grid(new ScrabbleLetterInformation(Language.FRENCH));
 
 		Grid.MoveMetaInformation metaInformation;
 		PlayTiles playTiles;

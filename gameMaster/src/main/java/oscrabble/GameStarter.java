@@ -1,9 +1,6 @@
 package oscrabble;
 
 import org.apache.log4j.Logger;
-import oscrabble.client.SwingPlayer;
-import oscrabble.dictionary.Dictionary;
-import oscrabble.dictionary.Language;
 import oscrabble.player.BruteForceMethod;
 import oscrabble.server.Game;
 
@@ -21,12 +18,12 @@ public class GameStarter
 		try
 		{
 			final Game game;
-			final Dictionary dictionary = Dictionary.getDictionary(Language.FRENCH);
+//			final IDictionary dictionary = new MicroServiceDictionary(Language.FRENCH);
 			game = new Game(Game.DEFAULT_PROPERTIES_FILE);
 			if (game.getPlayers().isEmpty())
 			{
-				game.addPlayer(new SwingPlayer("Emil"));
-				game.addPlayer(new BruteForceMethod(dictionary).new Player("R2D2"));
+//				game.addPlayer(new SwingPlayer("Emil"));
+				game.addPlayer(new BruteForceMethod(game.getDictionary()).new Player("R2D2"));
 			}
 			game.play();
 		}
