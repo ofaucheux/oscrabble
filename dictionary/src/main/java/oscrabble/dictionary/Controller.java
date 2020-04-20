@@ -22,10 +22,10 @@ public class Controller
 	 * @return 200 with list of variants if the word is accepted, 404 else.
 	 */
 	@GetMapping(value = "/{language}/word/{word}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Collection<String>> isAdmissible(
+	public ResponseEntity<Collection<Dictionary.Mutation>> getWord(
 			final @PathVariable("language") String language,
 			final @PathVariable("word") String word
-	) throws UnknownLanguage
+	) throws UnknownLanguage, DictionaryException
 	{
 		final Dictionary d = Dictionary.getDictionary(getLanguage(language));
 		final String uc = d.toUpperCase(word);

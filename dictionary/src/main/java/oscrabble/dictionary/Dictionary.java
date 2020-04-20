@@ -2,7 +2,6 @@ package oscrabble.dictionary;
 
 import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -251,9 +250,25 @@ public class Dictionary
 	 * @param word Ein Wort, großgeschrieben, z.B. {@code CHANTE}
 	 * @return die Wörter, die dazu geführt haben, z.B. {@code chante, chanté}.
 	 */
-	public Collection<String> getMutations(final String word)
+	public Collection<Mutation> getMutations(final String word) throws DictionaryException
 	{
-		return Collections.unmodifiableCollection(this.words.get(word).mutations);
+		final WordMetainformationProvider mip = getMetainformationProvider();
+		final Set<Mutation> mutations = new HashSet<>();
+		for (final String mutation : this.words.get(word).mutations)
+		{
+			final Mutation m = new Mutation();
+			m.word = mutation;
+			m.definitions = mip != null ? mip.getDefinitions(mutation) : null;
+			mutations.add(m);
+		}
+		return mutations;
+	}
+
+	@Data
+	public static class Mutation
+	{
+		String word;
+		Iterable<String> definitions;
 	}
 
 	/**
