@@ -1,9 +1,11 @@
 package oscrabble.dictionary;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Collection;
 
@@ -19,23 +21,13 @@ public class Controller
 	 * @param word     word to test, with accents
 	 * @return 200 with list of variants if the word is accepted, 404 else.
 	 */
-	@GetMapping("/isAdmissibleInScrabble/{language}/{word}")
+	@GetMapping(value = "/{language}/word/{word}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Collection<String>> isAdmissible(
 			final @PathVariable("language") String language,
 			final @PathVariable("word") String word
-	)
+	) throws UnknownLanguage
 	{
-		final Language l;
-		try
-		{
-			l = Language.valueOf(language);
-		}
-		catch (IllegalArgumentException e)
-		{
-			throw new IllegalArgumentException("Language " + language + " unknown");
-		}
-
-		final Dictionary d = Dictionary.getDictionary(l);
+		final Dictionary d = Dictionary.getDictionary(getLanguage(language));
 		final String uc = d.toUpperCase(word);
 		final boolean accepted = d.containUpperCaseWord(uc);
 		if (accepted)
@@ -51,9 +43,41 @@ public class Controller
 	@GetMapping("/getAllAdmissibleWords/{language}")
 	public ResponseEntity<Collection<Dictionary.UpperCaseWord>> getAllAdmissibleWords(
 			@PathVariable("language") final String language
-	)
+	) throws UnknownLanguage
 	{
-		return new ResponseEntity<>(Dictionary.getDictionary(Language.valueOf(language)).words.values(), HttpStatus.OK);
+		return new ResponseEntity<>(Dictionary.getDictionary(getLanguage(language)).words.values(), HttpStatus.OK);
 	}
 
+	/**
+	 *
+	 * @param language name of the language
+	 * @return the language
+	 * @throws UnknownLanguage if no such language
+	 */
+	private static Language getLanguage(@PathVariable("language") final String language) throws UnknownLanguage
+	{
+		final Language l;
+		try
+		{
+			l = Language.valueOf(language);
+		}
+		catch (IllegalArgumentException e)
+		{
+			throw new UnknownLanguage(language);
+		}
+		return l;
+	}
+
+
+	/**
+	 * Error indicating an unknown language.
+	 */
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public static class UnknownLanguage extends Exception
+	{
+		public UnknownLanguage(final String language)
+		{
+			super("Unknown language: " + language);
+		}
+	}
 }
