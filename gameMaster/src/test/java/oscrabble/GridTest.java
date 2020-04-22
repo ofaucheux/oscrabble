@@ -6,9 +6,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import oscrabble.action.PlayTiles;
-import oscrabble.client.PlaygroundTest;
-import oscrabble.dictionary.Language;
-import oscrabble.dictionary.ScrabbleLetterInformation;
 
 import java.awt.*;
 import java.text.ParseException;
@@ -20,11 +17,11 @@ class GridTest
 	@Test
 	void getMetaInformation() throws ScrabbleException, ParseException, InterruptedException
 	{
-		final Grid grid = new Grid(new ScrabbleLetterInformation(Language.FRENCH));
+		final Grid grid = new Grid(15);
 
 		Grid.MoveMetaInformation metaInformation;
 		PlayTiles playTiles;
-		PlaygroundTest.showGrid(grid);
+//		PlaygroundTest.showGrid(grid);
 
 		// erster Test
 		playTiles = (PlayTiles) PlayTiles.parseMove(grid, "A1 FINIT");

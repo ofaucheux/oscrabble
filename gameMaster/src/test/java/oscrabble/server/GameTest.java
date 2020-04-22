@@ -1,21 +1,28 @@
 package oscrabble.server;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.ExpectedCount;
+import org.springframework.test.web.client.MockRestServiceServer;
 import oscrabble.Grid;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
 import oscrabble.action.Action;
 import oscrabble.action.PlayTiles;
 import oscrabble.configuration.Configuration;
-import oscrabble.dictionary.Language;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
+import java.io.IOError;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.util.*;
@@ -26,6 +33,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 public class GameTest
 {
@@ -38,13 +48,38 @@ public class GameTest
 	private TestPlayer gustav;
 	private TestPlayer john;
 	private TestPlayer jurek;
-	public static final Dictionary FRENCH_DICTIONARY = Dictionary.getDictionary(Language.FRENCH);
+	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary();
+
+	@BeforeAll
+	public static void mocken()
+	{
+		try
+		{
+			final MockRestServiceServer dictionaryMocker = MockRestServiceServer.bindTo(MicroServiceDictionary.REST_TEMPLATE).ignoreExpectOrder(true).build();
+
+			dictionaryMocker
+					.expect(ExpectedCount.manyTimes(), requestTo("getAdmissibleWords"))
+					.andRespond(withStatus(HttpStatus.OK).contentType(APPLICATION_JSON).body(
+							IOUtils.toByteArray(GameTest.class.getResourceAsStream("admissibleWords.json"))
+					));
+
+			dictionaryMocker
+					.expect(ExpectedCount.manyTimes(), requestTo("getLetterInformation"))
+					.andRespond(withStatus(HttpStatus.OK).contentType(APPLICATION_JSON).body(
+							IOUtils.toByteArray(GameTest.class.getResourceAsStream("letterInformation.json"))
+					));
+		}
+		catch (IOException e)
+		{
+			throw new IOError(e);
+		}
+	}
 
 	@BeforeEach
 	public void initialize()
 	{
 
-		this.game = new Game(FRENCH_DICTIONARY, -3300078916872261882L);
+		this.game = new Game(DICTIONARY, -3300078916872261882L);
 		this.grid = this.game.getGrid();
 		final int gameNr = RANDOM.nextInt(100);
 
@@ -67,9 +102,9 @@ public class GameTest
 	{
 		for (int gameNr = 0; gameNr < 10; gameNr++)
 		{
-			this.game = new Game(FRENCH_DICTIONARY);
+			this.game = new Game(DICTIONARY);
 			this.game.delayBeforeEnds = 0;
-			final BruteForceMethod method = new BruteForceMethod(FRENCH_DICTIONARY);
+			final BruteForceMethod method = new BruteForceMethod(DICTIONARY);
 			this.game.listeners.add(new TestListener()
 			{
 				@Override
@@ -369,7 +404,7 @@ public class GameTest
 	public void testScore() throws ScrabbleException, InterruptedException, ParseException, TimeoutException
 	{
 		// dieser seed gibt die Buchstaben "[F, T, I, N, O, A,  - joker - ]"
-		this.game = new Game(FRENCH_DICTIONARY, 2346975568742590367L);
+		this.game = new Game(DICTIONARY, 2346975568742590367L);
 		final TestPlayer p = new TestPlayer("Etienne", this.game);
 		this.game.addPlayer(p);
 		startGame(true);
@@ -401,7 +436,7 @@ public class GameTest
 		{
 			// Joker on normal case
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
-			this.game = new Game(FRENCH_DICTIONARY, -6804219371477742897L);
+			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final TestPlayer anton = new TestPlayer("Anton", this.game);
 			this.game.addPlayer(anton);
 			startGame(true);
@@ -419,7 +454,7 @@ public class GameTest
 		{
 			// Joker on blue case
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
-			this.game = new Game(FRENCH_DICTIONARY, -6804219371477742897L);
+			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final TestPlayer anton = new TestPlayer("Anton", this.game);
 			this.game.addPlayer(anton);
 			startGame(true);

@@ -1,18 +1,24 @@
 package oscrabble.player;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quinto.dawg.DAWGNode;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.web.client.MockRestServiceServer;
 import oscrabble.*;
 import oscrabble.action.PlayTiles;
 import oscrabble.client.TextClient;
-import oscrabble.dictionary.Language;
+import oscrabble.server.GameTest;
+import oscrabble.server.MicroServiceDictionary;
 import oscrabble.server.Tile;
 
 import java.text.ParseException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 class BruteForceMethodTest
 {
@@ -20,12 +26,19 @@ class BruteForceMethodTest
 	private static final Random RANDOM = new Random();
 	private BruteForceMethod instance;
 
+	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary();
+
+	@BeforeAll
+	public static void mocken()
+	{
+		GameTest.mocken();
+	}
+
 	@BeforeEach
 	public void BruteForceTest()
 	{
-		final Dictionary french = Dictionary.getDictionary(Language.FRENCH);
-		this.instance = new BruteForceMethod(french);
-		this.instance.loadDictionary(french);
+		this.instance = new BruteForceMethod(DICTIONARY);
+		this.instance.loadDictionary(DICTIONARY);
 	}
 
 	@Test

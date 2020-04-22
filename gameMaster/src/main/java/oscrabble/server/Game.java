@@ -100,7 +100,6 @@ public class Game implements IGame
 	 * Map of the set tiles and the action which set them
 	 */
 	private final LinkedHashMap<Tile, Action> settingActions = new LinkedHashMap<>();
-	private IDictionary.LetterInformation letterInformation;
 
 	public Game(final File propertyFile) throws ConfigurationException
 	{
@@ -622,7 +621,7 @@ public class Game implements IGame
 						"r must be uppercase: " + c);
 			}
 
-			final IDictionary.LetterMetaInfo letter = this.letterInformation.letters.get(c);
+			final IDictionary.LetterMetaInfo letter = this.dictionary.getLetterMetaInfo().letters.get(c);
 			tile = new Tile(letter.c, letter.point);
 		}
 		return tile;
@@ -734,14 +733,14 @@ public class Game implements IGame
 	private void fillBag()
 	{
 		// Fill bag
-		for (final IDictionary.LetterMetaInfo letter : this.letterInformation.letters.values())
+		for (final IDictionary.LetterMetaInfo letter : this.dictionary.getLetterMetaInfo().letters.values())
 		{
 			for (int i = 0; i < letter.prevalence; i++)
 			{
 				this.bag.add(generateStone(letter.c));
 			}
 		}
-		for (int i = 0; i < this.letterInformation.numberBlanks; i++)
+		for (int i = 0; i < this.dictionary.getLetterMetaInfo().numberBlanks; i++)
 		{
 			this.bag.add(generateStone(null));
 		}

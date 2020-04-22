@@ -1,17 +1,33 @@
 package oscrabble.server;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 
 public class MicroServiceDictionary implements IDictionary
 {
+	@Autowired
 	public static final RestTemplate REST_TEMPLATE = new RestTemplate();
+
 	private final URI uri;
+
+	public MicroServiceDictionary()
+	{
+		try
+		{
+			this.uri = new URI("dummy");
+		}
+		catch (final Throwable throwable)
+		{
+			throw new Error(throwable);
+		}
+	}
 
 	public MicroServiceDictionary(final URI uri, final String language)
 	{

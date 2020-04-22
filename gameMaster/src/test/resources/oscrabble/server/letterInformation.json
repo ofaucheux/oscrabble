@@ -1,0 +1,135 @@
+{
+  "letters": {
+    "E": {
+      "c": "E",
+      "prevalence": 15,
+      "points": 1
+    },
+    "A": {
+      "c": "A",
+      "prevalence": 9,
+      "points": 1
+    },
+    "I": {
+      "c": "I",
+      "prevalence": 8,
+      "points": 1
+    },
+    "N": {
+      "c": "N",
+      "prevalence": 6,
+      "points": 1
+    },
+    "O": {
+      "c": "O",
+      "prevalence": 6,
+      "points": 1
+    },
+    "R": {
+      "c": "R",
+      "prevalence": 6,
+      "points": 1
+    },
+    "S": {
+      "c": "S",
+      "prevalence": 6,
+      "points": 1
+    },
+    "T": {
+      "c": "T",
+      "prevalence": 6,
+      "points": 1
+    },
+    "U": {
+      "c": "U",
+      "prevalence": 6,
+      "points": 1
+    },
+    "L": {
+      "c": "L",
+      "prevalence": 5,
+      "points": 1
+    },
+    "D": {
+      "c": "D",
+      "prevalence": 3,
+      "points": 2
+    },
+    "M": {
+      "c": "M",
+      "prevalence": 3,
+      "points": 2
+    },
+    "G": {
+      "c": "G",
+      "prevalence": 2,
+      "points": 2
+    },
+    "B": {
+      "c": "B",
+      "prevalence": 2,
+      "points": 3
+    },
+    "C": {
+      "c": "C",
+      "prevalence": 2,
+      "points": 3
+    },
+    "P": {
+      "c": "P",
+      "prevalence": 2,
+      "points": 3
+    },
+    "F": {
+      "c": "F",
+      "prevalence": 2,
+      "points": 4
+    },
+    "H": {
+      "c": "H",
+      "prevalence": 2,
+      "points": 4
+    },
+    "V": {
+      "c": "V",
+      "prevalence": 2,
+      "points": 4
+    },
+    "J": {
+      "c": "J",
+      "prevalence": 1,
+      "points": 8
+    },
+    "Q": {
+      "c": "Q",
+      "prevalence": 1,
+      "points": 8
+    },
+    "K": {
+      "c": "K",
+      "prevalence": 1,
+      "points": 10
+    },
+    "W": {
+      "c": "W",
+      "prevalence": 1,
+      "points": 10
+    },
+    "X": {
+      "c": "X",
+      "prevalence": 1,
+      "points": 10
+    },
+    "Y": {
+      "c": "Y",
+      "prevalence": 1,
+      "points": 10
+    },
+    "Z": {
+      "c": "Z",
+      "prevalence": 1,
+      "points": 10
+    }
+  },
+  "numberBlanks": 2
+}

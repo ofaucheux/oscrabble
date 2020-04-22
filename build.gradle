@@ -30,9 +30,3 @@ subprojects {
     sourceCompatibility = 1.9
     targetCompatibility = 1.9
 }
-
-project(':gameMaster') {
-    dependencies {
-        compile project(':dictionary')
-    }
-}
