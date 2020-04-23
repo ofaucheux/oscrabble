@@ -3,6 +3,7 @@ plugins
     id 'org.springframework.boot' version '2.2.6.RELEASE'
     id 'io.spring.dependency-management' version '1.0.7.RELEASE'
     id "io.freefair.lombok" version "5.0.0"
+    id "java";
 }
 
 tasks.withType(JavaCompile) {
@@ -20,4 +21,12 @@ dependencies {
 
     compile 'org.springframework.boot:spring-boot-starter-web:2.2.6.RELEASE'
     compile 'org.springframework.boot:spring-boot-starter-test:2.2.6.RELEASE'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+   enabled = true
 }
