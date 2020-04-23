@@ -17,6 +17,11 @@ public class MicroServiceDictionary implements IDictionary
 
 	private final URI uri;
 
+	/**
+	 * Cache for letter information
+	 */
+	private LetterInformation letterInformation;
+
 	public MicroServiceDictionary()
 	{
 		try
@@ -44,14 +49,18 @@ public class MicroServiceDictionary implements IDictionary
 	@Override
 	public boolean isAdmissible(final String word)
 	{
-		final ResponseEntity<Object> entity = REST_TEMPLATE.getForEntity(this.uri.resolve("word").resolve(word), Object.class);
+		final ResponseEntity<Object> entity = REST_TEMPLATE.getForEntity(this.uri.resolve("word/").resolve(word), Object.class);
 		return entity.getStatusCode() == HttpStatus.OK;
 	}
 
 	@Override
 	public LetterInformation getLetterMetaInfo()
 	{
-		return REST_TEMPLATE.getForObject(this.uri.resolve("getLetterInformation"), LetterInformation.class);
+		if (this.letterInformation == null)
+		{
+			this.letterInformation = REST_TEMPLATE.getForObject(this.uri.resolve("getLetterInformation"), LetterInformation.class);
+		}
+		return this.letterInformation;
 	}
 
 }

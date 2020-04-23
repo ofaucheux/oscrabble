@@ -19,7 +19,7 @@ subprojects {
 
         // Show test results.
         testLogging {
-            events "passed", "skipped", "failed"
+//            events "passed", "skipped", "failed"
         }
     }
 

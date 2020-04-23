@@ -39,44 +39,46 @@ class TestPlayer extends AbstractPlayer
 	@Override
 	public void onPlayRequired(final Play play)
 	{
-		if (play.player == this)
+		if (play.player != this)
 		{
-			LOGGER.info("Play required");
+			LOGGER.info("Not for me: " + play);
+		}
 
+		LOGGER.info("Play required");
+
+		try
+		{
+			Thread.sleep(100);
+			final PlayTiles playTiles = this.nextPlayTiles.take();
 			try
 			{
-				Thread.sleep(100);
-				final PlayTiles playTiles = this.nextPlayTiles.take();
-				try
-				{
-					this.server.play(this.playerKey, play, playTiles);
-				}
-				catch (ScrabbleException.NotInTurn notInTurn)
-				{
-					final ArrayList<PlayTiles> remainings = new ArrayList<>();
-					this.nextPlayTiles.drainTo(remainings);
-					this.nextPlayTiles.add(playTiles);
-					this.nextPlayTiles.addAll(remainings);
-				}
+				this.server.play(this.playerKey, play, playTiles);
 			}
-			catch (InterruptedException e)
+			catch (ScrabbleException.NotInTurn notInTurn)
 			{
-				final String error = "Interrupted";
-				LOGGER.error(error);
-				try
-				{
-					this.server.quit(this, this.playerKey, error);
-				}
-				catch (ScrabbleException ex)
-				{
-					throw new Error(ex);
-				}
+				final ArrayList<PlayTiles> remainings = new ArrayList<>();
+				this.nextPlayTiles.drainTo(remainings);
+				this.nextPlayTiles.add(playTiles);
+				this.nextPlayTiles.addAll(remainings);
 			}
-			catch (ScrabbleException e)
+		}
+		catch (InterruptedException e)
+		{
+			final String error = "Interrupted";
+			LOGGER.error(error);
+			try
 			{
-				LOGGER.error(e, e);
-				throw new Error(e);
+				this.server.quit(this, this.playerKey, error);
 			}
+			catch (ScrabbleException ex)
+			{
+				throw new Error(ex);
+			}
+		}
+		catch (ScrabbleException e)
+		{
+			LOGGER.error(e, e);
+			throw new Error(e);
 		}
 	}
 

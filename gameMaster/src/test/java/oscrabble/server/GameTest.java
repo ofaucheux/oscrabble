@@ -1,6 +1,5 @@
 package oscrabble.server;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -8,22 +7,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
 import oscrabble.Grid;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
 import oscrabble.action.Action;
 import oscrabble.action.PlayTiles;
 import oscrabble.configuration.Configuration;
+import oscrabble.dictionary.Application;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
-import java.io.IOError;
-import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -33,46 +28,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 public class GameTest
 {
 
 	public static final Logger LOGGER = Logger.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
+	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
 
 	private Game game;
 	private Grid grid;
 	private TestPlayer gustav;
 	private TestPlayer john;
 	private TestPlayer jurek;
-	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary();
 
 	@BeforeAll
 	public static void mocken()
 	{
-		try
-		{
-			final MockRestServiceServer dictionaryMocker = MockRestServiceServer.bindTo(MicroServiceDictionary.REST_TEMPLATE).ignoreExpectOrder(true).build();
-
-			dictionaryMocker
-					.expect(ExpectedCount.manyTimes(), requestTo("getAdmissibleWords"))
-					.andRespond(withStatus(HttpStatus.OK).contentType(APPLICATION_JSON).body(
-							IOUtils.toByteArray(GameTest.class.getResourceAsStream("admissibleWords.json"))
-					));
-
-			dictionaryMocker
-					.expect(ExpectedCount.manyTimes(), requestTo("getLetterInformation"))
-					.andRespond(withStatus(HttpStatus.OK).contentType(APPLICATION_JSON).body(
-							IOUtils.toByteArray(GameTest.class.getResourceAsStream("letterInformation.json"))
-					));
-		}
-		catch (IOException e)
-		{
-			throw new IOError(e);
-		}
+		Application.main(new String[0]);
 	}
 
 	@BeforeEach
@@ -382,7 +355,7 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
 		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "G7 AS"));
-		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1, 10, TimeUnit.SECONDS);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}

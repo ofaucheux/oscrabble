@@ -1,5 +1,6 @@
 package oscrabble.player;
 
+import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,12 +28,6 @@ class BruteForceMethodTest
 	private BruteForceMethod instance;
 
 	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary();
-
-	@BeforeAll
-	public static void mocken()
-	{
-		GameTest.mocken();
-	}
 
 	@BeforeEach
 	public void BruteForceTest()
