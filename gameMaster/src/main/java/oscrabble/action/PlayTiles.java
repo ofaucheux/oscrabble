@@ -1,7 +1,7 @@
 package oscrabble.action;
 
 import oscrabble.Grid;
-import oscrabble.server.Tile;
+import oscrabble.server.Action;
 
 import java.text.ParseException;
 import java.util.LinkedHashMap;
@@ -31,7 +31,7 @@ public class PlayTiles implements Action
 	}
 
 	public static final Pattern PASS_TURN = Pattern.compile("-");
-	public static final Pattern EXCHANGE = Pattern.compile("-\\s+\\S+");
+	public static final Pattern EXCHANGE = Pattern.compile("-\\s+(\\S+)");
 	public static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("((\\d+)(\\w))(\\s+(\\S*))?");
 	public static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("((\\w)(\\d+))(\\s+(\\S*))?");
 
@@ -113,11 +113,13 @@ public class PlayTiles implements Action
 		Matcher matcher;
 		if (PASS_TURN.matcher(coordinate).matches())
 		{
-			return SkipTurn.SINGLETON;
+			return Action.PASS_TURN;
 		}
 		else if ((matcher = EXCHANGE.matcher(coordinate)).matches())
 		{
-			return new Exchange(matcher.group(1));
+			final Action action = new Action();
+			action.setNotation("- " + matcher.group(1));
+			return action;
 		}
 		if ((matcher = HORIZONTAL_COORDINATE_PATTERN.matcher(coordinate)).matches())
 		{

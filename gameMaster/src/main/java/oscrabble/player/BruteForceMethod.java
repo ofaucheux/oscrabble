@@ -8,7 +8,6 @@ import oscrabble.Grid;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
 import oscrabble.action.PlayTiles;
-import oscrabble.action.SkipTurn;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
 import oscrabble.server.Tile;

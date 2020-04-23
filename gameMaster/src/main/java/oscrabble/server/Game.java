@@ -4,17 +4,6 @@ import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
-import oscrabble.Grid;
-import oscrabble.Rack;
-import oscrabble.ScrabbleException;
-import oscrabble.action.Action;
-import oscrabble.action.Exchange;
-import oscrabble.action.PlayTiles;
-import oscrabble.action.SkipTurn;
-import oscrabble.configuration.Parameter;
-import oscrabble.configuration.PropertyUtils;
-import oscrabble.player.AbstractPlayer;
-import oscrabble.player.BruteForceMethod;
 
 import java.io.*;
 import java.net.URI;
@@ -51,7 +40,7 @@ public class Game implements IGame
 	 */
 	int delayBeforeEnds = 3;
 
-	private final Map<AbstractPlayer, PlayerInfo> players = new LinkedHashMap<>();
+	private final Map<Player, PlayerInfo> players = new LinkedHashMap<>();
 
 	/**
 	 * List of the users, the first to play at head
@@ -914,10 +903,8 @@ public class Game implements IGame
 		return this.plays.size();
 	}
 
-	static class PlayerInfo implements IPlayerInfo
+	static class Player extends oscrabble.data.Player
 	{
-		AbstractPlayer player;
-
 		/**
 		 * Password für die Kommunikation Player &lt;&gt; Server
 		 */

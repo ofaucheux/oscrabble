@@ -4,7 +4,8 @@ import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
 import oscrabble.action.PlayTiles;
-import oscrabble.server.Tile;
+import oscrabble.data.IDictionary;
+import oscrabble.data.Tile;
 import oscrabble.server.Game;
 
 import java.text.ParseException;
@@ -16,18 +17,16 @@ public class Grid
 	public static final Logger LOGGER = Logger.getLogger(Grid.class);
 
 	private final int size;
-	private final Tile.Generator stoneGenerator;
 	private final Square[][] squares;
+
+	/**
+	 * Information about the distribution of the letters
+	 */
+	private final IDictionary.LetterInformation letterInformation;
 
 	private Set<Square> allSquares;
 
-
-	public Grid(final int size)
-	{
-		this(Tile.SIMPLE_GENERATOR, size);
-	}
-
-	public Grid(final Tile.Generator stoneGenerator, final int size)
+	public Grid(final IDictionary.LetterInformation letterInformation, final int size)
 	{
 		this.size = size;
 
@@ -41,12 +40,12 @@ public class Grid
 			}
 		}
 
-		this.stoneGenerator = stoneGenerator;
+		this.letterInformation = letterInformation;
 	}
 
-	public Grid(final Tile.Generator tileGenerator)
+	public Grid(final IDictionary.LetterInformation li)
 	{
-		this(tileGenerator, SCRABBLE_SIZE);
+		this(li, SCRABBLE_SIZE);
 	}
 
 	/**
@@ -259,8 +258,8 @@ public class Grid
 				int crosswordScore = 0;
 				while (!(cursor = cursor.getPrevious(crossDirection)).isBorder() && !cursor.isEmpty())
 				{
-					crossword.insert(0, cursor.tile.getChar());
-					crosswordScore += cursor.tile.getPoints();
+					crossword.insert(0, cursor.tile.c);
+					crosswordScore += cursor.tile.points;
 				}
 
 				crossword.append(c);
@@ -269,8 +268,8 @@ public class Grid
 				cursor = sq;
 				while (!(cursor = cursor.getFollowing(crossDirection)).isBorder() && !cursor.isEmpty())
 				{
-					crossword.append(cursor.tile.getChar());
-					crosswordScore += cursor.tile.getPoints();
+					crossword.append(cursor.tile.c);
+					crosswordScore += cursor.tile.points;
 				}
 
 				if (crossword.length() > 1)
@@ -283,7 +282,7 @@ public class Grid
 			else
 			{
 				sq.assertContainChar(c);
-				mmi.score += sq.tile.getPoints();
+				mmi.score += sq.tile.points;
 			}
 
 			switch (playTiles.getDirection())
@@ -338,7 +337,7 @@ public class Grid
 				if (playTiles.isPlayedByBlank(i))
 				{
 					sq.tile = this.stoneGenerator.generateStone(null);
-					sq.tile.setCharacter(c);
+					sq.tile.c = c;
 				}
 				else
 				{
@@ -516,7 +515,7 @@ public class Grid
 			final Character representation =
 					this.tile == null
 							? '_'
-							: this.tile.hasCharacterSet() ? '\u25A1' : this.tile.getChar();
+							: this.tile.c == null ? '\u25A1' : this.tile.c;
 			return String.format("(%d,%d) %s", this.x, this.y, representation);
 		}
 
@@ -565,10 +564,10 @@ public class Grid
 
 		private void assertContainChar(final char c) throws ScrabbleException
 		{
-			if (this.isEmpty() || this.tile.getChar() != c)
+			if (this.isEmpty() || this.tile.c != c)
 			{
 				LOGGER.warn("Grid state:\n" + getGrid().asASCIIArt());
-				throw new ScrabbleException.ForbiddenPlayException("Square " + this.x + "," + this.y + " already occupied by " + this.tile.getChar());
+				throw new ScrabbleException.ForbiddenPlayException("Square " + this.x + "," + this.y + " already occupied by " + this.tile.c);
 			}
 		}
 	}
@@ -608,7 +607,7 @@ public class Grid
 				else
 				{
 					final Grid.Square square = this.getSquare(x, y);
-					sb.append(square.isEmpty() ? " " : square.tile.getChar());
+					sb.append(square.isEmpty() ? " " : square.tile.c);
 				}
 
 				if (x == gridSize)
@@ -639,7 +638,7 @@ public class Grid
 		final StringBuilder sb = new StringBuilder();
 		while (!(square = square.getFollowing(direction)).isEmpty() && !square.isBorder())
 		{
-			sb.append(square.tile.getChar());
+			sb.append(square.tile.c);
 		}
 
 		if (sb.length() == 1)

@@ -3,10 +3,7 @@ package oscrabble.server;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import oscrabble.Grid;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
@@ -14,6 +11,7 @@ import oscrabble.action.Action;
 import oscrabble.action.PlayTiles;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Application;
+import oscrabble.dictionary.Language;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
@@ -34,7 +32,8 @@ public class GameTest
 
 	public static final Logger LOGGER = Logger.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
-	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
+	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
+	private static Application application;
 
 	private Game game;
 	private Grid grid;
@@ -45,7 +44,18 @@ public class GameTest
 	@BeforeAll
 	public static void mocken()
 	{
-		Application.main(new String[0]);
+		application = new Application();
+		application.start();
+		DICTIONARY = new MicroServiceDictionary(
+				URI.create("http://localhost:8080/"),
+				Language.FRENCH.toString()
+		);
+	}
+
+	@AfterAll
+	public static void stop()
+	{
+		application.stop();
 	}
 
 	@BeforeEach
