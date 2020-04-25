@@ -258,7 +258,7 @@ class Dictionary
 		{
 			final Mutation m = new Mutation();
 			m.word = mutation;
-			m.definitions = mip != null ? mip.getDefinitions(mutation) : null;
+//			m.definitions = mip != null ? mip.getDefinitions(mutation) : null;
 			mutations.add(m);
 		}
 		return mutations;

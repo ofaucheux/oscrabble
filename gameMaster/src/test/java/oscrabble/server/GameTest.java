@@ -73,9 +73,7 @@ public class GameTest
 	 */
 	private PredefinedPlayer addPlayer(final String name) throws ScrabbleException
 	{
-		final PredefinedPlayer player = new PredefinedPlayer(this.game);
-		player.name = name;
-		player.id = name;
+		final PredefinedPlayer player = new PredefinedPlayer(this.game, name);
 		return this.game.addPlayer(player);
 	}
 
@@ -372,7 +370,7 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
 		this.gustav.moves.add("H8 AS");
-		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
 		assertFalse(this.game.isLastPlayError(this.gustav));
 		this.john.moves.add("A3 VIGIE");
 		Thread.sleep(100);
@@ -487,8 +485,10 @@ public class GameTest
 
 		private final AbstractGameListener listener;
 
-		PredefinedPlayer(final Game game)
+		PredefinedPlayer(final Game game, final String name)
 		{
+			this.name = name;
+			this.id = name;
 			this.listener = new AbstractGameListener()
 			{
 
