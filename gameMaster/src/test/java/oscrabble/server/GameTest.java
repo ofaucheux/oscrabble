@@ -1,16 +1,14 @@
 package oscrabble.server;
 
 import org.apache.commons.collections4.Bag;
-import org.apache.commons.lang3.RandomUtils;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
-import oscrabble.configuration.Configuration;
 import oscrabble.data.GameState;
 import oscrabble.dictionary.Application;
 import oscrabble.dictionary.Language;
-import oscrabble.player.BruteForceMethod;
 import oscrabble.server.action.Action;
 
 import java.net.URI;
@@ -27,7 +25,7 @@ import static org.junit.Assert.*;
 public class GameTest
 {
 
-	public static final Logger LOGGER = Logger.getLogger(GameTest.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
 	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
 	private static Application application;
@@ -86,101 +84,101 @@ public class GameTest
 		this.game.quitGame();
 	}
 
-	@Test
-	void completeRandomGame() throws InterruptedException, ScrabbleException
-	{
-		for (int gameNr = 0; gameNr < 10; gameNr++)
-		{
-			this.game = new Game(DICTIONARY);
-			this.game.delayBeforeEnds = 0;
-			final BruteForceMethod method = new BruteForceMethod(DICTIONARY);
-			this.game.listeners.add(new TestListener()
-			{
-				@Override
-				public void afterPlay(final Action action)
-				{
-					LOGGER.info("Played: " + action.toString());
-				}
-			});
-
-			ArrayList<Game.Player> players = new ArrayList<>();
-			for (int i = 0; i < RandomUtils.nextInt(1, 7); i++)
-			{
-				final BruteForceMethod.Player player = method.new Player("Player " + i)
-				{
-					{
-						final Configuration configuration = this.getConfiguration();
-						configuration.setValue("throttle", 0);
-						configuration.setValue("force", 100);
-						configuration.setValue("strategy", BruteForceMethod.Strategy.BEST_SCORE);
-					}
-				};
-
-				this.game.addPlayer(player);
-//				players.add(player);
-			}
-			final AtomicReference<Throwable> error = new AtomicReference<>();
-			this.game.listeners.add(new TestListener()
-			{
-
-//				@Override TODO
-//				public void afterRejectedAction(final AbstractPlayer player, final Action action)
-//				{
-//					Assert.fail("Rejected action: " + action);
-//				}
-
+//	@Test TODO
+//	void completeRandomGame() throws InterruptedException, ScrabbleException
+//	{
+//		for (int gameNr = 0; gameNr < 10; gameNr++)
+//		{
+//			this.game = new Game(DICTIONARY);
+//			this.game.delayBeforeEnds = 0;
+//			final BruteForceMethod method = new BruteForceMethod(DICTIONARY);
+//			this.game.listeners.add(new TestListener()
+//			{
 //				@Override
 //				public void afterPlay(final Action action)
 //				{
-//						if (RANDOM.nextInt(10) == 0)
-//						{
-//							try
-//							{
-//								Game.Player caller = players.get(0);
-////								UUID key = getKey(caller);
-//								final Snapshot before = this.snapshots.getLast();
-//								assert before != null;
-//								GameTest.this.game.rollbackLastMove(caller);
-//								final Snapshot after = collectInfos();
-//								assertEquals("Wrong play nr", before.roundNr, after.roundNr);
-//								before.scores.forEach(
-//										(player, beforeScore) -> assertEquals("Wrong score", beforeScore, after.scores.get(player))
-//								);
-//							}
-//							catch (final Throwable e)
-//							{
-//								error.set(e);
-//							}
-//						}
-//						else
-//						{
-//							this.snapshots.add(collectInfos());
-//						}
+//					LOGGER.info("Played: " + action.toString());
 //				}
-
-//				protected Snapshot collectInfos()
+//			});
+//
+//			ArrayList<Game.Player> players = new ArrayList<>();
+//			for (int i = 0; i < RandomUtils.nextInt(1, 7); i++)
+//			{
+//				final BruteForceMethod.Player player = method.new Player("Player " + i)
 //				{
-//					final Snapshot info = new Snapshot();
-//					info.lastPlay = GameTest.this.game.actions.getLast();
-//					info.roundNr = GameTest.this.game.getRoundNr();
-//					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
 //					{
-//						info.scores.put(player.getName(), player.getScore());
+//						final Configuration configuration = this.getConfiguration();
+//						configuration.setValue("throttle", 0);
+//						configuration.setValue("force", 100);
+//						configuration.setValue("strategy", BruteForceMethod.Strategy.BEST_SCORE);
 //					}
-//					return info;
-//				}
-
-			});
-			startGame(true);
-
-			while (this.game.getState() != GameState.State.ENDED)
-			{
-				Thread.sleep(100);
-			}
-
-			assertNull(error.get());
-		}
-	}
+//				};
+//
+//				this.game.addPlayer(player);
+////				players.add(player);
+//			}
+//			final AtomicReference<Throwable> error = new AtomicReference<>();
+//			this.game.listeners.add(new TestListener()
+//			{
+//
+////				@Override TODO
+////				public void afterRejectedAction(final AbstractPlayer player, final Action action)
+////				{
+////					Assert.fail("Rejected action: " + action);
+////				}
+//
+////				@Override
+////				public void afterPlay(final Action action)
+////				{
+////						if (RANDOM.nextInt(10) == 0)
+////						{
+////							try
+////							{
+////								Game.Player caller = players.get(0);
+//////								UUID key = getKey(caller);
+////								final Snapshot before = this.snapshots.getLast();
+////								assert before != null;
+////								GameTest.this.game.rollbackLastMove(caller);
+////								final Snapshot after = collectInfos();
+////								assertEquals("Wrong play nr", before.roundNr, after.roundNr);
+////								before.scores.forEach(
+////										(player, beforeScore) -> assertEquals("Wrong score", beforeScore, after.scores.get(player))
+////								);
+////							}
+////							catch (final Throwable e)
+////							{
+////								error.set(e);
+////							}
+////						}
+////						else
+////						{
+////							this.snapshots.add(collectInfos());
+////						}
+////				}
+//
+////				protected Snapshot collectInfos()
+////				{
+////					final Snapshot info = new Snapshot();
+////					info.lastPlay = GameTest.this.game.actions.getLast();
+////					info.roundNr = GameTest.this.game.getRoundNr();
+////					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
+////					{
+////						info.scores.put(player.getName(), player.getScore());
+////					}
+////					return info;
+////				}
+//
+//			});
+//			startGame(true);
+//
+//			while (this.game.getState() != GameState.State.ENDED)
+//			{
+//				Thread.sleep(100);
+//			}
+//
+//			assertNull(error.get());
+//		}
+//	}
 
 	// TODO ?
 //	/**
@@ -203,7 +201,7 @@ public class GameTest
 //	}
 
 	@Test
-	void completeKnownGame() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
+	void completeKnownGame() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		final List<PredefinedPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
 		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
@@ -282,7 +280,7 @@ public class GameTest
 	}
 
 	@Test
-	public void retryAccepted() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
+	public void retryAccepted() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		// test retry accepted
 		this.grid = this.game.getGrid();
@@ -303,12 +301,12 @@ public class GameTest
 	}
 
 	@Test
-	public void rollback() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
+	public void rollback() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.grid = this.game.getGrid();
 		this.startGame(true);
 		final Bag<Character> startRack = this.gustav.rack;
-		this.gustav.moves.add("8H APTES");;
+		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 		assertEquals(16, this.game.getScore(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -322,7 +320,7 @@ public class GameTest
 
 
 	@Test
-	public void retryForbidden() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
+	public void retryForbidden() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		final AtomicBoolean playRejected = new AtomicBoolean(false);
@@ -345,7 +343,7 @@ public class GameTest
 	}
 
 	@Test
-	public void startWithOnlyOneLetter() throws ScrabbleException, ParseException, InterruptedException
+	public void startWithOnlyOneLetter() throws ScrabbleException, InterruptedException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
@@ -357,7 +355,7 @@ public class GameTest
 
 
 	@Test
-	public void startNotCentered() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
+	public void startNotCentered() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
@@ -368,7 +366,7 @@ public class GameTest
 	}
 
 	@Test
-	public void wordDoesNotTouch() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
+	public void wordDoesNotTouch() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
@@ -381,7 +379,7 @@ public class GameTest
 	}
 
 	@Test
-	public void testScore() throws ScrabbleException, InterruptedException, ParseException, TimeoutException
+	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		// dieser seed gibt die Buchstaben "[F, T, I, N, O, A,  - joker - ]"
 		this.game = new Game(DICTIONARY, 2346975568742590367L);
@@ -457,7 +455,7 @@ public class GameTest
 			@Override
 			public void onGameStateChanged()
 			{
-				LOGGER.info("Game state changed to " + GameTest.this.game.getState());
+				LOGGER.info("Game state changed to " + GameTest.this.game.getState().name());
 			}
 		});
 		if (fork)

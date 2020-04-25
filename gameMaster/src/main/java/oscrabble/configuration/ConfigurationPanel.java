@@ -3,7 +3,8 @@ package oscrabble.configuration;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.server.Game;
 
 import javax.swing.*;
@@ -22,7 +23,7 @@ import java.util.Set;
  */
 public final class ConfigurationPanel extends JPanel
 {
-	public static final Logger LOGGER = Logger.getLogger(ConfigurationPanel.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationPanel.class);
 	private final Configuration configuration;
 
 	private final static Icon trueIcon = new ImageIcon(ConfigurationPanel.class.getResource("checkboxTrue.png"));

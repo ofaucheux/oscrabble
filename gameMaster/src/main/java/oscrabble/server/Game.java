@@ -2,13 +2,13 @@ package oscrabble.server;
 
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
 import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
-import oscrabble.player.BruteForceMethod;
 import oscrabble.server.action.Action;
 
 import java.io.File;
@@ -32,7 +32,7 @@ public class Game
 	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
 	public final static int RACK_SIZE = 7;
 	public static final File DEFAULT_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".scrabble.properties");
-	private final static Logger LOGGER = Logger.getLogger(Game.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(Game.class);
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
 	private static final String PLAYER_PREFIX = "player.";
 	private static final String KEY_METHOD = "method";
@@ -101,7 +101,7 @@ public class Game
 		catch (final IOException ex)
 		{
 			final ConfigurationException configurationException = new ConfigurationException("Cannot read the configuration file: " + ex.toString(), ex);
-			LOGGER.error(configurationException);
+			LOGGER.error("Error", configurationException);
 //			TODO throw configurationException;
 		}
 
@@ -140,18 +140,18 @@ public class Game
 		{
 			final Properties playerProps = PropertyUtils.getSubProperties(properties, PLAYER_PREFIX + name);
 			final String methodName = playerProps.getProperty(KEY_METHOD);
-			final BruteForceMethod.Player bfPlayer;
-			switch (PlayerType.valueOf(methodName.toUpperCase()))
-			{
-				// TODO: sowewhere else
-				case BRUTE_FORCE:
-					bfPlayer = new BruteForceMethod(this.dictionary).new Player(name);
-					bfPlayer.loadConfiguration(playerProps);
-					this.addPlayer(bfPlayer);
-					break;
-				default:
-					throw new ConfigurationException("Unknown method: " + methodName);
-			}
+//			final BruteForceMethod.Player bfPlayer;
+//			switch (PlayerType.valueOf(methodName.toUpperCase()))
+//			{
+//				// TODO: sowewhere else
+//				case BRUTE_FORCE:
+//					bfPlayer = new BruteForceMethod(this.dictionary).new Player(name);
+//					bfPlayer.loadConfiguration(playerProps);
+//					this.addPlayer(bfPlayer);
+//					break;
+//				default:
+//					throw new ConfigurationException("Unknown method: " + methodName);
+//			}
 
 			// TODO?
 //			final oscrabble.configuration.Configuration playerConfig = player.getConfiguration();
@@ -687,7 +687,7 @@ public class Game
 		}
 		catch (InterruptedException e)
 		{
-			LOGGER.error(e, e);
+			LOGGER.error(e.toString(), e);
 		}
 
 //		dispatch(GameListener::afterGameEnd);

@@ -12,8 +12,8 @@ tasks.withType(JavaCompile) {
 dependencies {
 
     compile 'commons-codec:commons-codec:1.13'
-    compile 'org.slf4j:slf4j-api:1.7.28'
-    compile 'org.slf4j:slf4j-log4j12:1.7.28'
+//    compile 'org.slf4j:slf4j-api:1.7.28'
+//    compile 'org.slf4j:slf4j-log4j12:1.7.28'
     compile 'org.apache.commons:commons-collections4:4.4'
     compile 'org.apache.commons:commons-lang3:3.9'
     compile 'commons-io:commons-io:2.6'

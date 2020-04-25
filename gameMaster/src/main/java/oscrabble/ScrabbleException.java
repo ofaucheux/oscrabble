@@ -1,6 +1,5 @@
 package oscrabble;
 
-import oscrabble.player.AbstractPlayer;
 import oscrabble.server.Game;
 
 public abstract class ScrabbleException extends Exception

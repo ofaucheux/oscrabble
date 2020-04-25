@@ -4,7 +4,6 @@ import oscrabble.ScrabbleException;
 import oscrabble.data.IDictionary;
 import oscrabble.data.MessageFromServer;
 import oscrabble.data.Player;
-import oscrabble.player.AbstractPlayer;
 import oscrabble.server.action.Action;
 
 import java.util.List;

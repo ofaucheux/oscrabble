@@ -1,7 +1,7 @@
 package oscrabble;
 
-import org.apache.log4j.Logger;
-import oscrabble.player.BruteForceMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.server.Game;
 
 import javax.swing.*;
@@ -9,11 +9,11 @@ import javax.swing.*;
 public class GameStarter
 {
 	/** Logger */
-	public static final Logger LOGGER = Logger.getLogger(GameStarter.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(GameStarter.class);
 
 	public static void main(String[] args)
 	{
-		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> LOGGER.fatal("Uncaught exception", throwable));
+		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> LOGGER.error("Uncaught exception", throwable));
 
 		try
 		{
@@ -22,8 +22,9 @@ public class GameStarter
 			game = new Game(Game.DEFAULT_PROPERTIES_FILE);
 			if (game.getPlayers().isEmpty())
 			{
+				// TODO
 //				game.addPlayer(new SwingPlayer("Emil"));
-				game.addPlayer(new BruteForceMethod(game.getDictionary()).new Player("R2D2"));
+//				game.addPlayer(new BruteForceMethod(game.getDictionary()).new Player("R2D2"));
 			}
 			game.play();
 		}

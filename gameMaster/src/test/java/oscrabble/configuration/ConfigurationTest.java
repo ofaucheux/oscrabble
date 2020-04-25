@@ -1,8 +1,9 @@
 package oscrabble.configuration;
 
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class ConfigurationTest
 {
 
-	public static final Logger LOGGER = Logger.getLogger(ConfigurationTest.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationTest.class);
 
 	@Test
 	void configuration() throws InterruptedException, IOException
@@ -61,9 +62,6 @@ class ConfigurationTest
 			}
 			Thread.sleep(100);
 		}
-
-		LOGGER.info(config1.allowError);
-		LOGGER.info(config1.happiness);
 
 		final Properties properties = config1.asProperties();
 		final StringWriter sw = new StringWriter();
