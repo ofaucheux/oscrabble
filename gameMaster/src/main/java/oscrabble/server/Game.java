@@ -1,94 +1,82 @@
 package oscrabble.server;
 
-import org.apache.commons.collections4.Bag;
-import org.apache.commons.collections4.bag.HashBag;
-import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.log4j.Logger;
+import oscrabble.ScrabbleException;
+import oscrabble.configuration.Parameter;
+import oscrabble.configuration.PropertyUtils;
+import oscrabble.data.GameState;
+import oscrabble.data.IDictionary;
+import oscrabble.player.BruteForceMethod;
+import oscrabble.server.action.Action;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Game implements IGame
+public class Game
 {
 	/**
 	 * Resource Bundle
 	 */
 	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
-
-	private final static Logger LOGGER = Logger.getLogger(Game.class);
-
 	public final static int RACK_SIZE = 7;
+	public static final File DEFAULT_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".scrabble.properties");
+	private final static Logger LOGGER = Logger.getLogger(Game.class);
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
 	private static final String PLAYER_PREFIX = "player.";
 	private static final String KEY_METHOD = "method";
-	public static final File DEFAULT_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".scrabble.properties");
-
 	/**
-	 *  Seed initially used to create the random generator.
+	 * Seed initially used to create the random generator.
 	 */
 	final long randomSeed;
-
-	/**
-	 * Delay (in seconds) before changing the state from ENDING to ENDED
-	 */
-	int delayBeforeEnds = 3;
-
-	private final Map<Player, PlayerInfo> players = new LinkedHashMap<>();
-
-	/**
-	 * List of the users, the first to play at head
-	 */
-	private final LinkedList<AbstractPlayer> toPlay = new LinkedList<>();
-	private final Grid grid;
-	private final Random random;
-	private CountDownLatch waitingForPlay;
-	private final LinkedList<Tile> bag = new LinkedList<>();
-	private final IDictionary dictionary;
-//	private final Tile.Generator sli;
-
-	final List<GameListener> listeners = new ArrayList<>();
-
-	/**
-	 * State of the game
-	 */
-	private State state;
-
-	/**
-	 * Configuration of the game
-	 */
-	private final Configuration configuration;
-
+//	final List<GameListener> listeners = new ArrayList<>();
+	final Map<UUID, Player> players = new HashMap<>();
 	/**
 	 * Plays
 	 */
-	final LinkedList<Play> plays = new LinkedList<>();
-
-	/**
-	 * History of the game, a line played move (even if it was an error).
-	 */
-	private final List<HistoryEntry> history = Collections.synchronizedList(new LinkedList<>());
-
+	final LinkedList<oscrabble.server.action.Action> actions = new LinkedList<>();
 	/**
 	 * Synchronize: to by synchronized by calls which change the state of the game
 	 */
 	final Object changing = new Object();
-
+	/**
+	 * List of the users, the first to play at head
+	 */
+	private final LinkedList<Player> toPlay = new LinkedList<>();
+	private final Grid grid;
+	private final Random random;
+	private final LinkedList<Character> bag = new LinkedList<>();
+	private final IDictionary dictionary;
+	/**
+	 * Configuration of the game
+	 */
+	private final Configuration configuration;
+	/**
+	 * History of the game, a line played move (even if it was an error).
+	 */
+	private final List<HistoryEntry> history = Collections.synchronizedList(new LinkedList<>());
 	/**
 	 * File to save and read the game configuration
 	 */
 	private final File propertyFile;
-
 	/**
-	 * Map of the set tiles and the action which set them
+	 * Delay (in seconds) before changing the state from ENDING to ENDED
 	 */
-	private final LinkedHashMap<Tile, Action> settingActions = new LinkedHashMap<>();
+	int delayBeforeEnds = 3;
+	private CountDownLatch waitingForPlay;
+	/**
+	 * State of the game
+	 */
+	private GameState.State state;
 
 	public Game(final File propertyFile) throws ConfigurationException
 	{
@@ -112,7 +100,7 @@ public class Game implements IGame
 		{
 			final ConfigurationException configurationException = new ConfigurationException("Cannot read the configuration file: " + ex.toString(), ex);
 			LOGGER.error(configurationException);
-			throw configurationException;
+//			TODO throw configurationException;
 		}
 
 		this.configuration = new Configuration();
@@ -128,7 +116,8 @@ public class Game implements IGame
 		{
 			throw new ConfigurationException("Not known language: " + this.configuration.language);
 		}
-		this.configuration.addChangeListener(evt -> saveConfiguration());
+//		TODO
+//		this.configuration.addChangeListener(evt -> saveConfiguration());
 
 		//
 		// Players
@@ -148,32 +137,35 @@ public class Game implements IGame
 		for (final String name : playerNames)
 		{
 			final Properties playerProps = PropertyUtils.getSubProperties(properties, PLAYER_PREFIX + name);
-			final AbstractPlayer player;
 			final String methodName = playerProps.getProperty(KEY_METHOD);
+			final BruteForceMethod.Player bfPlayer;
 			switch (PlayerType.valueOf(methodName.toUpperCase()))
 			{
+				// TODO: sowewhere else
 				case BRUTE_FORCE:
-					player = new BruteForceMethod(this.dictionary).new Player(name);
-					((BruteForceMethod.Player) player).loadConfiguration(playerProps);
+					bfPlayer = new BruteForceMethod(this.dictionary).new Player(name);
+					bfPlayer.loadConfiguration(playerProps);
+					this.addPlayer(bfPlayer);
 					break;
 				default:
 					throw new ConfigurationException("Unknown method: " + methodName);
 			}
-			this.addPlayer(player);
-			final oscrabble.configuration.Configuration playerConfig = player.getConfiguration();
-			if (playerConfig != null)
-			{
-				playerConfig.addChangeListener(evt -> saveConfiguration());
-			}
+
+			// TODO?
+//			final oscrabble.configuration.Configuration playerConfig = player.getConfiguration();
+//			if (playerConfig != null)
+//			{
+//				playerConfig.addChangeListener(evt -> saveConfiguration());
+//			}
 		}
 
-		this.grid = new Grid(15);
+		this.grid = new Grid(this.dictionary.getScrabbleRules());
 		this.random = new Random();
 		this.randomSeed = this.random.nextLong();
 		this.random.setSeed(this.randomSeed);
 		this.waitingForPlay = new CountDownLatch(1);
 
-		setState(State.BEFORE_START);
+		setState(GameState.State.BEFORE_START);
 		LOGGER.info("Created game with random seed " + this.random);
 	}
 
@@ -189,7 +181,7 @@ public class Game implements IGame
 		this.random = new Random(randomSeed);
 		this.dictionary = dictionary;
 //		this.sli = new ScrabbleLanguageInformation(language);
-		this.grid = new Grid(15);
+		this.grid = new Grid(dictionary.getScrabbleRules());
 		this.propertyFile = null;
 		this.configuration = new Configuration();
 	}
@@ -197,97 +189,122 @@ public class Game implements IGame
 	/**
 	 * Constructor for test purposes.
 	 *
-	 * @see #Game(IDictionary, long)
 	 * @param dictionary dictionary
+	 * @see #Game(IDictionary, long)
 	 */
 	public Game(final IDictionary dictionary)
 	{
 		this(dictionary, new Random().nextLong());
 	}
 
-	/**
-	 * Save the configuration of this game
-	 */
-	private void saveConfiguration()
+//	/**
+//	 * Save the configuration of this game
+//	 */
+//	private void saveConfiguration()
+//	{
+//		saveConfiguration(this.propertyFile, this.configuration, this.players.values());
+//	}
+
+//	todo
+//	/**
+//	 * Save a configuration.
+//	 *
+//	 * @param propertyFile output file
+//	 * @param gameConfig   configuration of the game itself
+//	 * @param players      list of the players to extract their configuration.
+//	 */
+//	private static void saveConfiguration(final File propertyFile, final Configuration gameConfig, final Collection<Player> players)
+//	{
+//		try (final PrintWriter writer = new PrintWriter(new FileWriter(propertyFile)))
+//		{
+//			final Properties properties = gameConfig.asProperties();
+//			for (final player pi : players)
+//			{
+//				final oscrabble.configuration.Configuration pc = pi.player.getConfiguration();
+//				final Properties sp = pc == null ? new Properties() : pc.asProperties();
+//				sp.setProperty(KEY_METHOD, pi.player.getType().name());
+//				PropertyUtils.addAsSubProperties(
+//						properties,
+//						sp,
+//						"player." + pi.getName()
+//				);
+//			}
+//			properties.store(writer, "Scrabble properties");
+//		}
+//		catch (IOException e)
+//		{
+//			throw new IOError(e);
+//		}
+//	}
+
+	public synchronized void addPlayer(final oscrabble.data.Player jsonPlayer)
 	{
-		saveConfiguration(this.propertyFile, this.configuration, this.players.values());
+		final Player player = new Player();
+		player.rack = new ArrayList<>();
+//		player.incomingEventQueue = new LinkedBlockingDeque<>();
+		player.id = jsonPlayer.id;
+		player.name = jsonPlayer.name;
+		this.players.put(player.id, player);
+//		this.listeners.add(player);
 	}
 
-	@Override
-	public void setState(final State state)
-	{
-		if (this.state != state)
-		{
-			this.state = state;
-			this.listeners.forEach( l -> l.onGameStateChanged());
-		}
-	}
-
-	@Override
-	public synchronized void addPlayer(final AbstractPlayer newPlayer)
-	{
-		final PlayerInfo info = new PlayerInfo();
-		info.player = newPlayer;
-		info.key = UUID.randomUUID();
-		newPlayer.setPlayerKey(info.key);
-		info.rack = new Rack();
-		info.incomingEventQueue = new LinkedBlockingDeque<>();
-		this.players.put(newPlayer, info);
-		this.listeners.add(newPlayer);
-		newPlayer.setGame(this);
-	}
-
-	@Override
-	public void addListener(final GameListener listener)
-	{
-		this.listeners.add(listener);
-	}
-
-	@Override
-	public synchronized int play(final UUID clientKey, final Play play, final Action action) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
+	public synchronized int play(/*final UUID clientKey, */ final oscrabble.data.Action jsonAction) throws oscrabble.ScrabbleException
 	{
 		synchronized (this.changing)
 		{
-			if (this.plays.isEmpty() || this.plays.getLast() != play)
+
+			// TODO
+//			checkKey(jsonAction.player, clientKey);
+
+			final Action action = Action.parse(jsonAction);
+			final Player player = this.players.get(jsonAction.player);
+			if (player == null)
 			{
-				throw new ScrabbleException.NotInTurn(play.player);
+				throw new oscrabble.ScrabbleException.ForbiddenPlayException("Unknown player: " + jsonAction.player);
 			}
 
-			assert !play.isDone();
-			final AbstractPlayer player = play.player;
-			final PlayerInfo playerInfo = this.players.get(player);
-			checkKey(player, clientKey);
+			if (this.actions.isEmpty() || this.toPlay.peekFirst() != player)
+			{
+				throw new oscrabble.ScrabbleException.NotInTurn(player);
+			}
 
-			LOGGER.info(player.getName() + " plays " + action);
+			LOGGER.info(player.name + " plays " + action.notation);
+
 			int score = 0;
 			boolean actionRejected = false;
-			Set<Tile> drawn = null;
 			Grid.MoveMetaInformation moveMI = null;
 			boolean done = false;
+			final Set<Character> drawn;
 			try
 			{
 				final ArrayList<String> messages = new ArrayList<>(5);
 
-				if (action instanceof PlayTiles)
+				if (action instanceof Action.PlayTiles)
 				{
-					final PlayTiles playTiles = (PlayTiles) action;
+					final Action.PlayTiles playTiles = (Action.PlayTiles) action;
 
 					// check possibility
 					moveMI = this.grid.getMetaInformation(playTiles);
-					final TreeBag<Character> rackLetters = new TreeBag<>();
-					playerInfo.rack.forEach(stone -> {
-						if (!stone.isJoker())
-						{
-							rackLetters.add(stone.getChar(), 1);
-						}
-					});
+					final LinkedList<Character> remaining = new LinkedList<>();
+					Collections.copy(remaining, player.rack);
 
-					final Bag<Character> requiredLetters = moveMI.getRequiredLetters();
-					final Bag<Character> missingLetters = new HashBag<>(requiredLetters);
-					missingLetters.removeAll(rackLetters);
-					if (missingLetters.size() > playerInfo.rack.countJoker())
+					final List<Character> requiredLetters = moveMI.requiredLetter;
+					for (final Character c : requiredLetters)
 					{
-						throw new ScrabbleException.ForbiddenPlayException(MessageFormat.format(MESSAGES.getString("html.rack.with.0.br.has.not.the.required.stones.1"), rackLetters, requiredLetters));
+						if (!remaining.remove(c))
+						{
+							if (!remaining.remove((Character) ' '))
+							{
+								throw new ScrabbleException.ForbiddenPlayException
+										(MessageFormat.format(MESSAGES.getString("html.rack.with.0.br.has.not.the.required.stones.1"), player.rack, requiredLetters));
+							}
+						}
+					}
+
+					// first word in the middle
+					if (this.grid.isEmpty() && !containsCentralField(playTiles))
+					{
+						throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("the.first.word.must.be.on.the.center.square"));
 					}
 
 					// check touch
@@ -316,76 +333,82 @@ public class Game implements IGame
 						}
 					}
 
-					if (this.grid.isEmpty())
-					{
-						final Grid.Square center = this.grid.getCenter();
-						if (!playTiles.getSquares().containsKey(center))
-						{
-							throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("the.first.word.must.be.on.the.center.square"));
-						}
-					}
-
-					Grid.Square square = playTiles.startSquare;
+					int x = playTiles.x;
+					int y = playTiles.y;
 					for (int i = 0; i < playTiles.word.length(); i++)
 					{
 						final char c = playTiles.word.charAt(i);
+						final Grid.Square square = this.grid.get(x, y);
 						if (square.isEmpty())
 						{
-							final Tile tile =
-									playerInfo.rack.removeStones(
-											new char[] { playTiles.isPlayedByBlank(i) ? ' ' : c }
-									).get(0);
-							if (tile.isJoker())
-							{
-								tile.setCharacter(c);
-							}
-							this.grid.set(square, tile);
-							this.settingActions.put(tile, action);
+							square.c = c;
+							square.action = action;
 						}
 						else
 						{
-							assert square.tile.getChar() == c; //  sollte schon oben getestet sein.
+							assert square.c == c; //  sollte schon oben getestet sein.
 						}
-						square = square.getFollowing(playTiles.getDirection());
+
+						switch (playTiles.direction)
+						{
+							case HORIZONTAL:
+								x++;
+								break;
+							case VERTICAL:
+								y++;
+								break;
+						}
 					}
+
+					player.rack = remaining;
 
 					score = moveMI.getScore();
 					if (moveMI.isScrabble)
 					{
 						messages.add(SCRABBLE_MESSAGE);
 					}
-					playerInfo.score += score;
-					LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), playerInfo.getName(), playTiles.getNotation(), score));
+					player.score += score;
+					LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player.name, playTiles.notation, score));
 				}
-				else if (action instanceof Exchange)
+				else if (action instanceof Action.Exchange)
 				{
-					if (getNumberTilesInBag() < getRequiredTilesInBagForExchange())
+					if (this.bag.size() < this.dictionary.getScrabbleRules().requiredTilesInBagForExchange)
 					{
 						throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("not.enough.tiles.in.bag.for.exchange"));
 					}
 
-					final Exchange exchange = (Exchange) action;
-					final List<Tile> stones1 = playerInfo.rack.removeStones(exchange.getChars());
-					this.bag.addAll(stones1);
+					final Action.Exchange exchange = (Action.Exchange) action;
+					final ArrayList<Character> newRack = new ArrayList<>(player.rack);
+					for (final char ex : exchange.toExchange)
+					{
+						if (!newRack.remove((Character) ex))
+						{
+							throw new ScrabbleException.ForbiddenPlayException("No (or not enough) character " + ex + " to exchange it");
+						}
+					}
+
+					for (final char c : exchange.toExchange)
+					{
+						this.bag.add(c);
+					}
 					Collections.shuffle(this.bag, this.random);
 					moveMI = null;
-					LOGGER.info(playerInfo.getName() + " exchanges " + exchange.getChars().length + " stones");
+					LOGGER.info(player.name + " exchanges " + exchange.toExchange.length + " stones");
 				}
-				else if (action instanceof SkipTurn)
+				else if (action instanceof Action.SkipTurn)
 				{
-					LOGGER.info(playerInfo.getName() + " skips its turn");
-					this.dispatchMessage(MessageFormat.format(MESSAGES.getString("0.skips.its.turn"), playerInfo.getName()));
+					LOGGER.info(player.name + " skips its turn");
+					this.dispatchMessage(MessageFormat.format(MESSAGES.getString("0.skips.its.turn"), player.name));
 				}
 				else
 				{
 					throw new AssertionError("Command not treated: " + action);
 				}
 
-				playerInfo.isLastPlayError = false;
-				drawn = refillRack(playerInfo.player);
+				player.isLastPlayError = false;
 				messages.forEach(message -> dispatchMessage(message));
 
-				LOGGER.debug("Grid after play move nr #" + play.uuid + ":\n" + this.grid.asASCIIArt());
+//				LOGGER.debug("Grid after play move nr #" + action.uuid + ":\n" + this.grid.asASCIIArt());
 				actionRejected = false;
 				done = true;
 				return score;
@@ -394,15 +417,15 @@ public class Game implements IGame
 			{
 				LOGGER.info("Refuse play: " + action + ". Cause: " + e);
 				actionRejected = true;
-				playerInfo.player.onDispatchMessage(e.getLocalizedMessage());
+//				player.onDispatchMessage(e.getLocalizedMessage());
 				if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
 				{
-					player.getIncomingEventQueue().add(p -> p.onPlayRequired(play));
+//					player.getIncomingEventQueue().add(p -> p.onPlayRequired(play));
 				}
 				else
 				{
-					dispatch(listener -> listener.afterRejectedAction(playerInfo.player, action));
-					playerInfo.isLastPlayError = true;
+//					dispatch(listener -> listener.afterRejectedAction(player, action));
+					player.isLastPlayError = true;
 					done = true;
 				}
 				return 0;
@@ -411,37 +434,37 @@ public class Game implements IGame
 			{
 				if (done)
 				{
-					playerInfo.lastAction = action;
-					dispatch(toInform -> toInform.afterPlay(play));
-					final HistoryEntry historyEntry = new HistoryEntry(play, actionRejected, score, drawn, moveMI);
+					drawn = refillRack(player);
+					player.lastAction = action;
+//					dispatch(toInform -> toInform.afterPlay(play));
+					final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
 					this.history.add(historyEntry);
 					this.toPlay.pop();
 					this.toPlay.add(player);
 
-					if (playerInfo.rack.isEmpty())
+					if (player.rack.isEmpty())
 					{
-						endGame(playerInfo, historyEntry);
+						endGame(player, historyEntry);
 					}
-					else if (action == SkipTurn.SINGLETON)
+					else if (action instanceof Action.SkipTurn)
 					{
 						// Quit if nobody can play
 						final AtomicBoolean canPlay = new AtomicBoolean(false);
 						this.players.forEach((p, mi) -> {
-							if (mi.lastAction != SkipTurn.SINGLETON) canPlay.set(true);
+							if (mi.lastAction instanceof Action.SkipTurn) canPlay.set(true);
 						});
 						if (!canPlay.get())
 						{
 							endGame(null, historyEntry);
 						}
 					}
-					play.action = action;
 					this.waitingForPlay.countDown();
 				}
 			}
 		}
 	}
 
-	public synchronized void rollbackLastMove(final AbstractPlayer caller, final UUID callerKey) throws ScrabbleException
+	public synchronized void rollbackLastMove(final Player caller) throws ScrabbleException
 	{
 		synchronized (this.changing)
 		{
@@ -453,27 +476,29 @@ public class Game implements IGame
 			final HistoryEntry historyEntry = this.history.remove(this.history.size() - 1);
 			LOGGER.info("Rollback " + historyEntry.formatAsString());
 
-			final AbstractPlayer rollbackedPlayer = historyEntry.getPlayer();
-			final PlayerInfo playerInfo = this.players.get(rollbackedPlayer);
-			playerInfo.rack.removeAll(historyEntry.drawn);
+			final Player rollbackedPlayer = historyEntry.player;
+			rollbackedPlayer.rack.removeAll(historyEntry.drawn);
 			historyEntry.metaInformation.getFilledSquares().forEach(
-					filled -> playerInfo.rack.add(filled.tile)
+					square -> {
+						rollbackedPlayer.rack.add(square.c);
+						square.c = null;
+					}
 			);
-			this.grid.remove(historyEntry.metaInformation);
-			this.players.forEach( (p,info) -> info.score -= historyEntry.scores.getOrDefault(p, 0));
+
+			this.players.values().forEach(p -> historyEntry.scores.getOrDefault(p, 0));
 			assert this.toPlay.peekLast() == rollbackedPlayer;
 
-			if (this.state == State.STARTED)
+			if (this.state == GameState.State.STARTED)
 			{
-				this.plays.removeLast();
+				this.actions.removeLast();
 			}
-			this.plays.removeLast();
+			this.actions.removeLast();
 
 			this.toPlay.removeLast();
 			this.toPlay.addFirst(rollbackedPlayer);
-			dispatch(toInform -> toInform.afterRollback());
+//			dispatch(toInform -> toInform.afterRollback());
 
-			setState(State.STARTED);
+			setState(GameState.State.STARTED);
 
 			this.waitingForPlay.countDown();
 			this.changing.notify();
@@ -481,35 +506,12 @@ public class Game implements IGame
 
 	}
 
-	@Override
-	public void playerConfigHasChanged(final AbstractPlayer player, final UUID playerKey)
-	{
-		saveConfiguration();
-	}
+//	//	public void playerConfigHasChanged(final Player player, final UUID playerKey)
+//	{
+//		saveConfiguration();
+//	}
 
-	@Override
-	public int getNumberTilesInBag()
-	{
-		return this.bag.size();
-	}
-
-	@Override
-	public int getRequiredTilesInBagForExchange()
-	{
-		// This limit is 7 for French and German Scrabble, could be another one of other languages.
-		// see https://www.fisf.net/scrabble/decouverte-du-scrabble/formules-de-jeu.html
-		// and Turnierspielordnung of Scrabble Deutschland e.V.
-		return 7;
-	}
-
-	@Override
-	public Action getSettingAction(final Tile tile)
-	{
-		return this.settingActions.get(tile);
-	}
-
-	@Override
-	public synchronized AbstractPlayer getPlayerToPlay()
+	public synchronized Player getPlayerToPlay()
 	{
 		return this.toPlay.getFirst();
 	}
@@ -519,9 +521,9 @@ public class Game implements IGame
 	 *
 	 * @param firstEndingPlayer player which has first emptied its rack, or {@code null} if nobody has cleared it.
 	 */
-	private synchronized void endGame(final PlayerInfo firstEndingPlayer, final HistoryEntry historyEntry)
+	private synchronized void endGame(final Player firstEndingPlayer, final HistoryEntry historyEntry)
 	{
-		LOGGER.info("Games ends. Player which have clear its rack: " + (firstEndingPlayer == null ? null : firstEndingPlayer.getName()));
+		LOGGER.info("Games ends. Player which have clear its rack: " + (firstEndingPlayer == null ? null : firstEndingPlayer.name));
 		final StringBuffer message = new StringBuffer();
 		if (firstEndingPlayer == null)
 		{
@@ -529,31 +531,31 @@ public class Game implements IGame
 		}
 		else
 		{
-			message.append(MessageFormat.format(MESSAGES.getString("0.has.cleared.its.rack"), firstEndingPlayer.getName())).append('\n');
+			message.append(MessageFormat.format(MESSAGES.getString("0.has.cleared.its.rack"), firstEndingPlayer.name)).append('\n');
 		}
 		this.players.forEach(
-				(player, info) ->
+				(dummy, player) ->
 				{
-					if (info != firstEndingPlayer)
+					if (player != firstEndingPlayer)
 					{
 						int gift = 0;
-						for (final Tile tile : info.rack)
+						for (final Character tile : player.rack)
 						{
-							gift += tile.getPoints();
+							gift += this.dictionary.getScrabbleRules().letters.get(tile).points;
 						}
-						info.score -= gift;
+						player.score -= gift;
 						historyEntry.scores.put(player, -gift);
 						if (firstEndingPlayer != null)
 						{
 							firstEndingPlayer.score += gift;
-							historyEntry.scores.put(firstEndingPlayer.player, historyEntry.scores.get(firstEndingPlayer.player) + gift);
+							historyEntry.scores.put(firstEndingPlayer, historyEntry.scores.get(firstEndingPlayer) + gift);
 						}
-						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), info.getName(), gift)).append("\n");
+						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), player.name, gift)).append("\n");
 					}
 				});
 
-		dispatch(c -> c.onDispatchMessage(message.toString()));
-		setState(State.ENDED);
+//		dispatch(c -> c.onDispatchMessage(message.toString()));
+		setState(GameState.State.ENDED);
 	}
 
 
@@ -564,75 +566,32 @@ public class Game implements IGame
 	 */
 	private void dispatchMessage(final String message)
 	{
-		dispatch(l -> l.onDispatchMessage(message));
+//		dispatch(l -> l.onDispatchMessage(message));
 	}
 
-	@Override
-	public List<IPlayerInfo> getPlayers()
+	public List<Player> getPlayers()
 	{
 		return new ArrayList<>(this.players.values());
 	}
 
-	@Override
 	public Iterable<HistoryEntry> getHistory()
 	{
 		return this.history;
 	}
 
 	/**
-	 * Return information about the one player
-	 *
-	 * @param player the player
-	 * @return the information.
-	 */
-	IPlayerInfo getPlayerInfo(final AbstractPlayer player)
-	{
-		final PlayerInfo info = this.players.get(player);
-		if (info == null)
-		{
-			throw new Error("No such player: " + player);
-		}
-		return info;
-	}
-
-	public Tile generateStone(final Character c)
-	{
-		final Tile tile;
-		if (c == null)
-		{
-			tile = new Tile(null, 0);
-		}
-		else
-		{
-			if (!Character.isUpperCase(c))
-			{
-				throw new AssertionError("Characte" +
-						"r must be uppercase: " + c);
-			}
-
-			final IDictionary.LetterMetaInfo letter = this.dictionary.getLetterMetaInfo().letters.get(c);
-			tile = new Tile(letter.c, letter.point);
-		}
-		return tile;
-	}
-
-
-	/**
 	 * Refill the rack of a player.
 	 *
 	 * @param player Player to refill the rack
-	 * @return the new drawn stones.
+	 * @return list of drawn tiles.
 	 */
-	private Set<Tile> refillRack(final AbstractPlayer player)
+	private Set<Character> refillRack(final Player player)
 	{
-		final Rack rack = this.players.get(player).rack;
-		final HashSet<Tile> drawn = new HashSet<>();
+		final Set<Character> drawn = new HashSet<>();
+		final List<Character> rack = this.players.get(player).rack;
 		while (!this.bag.isEmpty() && rack.size() < RACK_SIZE)
 		{
-			final Tile tile = this.bag.poll();
-			this.bag.remove(tile);
-			drawn.add(tile);
-			rack.add(tile);
+			drawn.add(this.bag.poll());
 		}
 		LOGGER.trace("Remaining stones in the bag: " + this.bag.size());
 		return drawn;
@@ -650,33 +609,31 @@ public class Game implements IGame
 
 		prepareGame();
 
-		setState(State.STARTED);
+		setState(GameState.State.STARTED);
 		try
 		{
 			while (true)
 			{
-				if (this.state == State.ENDED)
+				if (this.state == GameState.State.ENDED)
 				{
 					synchronized (this.changing)
 					{
 						this.changing.wait(this.delayBeforeEnds * 1000L);
-						if (this.state == State.ENDED)
+						if (this.state == GameState.State.ENDED)
 						{
 							break;
 						}
 					}
 				}
 
-				final AbstractPlayer player = this.toPlay.peekFirst();
-				assert  player != null;
+				final Player player = this.toPlay.peekFirst();
+				assert player != null;
 				LOGGER.info("Let's play " + player);
-				final Play play = new Play(player);
-				this.plays.add(play);
 				this.waitingForPlay = new CountDownLatch(1);
-				dispatch(p -> p.onPlayRequired(play));
+//				dispatch(p -> p.onPlayRequired(player));
 				while (!this.waitingForPlay.await(500, TimeUnit.MILLISECONDS))
 				{
-					if (this.state != State.STARTED)
+					if (this.state != GameState.State.STARTED)
 					{
 						break;
 					}
@@ -688,7 +645,7 @@ public class Game implements IGame
 			LOGGER.error(e, e);
 		}
 
-		dispatch(GameListener::afterGameEnd);
+//		dispatch(GameListener::afterGameEnd);
 	}
 
 	private void prepareGame()
@@ -696,23 +653,24 @@ public class Game implements IGame
 		fillBag();
 
 		// Sortiert (oder mischt) die Spieler, um eine Spielreihenfolge zu definieren.
-		final ArrayList<AbstractPlayer> list = new ArrayList<>(this.players.keySet());
-		Collections.shuffle(list, this.random);
-		final HashMap<AbstractPlayer, PlayerInfo> mapCopy = new HashMap<>(this.players);
-		this.players.clear();
-		for (final AbstractPlayer player : list)
-		{
-			this.players.put(player, mapCopy.get(player));
-		}
-		this.toPlay.addAll(this.players.keySet());
+//		final ArrayList<Player> list = new ArrayList<>(this.players.values());
+//		Collections.shuffle(list, this.random);
+//		final HashSet<Player> mapCopy = new HashSet<>(this.players);
+//		this.players.clear();
+//		for (final Player player : list)
+//		{
+//			this.players.put(player.id, player);
+//		}
+		this.toPlay.addAll(this.players.values());
+		Collections.shuffle(this.toPlay);
 
 		// Fill racks
-		for (final AbstractPlayer player : this.toPlay)
+		for (final Player player : this.toPlay)
 		{
 			refillRack(player);
 		}
 
-		dispatch(GameListener::beforeGameStart);
+//		dispatch(GameListener::beforeGameStart);
 	}
 
 
@@ -722,88 +680,66 @@ public class Game implements IGame
 	private void fillBag()
 	{
 		// Fill bag
-		for (final IDictionary.LetterMetaInfo letter : this.dictionary.getLetterMetaInfo().letters.values())
-		{
-			for (int i = 0; i < letter.prevalence; i++)
-			{
-				this.bag.add(generateStone(letter.c));
-			}
-		}
-		for (int i = 0; i < this.dictionary.getLetterMetaInfo().numberBlanks; i++)
-		{
-			this.bag.add(generateStone(null));
-		}
+		this.dictionary.getScrabbleRules().letters.forEach(
+				(letter, info) ->
+				{
+					for (int i = 0; i < info.prevalence; i++)
+					{
+						this.bag.add(letter);
+					}
+				}
+		);
 		Collections.shuffle(this.bag, this.random);
 	}
 
 	/**
 	 * Send an event to each listener, and don't wait after an answer.
 	 */
-	private void dispatch(final ScrabbleEvent scrabbleEvent)
-	{
-		for (final GameListener player : this.listeners)
-		{
-			player.getIncomingEventQueue().add(scrabbleEvent);
-		}
-	}
+//	private void dispatch(final ScrabbleEvent scrabbleEvent)
+//	{
+//		for (final Player player : this.listeners)
+//		{
+//			player.getIncomingEventQueue().add(scrabbleEvent);
+//		}
+//	}
 
-	@Override
 	public IDictionary getDictionary()
 	{
 		return this.dictionary;
 	}
 
-	@Override
 	public synchronized Grid getGrid()
 	{
 		return this.grid;
 	}
 
 
-	@Override
-	public synchronized Rack getRack(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException
+	public synchronized int getScore(final Player player)
 	{
-		checkKey(player, clientKey);
-		if (player.isObserver())
-		{
-			throw new ScrabbleException.InvalidStateException(MessageFormat.format(MESSAGES.getString("player.0.is.observer"), player.getName()));
-		}
-		return this.players.get(player).rack.copy();
+		return player.score;
 	}
 
-	@Override
-	public synchronized int getScore(final AbstractPlayer player)
-	{
-		return this.players.get(player).getScore();
-	}
+// TOdo?
+//	public void editParameters(final UUID caller, final Iplayer player)
+//	{
+//		if (player instanceof player)
+//		{
+//			((player) player).player.editParameters();
+//		}
+//		else
+//		{
+//			throw new IllegalArgumentException("Cannot find the player matching this info: " + player);
+//		}
+//	}
 
-	@Override
-	public void editParameters(final UUID caller, final IPlayerInfo player)
-	{
-		if (player instanceof PlayerInfo)
-		{
-			((PlayerInfo) player).player.editParameters();
-		}
-		else
-		{
-			throw new IllegalArgumentException("Cannot find the player matching this info: " + player);
-		}
-	}
 
-	@Override
-	public void sendMessage(final AbstractPlayer sender, final String message)
+	public void quit(final Player player, final String secret, final String message) throws ScrabbleException
 	{
-		dispatchMessage(MessageFormat.format(MESSAGES.getString("message.of.0.1"), sender.getName(), message));
-	}
-
-	@Override
-	public void quit(final AbstractPlayer player, final UUID key, final String message) throws ScrabbleException
-	{
-		checkKey(player, key);
+		checkSecret(player, secret);
 		final String msg = MessageFormat.format(MESSAGES.getString("player.0.quits.with.message.1"), player, message);
 		LOGGER.info(msg);
 		dispatchMessage(msg);
-		setState(State.ENDED);
+		setState(GameState.State.ENDED);
 	}
 
 	/**
@@ -811,84 +747,55 @@ public class Game implements IGame
 	 */
 	void quitGame()
 	{
-		dispatch(player -> player.afterGameEnd());
+//		dispatch(player -> player.afterGameEnd());
 	}
 
-	@Override
 	public oscrabble.configuration.Configuration getConfiguration()
 	{
 		return this.configuration;
 	}
 
-	/**
-	 * Save a configuration.
-	 *
-	 * @param propertyFile output file
-	 * @param gameConfig configuration of the game itself
-	 * @param players list of the players to extract their configuration.
-	 */
-	private static void saveConfiguration(final File propertyFile, final Configuration gameConfig, final Collection<PlayerInfo> players)
+	public boolean isLastPlayError(final Player player)
 	{
-		try (final PrintWriter writer = new PrintWriter(new FileWriter(propertyFile)))
-		{
-			final Properties properties = gameConfig.asProperties();
-			for (final PlayerInfo pi : players)
-			{
-				final oscrabble.configuration.Configuration pc = pi.player.getConfiguration();
-				final Properties sp = pc == null ? new Properties() : pc.asProperties();
-				sp.setProperty(KEY_METHOD, pi.player.getType().name());
-				PropertyUtils.addAsSubProperties(
-						properties,
-						sp,
-						"player." + pi.getName()
-				);
-			}
-			properties.store(writer, "Scrabble properties");
-		}
-		catch (IOException e)
-		{
-			throw new IOError(e);
-		}
+		return player.isLastPlayError;
 	}
 
-	@Override
-	public boolean isLastPlayError(final AbstractPlayer player)
+	private void checkSecret(final Player player, final String secret) throws ScrabbleException.InvalidSecretException
 	{
-		final PlayerInfo mi = this.players.get(player);
-		if (mi.isLastPlayError == null)
-		{
-			throw new IllegalStateException("Player never has played");
-		}
-		return mi.isLastPlayError;
+		// TODO
+//		if (secret == null || !secret.equals(player.secret))
+//		{
+//			throw new ScrabbleException.InvalidSecretException();
+//		}
 	}
 
-	private void checkKey(final AbstractPlayer player, final UUID clientKey) throws ScrabbleException.InvalidSecretException
-	{
-		if (clientKey == null || !clientKey.equals(this.players.get(player).key))
-		{
-			throw new ScrabbleException.InvalidSecretException();
-		}
-	}
-
-	State getState()
+	GameState.State getState()
 	{
 		return this.state;
 	}
 
+	public void setState(final GameState.State state)
+	{
+		if (this.state != state)
+		{
+			this.state = state;
+//			this.listeners.forEach(l -> l.onGameStateChanged());
+		}
+	}
+
 	/**
 	 * For test purposes: wait until the game has reached the end of a defined play.
-
+	 *
 	 * @param roundNr the play number to wait after the end of.
 	 * @param timeout the maximum time to wait
-	 * @param unit the time unit of the {@code timeout} argument
-	 * @throws TimeoutException  if the waiting time elapsed before the move has ended
-	 * @throws InterruptedException if the current thread is interrupted
-	 *         while waiting
+	 * @param unit    the time unit of the {@code timeout} argument
+	 * @throws TimeoutException     if the waiting time elapsed before the move has ended
+	 * @throws InterruptedException if the current thread is interrupted while waiting
 	 */
 	void awaitEndOfPlay(final int roundNr, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
 	{
 		long maxTime = unit.toMillis(timeout) + System.currentTimeMillis();
-		while (getRoundNr() < roundNr || !this.plays.get(roundNr - 1).isDone())
+		while (getRoundNr() < roundNr /* || todo !this.actions.get(roundNr - 1) */)
 		{
 			Thread.sleep(100);
 			if (System.currentTimeMillis() > maxTime)
@@ -900,96 +807,126 @@ public class Game implements IGame
 
 	public int getRoundNr()
 	{
-		return this.plays.size();
+		return this.actions.size();
 	}
 
-	static class Player extends oscrabble.data.Player
+	private boolean containsCentralField(final Action.PlayTiles move)
 	{
-		/**
-		 * Password für die Kommunikation Player &lt;&gt; Server
-		 */
-		UUID key;
+		// todo: beiing done.
+		final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);
+		final int length = move.word.length();
 
-		/**
-		 * Queue  to receive events from client
-		 */
-		BlockingQueue<ScrabbleEvent> incomingEventQueue;
-
-		Rack rack;
-		int score;
-		@Override
-		public String getName()
+		switch (move.direction)
 		{
-			return this.player.getName();
+			case VERTICAL:
+				return (move.x == center && (move.y <= center && (move.y + length - 1) >= center));
+			case HORIZONTAL:
+				return (move.y == center && (move.x <= center && (move.y + length - 1) >= center));
+			default:
+				throw new AssertionError();
 		}
+	}
 
-		@Override
-		public int getScore()
-		{
-			return this.score;
-		}
+	/**
+	 * Player types
+	 */
+	public enum PlayerType
+	{
+		SWING,
+		BRUTE_FORCE
+	}
 
-		@Override
-		public boolean hasEditableParameters()
-		{
-			return this.player.hasEditableParameters();
-		}
+//	public interface ScrabbleEvent extends Consumer<GameListener>
+//	{
+//		void accept(final GameListener player);
+//	}
+
+//	/**
+//	 * A listener
+//	 */
+//	public interface GameListener
+//	{
+//		/**
+//		 * Sent to all players to indicate who now has to play.
+//		 *
+//		 * @param play the play the concerned player has to play
+//		 */
+//		default void onPlayRequired(final Play play)
+//		{
+//		}
+//
+//		default void onDispatchMessage(String msg)
+//		{
+//		}
+//
+//		default void afterRollback()
+//		{
+//		}
+//
+//		/**
+//		 * @param played ended play
+//		 */
+////		default void afterPlay(final Play played) { }
+////
+////		default void beforeGameStart() { }
+////
+////		default void afterGameEnd() { }
+//
+//		Queue<ScrabbleEvent> getIncomingEventQueue();
+//
+//		/**
+//		 * Called after the state of the game have changed
+//		 */
+//		default void onGameStateChanged()
+//		{
+//		}
+//
+//		/**
+//		 * Called after a player has (definitively) play an non admissible play
+//		 *
+//		 * @param player player having played the non admissible play
+//		 * @param action the action which lead to the problem
+//		 */
+//		default void afterRejectedAction(final Player player, final Action action)
+//		{
+//		}
+//
+//	}
+
+	public static class Player
+	{
 
 		/**
 		 * Was last play an error?
 		 */
 		public Boolean isLastPlayError;
+		String name;
+		/**
+		 * Password für die Kommunikation Player &lt;&gt; Server
+		 */
+		UUID id;
 
+//		/**
+//		 * Queue  to receive events from client
+//		 */
+//		BlockingQueue<ScrabbleEvent> incomingEventQueue;
+
+		/**
+		 * Tiles in the rack, space for a joker.
+		 */
+		List<Character> rack;
+
+		int score;
 		/**
 		 * Last played action.
 		 */
-		Action lastAction;
-	}
+		oscrabble.server.action.Action lastAction;
 
-	public interface ScrabbleEvent extends Consumer<GameListener>
-	{
-		void accept(final GameListener player);
-	}
-
-	/**
-	 * A listener
-	 */
-	public interface GameListener
-	{
-		/**
-		 * Sent to all players to indicate who now has to play.
-		 * @param play the play the concerned player has to play
-		 */
-		default void onPlayRequired(final Play play) { }
-
-		default void onDispatchMessage(String msg) { }
-
-		default void afterRollback() { }
-
-		/**
-		 *
-		 * @param played ended play
-		 */
-		default void afterPlay(final Play played) { }
-
-		default void beforeGameStart() { }
-
-		default void afterGameEnd() { }
-
-		Queue<ScrabbleEvent> getIncomingEventQueue();
-
-		/**
-		 * Called after the state of the game have changed
-		 */
-		default void onGameStateChanged() { }
-
-		/**
-		 * Called after a player has (definitively) play an non admissible play
-		 * @param player player having played the non admissible play
-		 * @param action the action which lead to the problem
-		 */
-		default void afterRejectedAction(final AbstractPlayer player, final Action action){}
-
+		// TODO
+		public oscrabble.configuration.Configuration getConfiguration()
+		{
+			return null;
+		}
 	}
 
 	/**
@@ -1012,22 +949,26 @@ public class Game implements IGame
 	 */
 	public static class HistoryEntry
 	{
-		private Play play;
 		private final boolean errorOccurred;
-		/** Points gained by this play for each player */
-		private final HashMap<AbstractPlayer, Integer> scores = new HashMap<>();
-		private final Set<Tile> drawn;  // to be used for rewind
+		/**
+		 * Points gained by this play for each player
+		 */
+		private final HashMap<Player, Integer> scores = new HashMap<>();
 
+		private final Set<Character> drawn;  // to be used for rewind
 		/**
 		 * Information about the move at time of the action.
 		 */
 		private final Grid.MoveMetaInformation metaInformation;
+		private final Player player;
+		private Action play;
 
-		private HistoryEntry(final Play play, final boolean errorOccurred, final int score, final Set<Tile> drawn, final Grid.MoveMetaInformation metaInformation)
+		private HistoryEntry(final Player player, final Action play, final boolean errorOccurred, final int score, final Set<Character> drawn, final Grid.MoveMetaInformation metaInformation)
 		{
+			this.player = player;
 			this.play = play;
 			this.errorOccurred = errorOccurred;
-			this.scores.put(play.player, score);
+			this.scores.put(player, score);
 			this.drawn = drawn;
 			this.metaInformation = metaInformation;
 		}
@@ -1035,15 +976,10 @@ public class Game implements IGame
 		public String formatAsString()
 		{
 			//noinspection StringBufferReplaceableByString
-			final StringBuilder sb = new StringBuilder(getPlayer().getName());
-			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(this.play.action.getNotation());
-			sb.append(" ").append(this.scores.get(getPlayer())).append(" pts");
+			final StringBuilder sb = new StringBuilder(this.player.name);
+			sb.append(" - ").append(this.errorOccurred ? "*" : "").append(this.play.notation);
+			sb.append(" ").append(this.scores.get(this.player)).append(" pts");
 			return sb.toString();
-		}
-
-		public final AbstractPlayer getPlayer()
-		{
-			return this.play.player;
 		}
 
 		/**
@@ -1051,29 +987,29 @@ public class Game implements IGame
 		 */
 		public final boolean isPlayTileAction()
 		{
-			return this.play.action instanceof PlayTiles;
+			return this.play instanceof Action.PlayTiles;
 		}
 
-		/**
-		 * @return die Buchstaben des letzten Spielzugs
-		 * @throws Error wenn der Spielzug nicht passt.
-		 */
-		public final PlayTiles getPlayTiles()
-		{
-			return ((PlayTiles) this.play.action);
-		}
+//		/**
+//		 * @return die Buchstaben des letzten Spielzugs
+//		 * @throws Error wenn der Spielzug nicht passt.
+//		 */
+//		public final PlayTiles getPlayTiles()
+//		{
+//			return ((PlayTiles) this.play.action);
+//		}
 	}
-
 
 	/**
 	 * Problem occurring while reading / writing the configuration.
 	 */
-	private static final class ConfigurationException extends ScrabbleException
+	private static final class ConfigurationException extends oscrabble.ScrabbleException
 	{
 		/**
 		 * Constructor
+		 *
 		 * @param message message to display.
-		 * @param cause the cause, if any
+		 * @param cause   the cause, if any
 		 */
 		private ConfigurationException(final String message, final Throwable cause)
 		{
@@ -1084,14 +1020,6 @@ public class Game implements IGame
 		{
 			this(message, null);
 		}
-	}
-
-
-	/** Player types */
-	public enum PlayerType
-	{
-		SWING,
-		BRUTE_FORCE
 	}
 
 }

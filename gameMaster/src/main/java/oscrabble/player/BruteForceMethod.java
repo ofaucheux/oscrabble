@@ -7,9 +7,10 @@ import org.quinto.dawg.ModifiableDAWGSet;
 import oscrabble.Grid;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
-import oscrabble.action.PlayTiles;
+import oscrabble.server.action.PlayTiles;
 import oscrabble.configuration.ConfigurationPanel;
 import oscrabble.configuration.Parameter;
+import oscrabble.data.IDictionary;
 import oscrabble.server.Tile;
 import oscrabble.server.Game;
 import oscrabble.server.IDictionary;
@@ -328,7 +329,7 @@ public class BruteForceMethod
 		return crossChecks.get(crossSquare);
 	}
 
-	public class Player extends AbstractPlayer
+	public class Player extends oscrabble.data.Player
 	{
 
 		private ComparatorSelector selector;

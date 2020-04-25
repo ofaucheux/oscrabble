@@ -7,8 +7,8 @@ import org.junit.jupiter.api.*;
 import oscrabble.Grid;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
-import oscrabble.action.Action;
-import oscrabble.action.PlayTiles;
+import oscrabble.server.action.Action;
+import oscrabble.server.action.PlayTiles;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Application;
 import oscrabble.dictionary.Language;
@@ -135,7 +135,7 @@ public class GameTest
 								UUID key = getKey(caller);
 								final Snapshot before = this.snapshots.getLast();
 								assert before != null;
-								GameTest.this.game.rollbackLastMove(caller, key);
+								GameTest.this.game.rollbackLastMove(caller);
 								final Snapshot after = collectInfos();
 								assertEquals("Wrong play nr", before.roundNr, after.roundNr);
 								before.scores.forEach(
@@ -156,7 +156,7 @@ public class GameTest
 				protected Snapshot collectInfos()
 				{
 					final Snapshot info = new Snapshot();
-					info.lastPlay = GameTest.this.game.plays.getLast();
+					info.lastPlay = GameTest.this.game.actions.getLast();
 					info.roundNr = GameTest.this.game.getRoundNr();
 					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
 					{
@@ -262,7 +262,7 @@ public class GameTest
 		assertFalse(this.grid.getSquare("8K").isEmpty());
 		assertFalse(this.grid.getSquare("8L").isEmpty());
 		assertFalse(this.grid.getSquare("8M").isEmpty());
-		this.game.rollbackLastMove(null, null);
+		this.game.rollbackLastMove(null);
 		assertTrue(this.grid.getSquare("8K").isEmpty());
 		assertFalse(this.grid.getSquare("8L").isEmpty());
 		assertTrue(this.grid.getSquare("8M").isEmpty());
@@ -270,7 +270,7 @@ public class GameTest
 
 		// second rollback
 		assertFalse(this.grid.getSquare("N10").isEmpty());
-		this.game.rollbackLastMove(null, null);
+		this.game.rollbackLastMove(null);
 		assertTrue(this.grid.getSquare("N10").isEmpty());
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 
@@ -316,7 +316,7 @@ public class GameTest
 		assertEquals(16, this.game.getScore(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
-		this.game.rollbackLastMove(this.gustav, this.gustav.getKey());
+		this.game.rollbackLastMove(this.gustav);
 		assertEquals(1, this.game.getRoundNr());
 		assertEquals(0, this.game.getScore(this.gustav));
 		assertEquals(this.gustav, this.game.getPlayerToPlay());

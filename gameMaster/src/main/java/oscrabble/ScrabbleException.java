@@ -1,6 +1,7 @@
 package oscrabble;
 
 import oscrabble.player.AbstractPlayer;
+import oscrabble.server.Game;
 
 public abstract class ScrabbleException extends Exception
 {
@@ -55,7 +56,7 @@ public abstract class ScrabbleException extends Exception
 	 */
 	public static class NotInTurn extends ScrabbleException
 	{
-		public NotInTurn(final AbstractPlayer player)
+		public NotInTurn(final Game.Player player)
 		{
 			super("The player " + player.toString() + " is not in turn");
 		}

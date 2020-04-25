@@ -1,16 +1,11 @@
 package oscrabble.player;
 
-import org.junit.Before;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quinto.dawg.DAWGNode;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.web.client.MockRestServiceServer;
 import oscrabble.*;
-import oscrabble.action.PlayTiles;
+import oscrabble.server.action.PlayTiles;
 import oscrabble.client.TextClient;
-import oscrabble.server.GameTest;
 import oscrabble.server.MicroServiceDictionary;
 import oscrabble.server.Tile;
 
@@ -19,7 +14,6 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 class BruteForceMethodTest
 {

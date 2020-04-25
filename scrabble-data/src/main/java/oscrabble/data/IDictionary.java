@@ -24,7 +24,7 @@ public interface IDictionary
 	/**
 	 * @return meta infos
 	 */
-	LetterInformation getLetterMetaInfo();
+	ScrabbleRules getScrabbleRules();
 
 	/**
 	 * Information about a letter
@@ -33,8 +33,8 @@ public interface IDictionary
 	class LetterMetaInfo
 	{
 		char c;
-		int prevalence;
-		int point;
+		public int prevalence;
+		public int points;
 	}
 
 
@@ -42,10 +42,18 @@ public interface IDictionary
 	 * Information about the distribution of letters.
 	 */
 	@Data
-	class LetterInformation
+	class ScrabbleRules
 	{
-		Map<Character, LetterMetaInfo> letters;
-		int numberBlanks;
+		/**
+		 * Blancs are represented with the space character.
+		 */
+		public Map<Character, LetterMetaInfo> letters;
+		public int gridSize;
+
+		/**
+		 * This limit is 7 for French and German Scrabble, could be another one of other languages. see https://www.fisf.net/scrabble/decouverte-du-scrabble/formules-de-jeu.html and Turnierspielordnung of Scrabble Deutschland e.V.
+		 */
+		public int requiredTilesInBagForExchange = 7;
 	}
 
 }

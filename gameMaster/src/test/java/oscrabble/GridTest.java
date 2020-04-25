@@ -5,7 +5,7 @@ import org.apache.commons.collections4.bag.TreeBag;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import oscrabble.action.PlayTiles;
+import oscrabble.server.action.PlayTiles;
 
 import java.awt.*;
 import java.text.ParseException;

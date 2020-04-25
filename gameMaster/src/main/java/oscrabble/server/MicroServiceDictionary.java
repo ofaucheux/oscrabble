@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import oscrabble.data.IDictionary;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -19,7 +20,7 @@ public class MicroServiceDictionary implements IDictionary
 	/**
 	 * Cache for letter information
 	 */
-	private LetterInformation letterInformation;
+	private ScrabbleRules scrabbleRules;
 
 	public MicroServiceDictionary()
 	{
@@ -53,13 +54,13 @@ public class MicroServiceDictionary implements IDictionary
 	}
 
 	@Override
-	public LetterInformation getLetterMetaInfo()
+	public ScrabbleRules getScrabbleRules()
 	{
-		if (this.letterInformation == null)
+		if (this.scrabbleRules == null)
 		{
-			this.letterInformation = REST_TEMPLATE.getForObject(this.uri.resolve("getLetterInformation"), LetterInformation.class);
+			this.scrabbleRules = REST_TEMPLATE.getForObject(this.uri.resolve("getLetterInformation"), ScrabbleRules.class);
 		}
-		return this.letterInformation;
+		return this.scrabbleRules;
 	}
 
 }

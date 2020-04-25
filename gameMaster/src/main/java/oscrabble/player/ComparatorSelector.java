@@ -4,7 +4,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.log4j.Logger;
 import oscrabble.Grid;
 import oscrabble.ScrabbleException;
-import oscrabble.action.PlayTiles;
+import oscrabble.server.action.PlayTiles;
 
 import java.util.*;
 import java.util.function.Function;

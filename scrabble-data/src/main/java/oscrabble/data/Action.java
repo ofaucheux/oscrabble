@@ -3,6 +3,7 @@ package oscrabble.data;
 import lombok.Data;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Interface for plays a player can play.
@@ -10,6 +11,15 @@ import java.util.Objects;
 @Data
 public class Action
 {
+	/**
+	 * ID of the play
+	 */
+	public UUID playID;
+
+	/**
+	 * ID of the player
+	 */
+	public UUID player;
 
 	/**
 	 * Die Standardnotation des Spielschritt z.B. {@code B4 WAGEN}. Blanks werden als Kleinbuchstaben dargestellt.

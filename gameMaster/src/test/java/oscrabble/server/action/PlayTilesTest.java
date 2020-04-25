@@ -1,4 +1,4 @@
-package oscrabble.action;
+package oscrabble.server.action;
 
 import org.junit.jupiter.api.Test;
 import oscrabble.Grid;

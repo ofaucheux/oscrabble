@@ -38,8 +38,7 @@ public class MockDictionary implements IDictionary
 		return WORDS.contains(word);
 	}
 
-	@Override
-	public LetterInformation getLetterMetaInfo()
+	public LetterInformation getScrabbleRules()
 	{
 		return null;// TODO
 	}
