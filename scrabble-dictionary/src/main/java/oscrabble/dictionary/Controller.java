@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import oscrabble.data.ScrabbleRules;
 
 import java.util.Collection;
 
@@ -57,12 +58,12 @@ public class Controller
 	 * @return list of the letters and their properties
 	 * @throws UnknownLanguage
 	 */
-	@GetMapping("/{language}/getLetterInformation")
-	public ResponseEntity<ScrabbleLetterInformation> getScrabbleLetterInformation(
+	@GetMapping("/{language}/getScrabbleRules")
+	public ResponseEntity<ScrabbleRules> getScrabbleRules(
 			@PathVariable("language") final String language
 	) throws UnknownLanguage
 	{
-		return new ResponseEntity<>(new ScrabbleLetterInformation(getLanguage(language)), HttpStatus.OK);
+		return new ResponseEntity<>(ScrabbleRulesFactory.create(getLanguage(language)), HttpStatus.OK);
 	}
 
 	/**
