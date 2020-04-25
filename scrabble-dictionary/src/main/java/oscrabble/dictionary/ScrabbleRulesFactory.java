@@ -1,6 +1,5 @@
 package oscrabble.dictionary;
 
-import lombok.Data;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Factory for ScrabbleRules
@@ -28,6 +26,7 @@ public class ScrabbleRulesFactory
 		{
 			final String namePrefix = language.directoryName + "/";
 			rules.letters = new LinkedHashMap<>();
+			rules.gridSize = 15;
 			try (InputStream is = ScrabbleRulesFactory.class.getResourceAsStream(namePrefix + "tiles.csv"))
 			{
 				for (final CSVRecord record : new CSVParser(new InputStreamReader(is), letterFileFormat).getRecords())

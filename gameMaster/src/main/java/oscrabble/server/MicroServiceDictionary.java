@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import oscrabble.data.IDictionary;
+import oscrabble.data.ScrabbleRules;
 
 import java.net.URI;
 import java.util.Arrays;

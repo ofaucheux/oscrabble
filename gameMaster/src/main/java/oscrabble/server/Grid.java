@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.data.IDictionary;
+import oscrabble.data.ScrabbleRules;
 import oscrabble.server.action.Action;
 
 import java.util.ArrayList;
@@ -18,15 +19,15 @@ public class Grid
 	public static final Logger LOGGER = LoggerFactory.getLogger(Grid.class);
 
 	private final Square[][] squares;
-	private final IDictionary.ScrabbleRules rules;
+	private final ScrabbleRules rules;
 
-	Grid(final IDictionary.ScrabbleRules rules)
+	Grid(final ScrabbleRules rules)
 	{
 		this.rules = rules;
-		this.squares = new Square[rules.gridSize+1][];
+		this.squares = new Square[rules.gridSize+2][];
 		for (int x = 0; x < this.squares.length; x++)
 		{
-			this.squares[x] = new Square[rules.gridSize + 1];
+			this.squares[x] = new Square[rules.gridSize + 2];
 			for (int y = 0; y < this.squares.length; y++)
 			{
 				this.squares[x][y] = new Square(x, y);
