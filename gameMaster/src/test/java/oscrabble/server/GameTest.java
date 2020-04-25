@@ -1,5 +1,6 @@
 package oscrabble.server;
 
+import org.apache.commons.collections4.Bag;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.jni.Error;
@@ -12,7 +13,6 @@ import oscrabble.server.action.Action;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Application;
 import oscrabble.dictionary.Language;
-import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
 import java.lang.reflect.Field;
@@ -37,9 +37,9 @@ public class GameTest
 
 	private Game game;
 	private Grid grid;
-	private Game.Player gustav;
-	private Game.Player john;
-	private Game.Player jurek;
+	private PredefinedPlayer gustav;
+	private PredefinedPlayer john;
+	private PredefinedPlayer jurek;
 
 	@BeforeAll
 	public static void mocken()
@@ -70,12 +70,17 @@ public class GameTest
 		this.jurek = addPlayer("Jurek_" + gameNr);
 	}
 
-	private Game.Player addPlayer(final String name)
+	/**
+	 * Create and add a player in the game
+	 * @param name name of the player
+	 * @return this player
+	 */
+	private PredefinedPlayer addPlayer(final String name)
 	{
-		final PredefinedPlayer data = new PredefinedPlayer(this.game);
+		final PredefinedPlayer player = new PredefinedPlayer(this.game);
 
-		data.name = name;
-		return this.game.addPlayer(data);
+		player.name = name;
+		return this.game.addPlayer(player);
 	}
 
 	@AfterEach
@@ -120,7 +125,6 @@ public class GameTest
 			final AtomicReference<Throwable> error = new AtomicReference<>();
 			this.game.listeners.add(new TestListener()
 			{
-				final LinkedList<Snapshot> snapshots = new LinkedList<>();
 
 //				@Override TODO
 //				public void afterRejectedAction(final AbstractPlayer player, final Action action)
@@ -128,56 +132,47 @@ public class GameTest
 //					Assert.fail("Rejected action: " + action);
 //				}
 
-				@Override
-				public void afterPlay(final Action action)
-				{
-						if (RANDOM.nextInt(10) == 0)
-						{
-							try
-							{
-								Game.Player caller = players.get(0);
-//								UUID key = getKey(caller);
-								final Snapshot before = this.snapshots.getLast();
-								assert before != null;
-								GameTest.this.game.rollbackLastMove(caller);
-								final Snapshot after = collectInfos();
-								assertEquals("Wrong play nr", before.roundNr, after.roundNr);
-								before.scores.forEach(
-										(player, beforeScore) -> assertEquals("Wrong score", beforeScore, after.scores.get(player))
-								);
-							}
-							catch (final Throwable e)
-							{
-								error.set(e);
-							}
-						}
-						else
-						{
-							this.snapshots.add(collectInfos());
-						}
-				}
+//				@Override
+//				public void afterPlay(final Action action)
+//				{
+//						if (RANDOM.nextInt(10) == 0)
+//						{
+//							try
+//							{
+//								Game.Player caller = players.get(0);
+////								UUID key = getKey(caller);
+//								final Snapshot before = this.snapshots.getLast();
+//								assert before != null;
+//								GameTest.this.game.rollbackLastMove(caller);
+//								final Snapshot after = collectInfos();
+//								assertEquals("Wrong play nr", before.roundNr, after.roundNr);
+//								before.scores.forEach(
+//										(player, beforeScore) -> assertEquals("Wrong score", beforeScore, after.scores.get(player))
+//								);
+//							}
+//							catch (final Throwable e)
+//							{
+//								error.set(e);
+//							}
+//						}
+//						else
+//						{
+//							this.snapshots.add(collectInfos());
+//						}
+//				}
 
-				protected Snapshot collectInfos()
-				{
-					final Snapshot info = new Snapshot();
-					info.lastPlay = GameTest.this.game.actions.getLast();
-					info.roundNr = GameTest.this.game.getRoundNr();
-					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
-					{
-						info.scores.put(player.getName(), player.getScore());
-					}
-					return info;
-				}
+//				protected Snapshot collectInfos()
+//				{
+//					final Snapshot info = new Snapshot();
+//					info.lastPlay = GameTest.this.game.actions.getLast();
+//					info.roundNr = GameTest.this.game.getRoundNr();
+//					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
+//					{
+//						info.scores.put(player.getName(), player.getScore());
+//					}
+//					return info;
+//				}
 
-				/**
-				 * Infos about the game at a given point.
-				 */
-				class Snapshot
-				{
-					public Action lastPlay;
-					public int roundNr;
-					final HashMap<String, Integer> scores = new HashMap<>();
-				}
 			});
 			startGame(true);
 
@@ -190,29 +185,30 @@ public class GameTest
 		}
 	}
 
-	/**
-	 * Get the key of a player through reflection methods
-	 * @param player the player
-	 * @return the key
-	 */
-	protected UUID getKey(final BruteForceMethod.Player player)
-	{
-		try
-		{
-			Field field = AbstractPlayer.class.getDeclaredField("playerKey");
-			field.setAccessible(true);
-			return (UUID) field.get(player);
-		}
-		catch (NoSuchFieldException | IllegalAccessException e)
-		{
-			throw new Error(e);
-		}
-	}
+	// TODO ?
+//	/**
+//	 * Get the key of a player through reflection methods
+//	 * @param player the player
+//	 * @return the key
+//	 */
+//	protected UUID getKey(final BruteForceMethod.Player player)
+//	{
+//		try
+//		{
+//			Field field = AbstractPlayer.class.getDeclaredField("playerKey");
+//			field.setAccessible(true);
+//			return (UUID) field.get(player);
+//		}
+//		catch (NoSuchFieldException | IllegalAccessException e)
+//		{
+//			throw new Error(e);
+//		}
+//	}
 
 	@Test
 	void completeKnownGame() throws ScrabbleException, ParseException, InterruptedException, TimeoutException
 	{
-		final List<TestPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
+		final List<PredefinedPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
 		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
 				/*  1 */ "H3 APPETES",
 				/*  2 */ "G9 VIGIE",
@@ -238,9 +234,7 @@ public class GameTest
 
 		for (int i = 0; i < moves.size(); i++)
 		{
-			players.get(i % players.size()).addMove(
-					(PlayTiles) PlayTiles.parseMove(this.grid, moves.get(i))
-			);
+			players.get(i % players.size()).moves.add(moves.get(i));
 		}
 
 		this.game.listeners.add(
@@ -252,7 +246,7 @@ public class GameTest
 						switch (GameTest.this.game.getRoundNr())
 						{
 							case 1:
-								Assert.assertEquals(78, gustav.score);
+								Assert.assertEquals(78, GameTest.this.gustav.score);
 								break;
 						}
 					}
@@ -281,13 +275,13 @@ public class GameTest
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 
 		// play both last moves again
-		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "N10 VENTA"));
-		this.john.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "8K HEM"));
+		this.gustav.moves.add( "N10 VENTA");
+		this.john.moves.add("8K HEM");
 		this.game.awaitEndOfPlay(moves.size(), 5, TimeUnit.SECONDS);
-		assertEquals(Game.State.ENDED, this.game.getState());
+		assertEquals(GameState.State.ENDED, this.game.getState());
 
 		Thread.sleep(this.game.delayBeforeEnds * 5000 / 2 + 500);
-		assertEquals(Game.State.ENDED, this.game.getState());
+		assertEquals(GameState.State.ENDED, this.game.getState());
 	}
 
 	@Test
@@ -299,13 +293,13 @@ public class GameTest
 		this.startGame(true);
 		assertEquals(1, this.game.getRoundNr());
 
-		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "H3 APPETEE"));
+		this.gustav.moves.add("H3 APPETEE");
 		Thread.sleep(100);
 		assertEquals(this.game.getScore(this.gustav), 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(1, this.game.getRoundNr());
 
-		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "8H APTES"));
+		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(this.game.getScore(this.gustav), 16);
@@ -316,8 +310,8 @@ public class GameTest
 	{
 		this.grid = this.game.getGrid();
 		this.startGame(true);
-		final Rack startRack = ((Game.PlayerInfo) this.game.getPlayerInfo(this.gustav)).rack;
-		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "8H APTES"));
+		final Bag<Character> startRack = this.gustav.rack;
+		this.gustav.moves.add("8H APTES");;
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 		assertEquals(16, this.game.getScore(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -326,7 +320,7 @@ public class GameTest
 		assertEquals(1, this.game.getRoundNr());
 		assertEquals(0, this.game.getScore(this.gustav));
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
-		assertEquals(startRack, ((Game.PlayerInfo) this.game.getPlayerInfo(this.gustav)).rack);
+		assertEquals(startRack, this.gustav.rack);
 	}
 
 
@@ -338,14 +332,14 @@ public class GameTest
 		final TestListener listener = new TestListener()
 		{
 			@Override
-			public void afterRejectedAction(final AbstractPlayer player, final Action action)
+			public void afterRejectedAction(final Game.Player player, final Action action){}
 			{
 				playRejected.set(true);
 			}
 		};
 		this.game.listeners.add(listener);
 		this.startGame(true);
-		this.gustav.addMove((Action.PlayTiles) Action.parse("H3 APPETEE"));
+		this.gustav.moves.add("H3 APPETEE");
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 
 		assertTrue(playRejected.get());
@@ -358,7 +352,7 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove( Action.parse("H8 A"));
+		this.gustav.moves.add("H8 A");
 		Thread.sleep(100);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -370,7 +364,7 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "G7 AS"));
+		this.gustav.moves.add("G7 AS");
 		this.game.awaitEndOfPlay(1, 10, TimeUnit.SECONDS);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -381,10 +375,10 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "H8 AS"));
+		this.gustav.moves.add("H8 AS");
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 		assertFalse(this.game.isLastPlayError(this.gustav));
-		this.john.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "A3 VIGIE"));
+		this.john.moves.add("A3 VIGIE");
 		Thread.sleep(100);
 		assertTrue(this.game.isLastPlayError(this.john));
 	}
@@ -394,18 +388,17 @@ public class GameTest
 	{
 		// dieser seed gibt die Buchstaben "[F, T, I, N, O, A,  - joker - ]"
 		this.game = new Game(DICTIONARY, 2346975568742590367L);
-		final TestPlayer p = new TestPlayer("Etienne", this.game);
-		this.game.addPlayer((Player) p);
+		final PredefinedPlayer etienne = addPlayer("Etienne");
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
-		p.addMove((PlayTiles) PlayTiles.parseMove(grid, "H7 As"));
+		etienne.moves.add("H7 As");
 		Thread.sleep(100);
-		assertEquals(2, this.game.getScore(p));
+		assertEquals(2, this.game.getScore(etienne));
 
-		p.addMove((PlayTiles) PlayTiles.parseMove(grid, "8H SI"));
+		etienne.moves.add("8H SI");
 		Thread.sleep(100);
-		assertEquals(3, this.game.getScore(p));
+		assertEquals(3, this.game.getScore(etienne));
 
 //		do
 //		{
@@ -426,15 +419,13 @@ public class GameTest
 			// Joker on normal case
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
-			final TestPlayer anton = new TestPlayer("Anton", this.game);
-			this.game.addPlayer((Player) anton);
+			final PredefinedPlayer anton = addPlayer("anton");
 			startGame(true);
 			int move = 1;
-			anton.addMove((PlayTiles) PlayTiles.parseMove(this.game.getGrid(), "8D PLaCE"));
+			anton.moves.add("8D PLaCE");
 			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
 			assertEquals(22, this.game.getScore(anton));
-			anton.addMove((PlayTiles) PlayTiles.parseMove(this.game.getGrid(),
-					RANDOM.nextBoolean() ? "F4 NIERa" : "F4 NIERA"));
+			anton.moves.add(RANDOM.nextBoolean() ? "F4 NIERa" : "F4 NIERA");
 			this.game.awaitEndOfPlay(move, 1, TimeUnit.SECONDS);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
@@ -444,14 +435,13 @@ public class GameTest
 			// Joker on blue case
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
-			final TestPlayer anton = new TestPlayer("Anton", this.game);
-			this.game.addPlayer((Player) anton);
+			final PredefinedPlayer anton = addPlayer("Anton");
 			startGame(true);
 			int move = 1;
-			anton.addMove((PlayTiles) PlayTiles.parseMove(this.game.getGrid(), "8D aMPLE"));
+			anton.moves.add("8D aMPLE");
 			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
 			assertEquals(14, this.game.getScore(anton));
-			anton.addMove((PlayTiles) PlayTiles.parseMove(this.game.getGrid(), "D7 CAISSE"));
+			anton.moves.add("D7 CAISSE");
 			this.game.awaitEndOfPlay(move, 1, TimeUnit.SECONDS);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
@@ -499,8 +489,6 @@ public class GameTest
 
 		PredefinedPlayer(final Game game)
 		{
-
-
 			final AbstractGameListener listener = new AbstractGameListener()
 			{
 				@Override
@@ -510,7 +498,7 @@ public class GameTest
 						try
 						{
 							{
-								GameTest.this.game.play(PredefinedPlayer.this, Action.parse(moves.pop()));
+								GameTest.this.game.play(PredefinedPlayer.this, Action.parse(PredefinedPlayer.this.moves.pop()));
 							}
 						}
 						catch (ScrabbleException e)

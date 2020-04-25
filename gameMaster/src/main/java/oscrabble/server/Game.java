@@ -1,5 +1,7 @@
 package oscrabble.server;
 
+import org.apache.commons.collections4.Bag;
+import org.apache.commons.collections4.bag.HashBag;
 import org.apache.log4j.Logger;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
@@ -254,7 +256,7 @@ public class Game
 	public synchronized Player addPlayer(final oscrabble.data.Player jsonPlayer)
 	{
 		final Player player = new Player();
-		player.rack = new ArrayList<>();
+		player.rack = new HashBag<>();
 //		player.incomingEventQueue = new LinkedBlockingDeque<>();
 		player.id = jsonPlayer.id;
 		player.name = jsonPlayer.name;
@@ -266,7 +268,7 @@ public class Game
 	 * @param player
 	 * @return the player
 	 */
-	Player addPlayer(final Player player)
+	<A extends Player>  A addPlayer(final A player)
 	{
 		this.players.put(player.id, player);
 		return player;
@@ -330,15 +332,14 @@ public class Game
 
 				// check possibility
 				moveMI = this.grid.getMetaInformation(playTiles);
-				final LinkedList<Character> remaining = new LinkedList<>();
-				Collections.copy(remaining, player.rack);
+				final HashBag<Character> remaining = new HashBag<>(player.rack);
 
 				final List<Character> requiredLetters = moveMI.requiredLetter;
 				for (final Character c : requiredLetters)
 				{
 					if (!remaining.remove(c))
 					{
-						if (!remaining.remove((Character) ' '))
+						if (!remaining.remove(' '))
 						{
 							throw new ScrabbleException.ForbiddenPlayException
 									(MessageFormat.format(MESSAGES.getString("html.rack.with.0.br.has.not.the.required.stones.1"), player.rack, requiredLetters));
@@ -423,10 +424,10 @@ public class Game
 				}
 
 				final Action.Exchange exchange = (Action.Exchange) action;
-				final ArrayList<Character> newRack = new ArrayList<>(player.rack);
+				final HashBag<Character> newRack = new HashBag<>(player.rack);
 				for (final char ex : exchange.toExchange)
 				{
-					if (!newRack.remove((Character) ex))
+					if (!newRack.remove(ex))
 					{
 						throw new ScrabbleException.ForbiddenPlayException("No (or not enough) character " + ex + " to exchange it");
 					}
@@ -632,7 +633,7 @@ public class Game
 	private Set<Character> refillRack(final Player player)
 	{
 		final Set<Character> drawn = new HashSet<>();
-		final List<Character> rack = this.players.get(player).rack;
+		final Bag<Character> rack = this.players.get(player).rack;
 		while (!this.bag.isEmpty() && rack.size() < RACK_SIZE)
 		{
 			drawn.add(this.bag.poll());
@@ -958,7 +959,7 @@ public class Game
 		/**
 		 * Tiles in the rack, space for a joker.
 		 */
-		List<Character> rack;
+		Bag<Character> rack;
 
 		int score;
 		/**
