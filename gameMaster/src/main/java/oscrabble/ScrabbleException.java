@@ -2,7 +2,7 @@ package oscrabble;
 
 import oscrabble.server.Game;
 
-public abstract class ScrabbleException extends Exception
+public class ScrabbleException extends Exception
 {
 
 	public ScrabbleException(final String message)

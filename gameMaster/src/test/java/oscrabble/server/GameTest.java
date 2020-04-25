@@ -53,9 +53,11 @@ public class GameTest
 	}
 
 	@BeforeEach
-	public void initialize()
+	public void initialize() throws ScrabbleException
 	{
 		this.game = new Game(DICTIONARY, -3300078916872261882L);
+		this.game.randomPlayerOrder = false;
+
 		this.grid = this.game.getGrid();
 		final int gameNr = RANDOM.nextInt(100);
 
@@ -69,11 +71,11 @@ public class GameTest
 	 * @param name name of the player
 	 * @return this player
 	 */
-	private PredefinedPlayer addPlayer(final String name)
+	private PredefinedPlayer addPlayer(final String name) throws ScrabbleException
 	{
 		final PredefinedPlayer player = new PredefinedPlayer(this.game);
-
 		player.name = name;
+		player.id = name;
 		return this.game.addPlayer(player);
 	}
 
@@ -358,12 +360,10 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		final PredefinedPlayer firstPlayer = (PredefinedPlayer) this.game.toPlay.peekFirst();
-		assert firstPlayer != null;
-		firstPlayer.moves.add("G7 AS");
-		this.game.awaitEndOfPlay(1, 100, TimeUnit.SECONDS);
+		this.gustav.moves.add("G7 AS");
+		this.game.awaitEndOfPlay(1, 1, TimeUnit.MINUTES);
 		assertTrue(this.game.isLastPlayError(this.gustav));
-		assertNotEquals(firstPlayer, this.game.getPlayerToPlay());
+		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
 	@Test
@@ -483,10 +483,21 @@ public class GameTest
 	{
 		final ArrayBlockingQueue<String> moves = new ArrayBlockingQueue<>(1024);
 
+		private final ArrayBlockingQueue<ScrabbleEvent> scrabbleEvents = new ArrayBlockingQueue<>(1024);
+
+		private final AbstractGameListener listener;
+
 		PredefinedPlayer(final Game game)
 		{
-			final AbstractGameListener listener = new AbstractGameListener()
+			this.listener = new AbstractGameListener()
 			{
+
+				@Override
+				public Queue<ScrabbleEvent> getIncomingEventQueue()
+				{
+					return PredefinedPlayer.this.scrabbleEvents;
+				}
+
 				@Override
 				public void onPlayRequired(final Game.Player player)
 				{
@@ -497,12 +508,35 @@ public class GameTest
 						}
 						catch (ScrabbleException | InterruptedException e)
 						{
-							throw new java.lang.Error(e);
+							throw new Error(e);
 						}
 				}
 			};
 
-			game.addListener(listener);
+			game.addListener(this.listener);
+			final Thread th = new Thread(() ->
+			{
+				try
+				{
+					while (true)
+					{
+						final ScrabbleEvent event = this.scrabbleEvents.poll(1, TimeUnit.MINUTES);
+						if (event == null)
+						{
+							throw new AssertionError("No input from server");
+						}
+						event.accept(this.listener);
+					}
+				}
+				catch (InterruptedException e)
+				{
+					throw new Error(e);
+				}
+			});
+
+			th.setName("Player Thread - " + this.name);
+			th.setDaemon(true);
+			th.start();
 		}
 	}
 }

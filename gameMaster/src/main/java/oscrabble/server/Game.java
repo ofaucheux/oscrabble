@@ -41,11 +41,17 @@ public class Game
 	 */
 	final long randomSeed;
 	final List<GameListener> listeners = new ArrayList<>();
-	final Map<UUID, Player> players = new HashMap<>();
+
+	/**
+	 * Players linked to their ids.
+	 */
+	final LinkedHashMap<String, Player> players = new LinkedHashMap<>();
+
 	/**
 	 * Plays
 	 */
 	final LinkedList<oscrabble.server.action.Action> actions = new LinkedList<>();
+
 	/**
 	 * Synchronize: to by synchronized by calls which change the state of the game
 	 */
@@ -76,10 +82,16 @@ public class Game
 	 */
 	int delayBeforeEnds = 3;
 	private CountDownLatch waitingForPlay;
+
 	/**
 	 * State of the game
 	 */
 	private GameState.State state;
+
+	/**
+	 * Should the player play in the order they came in game or not.
+	 */
+	boolean randomPlayerOrder = true;
 
 	public Game(final File propertyFile) throws ConfigurationException
 	{
@@ -254,7 +266,7 @@ public class Game
 	 * @param jsonPlayer player
 	 * @return the player
 	 */
-	public synchronized Player addPlayer(final oscrabble.data.Player jsonPlayer)
+	public synchronized Player addPlayer(final oscrabble.data.Player jsonPlayer) throws ScrabbleException
 	{
 		final Player player = new Player();
 		player.id = jsonPlayer.id;
@@ -264,12 +276,16 @@ public class Game
 
 	/**
 	 * Add a player
+	 *
 	 * @param player
 	 * @return the player
 	 */
-	<A extends Player>  A addPlayer(final A player)
+	<A extends Player> A addPlayer(final A player) throws ScrabbleException
 	{
-		this.players.put(player.id, player);
+		if (this.players.put(player.id, player) != null)
+		{
+			throw new ScrabbleException("Player ID already registred");
+		}
 		return player;
 	}
 
@@ -309,7 +325,7 @@ public class Game
 			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + player.name);
 		}
 
-		if (this.actions.isEmpty() || this.toPlay.peekFirst() != player)
+		if (this.toPlay.peekFirst() != player)
 		{
 			throw new ScrabbleException.NotInTurn(player);
 		}
@@ -482,6 +498,7 @@ public class Game
 			{
 				drawn = refillRack(player);
 				player.lastAction = action;
+				this.actions.add(action);
 				dispatch(toInform -> toInform.afterPlay(action));
 				final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
 				this.history.add(historyEntry);
@@ -707,7 +724,10 @@ public class Game
 //			this.players.put(player.id, player);
 //		}
 		this.toPlay.addAll(this.players.values());
-		Collections.shuffle(this.toPlay);
+		if (this.randomPlayerOrder)
+		{
+			Collections.shuffle(this.toPlay);
+		}
 
 		// Fill racks
 		for (final Player player : this.toPlay)
@@ -955,11 +975,16 @@ public class Game
 		 * Was last play an error?
 		 */
 		public Boolean isLastPlayError;
+
+		/**
+		 * Name
+		 */
 		String name;
+
 		/**
 		 * Password für die Kommunikation Player &lt;&gt; Server
 		 */
-		UUID id;
+		String id;
 
 //		/**
 //		 * Queue  to receive events from client
@@ -981,6 +1006,14 @@ public class Game
 		public oscrabble.configuration.Configuration getConfiguration()
 		{
 			return null;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "Player{" +
+					"name='" + name + '\'' +
+					'}';
 		}
 	}
 
