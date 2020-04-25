@@ -262,19 +262,21 @@ public class GameTest
 		this.game.awaitEndOfPlay(moves.size(), 1, TimeUnit.MINUTES);
 
 		// first rollback
-		assertFalse(this.grid.getSquare("8K").isEmpty());
-		assertFalse(this.grid.getSquare("8L").isEmpty());
-		assertFalse(this.grid.getSquare("8M").isEmpty());
+		assertFalse(this.grid.isEmpty("8K"));
+
+		assertFalse(this.grid.isEmpty("8K"));
+		assertFalse(this.grid.isEmpty("8L"));
+		assertFalse(this.grid.isEmpty("8M"));
 		this.game.rollbackLastMove(null);
-		assertTrue(this.grid.getSquare("8K").isEmpty());
-		assertFalse(this.grid.getSquare("8L").isEmpty());
-		assertTrue(this.grid.getSquare("8M").isEmpty());
+		assertTrue(this.grid.isEmpty("8K"));
+		assertFalse(this.grid.isEmpty("8L"));
+		assertTrue(this.grid.isEmpty("8M"));
 		assertEquals(this.john, this.game.getPlayerToPlay());
 
 		// second rollback
-		assertFalse(this.grid.getSquare("N10").isEmpty());
+		assertFalse(this.grid.isEmpty("N10"));
 		this.game.rollbackLastMove(null);
-		assertTrue(this.grid.getSquare("N10").isEmpty());
+		assertTrue(this.grid.isEmpty("N10"));
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 
 		// play both last moves again

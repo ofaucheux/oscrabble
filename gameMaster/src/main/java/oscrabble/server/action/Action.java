@@ -1,6 +1,8 @@
 package oscrabble.server.action;
 
+import org.apache.commons.lang3.tuple.Triple;
 import oscrabble.ScrabbleException;
+import oscrabble.server.Grid;
 
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -13,8 +15,7 @@ public abstract class Action
 
 	private static final Pattern PASS_TURN = Pattern.compile("-");
 	private static final Pattern EXCHANGE = Pattern.compile("-\\s+(\\S+)");
-	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("((\\d+)(\\w))(\\s+(\\S*))?");
-	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("((\\w)(\\d+))(\\s+(\\S*))?");
+	private static final Pattern PLAY_TILES = Pattern.compile("(\\S*)\\s+(\\S*)");
 
 	static public Action parse(oscrabble.data.Action jsonAction) throws ScrabbleException.ForbiddenPlayException
 	{
@@ -35,8 +36,7 @@ public abstract class Action
 		{
 			action = new Exchange(notation);
 		}
-		else if (HORIZONTAL_COORDINATE_PATTERN.matcher(notation).matches()
-				|| VERTICAL_COORDINATE_PATTERN.matcher(notation).matches())
+		else if (PLAY_TILES.matcher(notation).matches())
 		{
 			action = new PlayTiles(notation);
 		}
@@ -83,33 +83,30 @@ public abstract class Action
 		/**
 		 * Die Blanks (mindesten neugespielt) werden durch klein-buchstaben dargestellt.
 		 */
-		public PlayTiles(String notation)
+		public PlayTiles(String notation) throws ScrabbleException.ForbiddenPlayException
 		{
-			Matcher matcher;
-			int groupX;
-			int groupY;
-			if ((matcher = HORIZONTAL_COORDINATE_PATTERN.matcher(notation)).matches())
+			final Matcher m = PLAY_TILES.matcher(notation);
+			if (!m.matches())
 			{
-				this.direction = Direction.HORIZONTAL;
-				groupX = 3;
-				groupY = 2;
+				throw new AssertionError();
 			}
-			else if ((matcher = VERTICAL_COORDINATE_PATTERN.matcher(notation)).matches())
-			{
-				this.direction = Direction.VERTICAL;
-				groupX = 2;
-				groupY = 3;
-			}
-			else
-			{
-				throw new AssertionError("Cannot parse: " + notation);
-			}
-			this.x = (Character.toUpperCase(matcher.group(groupX).charAt(0)) - 'A' + 1);
-			this.y = Integer.parseInt(matcher.group(groupY));
-			this.word = matcher.group(5);
+
+			final Triple<Direction, Integer, Integer> coordinate = Grid.getCoordinate(m.group(1));
+			this.direction = coordinate.getLeft();
+			this.x = coordinate.getMiddle();
+			this.y = coordinate.getRight();
+			this.word = m.group(2);
 		}
 	}
 
+	static int getColumn(final char columnLetter)
+	{
+		return columnLetter - 'A' + 1;
+	}
+
+	/**
+	 * Get the column nummer matching a letter, as in A8.
+	 */
 	public enum Direction {HORIZONTAL, VERTICAL;
 
 		public Direction other()

@@ -1,5 +1,7 @@
 package oscrabble.server;
 
+import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -9,8 +11,10 @@ import oscrabble.server.action.Action;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-class Grid
+public class Grid
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Grid.class);
 
@@ -52,6 +56,12 @@ class Grid
 			}
 		}
 		return true;
+	}
+
+	public boolean isEmpty(final String coordinate) throws ScrabbleException.ForbiddenPlayException
+	{
+		final Triple<Action.Direction, Integer, Integer> triple = getCoordinate(coordinate);
+		return this.get(triple.getMiddle(), triple.getRight()).c == null;
 	}
 
 	/**
@@ -230,5 +240,36 @@ class Grid
 		return this.rules.letters.get(c).points;
 	}
 
+	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\d+\\w)");
+	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\w\\d+)");
+
+	public static Triple<Action.Direction, Integer, Integer> getCoordinate(final String notation) throws ScrabbleException.ForbiddenPlayException
+	{
+		final Action.Direction direction;
+		final int groupX, groupY;
+		Matcher m;
+		if ((m = HORIZONTAL_COORDINATE_PATTERN.matcher(notation)).matches())
+		{
+			direction = Action.Direction.HORIZONTAL;
+			groupX = 2;
+			groupY = 1;
+		}
+		else if ((m = VERTICAL_COORDINATE_PATTERN.matcher(notation)).matches())
+		{
+			direction = Action.Direction.VERTICAL;
+			groupY = 1;
+			groupX = 2;
+		}
+		else
+		{
+			throw new ScrabbleException.ForbiddenPlayException("Cannot parse coordinate: " + notation);
+		}
+
+		return Triple.of(
+				direction,
+				m.group(groupX).charAt(0) - 'A' + 1,
+				Integer.parseInt(m.group(groupY))
+		);
+	}
 }
 
