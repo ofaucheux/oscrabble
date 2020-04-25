@@ -85,6 +85,10 @@ public class Grid
 		{
 			this.x = x;
 			this.y = y;
+
+			final Bonus bonus = calculateBonus(x, y);
+			this.wordBonus = bonus.wordFactor;
+			this.letterBonus = bonus.charFactor;
 		}
 
 		public boolean isEmpty()
@@ -202,6 +206,7 @@ public class Grid
 					crosswordScores += crosswordScore * sq.wordBonus;
 					mmi.crosswords.add(crossword.toString());
 				}
+				mmi.score += crosswordScore;
 			}
 			else
 			{
@@ -209,7 +214,7 @@ public class Grid
 				{
 					throw new ScrabbleException.ForbiddenPlayException("Square " + sq.x + "," + sq.y + " already occupied by " + sq.c);
 				}
-				mmi.score += getPoints(sq.c);
+				mmi.score += getPoints(c) * sq.wordBonus;
 			}
 
 			switch (playTiles.direction)
@@ -237,7 +242,9 @@ public class Grid
 
 	private int getPoints(final Character c)
 	{
-		return this.rules.letters.get(c).points;
+		return Character.isLowerCase(c)
+				? 0
+				: this.rules.letters.get(c).points;
 	}
 
 	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
@@ -271,5 +278,103 @@ public class Grid
 				m.group(groupY).charAt(0) - 'A' + 1
 		);
 	}
-}
 
+	/**
+	 * Liefert den Bonus einer Zelle.
+	 * @param x {@code 0} for border
+	 */
+	private Bonus calculateBonus(final int x, final int y)
+	{
+
+		final int midColumn = this.rules.gridSize / 2 + 1;
+
+		if (x > midColumn)
+		{
+			return calculateBonus(this.rules.gridSize - x +1, y);
+		}
+		else if (y > midColumn)
+		{
+			return calculateBonus(x, this.rules.gridSize - y + 1);
+		}
+
+		if (x > y)
+		{
+			//noinspection SuspiciousNameCombination
+			return calculateBonus(y, x);
+		}
+
+		if (x == 0 || y == 0)
+		{
+			return Bonus.BORDER;
+		}
+
+//		if (this.size != SCRABBLE_SIZE)
+//		{
+//			return Bonus.NONE;
+//		}
+//
+		assert (1 <= x && x <= y && y <= midColumn);
+
+		if (x == y)
+		{
+			switch (x)
+			{
+				case 1:
+					return Bonus.RED;
+				case 6:
+					return Bonus.DARK_BLUE;
+				case 7:
+					return Bonus.LIGHT_BLUE;
+				default:
+					return Bonus.ROSE;
+			}
+		}
+		else if (x == 1 && y == midColumn)
+		{
+			return Bonus.RED;
+		}
+		else if (x == 1 && y == 4)
+		{
+			return Bonus.LIGHT_BLUE;
+		}
+		else if (x == 2 && y == 6)
+		{
+			return Bonus.DARK_BLUE;
+		}
+		else if (x == 3 && y == 7)
+		{
+			return Bonus.LIGHT_BLUE;
+		}
+		else if (x == 4 && y == 8)
+		{
+			return Bonus.LIGHT_BLUE;
+		}
+		else
+		{
+			return Bonus.NONE;
+		}
+	}
+
+	/**
+	 * Definition der Bonus-Zellen.
+	 */
+	public enum Bonus
+	{
+		BORDER, NONE, RED(3, 1), ROSE(2, 1), DARK_BLUE(1, 3), LIGHT_BLUE(1, 2);
+
+		private final int wordFactor;
+		private final int charFactor;
+
+		Bonus()
+		{
+			this(1, 1);
+		}
+
+		Bonus(int wordFactor, int charFactor)
+		{
+			this.wordFactor = wordFactor;
+			this.charFactor = charFactor;
+		}
+	}
+
+}

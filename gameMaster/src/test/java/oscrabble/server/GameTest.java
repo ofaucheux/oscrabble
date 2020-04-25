@@ -38,8 +38,8 @@ public class GameTest
 	@BeforeAll
 	public static void mocken()
 	{
-		application = new Application();
-		application.start();
+//		application = new Application();
+//		application.start();
 		DICTIONARY = new MicroServiceDictionary(
 				URI.create("http://localhost:8080/"),
 				Language.FRENCH.toString()
@@ -306,7 +306,7 @@ public class GameTest
 		this.startGame(true);
 		final Bag<Character> startRack = this.gustav.rack;
 		this.gustav.moves.add("8H APTES");
-		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
 		assertEquals(16, this.game.getScore(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
