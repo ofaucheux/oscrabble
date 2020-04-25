@@ -10,7 +10,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public abstract class AbstractPlayer implements Game.GameListener
+public abstract class AbstractPlayer
 {
 	public static final Logger LOGGER = Logger.getLogger(AbstractPlayer.class);
 

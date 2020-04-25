@@ -2,6 +2,7 @@ package oscrabble.server;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
+import org.apache.tomcat.jni.Error;
 import org.junit.Assert;
 import org.junit.jupiter.api.*;
 import oscrabble.ScrabbleException;
@@ -14,7 +15,6 @@ import oscrabble.dictionary.Language;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
-import javax.xml.namespace.QName;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.text.ParseException;
@@ -66,13 +66,14 @@ public class GameTest
 		final int gameNr = RANDOM.nextInt(100);
 
 		this.gustav = addPlayer("Gustav_" + gameNr);
-		this.john =addPlayer("John_" + gameNr);
+		this.john = addPlayer("John_" + gameNr);
 		this.jurek = addPlayer("Jurek_" + gameNr);
 	}
 
 	private Game.Player addPlayer(final String name)
 	{
-		final Player data = new Player();
+		final PredefinedPlayer data = new PredefinedPlayer(this.game);
+
 		data.name = name;
 		return this.game.addPlayer(data);
 	}
@@ -394,7 +395,7 @@ public class GameTest
 		// dieser seed gibt die Buchstaben "[F, T, I, N, O, A,  - joker - ]"
 		this.game = new Game(DICTIONARY, 2346975568742590367L);
 		final TestPlayer p = new TestPlayer("Etienne", this.game);
-		this.game.addPlayer(p);
+		this.game.addPlayer((Player) p);
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
@@ -426,7 +427,7 @@ public class GameTest
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final TestPlayer anton = new TestPlayer("Anton", this.game);
-			this.game.addPlayer(anton);
+			this.game.addPlayer((Player) anton);
 			startGame(true);
 			int move = 1;
 			anton.addMove((PlayTiles) PlayTiles.parseMove(this.game.getGrid(), "8D PLaCE"));
@@ -444,7 +445,7 @@ public class GameTest
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final TestPlayer anton = new TestPlayer("Anton", this.game);
-			this.game.addPlayer(anton);
+			this.game.addPlayer((Player) anton);
 			startGame(true);
 			int move = 1;
 			anton.addMove((PlayTiles) PlayTiles.parseMove(this.game.getGrid(), "8D aMPLE"));
@@ -489,6 +490,39 @@ public class GameTest
 
 	}
 
+	/**
+	 * A player playing pre-defined turns.
+	 */
+	private class PredefinedPlayer extends Game.Player
+	{
+		final LinkedList<String> moves = new LinkedList<>();
+
+		PredefinedPlayer(final Game game)
+		{
+
+
+			final AbstractGameListener listener = new AbstractGameListener()
+			{
+				@Override
+				public void onPlayRequired(final Game.Player player)
+				{
+					if (player == PredefinedPlayer.this)
+						try
+						{
+							{
+								GameTest.this.game.play(PredefinedPlayer.this, Action.parse(moves.pop()));
+							}
+						}
+						catch (ScrabbleException e)
+						{
+							throw new java.lang.Error(e);
+						}
+				}
+			};
+
+			game.addListener(listener);
+		}
+	}
 }
 
 /**
@@ -529,6 +563,5 @@ abstract class TestListener implements GameListener
 		return this.queue;
 	}
 
-	public abstract void afterPlay(Play play);
 }
 
