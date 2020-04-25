@@ -4,17 +4,16 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.*;
-import oscrabble.Grid;
-import oscrabble.Rack;
 import oscrabble.ScrabbleException;
+import oscrabble.data.Player;
 import oscrabble.server.action.Action;
-import oscrabble.server.action.PlayTiles;
 import oscrabble.configuration.Configuration;
 import oscrabble.dictionary.Application;
 import oscrabble.dictionary.Language;
 import oscrabble.player.AbstractPlayer;
 import oscrabble.player.BruteForceMethod;
 
+import javax.xml.namespace.QName;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.text.ParseException;
@@ -37,9 +36,9 @@ public class GameTest
 
 	private Game game;
 	private Grid grid;
-	private TestPlayer gustav;
-	private TestPlayer john;
-	private TestPlayer jurek;
+	private Game.Player gustav;
+	private Game.Player john;
+	private Game.Player jurek;
 
 	@BeforeAll
 	public static void mocken()
@@ -61,17 +60,20 @@ public class GameTest
 	@BeforeEach
 	public void initialize()
 	{
-
 		this.game = new Game(DICTIONARY, -3300078916872261882L);
 		this.grid = this.game.getGrid();
 		final int gameNr = RANDOM.nextInt(100);
 
-		this.gustav = new TestPlayer("Gustav_" + gameNr, this.game);
-		this.john = new TestPlayer("John_" + gameNr, this.game);
-		this.jurek = new TestPlayer("Jurek_" + gameNr, this.game);
-		this.game.addPlayer(this.gustav);
-		this.game.addPlayer(this.john);
-		this.game.addPlayer(this.jurek);
+		this.gustav = addPlayer("Gustav_" + gameNr);
+		this.john =addPlayer("John_" + gameNr);
+		this.jurek = addPlayer("Jurek_" + gameNr);
+	}
+
+	private Game.Player addPlayer(final String name)
+	{
+		final Player data = new Player();
+		data.name = name;
+		return this.game.addPlayer(data);
 	}
 
 	@AfterEach
@@ -91,13 +93,13 @@ public class GameTest
 			this.game.listeners.add(new TestListener()
 			{
 				@Override
-				public void afterPlay(final Play play)
+				public void afterPlay(final Action action)
 				{
-					LOGGER.info("Played: " + play.action.toString());
+					LOGGER.info("Played: " + action.toString());
 				}
 			});
 
-			ArrayList<BruteForceMethod.Player> players = new ArrayList<>();
+			ArrayList<Game.Player> players = new ArrayList<>();
 			for (int i = 0; i < RandomUtils.nextInt(1, 7); i++)
 			{
 				final BruteForceMethod.Player player = method.new Player("Player " + i)
@@ -111,7 +113,7 @@ public class GameTest
 				};
 
 				this.game.addPlayer(player);
-				players.add(player);
+//				players.add(player);
 			}
 			final AtomicReference<Throwable> error = new AtomicReference<>();
 			this.game.listeners.add(new TestListener()
@@ -125,14 +127,14 @@ public class GameTest
 				}
 
 				@Override
-				public void afterPlay(final Play play)
+				public void afterPlay(final Action action)
 				{
 						if (RANDOM.nextInt(10) == 0)
 						{
 							try
 							{
-								BruteForceMethod.Player caller = players.get(0);
-								UUID key = getKey(caller);
+								Game.Player caller = players.get(0);
+//								UUID key = getKey(caller);
 								final Snapshot before = this.snapshots.getLast();
 								assert before != null;
 								GameTest.this.game.rollbackLastMove(caller);
@@ -489,10 +491,10 @@ public class GameTest
 /**
  * Default listener. Does nothing.
  */
-abstract class TestListener implements Game.GameListener
+abstract class TestListener implements GameListener
 {
 
-	private final ArrayBlockingQueue<Game.ScrabbleEvent> queue = new ArrayBlockingQueue<>(8);
+	private final ArrayBlockingQueue<ScrabbleEvent> queue = new ArrayBlockingQueue<>(8);
 	private final AtomicReference<Throwable> thrownException;
 
 	TestListener()
@@ -503,7 +505,7 @@ abstract class TestListener implements Game.GameListener
 			{
 				while (true)
 				{
-					final Game.ScrabbleEvent event;
+					final ScrabbleEvent event;
 					event = TestListener.this.queue.take();
 					event.accept(this);
 				}
@@ -519,7 +521,7 @@ abstract class TestListener implements Game.GameListener
 	}
 
 	@Override
-	public Queue<Game.ScrabbleEvent> getIncomingEventQueue()
+	public Queue<ScrabbleEvent> getIncomingEventQueue()
 	{
 		return this.queue;
 	}

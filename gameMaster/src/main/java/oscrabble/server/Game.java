@@ -38,7 +38,7 @@ public class Game
 	 * Seed initially used to create the random generator.
 	 */
 	final long randomSeed;
-//	final List<GameListener> listeners = new ArrayList<>();
+	final List<GameListener> listeners = new ArrayList<>();
 	final Map<UUID, Player> players = new HashMap<>();
 	/**
 	 * Plays
@@ -237,7 +237,7 @@ public class Game
 //		}
 //	}
 
-	public synchronized void addPlayer(final oscrabble.data.Player jsonPlayer)
+	public synchronized Player addPlayer(final oscrabble.data.Player jsonPlayer)
 	{
 		final Player player = new Player();
 		player.rack = new ArrayList<>();
@@ -246,6 +246,7 @@ public class Game
 		player.name = jsonPlayer.name;
 		this.players.put(player.id, player);
 //		this.listeners.add(player);
+		return player;
 	}
 
 	public synchronized int play(/*final UUID clientKey, */ final oscrabble.data.Action jsonAction) throws oscrabble.ScrabbleException
@@ -436,7 +437,7 @@ public class Game
 				{
 					drawn = refillRack(player);
 					player.lastAction = action;
-//					dispatch(toInform -> toInform.afterPlay(play));
+					dispatch(toInform -> toInform.afterPlay(action));
 					final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
 					this.history.add(historyEntry);
 					this.toPlay.pop();
@@ -695,13 +696,13 @@ public class Game
 	/**
 	 * Send an event to each listener, and don't wait after an answer.
 	 */
-//	private void dispatch(final ScrabbleEvent scrabbleEvent)
-//	{
-//		for (final Player player : this.listeners)
-//		{
-//			player.getIncomingEventQueue().add(scrabbleEvent);
-//		}
-//	}
+	private void dispatch(final ScrabbleEvent scrabbleEvent)
+	{
+		for (final GameListener listener : this.listeners)
+		{
+			listener.getIncomingEventQueue().add(scrabbleEvent);
+		}
+	}
 
 	public IDictionary getDictionary()
 	{
