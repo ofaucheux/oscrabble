@@ -554,7 +554,6 @@ public class Game
 			{
 				this.actions.removeLast();
 			}
-			this.actions.removeLast();
 
 			this.toPlay.removeLast();
 			this.toPlay.addFirst(rollbackedPlayer);
@@ -829,11 +828,6 @@ public class Game
 	public oscrabble.configuration.Configuration getConfiguration()
 	{
 		return this.configuration;
-	}
-
-	public boolean isLastPlayError(final Player player)
-	{
-		return player.isLastPlayError;
 	}
 
 	private void checkSecret(final Player player, final String secret) throws ScrabbleException.InvalidSecretException

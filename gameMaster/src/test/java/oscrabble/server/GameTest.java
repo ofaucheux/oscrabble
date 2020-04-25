@@ -51,7 +51,10 @@ public class GameTest
 	@AfterAll
 	public static void stop()
 	{
-		application.stop();
+		if (application != null)
+		{
+			application.stop();
+		}
 	}
 
 	@BeforeEach
@@ -306,6 +309,8 @@ public class GameTest
 	{
 		this.grid = this.game.getGrid();
 		this.startGame(true);
+		final int roundNr = game.getRoundNr();
+		setRack(this.gustav, "APTESSIF");
 		final Bag<Character> startRack = this.gustav.rack;
 		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
@@ -313,7 +318,7 @@ public class GameTest
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
 		this.game.rollbackLastMove(this.gustav);
-		assertEquals(1, this.game.getRoundNr());
+		assertEquals(roundNr, this.game.getRoundNr());
 		assertEquals(0, this.game.getScore(this.gustav));
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(startRack, this.gustav.rack);
@@ -350,7 +355,7 @@ public class GameTest
 		startGame(true);
 		this.gustav.moves.add("H8 A");
 		Thread.sleep(100);
-		assertTrue(this.game.isLastPlayError(this.gustav));
+		assertTrue(this.gustav.isLastPlayError);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -362,7 +367,7 @@ public class GameTest
 		startGame(true);
 		this.gustav.moves.add("G7 AS");
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.MINUTES);
-		assertTrue(this.game.isLastPlayError(this.gustav));
+		assertTrue(this.gustav.isLastPlayError);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -371,12 +376,14 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
+		setRack(this.gustav, "ASWEED");
 		this.gustav.moves.add("H8 AS");
 		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
-		assertFalse(this.game.isLastPlayError(this.gustav));
+		assertFalse(this.gustav.isLastPlayError);
+		setRack(this.john, "VIGIE");
 		this.john.moves.add("A3 VIGIE");
 		Thread.sleep(100);
-		assertTrue(this.game.isLastPlayError(this.john));
+		assertTrue(this.john.isLastPlayError);
 	}
 
 	@Test
