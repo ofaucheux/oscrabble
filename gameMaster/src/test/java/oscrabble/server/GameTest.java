@@ -12,7 +12,6 @@ import oscrabble.dictionary.Language;
 import oscrabble.server.action.Action;
 
 import java.net.URI;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -480,7 +479,7 @@ public class GameTest
 	 */
 	private class PredefinedPlayer extends Game.Player
 	{
-		final LinkedList<String> moves = new LinkedList<>();
+		final ArrayBlockingQueue<String> moves = new ArrayBlockingQueue<>(1024);
 
 		PredefinedPlayer(final Game game)
 		{
@@ -493,7 +492,7 @@ public class GameTest
 						try
 						{
 							{
-								GameTest.this.game.play(PredefinedPlayer.this, Action.parse(PredefinedPlayer.this.moves.pop()));
+								GameTest.this.game.play(PredefinedPlayer.this, Action.parse(PredefinedPlayer.this.moves.poll()));
 							}
 						}
 						catch (ScrabbleException e)

@@ -256,8 +256,6 @@ public class Game
 	public synchronized Player addPlayer(final oscrabble.data.Player jsonPlayer)
 	{
 		final Player player = new Player();
-		player.rack = new HashBag<>();
-//		player.incomingEventQueue = new LinkedBlockingDeque<>();
 		player.id = jsonPlayer.id;
 		player.name = jsonPlayer.name;
 		return addPlayer(player);
@@ -406,7 +404,8 @@ public class Game
 					}
 				}
 
-				player.rack = remaining;
+				player.rack.clear();
+				player.rack.addAll(remaining);
 
 				score = moveMI.getScore();
 				if (moveMI.isScrabble)
@@ -633,12 +632,12 @@ public class Game
 	private Set<Character> refillRack(final Player player)
 	{
 		final Set<Character> drawn = new HashSet<>();
-		final Bag<Character> rack = this.players.get(player).rack;
-		while (!this.bag.isEmpty() && rack.size() < RACK_SIZE)
+		while (!this.bag.isEmpty() && player.rack.size() < RACK_SIZE)
 		{
 			drawn.add(this.bag.poll());
 		}
 		LOGGER.trace("Remaining stones in the bag: " + this.bag.size());
+		player.rack.addAll(drawn);
 		return drawn;
 	}
 
@@ -744,7 +743,17 @@ public class Game
 	{
 		for (final GameListener listener : this.listeners)
 		{
-			listener.getIncomingEventQueue().add(scrabbleEvent);
+			final Queue<ScrabbleEvent> queue = listener.getIncomingEventQueue();
+			if (queue != null)
+			{
+				// in the queue
+				queue.add(scrabbleEvent);
+			}
+			else
+			{
+				// on the same thread
+				scrabbleEvent.accept(listener);
+			}
 		}
 	}
 
@@ -959,7 +968,7 @@ public class Game
 		/**
 		 * Tiles in the rack, space for a joker.
 		 */
-		Bag<Character> rack;
+		final Bag<Character> rack = new HashBag<>();
 
 		int score;
 		/**
