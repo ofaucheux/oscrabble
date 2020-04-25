@@ -407,7 +407,7 @@ public class Game
 					}
 					else
 					{
-						assert square.c == c; //  sollte schon oben getestet sein.
+						assert Character.toUpperCase(square.c) == Character.toUpperCase(c); //  sollte schon oben getestet sein.
 					}
 
 					switch (playTiles.direction)
@@ -652,10 +652,11 @@ public class Game
 		final Set<Character> drawn = new HashSet<>();
 		while (!this.bag.isEmpty() && player.rack.size() < RACK_SIZE)
 		{
-			drawn.add(this.bag.poll());
+			final Character poll = this.bag.poll();
+			drawn.add(poll);
+			player.rack.add(poll);
 		}
 		LOGGER.trace("Remaining stones in the bag: " + this.bag.size());
-		player.rack.addAll(drawn);
 		return drawn;
 	}
 

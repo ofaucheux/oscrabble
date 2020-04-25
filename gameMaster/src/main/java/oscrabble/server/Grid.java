@@ -206,7 +206,6 @@ public class Grid
 					crosswordScores += crosswordScore * sq.wordBonus;
 					mmi.crosswords.add(crossword.toString());
 				}
-				mmi.score += crosswordScore;
 			}
 			else
 			{
@@ -214,7 +213,7 @@ public class Grid
 				{
 					throw new ScrabbleException.ForbiddenPlayException("Square " + sq.x + "," + sq.y + " already occupied by " + sq.c);
 				}
-				mmi.score += getPoints(c) * sq.wordBonus;
+				mmi.score += getPoints(c) * sq.letterBonus;
 			}
 
 			switch (playTiles.direction)

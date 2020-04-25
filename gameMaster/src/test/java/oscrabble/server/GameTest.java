@@ -44,6 +44,8 @@ public class GameTest
 				URI.create("http://localhost:8080/"),
 				Language.FRENCH.toString()
 		);
+
+		Thread.setDefaultUncaughtExceptionHandler((t,e) -> LOGGER.error(e.toString(), e));
 	}
 
 	@AfterAll
@@ -380,18 +382,19 @@ public class GameTest
 	@Test
 	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException
 	{
-		// dieser seed gibt die Buchstaben "[F, T, I, N, O, A,  - joker - ]"
 		this.game = new Game(DICTIONARY, 2346975568742590367L);
+
 		final PredefinedPlayer etienne = addPlayer("Etienne");
+		setRack(etienne, "FTINOA ");
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
 		etienne.moves.add("H7 As");
-		Thread.sleep(100);
+		this.game.awaitEndOfPlay(1, 30, TimeUnit.SECONDS);
 		assertEquals(2, this.game.getScore(etienne));
 
 		etienne.moves.add("8H SI");
-		Thread.sleep(100);
+		this.game.awaitEndOfPlay(2, 30, TimeUnit.SECONDS);
 		assertEquals(3, this.game.getScore(etienne));
 
 //		do
@@ -411,9 +414,10 @@ public class GameTest
 //
 		{
 			// Joker on normal case
-			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final PredefinedPlayer anton = addPlayer("anton");
+			setRack(anton, " CELMNP");
+
 			startGame(true);
 			int move = 1;
 			anton.moves.add("8D PLaCE");
@@ -430,6 +434,7 @@ public class GameTest
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final PredefinedPlayer anton = addPlayer("Anton");
+			setRack(anton, " CELMNP");
 			startGame(true);
 			int move = 1;
 			anton.moves.add("8D aMPLE");
@@ -439,6 +444,15 @@ public class GameTest
 			this.game.awaitEndOfPlay(move, 1, TimeUnit.SECONDS);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
+		}
+	}
+
+	private void setRack(final Game.Player player, final String tiles)
+	{
+		player.rack.clear();
+		for (final char c : tiles.toCharArray())
+		{
+			player.rack.add(c);
 		}
 	}
 

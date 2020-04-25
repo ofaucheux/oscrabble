@@ -49,6 +49,14 @@ public abstract class Action
 		return action;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "Action{" +
+				"notation='" + notation + '\'' +
+				'}';
+	}
+
 	public static class SkipTurn extends Action
 	{
 	}
