@@ -1,6 +1,5 @@
 package oscrabble.server;
 
-import javafx.util.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -240,8 +239,8 @@ public class Grid
 		return this.rules.letters.get(c).points;
 	}
 
-	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\d+\\w)");
-	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\w\\d+)");
+	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
+	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\w)(\\d+)");
 
 	public static Triple<Action.Direction, Integer, Integer> getCoordinate(final String notation) throws ScrabbleException.ForbiddenPlayException
 	{
@@ -257,8 +256,8 @@ public class Grid
 		else if ((m = VERTICAL_COORDINATE_PATTERN.matcher(notation)).matches())
 		{
 			direction = Action.Direction.VERTICAL;
-			groupY = 1;
-			groupX = 2;
+			groupX = 1;
+			groupY = 2;
 		}
 		else
 		{
@@ -267,8 +266,8 @@ public class Grid
 
 		return Triple.of(
 				direction,
-				m.group(groupX).charAt(0) - 'A' + 1,
-				Integer.parseInt(m.group(groupY))
+				Integer.parseInt(m.group(groupX)),
+				m.group(groupY).charAt(0) - 'A' + 1
 		);
 	}
 }
