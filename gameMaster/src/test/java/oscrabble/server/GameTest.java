@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.*;
 import oscrabble.ScrabbleException;
+import oscrabble.data.GameState;
 import oscrabble.data.Player;
 import oscrabble.server.action.Action;
 import oscrabble.configuration.Configuration;
@@ -120,11 +121,11 @@ public class GameTest
 			{
 				final LinkedList<Snapshot> snapshots = new LinkedList<>();
 
-				@Override
-				public void afterRejectedAction(final AbstractPlayer player, final Action action)
-				{
-					Assert.fail("Rejected action: " + action);
-				}
+//				@Override TODO
+//				public void afterRejectedAction(final AbstractPlayer player, final Action action)
+//				{
+//					Assert.fail("Rejected action: " + action);
+//				}
 
 				@Override
 				public void afterPlay(final Action action)
@@ -172,14 +173,14 @@ public class GameTest
 				 */
 				class Snapshot
 				{
-					public Play lastPlay;
+					public Action lastPlay;
 					public int roundNr;
 					final HashMap<String, Integer> scores = new HashMap<>();
 				}
 			});
 			startGame(true);
 
-			while (this.game.getState() != Game.State.ENDED)
+			while (this.game.getState() != GameState.State.ENDED)
 			{
 				Thread.sleep(100);
 			}
@@ -245,12 +246,12 @@ public class GameTest
 				new TestListener()
 				{
 					@Override
-					public void afterPlay(final Play play)
+					public void afterPlay(final Action play)
 					{
 						switch (GameTest.this.game.getRoundNr())
 						{
 							case 1:
-								Assert.assertEquals(78, GameTest.this.game.getPlayerInfo(GameTest.this.gustav).getScore());
+								Assert.assertEquals(78, gustav.score);
 								break;
 						}
 					}
@@ -341,7 +342,7 @@ public class GameTest
 		};
 		this.game.listeners.add(listener);
 		this.startGame(true);
-		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "H3 APPETEE"));
+		this.gustav.addMove((Action.PlayTiles) Action.parse("H3 APPETEE"));
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 
 		assertTrue(playRejected.get());
@@ -354,7 +355,7 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.addMove((PlayTiles) PlayTiles.parseMove(this.grid, "H8 A"));
+		this.gustav.addMove( Action.parse("H8 A"));
 		Thread.sleep(100);
 		assertTrue(this.game.isLastPlayError(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -526,5 +527,6 @@ abstract class TestListener implements GameListener
 		return this.queue;
 	}
 
+	public abstract void afterPlay(Play play);
 }
 

@@ -47,16 +47,6 @@
 ////		this(li, SCRABBLE_SIZE);
 ////	}
 //
-//	/**
-//	 *
-//	 * @param x {@code 0} for border, {@code 1} for first line
-//	 * @param y
-//	 * @return
-//	 */
-//	public Square getSquare(final int x, final int y)
-//	{
-//		return this.squares[x][y];
-//	}
 //
 //	public void set(final Square square, final Tile tile)
 //	{

@@ -18,28 +18,34 @@ public abstract class Action
 
 	static public Action parse(oscrabble.data.Action jsonAction) throws ScrabbleException.ForbiddenPlayException
 	{
-		final Action action;
 		final String not = jsonAction.notation;
-		if (PASS_TURN.matcher(not).matches())
+		final Action action = parse(not);
+		action.id = jsonAction.playID;
+		return action;
+	}
+
+	public static Action parse(final String notation) throws ScrabbleException.ForbiddenPlayException
+	{
+		final Action action;
+		if (PASS_TURN.matcher(notation).matches())
 		{
 			action = new SkipTurn();
 		}
-		else if (EXCHANGE.matcher(not).matches())
+		else if (EXCHANGE.matcher(notation).matches())
 		{
-			action = new Exchange(not);
+			action = new Exchange(notation);
 		}
-		else if (HORIZONTAL_COORDINATE_PATTERN.matcher(not).matches()
-				|| VERTICAL_COORDINATE_PATTERN.matcher(not).matches())
+		else if (HORIZONTAL_COORDINATE_PATTERN.matcher(notation).matches()
+				|| VERTICAL_COORDINATE_PATTERN.matcher(notation).matches())
 		{
-			action = new PlayTiles(not);
+			action = new PlayTiles(notation);
 		}
 		else
 		{
-			throw new ScrabbleException.ForbiddenPlayException("Illegal move notation: \"" + not + "\"");
+			throw new ScrabbleException.ForbiddenPlayException("Illegal move notation: \"" + notation + "\"");
 		}
 
-		action.id = jsonAction.playID;
-		action.notation = not;
+		action.notation = notation;
 		return action;
 	}
 
