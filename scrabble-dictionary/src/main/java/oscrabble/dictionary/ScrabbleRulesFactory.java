@@ -28,7 +28,7 @@ public class ScrabbleRulesFactory
 		{
 			final String namePrefix = language.directoryName + "/";
 			rules.letters = new LinkedHashMap<>();
-			try (InputStream is = ScrabbleRules.class.getResourceAsStream(namePrefix + "tiles.csv"))
+			try (InputStream is = ScrabbleRulesFactory.class.getResourceAsStream(namePrefix + "tiles.csv"))
 			{
 				for (final CSVRecord record : new CSVParser(new InputStreamReader(is), letterFileFormat).getRecords())
 				{
