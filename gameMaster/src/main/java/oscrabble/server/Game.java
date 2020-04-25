@@ -53,7 +53,8 @@ public class Game
 	/**
 	 * List of the users, the first to play at head
 	 */
-	private final LinkedList<Player> toPlay = new LinkedList<>();
+	LinkedList<Player> toPlay = new LinkedList<>();
+
 	private final Grid grid;
 	private final Random random;
 	private final LinkedList<Character> bag = new LinkedList<>();

@@ -358,10 +358,12 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.moves.add("G7 AS");
-		this.game.awaitEndOfPlay(1, 10, TimeUnit.SECONDS);
+		final PredefinedPlayer firstPlayer = (PredefinedPlayer) this.game.toPlay.peekFirst();
+		assert firstPlayer != null;
+		firstPlayer.moves.add("G7 AS");
+		this.game.awaitEndOfPlay(1, 100, TimeUnit.SECONDS);
 		assertTrue(this.game.isLastPlayError(this.gustav));
-		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		assertNotEquals(firstPlayer, this.game.getPlayerToPlay());
 	}
 
 	@Test
@@ -491,11 +493,9 @@ public class GameTest
 					if (player == PredefinedPlayer.this)
 						try
 						{
-							{
-								GameTest.this.game.play(PredefinedPlayer.this, Action.parse(PredefinedPlayer.this.moves.poll()));
-							}
+							GameTest.this.game.play(PredefinedPlayer.this, Action.parse(PredefinedPlayer.this.moves.poll(60, TimeUnit.SECONDS)));
 						}
-						catch (ScrabbleException e)
+						catch (ScrabbleException | InterruptedException e)
 						{
 							throw new java.lang.Error(e);
 						}
