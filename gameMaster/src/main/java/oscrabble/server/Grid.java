@@ -213,7 +213,10 @@ public class Grid
 				{
 					throw new ScrabbleException.ForbiddenPlayException("Square " + sq.x + "," + sq.y + " already occupied by " + sq.c);
 				}
-				mmi.score += getPoints(c) * sq.letterBonus;
+				if (!Character.isLowerCase(sq.c))
+				{
+					mmi.score += getPoints(c) * sq.letterBonus;
+				}
 			}
 
 			switch (playTiles.direction)

@@ -93,6 +93,9 @@ public class Game
 	 */
 	boolean randomPlayerOrder = true;
 
+
+	private String assertFirstLetters;
+
 	public Game(final File propertyFile) throws ConfigurationException
 	{
 		if (propertyFile == null)
@@ -199,6 +202,7 @@ public class Game
 		this.grid = new Grid(dictionary.getScrabbleRules());
 		this.propertyFile = null;
 		this.configuration = new Configuration();
+		this.state = GameState.State.BEFORE_START;
 	}
 
 	/**
@@ -754,7 +758,33 @@ public class Game
 					}
 				}
 		);
+		for (int i = 0; i < this.dictionary.getScrabbleRules().numberBlanks; i++)
+		{
+			this.bag.add(' ');
+		}
 		Collections.shuffle(this.bag, this.random);
+
+		if ((this.assertFirstLetters != null))
+		{
+
+			final ArrayList<Character> start = new ArrayList<>();
+			final ArrayList<Character> remains = new ArrayList<>(this.bag);
+
+			for (final char c : this.assertFirstLetters.toCharArray())
+			{
+				if (!remains.remove((Character) c))
+				{
+					throw new IllegalStateException("Not enough letter " + c + " remaining in the bag");
+				}
+				start.add(c);
+			}
+
+			this.bag.clear();
+			this.bag.addAll(start);
+			this.bag.addAll(remains);
+		}
+
+
 	}
 
 	/**
@@ -895,6 +925,16 @@ public class Game
 			default:
 				throw new AssertionError();
 		}
+	}
+
+	/**
+	 * Sort (the beginning) of the bag to asset the next letters
+	 * @param letters the next letters
+	 */
+	public void assertFirstLetters(final String letters)
+	{
+		assert this.state == GameState.State.BEFORE_START;
+		this.assertFirstLetters = letters;
 	}
 
 	/**

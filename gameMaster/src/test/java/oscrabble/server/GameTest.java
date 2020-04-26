@@ -310,7 +310,7 @@ public class GameTest
 		this.grid = this.game.getGrid();
 		this.startGame(true);
 		final int roundNr = game.getRoundNr();
-		setRack(this.gustav, "APTESSIF");
+		game.assertFirstLetters( "APTESSIF");
 		final Bag<Character> startRack = this.gustav.rack;
 		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
@@ -376,11 +376,10 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		setRack(this.gustav, "ASWEED");
+		game.assertFirstLetters("ASWEEDVIGIE");
 		this.gustav.moves.add("H8 AS");
 		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
 		assertFalse(this.gustav.isLastPlayError);
-		setRack(this.john, "VIGIE");
 		this.john.moves.add("A3 VIGIE");
 		Thread.sleep(100);
 		assertTrue(this.john.isLastPlayError);
@@ -390,9 +389,9 @@ public class GameTest
 	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.game = new Game(DICTIONARY, 2346975568742590367L);
+		this.game.assertFirstLetters("FTINOA ");
 
 		final PredefinedPlayer etienne = addPlayer("Etienne");
-		setRack(etienne, "FTINOA ");
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
@@ -401,7 +400,7 @@ public class GameTest
 		assertEquals(2, this.game.getScore(etienne));
 
 		etienne.moves.add("8H SI");
-		this.game.awaitEndOfPlay(2, 30, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(2, 30, TimeUnit.MINUTES);
 		assertEquals(3, this.game.getScore(etienne));
 
 //		do
@@ -421,9 +420,9 @@ public class GameTest
 //
 		{
 			// Joker on normal case
-			this.game = new Game(DICTIONARY, -6804219371477742897L);
+			this.game = new Game(DICTIONARY);
 			final PredefinedPlayer anton = addPlayer("anton");
-			setRack(anton, " CELMNP");
+			game.assertFirstLetters(" CELMNP");
 
 			startGame(true);
 			int move = 1;
@@ -441,7 +440,7 @@ public class GameTest
 			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final PredefinedPlayer anton = addPlayer("Anton");
-			setRack(anton, " CELMNP");
+			game.assertFirstLetters(" CELMNP");
 			startGame(true);
 			int move = 1;
 			anton.moves.add("8D aMPLE");
@@ -454,14 +453,14 @@ public class GameTest
 		}
 	}
 
-	private void setRack(final Game.Player player, final String tiles)
-	{
-		player.rack.clear();
-		for (final char c : tiles.toCharArray())
-		{
-			player.rack.add(c);
-		}
-	}
+//	private void setRack(final Game.Player player, final String tiles)
+//	{
+//		player.rack.clear();
+//		for (final char c : tiles.toCharArray())
+//		{
+//			player.rack.add(c);
+//		}
+//	}
 
 	/**
 	 * Start the game.
