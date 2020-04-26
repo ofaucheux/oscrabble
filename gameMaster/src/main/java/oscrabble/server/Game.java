@@ -400,31 +400,20 @@ public class Game
 					}
 				}
 
-				final Grid.Coordinate startSquare = Grid.getCoordinate(playTiles.notation);
-				int x = startSquare.x;
-				int y = startSquare.y;
+				Grid.Square sq = this.grid.get(playTiles.startSquare);
 				for (int i = 0; i < playTiles.word.length(); i++)
 				{
 					final char c = playTiles.word.charAt(i);
-					final Grid.Square square = this.grid.get(x, y);
-					if (square.isEmpty())
+					if (sq.isEmpty())
 					{
-						square.c = c;
+						sq.c = c;
 					}
 					else
 					{
-						assert Character.toUpperCase(square.c) == Character.toUpperCase(c); //  sollte schon oben getestet sein.
+						assert Character.toUpperCase(sq.c) == Character.toUpperCase(c); //  sollte schon oben getestet sein.
 					}
 
-					switch (startSquare.direction)
-					{
-						case HORIZONTAL:
-							x++;
-							break;
-						case VERTICAL:
-							y++;
-							break;
-					}
+					sq = sq.getNeighbour(playTiles.startSquare.direction, 1);
 				}
 
 				player.rack.clear();
@@ -918,13 +907,14 @@ public class Game
 		// todo: beiing done.
 		final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);
 		final int length = move.word.length();
-		final Grid.Coordinate coordinate = Grid.getCoordinate(move.notation);
-		switch (coordinate.direction)
+
+		Grid.Coordinate c = move.startSquare;
+		switch (c.direction)
 		{
 			case VERTICAL:
-				return (coordinate.x == center && (coordinate.y <= center && (coordinate.y + length - 1) >= center));
+				return (c.x == center && (c.y <= center && (c.y + length - 1) >= center));
 			case HORIZONTAL:
-				return (coordinate.y == center && (coordinate.x <= center && (coordinate.y + length - 1) >= center));
+				return (c.y == center && (c.x <= center && (c.y + length - 1) >= center));
 			default:
 				throw new AssertionError();
 		}

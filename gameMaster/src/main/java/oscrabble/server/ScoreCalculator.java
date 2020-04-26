@@ -32,17 +32,12 @@ public class ScoreCalculator
 
 		int wordFactor = 1;
 		int crosswordScores = 0;
+		Grid.Square sq = grid.get(action.startSquare);
 		for (int i = 0; i < action.word.length(); i++)
 		{
-			int x, y;
 			final char c = action.word.charAt(i);
 			final boolean isBlank = Character.isLowerCase(c);
 
-			final Grid.Coordinate startCoordinate = Grid.getCoordinate(action.notation);
-			x = startCoordinate.x;
-			y = startCoordinate.y;
-
-			final Grid.Square sq = grid.get(startCoordinate);
 			if (sq.isEmpty())
 			{
 				mmi.filledSquares.add(sq);
@@ -59,9 +54,9 @@ public class ScoreCalculator
 				final StringBuilder crossword = new StringBuilder();
 				Grid.Square cursor;
 				cursor = sq;
-				final Grid.Direction crossDirection = startCoordinate.direction.other();
+				final Grid.Direction crossDirection = action.startSquare.direction.other();
 				int crosswordScore = 0;
-				while (!(cursor = cursor.getNeighbours(crossDirection, -1)).isBorder() && !cursor.isEmpty())
+				while (!(cursor = cursor.getNeighbour(crossDirection, -1)).isBorder() && !cursor.isEmpty())
 				{
 					crossword.insert(0, cursor.c);
 					if (Character.isUpperCase(cursor.c))
@@ -74,7 +69,7 @@ public class ScoreCalculator
 				crosswordScore += getPoints(c) * sq.letterBonus;
 
 				cursor = sq;
-				while (!(cursor = cursor.getNeighbours(crossDirection, 1)).isBorder() && !cursor.isEmpty())
+				while (!(cursor = cursor.getNeighbour(crossDirection, 1)).isBorder() && !cursor.isEmpty())
 				{
 					crossword.append(cursor.c);
 					if (Character.isUpperCase(cursor.c))
@@ -95,21 +90,13 @@ public class ScoreCalculator
 				{
 					throw new ScrabbleException.ForbiddenPlayException("Square " + sq.x + "," + sq.y + " already occupied by " + sq.c);
 				}
-				if (!Character.isLowerCase(sq.c))
+				if (Character.isUpperCase(sq.c))
 				{
 					mmi.score += getPoints(c) * sq.letterBonus;
 				}
 			}
 
-			switch (startCoordinate.direction)
-			{
-				case HORIZONTAL:
-					x++;
-					break;
-				case VERTICAL:
-					y++;
-					break;
-			}
+			sq = sq.getNeighbour(action.startSquare.direction, 1);
 		}
 		mmi.score *= wordFactor;
 		mmi.score += crosswordScores;

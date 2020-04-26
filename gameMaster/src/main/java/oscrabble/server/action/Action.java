@@ -87,7 +87,7 @@ public abstract class Action
 	public static class PlayTiles extends Action
 	{
 
-		private final Grid.Coordinate startSquare;
+		public final Grid.Coordinate startSquare;
 
 		/**
 		 * The word created by this move, incl. already set tiles and where blanks are represented by their value letters.

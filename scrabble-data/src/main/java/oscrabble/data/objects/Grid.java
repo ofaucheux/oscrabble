@@ -102,7 +102,7 @@ public class Grid
 			return this.c == null;
 		}
 
-		public Square getNeighbours(final Direction direction, int value)
+		public Square getNeighbour(final Direction direction, int value)
 		{
 			return Grid.this.get(
 					this.x + (direction == Direction.HORIZONTAL ? value : 0),
