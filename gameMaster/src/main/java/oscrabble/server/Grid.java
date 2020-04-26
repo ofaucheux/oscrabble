@@ -4,7 +4,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
-import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.server.action.Action;
 
@@ -64,6 +63,12 @@ public class Grid
 		return this.get(triple.getMiddle(), triple.getRight()).c == null;
 	}
 
+	public Character getChar(final String notation) throws ScrabbleException.ForbiddenPlayException
+	{
+		final Triple<Action.Direction, Integer, Integer> coordinate = getCoordinate(notation);
+		return this.get(coordinate.getMiddle(), coordinate.getRight()).c;
+	}
+
 	/**
 	 * A square
 	 */
@@ -96,7 +101,7 @@ public class Grid
 			return this.c == null;
 		}
 
-		public Square getNeightbourg(final Action.Direction direction, int value)
+		public Square getNeighbours(final Action.Direction direction, int value)
 		{
 			return Grid.this.get(
 					this.x + (direction == Action.Direction.HORIZONTAL ? value : 0),
@@ -127,7 +132,8 @@ public class Grid
 
 		int score;
 		private int requiredBlanks;
-		final List<Character> requiredLetter = new ArrayList<>();
+		// todo: not public
+		public final List<Character> requiredLetter = new ArrayList<>();
 
 		MoveMetaInformation(final Action.PlayTiles playTiles)
 		{
@@ -179,7 +185,7 @@ public class Grid
 				cursor = sq;
 				final Action.PlayTiles.Direction crossDirection = playTiles.direction.other();
 				int crosswordScore = 0;
-				while (!(cursor = cursor.getNeightbourg(crossDirection, -1)).isBorder() && !cursor.isEmpty())
+				while (!(cursor = cursor.getNeighbours(crossDirection, -1)).isBorder() && !cursor.isEmpty())
 				{
 					crossword.insert(0, cursor.c);
 					if (Character.isUpperCase(cursor.c))
@@ -192,7 +198,7 @@ public class Grid
 				crosswordScore += getPoints(c) * sq.letterBonus;
 
 				cursor = sq;
-				while (!(cursor = cursor.getNeightbourg(crossDirection, 1)).isBorder() && !cursor.isEmpty())
+				while (!(cursor = cursor.getNeighbours(crossDirection, 1)).isBorder() && !cursor.isEmpty())
 				{
 					crossword.append(cursor.c);
 					if (Character.isUpperCase(cursor.c))
