@@ -296,7 +296,7 @@ public class Game
 	 * @return the score
 	 * @throws oscrabble.ScrabbleException
 	 */
-	public synchronized int play(/*final UUID clientKey, */ final oscrabble.data.Action jsonAction) throws oscrabble.ScrabbleException
+	public synchronized void play(/*final UUID clientKey, */ final oscrabble.data.Action jsonAction) throws oscrabble.ScrabbleException
 	{
 		synchronized (this.changing)
 		{
@@ -306,7 +306,7 @@ public class Game
 
 			final Action action = Action.parse(jsonAction);
 			final Player player = this.players.get(jsonAction.player);
-			return play(player, action);
+			play(player, action);
 		}
 	}
 
@@ -319,7 +319,7 @@ public class Game
 	 * @throws ScrabbleException.ForbiddenPlayException
 	 * @throws ScrabbleException.NotInTurn
 	 */
-	int play(final Player player, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
+	void play(final Player player, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
 	{
 		if (player == null)
 		{
@@ -333,7 +333,7 @@ public class Game
 
 		LOGGER.info(player.name + " plays " + action.notation);
 
-		int score = 0;
+		int score = 0;  // TODO: should not be there. History should not use score anymore
 		boolean actionRejected = false;
 		Grid.MoveMetaInformation moveMI = null;
 		boolean done = false;
@@ -430,7 +430,6 @@ public class Game
 				{
 					messages.add(SCRABBLE_MESSAGE);
 				}
-				player.score += score;
 				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player.name, playTiles.notation, score));
 			}
 			else if (action instanceof Action.Exchange)
@@ -473,8 +472,8 @@ public class Game
 
 //				LOGGER.debug("Grid after play move nr #" + action.uuid + ":\n" + this.grid.asASCIIArt());
 			actionRejected = false;
+			player.score += score;
 			done = true;
-			return score;
 		}
 		catch (final ScrabbleException e)
 		{
@@ -483,7 +482,8 @@ public class Game
 //				player.onDispatchMessage(e.getLocalizedMessage());
 			if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
 			{
-//					player.getIncomingEventQueue().add(p -> p.onPlayRequired(play));
+				this.dispatch(p -> p.onPlayRequired(player));
+				score = 0;
 			}
 			else
 			{
@@ -491,7 +491,6 @@ public class Game
 				player.isLastPlayError = true;
 				done = true;
 			}
-			return 0;
 		}
 		finally
 		{

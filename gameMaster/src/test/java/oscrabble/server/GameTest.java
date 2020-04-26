@@ -289,19 +289,20 @@ public class GameTest
 		// test retry accepted
 		this.grid = this.game.getGrid();
 		this.game.getConfiguration().setValue("retryAccepted", true);
+		this.game.assertFirstLetters("APPESTEE");
 		this.startGame(true);
-		assertEquals(1, this.game.getRoundNr());
+		assertEquals(0, this.game.getRoundNr());
 
-		this.gustav.moves.add("H3 APPETEE");
+		this.gustav.moves.add("H3 APPETQE");
 		Thread.sleep(100);
 		assertEquals(this.game.getScore(this.gustav), 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
-		assertEquals(1, this.game.getRoundNr());
+		assertEquals(0, this.game.getRoundNr());
 
 		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
-		assertEquals(this.game.getScore(this.gustav), 16);
+		assertEquals(16, this.game.getScore(this.gustav));
 	}
 
 	@Test
