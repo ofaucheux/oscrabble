@@ -548,7 +548,9 @@ public class Game
 					}
 			);
 
-			this.players.values().forEach(p -> historyEntry.scores.getOrDefault(p, 0));
+			this.players.values().forEach(p ->
+					p.score -= historyEntry.scores.getOrDefault(p, 0)
+			);
 			assert this.toPlay.peekLast() == rollbackedPlayer;
 
 			if (this.state == GameState.State.STARTED)
@@ -1070,6 +1072,7 @@ public class Game
 	public static class HistoryEntry
 	{
 		private final boolean errorOccurred;
+
 		/**
 		 * Points gained by this play for each player
 		 */

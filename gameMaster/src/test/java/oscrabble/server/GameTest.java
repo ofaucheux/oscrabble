@@ -308,9 +308,10 @@ public class GameTest
 	public void rollback() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.grid = this.game.getGrid();
-		game.assertFirstLetters( "APTESSIF");
+		this.game.assertFirstLetters( "APTESSIF");
 		this.startGame(true);
-		final int roundNr = game.getRoundNr();
+
+		final int roundNr = this.game.getRoundNr();
 		final Bag<Character> startRack = this.gustav.rack;
 		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
@@ -375,7 +376,7 @@ public class GameTest
 	public void wordDoesNotTouch() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
-		game.assertFirstLetters("ASWEEDVIGIE");
+		this.game.assertFirstLetters("ASWEEDVIGIE");
 		startGame(true);
 		this.gustav.moves.add("H8 AS");
 		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
@@ -422,7 +423,7 @@ public class GameTest
 			// Joker on normal case
 			this.game = new Game(DICTIONARY);
 			final PredefinedPlayer anton = addPlayer("anton");
-			game.assertFirstLetters(" CELMNPIERA");
+			this.game.assertFirstLetters(" CELMNPIERA");
 
 			startGame(true);
 			int move = 1;
@@ -439,7 +440,7 @@ public class GameTest
 			// Joker on blue case
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final PredefinedPlayer anton = addPlayer("Anton");
-			game.assertFirstLetters(" CELMNPAISSE");
+			this.game.assertFirstLetters(" CELMNPAISSE");
 			startGame(true);
 			int move = 1;
 			anton.moves.add("8D aMPLE");
