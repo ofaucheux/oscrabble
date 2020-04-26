@@ -308,9 +308,9 @@ public class GameTest
 	public void rollback() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.grid = this.game.getGrid();
+		game.assertFirstLetters( "APTESSIF");
 		this.startGame(true);
 		final int roundNr = game.getRoundNr();
-		game.assertFirstLetters( "APTESSIF");
 		final Bag<Character> startRack = this.gustav.rack;
 		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
@@ -375,8 +375,8 @@ public class GameTest
 	public void wordDoesNotTouch() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
-		startGame(true);
 		game.assertFirstLetters("ASWEEDVIGIE");
+		startGame(true);
 		this.gustav.moves.add("H8 AS");
 		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
 		assertFalse(this.gustav.isLastPlayError);
