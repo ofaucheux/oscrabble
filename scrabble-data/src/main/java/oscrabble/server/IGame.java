@@ -1,11 +1,10 @@
 package oscrabble.server;
 
 import oscrabble.ScrabbleException;
+import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
 import oscrabble.data.MessageFromServer;
 import oscrabble.data.Player;
-import oscrabble.player.BruteForceMethod;
-import oscrabble.server.action.Action;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,20 +30,20 @@ public interface IGame
 	 * @param action action to be done
 	 * @return score score of this play
 	 */
-	int play(/* TODO UUID clientKey */ Action action) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException, ScrabbleException.NotInTurn, oscrabble.data.ScrabbleException;
+	int play(/* TODO UUID clientKey */ String action) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException, ScrabbleException.NotInTurn, oscrabble.data.ScrabbleException;
 
 	/**
 	 *
 	 * @return den Spiel, der am Ball ist.
 	 */
-	Game.Player getPlayerToPlay();
+	Player getPlayerToPlay();
 
-	List<IPlayerInfo> getPlayers();
+	List<Player> getPlayers();
 
 	/**
 	 * @return the history of the game.
 	 */
-	Iterable<Game.HistoryEntry> getHistory();
+	Iterable<GameState> getHistory();
 
 	IDictionary getDictionary();
 

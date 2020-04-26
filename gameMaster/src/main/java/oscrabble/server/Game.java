@@ -9,6 +9,7 @@ import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
 import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
+import oscrabble.data.objects.Grid;
 import oscrabble.server.action.Action;
 
 import java.io.File;
@@ -55,6 +56,7 @@ public class Game
 	 * Synchronize: to by synchronized by calls which change the state of the game
 	 */
 	final Object changing = new Object();
+	private final ScoreCalculator scoreCalculator;
 	/**
 	 * List of the users, the first to play at head
 	 */
@@ -64,6 +66,7 @@ public class Game
 	private final Random random;
 	private final LinkedList<Character> bag = new LinkedList<>();
 	private final IDictionary dictionary;
+
 	/**
 	 * Configuration of the game
 	 */
@@ -128,6 +131,7 @@ public class Game
 					URI.create("http://localhost:8080/"),
 					this.configuration.language
 			);
+			scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -200,6 +204,7 @@ public class Game
 		this.propertyFile = null;
 		this.configuration = new Configuration();
 		this.state = GameState.State.BEFORE_START;
+		scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 	}
 
 	/**
@@ -335,7 +340,7 @@ public class Game
 
 		int score = 0;  // TODO: should not be there. History should not use score anymore
 		boolean actionRejected = false;
-		Grid.MoveMetaInformation moveMI = null;
+		ScoreCalculator.MoveMetaInformation moveMI = null;
 		boolean done = false;
 		final Set<Character> drawn;
 		try
@@ -347,7 +352,7 @@ public class Game
 				final Action.PlayTiles playTiles = (Action.PlayTiles) action;
 
 				// check possibility
-				moveMI = this.grid.getMetaInformation(playTiles);
+				moveMI = scoreCalculator.getMetaInformation(this.grid, playTiles);
 				final HashBag<Character> remaining = new HashBag<>(player.rack);
 
 				final List<Character> requiredLetters = moveMI.requiredLetter;
@@ -395,8 +400,9 @@ public class Game
 					}
 				}
 
-				int x = playTiles.x;
-				int y = playTiles.y;
+				final Grid.Coordinate startSquare = Grid.getCoordinate(playTiles.notation);
+				int x = startSquare.x;
+				int y = startSquare.y;
 				for (int i = 0; i < playTiles.word.length(); i++)
 				{
 					final char c = playTiles.word.charAt(i);
@@ -404,14 +410,13 @@ public class Game
 					if (square.isEmpty())
 					{
 						square.c = c;
-						square.action = action;
 					}
 					else
 					{
 						assert Character.toUpperCase(square.c) == Character.toUpperCase(c); //  sollte schon oben getestet sein.
 					}
 
-					switch (playTiles.direction)
+					switch (startSquare.direction)
 					{
 						case HORIZONTAL:
 							x++;
@@ -914,7 +919,7 @@ public class Game
 		final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);
 		final int length = move.word.length();
 
-		switch (move.direction)
+		switch (move.getDirection())
 		{
 			case VERTICAL:
 				return (move.x == center && (move.y <= center && (move.y + length - 1) >= center));
@@ -1081,11 +1086,11 @@ public class Game
 		/**
 		 * Information about the move at time of the action.
 		 */
-		private final Grid.MoveMetaInformation metaInformation;
+		private final ScoreCalculator.MoveMetaInformation metaInformation;
 		private final Player player;
 		private Action play;
 
-		private HistoryEntry(final Player player, final Action play, final boolean errorOccurred, final int score, final Set<Character> drawn, final Grid.MoveMetaInformation metaInformation)
+		private HistoryEntry(final Player player, final Action play, final boolean errorOccurred, final int score, final Set<Character> drawn, final ScoreCalculator.MoveMetaInformation metaInformation)
 		{
 			this.player = player;
 			this.play = play;

@@ -1,18 +1,17 @@
 package oscrabble.player.ai;
 
+import javafx.scene.control.skin.TextInputControlSkin;
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
-import oscrabble.configuration.Parameter;
 import oscrabble.data.IDictionary;
 import oscrabble.data.MessageFromServer;
-import oscrabble.server.Game;
-import oscrabble.server.Grid;
+import oscrabble.data.Square;
+import oscrabble.data.objects.Grid;
 import oscrabble.server.IGame;
-import oscrabble.server.action.Action;
 
 import java.io.*;
 import java.util.*;
@@ -26,7 +25,7 @@ public class BruteForceMethod
 	CompressedDAWGSet automaton;
 	
 	/** The grid, to update after each round */
-	Grid grid;
+	oscrabble.data.objects.Grid grid;
 
 	private final int gridSize;
 
@@ -75,7 +74,8 @@ public class BruteForceMethod
 		}
 	}
 
-	Set<Position> getAnchors() throws ScrabbleException.ForbiddenPlayException
+
+	Set<Position> getAnchors()
 	{
 		final LinkedHashSet<Position> anchors = new LinkedHashSet<>();
 
@@ -83,7 +83,7 @@ public class BruteForceMethod
 		{
 			// TODO: really treat this case
 			final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);
-			anchors.add(new Position(center, center));
+			anchors.add(new Position(Direction.HORIZONTAL, center, center));
 		}
 		else
 		{
@@ -124,7 +124,7 @@ public class BruteForceMethod
 	 * @param rack Rack
 	 * @return all the moves
 	 */
-	public Set<String> getLegalMoves(final String rack) throws ScrabbleException.ForbiddenPlayException
+	public Set<String> getLegalMoves(final String rack) 
 	{
 
 		final CalculateCtx ctx = new CalculateCtx();
@@ -140,7 +140,7 @@ public class BruteForceMethod
 		{
 			ctx.anchor = anchor;
 
-			for (final Action.Direction direction : Action.Direction.values())
+			for (final Direction direction : Direction.values())
 			{
 				ctx.direction = direction;
 				final StringBuilder partialWord = new StringBuilder();
@@ -175,7 +175,7 @@ public class BruteForceMethod
 		return ctx.legalPlayTiles;
 	}
 
-	private void leftPart(final CalculateCtx ctx, final String partialWord, final DAWGNode node, final int limit) throws ScrabbleException.ForbiddenPlayException
+	private void leftPart(final CalculateCtx ctx, final String partialWord, final DAWGNode node, final int limit)
 	{
 		extendRight(ctx, partialWord, node, ctx.anchor);
 		if (limit > 0)
@@ -203,7 +203,7 @@ public class BruteForceMethod
 	private void extendRight(final CalculateCtx ctx,
 							 final String partialWord,
 							 final DAWGNode node,
-							 final Position possibleNextSquare) throws ScrabbleException.ForbiddenPlayException
+							 final Position possibleNextSquare)
 	{
 
 		if (
@@ -303,7 +303,7 @@ public class BruteForceMethod
 
 	private Set<Character> getAllowedCrossCharacters(final CalculateCtx ctx,
 													 final Position crossSquare,
-													 final Action.Direction crossDirection) throws ScrabbleException.ForbiddenPlayException
+													 final Direction crossDirection)
 	{
 		if (!crossSquare.isEmpty())
 		{
@@ -361,12 +361,12 @@ public class BruteForceMethod
 		{
 //			super(new Configuration(), name);
 			configuration = new Configuration();
-			configuration.strategy = Strategy.BEST_SCORE;
+			configuration.strategy = new Strategy.BestScore();
 			configuration.throttle = 2;
 			this.name = name;
 		}
 
-		public void onPlayRequired(final Player player)
+		public void onPlayRequired(final Player player) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
 		{
 			if (player != Player.this)
 			{
@@ -381,7 +381,7 @@ public class BruteForceMethod
 				if (possibleMoves.isEmpty())
 				{
 					this.game.sendMessage(this, "No possible moves anymore");
-					this.game.play(Action.parse("-"));
+					this.game.play("-");
 				}
 				else
 				{
@@ -397,7 +397,7 @@ public class BruteForceMethod
 					if (this.game.getPlayerToPlay().equals(this))  // check the player still is on turn and no rollback toke place.
 					{
 						LOGGER.info("Play " + sortedMoves.getFirst());
-						this.game.play(Action.parse(sortedMoves.getFirst()));
+						this.game.play(sortedMoves.getFirst());
 					}
 				}
 			}
@@ -470,92 +470,41 @@ public class BruteForceMethod
 //		}
 	}
 
-	static class Configuration extends oscrabble.configuration.Configuration
+	static class Configuration
 	{
-		@Parameter(label = "#strategy")
-		Strategy strategy = Strategy.BEST_SCORE;
+//		@Parameter(label = "#strategy")
+		Strategy strategy = new Strategy.BestScore();
 
-		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
+//		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
 		int throttle = 2;
 
-		@Parameter(label = "#force", isSlide = true, lowerBound = 0, upperBound = 100)
+//		@Parameter(label = "#force", isSlide = true, lowerBound = 0, upperBound = 100)
 		int force = 90;
 	}
 
 	static class CalculateCtx
 	{
-		Action.Direction direction;
+		Direction direction;
 		Position anchor;
 		Grid grid;
 
 		List<Character> rack;
 		Set<String> legalPlayTiles = new LinkedHashSet<>();
 
-		final Map<Action.Direction, Map<Position, Set<Character>>> crosschecks = new HashMap<>();
+		final Map<Direction, Map<Position, Set<Character>>> crosschecks = new HashMap<>();
 		{
-			this.crosschecks.put(Action.Direction.HORIZONTAL, new HashMap<>());
-			this.crosschecks.put(Action.Direction.VERTICAL, new HashMap<>());
+			this.crosschecks.put(Direction.HORIZONTAL, new HashMap<>());
+			this.crosschecks.put(Direction.VERTICAL, new HashMap<>());
 		}
 	}
-
-
-	/**
-	 * Playing strategy for a player
-	 */
-	@SuppressWarnings("unused")
-	public enum Strategy
-	{
-		BEST_SCORE("Best score", mi -> mi.getScore()),
-		MAX_LENGTH("Max length", mi -> mi.requiredLetter.size());
-
-		private final String label;
-		private final Function<Grid.MoveMetaInformation, Integer> valuator;
-
-		Strategy(final String label, Function<Grid.MoveMetaInformation, Integer> valuator)
-		{
-			this.label = label;
-			this.valuator = valuator;
-		}
-
-		/**
-		 * Sort a list of moves, the better the first.
-		 *
-		 * @param moves
-		 */
-		final void sort(final List<String> moves)
-		{
-			// TODO
-		}
-
-		@Override
-		public String toString()
-		{
-			return this.label;
-		}
-	}
-
 
 	private class Position 
 	{
-		final int x;
-		final int y;
-		
-		public Position(final int x, final int y)
-		{
-			this.x = x;
-			this.y = y;
-		}
-		
-		boolean isEmpty() throws ScrabbleException.ForbiddenPlayException
-		{
-			return grid.isEmpty(getNotation(Action.Direction.HORIZONTAL));
-		}
-
-		private String getNotation(final Action.Direction direction)
+		private String getNotation(final Direction direction)
 		{
 			final String xPart = Integer.toString(x + 1);
 			final String yPart = Character.toString((char) ('A' + y));
-			return direction ==  Action.Direction.HORIZONTAL
+			return direction ==  Direction.HORIZONTAL
 					? xPart + yPart
 					: yPart + xPart;
 		}
@@ -571,24 +520,24 @@ public class BruteForceMethod
 			return neighbours;
 		}
 
-		public boolean isFirstOfLine(final Action.Direction direction)
+		public boolean isFirstOfLine(final Direction direction)
 		{
 			return
-					(direction == Action.Direction.HORIZONTAL && x == 0)
-					|| (direction == Action.Direction.VERTICAL && y == 0);
+					(direction == Direction.HORIZONTAL && x == 0)
+					|| (direction == Direction.VERTICAL && y == 0);
 		}
 
-		public Position getPrevious(final Action.Direction direction)
+		public Position getPrevious(final Direction direction)
 		{
 			return new Position(
-					direction == Action.Direction.HORIZONTAL ? x - 1 : x,
-					direction == Action.Direction.VERTICAL ? y - 1 : y
+					direction == Direction.HORIZONTAL ? x - 1 : x,
+					direction == Direction.VERTICAL ? y - 1 : y
 			);
 		}
 
-		public Character getChar() throws ScrabbleException.ForbiddenPlayException
+		public Character getChar()
 		{
-			return grid.getChar(getNotation(Action.Direction.HORIZONTAL));
+			return grid.getChar(getNotation(Direction.HORIZONTAL));
 		}
 
 		public boolean isBorder()
@@ -596,18 +545,30 @@ public class BruteForceMethod
 			return x == 0 || y == 0 || x == gridSize - 1 || y == gridSize - 1;
 		}
 
-		public boolean isLastOfLine(final Action.Direction direction)
+		public boolean isLastOfLine(final Direction direction)
 		{
-			return (direction == Action.Direction.HORIZONTAL && x == gridSize - 1)
-					|| (direction == Action.Direction.VERTICAL && y == gridSize - 1);
+			return (direction == Direction.HORIZONTAL && x == gridSize - 1)
+					|| (direction == Direction.VERTICAL && y == gridSize - 1);
 		}
 
-		public Position getFollowing(final Action.Direction direction)
+		public Position getFollowing(final Direction direction)
 		{
 			return new Position(
-					direction == Action.Direction.HORIZONTAL ? x + 1 : x,
-					direction == Action.Direction.VERTICAL ? y + 1 : y
+					direction == Direction.HORIZONTAL ? x + 1 : x,
+					direction == Direction.VERTICAL ? y + 1 : y
 			);
 		}
 	}
+
+
+	public enum Direction
+	{
+		HORIZONTAL, VERTICAL;
+
+		public Direction other()
+		{
+			return this == HORIZONTAL ? VERTICAL : HORIZONTAL;
+		}
+	}
+
 }

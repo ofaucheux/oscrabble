@@ -1,8 +1,7 @@
 package oscrabble.server.action;
 
-import org.apache.commons.lang3.tuple.Triple;
 import oscrabble.ScrabbleException;
-import oscrabble.server.Grid;
+import oscrabble.data.objects.Grid;
 
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -53,7 +52,7 @@ public abstract class Action
 	public String toString()
 	{
 		return "Action{" +
-				"notation='" + notation + '\'' +
+				"notation='" + this.notation + '\'' +
 				'}';
 	}
 
@@ -79,14 +78,12 @@ public abstract class Action
 	public static class PlayTiles extends Action
 	{
 
-		public final Direction direction;
+		private final Grid.Coordinate coordinate;
 
 		/**
 		 * The word created by this move, incl. already set tiles and where blanks are represented by their value letters.
 		 */
 		public String word;
-		public final int x;
-		public final int y;
 
 		/**
 		 * Die Blanks (mindesten neugespielt) werden durch klein-buchstaben dargestellt.
@@ -99,27 +96,24 @@ public abstract class Action
 				throw new AssertionError();
 			}
 
-			final Triple<Direction, Integer, Integer> coordinate = Grid.getCoordinate(m.group(1));
-			this.direction = coordinate.getLeft();
-			this.x = coordinate.getMiddle();
-			this.y = coordinate.getRight();
-			this.word = m.group(2);
+			this.coordinate = Grid.getCoordinate(m.group(1));
+		}
+
+		public Grid.Direction getDirection()
+		{
+			try
+			{
+				return Grid.getCoordinate(notation).direction;
+			}
+			catch (ScrabbleException.ForbiddenPlayException e)
+			{
+				throw new Error(e);
+			}
 		}
 	}
 
 	static int getColumn(final char columnLetter)
 	{
 		return columnLetter - 'A' + 1;
-	}
-
-	/**
-	 * Get the column nummer matching a letter, as in A8.
-	 */
-	public enum Direction {HORIZONTAL, VERTICAL;
-
-		public Direction other()
-		{
-			return (this == HORIZONTAL ? VERTICAL : HORIZONTAL);
-		}
 	}
 }
