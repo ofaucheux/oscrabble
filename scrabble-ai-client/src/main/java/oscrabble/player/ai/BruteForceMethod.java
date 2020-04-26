@@ -401,7 +401,7 @@ public class BruteForceMethod
 					}
 				}
 			}
-			catch (ScrabbleException | oscrabble.data.ScrabbleException e)
+			catch (ScrabbleException e)
 			{
 				throw new Error(e);
 			}
@@ -473,7 +473,7 @@ public class BruteForceMethod
 	static class Configuration
 	{
 //		@Parameter(label = "#strategy")
-		Strategy strategy = new Strategy.BestScore();
+		Strategy strategy = new Strategy.BestScore(null);
 
 //		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
 		int throttle = 2;

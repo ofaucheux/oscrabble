@@ -131,7 +131,7 @@ public class Game
 					URI.create("http://localhost:8080/"),
 					this.configuration.language
 			);
-			scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
+			this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -204,7 +204,7 @@ public class Game
 		this.propertyFile = null;
 		this.configuration = new Configuration();
 		this.state = GameState.State.BEFORE_START;
-		scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
+		this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 	}
 
 	/**
@@ -333,7 +333,7 @@ public class Game
 
 		if (this.toPlay.peekFirst() != player)
 		{
-			throw new ScrabbleException.NotInTurn(player);
+			throw new ScrabbleException.NotInTurn(player.name);
 		}
 
 		LOGGER.info(player.name + " plays " + action.notation);
@@ -352,7 +352,7 @@ public class Game
 				final Action.PlayTiles playTiles = (Action.PlayTiles) action;
 
 				// check possibility
-				moveMI = scoreCalculator.getMetaInformation(this.grid, playTiles);
+				moveMI = this.scoreCalculator.getMetaInformation(this.grid, playTiles);
 				final HashBag<Character> remaining = new HashBag<>(player.rack);
 
 				final List<Character> requiredLetters = moveMI.requiredLetter;
@@ -913,18 +913,18 @@ public class Game
 		return this.actions.size();
 	}
 
-	private boolean containsCentralField(final Action.PlayTiles move)
+	private boolean containsCentralField(final Action.PlayTiles move) throws ScrabbleException.ForbiddenPlayException
 	{
 		// todo: beiing done.
 		final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);
 		final int length = move.word.length();
-
-		switch (move.getDirection())
+		final Grid.Coordinate coordinate = Grid.getCoordinate(move.notation);
+		switch (coordinate.direction)
 		{
 			case VERTICAL:
-				return (move.x == center && (move.y <= center && (move.y + length - 1) >= center));
+				return (coordinate.x == center && (coordinate.y <= center && (coordinate.y + length - 1) >= center));
 			case HORIZONTAL:
-				return (move.y == center && (move.x <= center && (move.y + length - 1) >= center));
+				return (coordinate.y == center && (coordinate.x <= center && (coordinate.y + length - 1) >= center));
 			default:
 				throw new AssertionError();
 		}
@@ -1050,7 +1050,7 @@ public class Game
 		public String toString()
 		{
 			return "Player{" +
-					"name='" + name + '\'' +
+					"name='" + this.name + '\'' +
 					'}';
 		}
 	}

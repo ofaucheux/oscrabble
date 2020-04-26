@@ -30,7 +30,7 @@ public interface IGame
 	 * @param action action to be done
 	 * @return score score of this play
 	 */
-	int play(/* TODO UUID clientKey */ String action) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException, ScrabbleException.NotInTurn, oscrabble.data.ScrabbleException;
+	int play(/* TODO UUID clientKey */ String action) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException, ScrabbleException.NotInTurn;
 
 	/**
 	 *

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.data.GameState;
+import oscrabble.data.objects.Grid;
 import oscrabble.dictionary.Application;
 import oscrabble.dictionary.Language;
 import oscrabble.server.action.Action;

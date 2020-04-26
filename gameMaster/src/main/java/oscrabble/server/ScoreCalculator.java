@@ -23,22 +23,22 @@ public class ScoreCalculator
 
 	public MoveMetaInformation getMetaInformation(
 			final Grid grid,
-			final Action.PlayTiles playTiles
+			final Action.PlayTiles action
 	) throws ScrabbleException
 	{
-		
-		LOGGER.trace("Scoring " + playTiles);
+		LOGGER.trace("Scoring " + action);
 
-		final MoveMetaInformation mmi = new MoveMetaInformation();
+		final MoveMetaInformation mmi = new MoveMetaInformation(action);
+
 		int wordFactor = 1;
 		int crosswordScores = 0;
-		for (int i = 0; i < playTiles.word.length(); i++)
+		for (int i = 0; i < action.word.length(); i++)
 		{
 			int x, y;
-			final char c = playTiles.word.charAt(i);
+			final char c = action.word.charAt(i);
 			final boolean isBlank = Character.isLowerCase(c);
 
-			final Grid.Coordinate startCoordinate = Grid.getCoordinate(playTiles.notation);
+			final Grid.Coordinate startCoordinate = Grid.getCoordinate(action.notation);
 			x = startCoordinate.x;
 			y = startCoordinate.y;
 
@@ -127,7 +127,11 @@ public class ScoreCalculator
 
 	public static class MoveMetaInformation
 	{
-		public List<String> crosswords = new ArrayList<>();
+		public final Action.PlayTiles action;
+
+		public final List<String> crosswords = new ArrayList<>();
+
+
 		//		final Action.PlayTiles playTiles;
 		public boolean isScrabble;
 
@@ -141,8 +145,9 @@ public class ScoreCalculator
 		// todo: not public
 		public final List<Character> requiredLetter = new ArrayList<>();
 
-		MoveMetaInformation()
+		MoveMetaInformation(final Action.PlayTiles action)
 		{
+			this.action = action;
 		}
 
 		public int getScore()

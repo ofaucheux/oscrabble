@@ -1,18 +1,22 @@
 package oscrabble;
 
-import oscrabble.data.Player;
-
 public class ScrabbleException extends Exception
 {
 
+	public String message;
+
+	public ScrabbleException()
+	{
+	}
+
 	public ScrabbleException(final String message)
 	{
-		this(message, null);
+		this.message = message;
 	}
 
 	public ScrabbleException(final String message, final Throwable cause)
 	{
-		super(message, cause);
+		this(message + "\nCaused by: " + cause.toString());
 	}
 
 
@@ -55,9 +59,9 @@ public class ScrabbleException extends Exception
 	 */
 	public static class NotInTurn extends ScrabbleException
 	{
-		public NotInTurn(final Player player)
+		public NotInTurn(final String playerName)
 		{
-			super("The player " + player.toString() + " is not in turn");
+			super("The player " + playerName + " is not in turn");
 		}
 	}
 }
