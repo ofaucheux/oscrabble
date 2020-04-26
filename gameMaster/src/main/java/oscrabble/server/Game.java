@@ -1007,7 +1007,7 @@ public class Game
 		/**
 		 * Was last play an error?
 		 */
-		public Boolean isLastPlayError;
+		public boolean isLastPlayError;
 
 		/**
 		 * Name

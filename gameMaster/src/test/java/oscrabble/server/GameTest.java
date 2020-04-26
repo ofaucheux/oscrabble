@@ -284,6 +284,24 @@ public class GameTest
 	}
 
 	@Test
+	public void notAcceptedWord() throws ScrabbleException, InterruptedException, TimeoutException
+	{
+		this.game = new Game(DICTIONARY);  // for having only one player
+		this.game.assertFirstLetters("FTINOA ");
+
+		final PredefinedPlayer etienne = addPlayer("Etienne");
+		startGame(true);
+
+		etienne.moves.add("H7 As");
+		this.game.awaitEndOfPlay(1, 30, TimeUnit.SECONDS);
+		assertFalse(etienne.isLastPlayError);
+
+		etienne.moves.add("8H SIF");
+		this.game.awaitEndOfPlay(2, 30, TimeUnit.MINUTES);
+		assertTrue(etienne.isLastPlayError);
+	}
+
+	@Test
 	public void retryAccepted() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		// test retry accepted
@@ -354,6 +372,7 @@ public class GameTest
 	public void startWithOnlyOneLetter() throws ScrabbleException, InterruptedException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
+		this.game.assertFirstLetters("A");
 		startGame(true);
 		this.gustav.moves.add("H8 A");
 		Thread.sleep(100);
