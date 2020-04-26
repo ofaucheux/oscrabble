@@ -39,7 +39,6 @@ public class Game
 	/**
 	 * Seed initially used to create the random generator.
 	 */
-	final long randomSeed;
 	final List<GameListener> listeners = new ArrayList<>();
 
 	/**
@@ -179,8 +178,6 @@ public class Game
 
 		this.grid = new Grid(this.dictionary.getScrabbleRules());
 		this.random = new Random();
-		this.randomSeed = this.random.nextLong();
-		this.random.setSeed(this.randomSeed);
 		this.waitingForPlay = new CountDownLatch(1);
 
 		setState(GameState.State.BEFORE_START);
@@ -195,7 +192,7 @@ public class Game
 	 */
 	public Game(final IDictionary dictionary, final long randomSeed)
 	{
-		this.randomSeed = randomSeed;
+		// TODO: random weg, prüfen ob der Constructor sinnvoll ist - ist für Tests
 		this.random = new Random(randomSeed);
 		this.dictionary = dictionary;
 //		this.sli = new ScrabbleLanguageInformation(language);
