@@ -1,4 +1,4 @@
-package oscrabble.player;
+package oscrabble.player.ai;
 
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.data.IDictionary;
+import oscrabble.data.MessageFromServer;
 import oscrabble.server.Game;
 import oscrabble.server.Grid;
 import oscrabble.server.IGame;
@@ -120,7 +121,6 @@ public class BruteForceMethod
 	/**
 	 * Get all authorized moves.
 	 *
-	 * @param grid Grid
 	 * @param rack Rack
 	 * @return all the moves
 	 */
@@ -352,6 +352,7 @@ public class BruteForceMethod
 
 	public class Player extends oscrabble.data.Player
 	{
+		private final Configuration configuration;
 		private IGame game; // TODO
 
 //		private ComparatorSelector selector;
@@ -359,10 +360,13 @@ public class BruteForceMethod
 		public Player(final String name)
 		{
 //			super(new Configuration(), name);
+			configuration = new Configuration();
+			configuration.strategy = Strategy.BEST_SCORE;
+			configuration.throttle = 2;
 			this.name = name;
 		}
 
-		public void onPlayRequired(final Game.Player player)
+		public void onPlayRequired(final Player player)
 		{
 			if (player != Player.this)
 			{
@@ -371,31 +375,33 @@ public class BruteForceMethod
 
 			try
 			{
-				final String rack = this.game.getRack(this, this.playerKey);
-				Set<String> playTiles = new HashSet<>(getLegalMoves(rack));
+				final String rack = this.game.getRack(this);
+				Set<String> possibleMoves = new HashSet<>(getLegalMoves(rack));
 
-				if (playTiles.isEmpty())
+				if (possibleMoves.isEmpty())
 				{
 					this.game.sendMessage(this, "No possible moves anymore");
-					this.game.play(this.playerKey, player, SkipTurn.SINGLETON);
+					this.game.play(Action.parse("-"));
 				}
 				else
 				{
-					final Configuration configuration = this.getConfiguration();
+//					final Configuration configuration = this.getConfiguration();
 					if (configuration.throttle > 0)
 					{
 						LOGGER.trace("Wait " + configuration.throttle + " seconds...");
 						Thread.sleep(configuration.throttle * 1000);
 					}
-					final PlayTiles toPlay = this.selector.select(playTiles);
+
+					final LinkedList<String> sortedMoves = new LinkedList<>(possibleMoves);
+					this.configuration.strategy.sort(sortedMoves);
 					if (this.game.getPlayerToPlay().equals(this))  // check the player still is on turn and no rollback toke place.
 					{
-						LOGGER.info("Play " + toPlay);
-						this.game.play(this.playerKey, player, toPlay);
+						LOGGER.info("Play " + sortedMoves.getFirst());
+						this.game.play(Action.parse(sortedMoves.getFirst()));
 					}
 				}
 			}
-			catch (ScrabbleException e)
+			catch (ScrabbleException | oscrabble.data.ScrabbleException e)
 			{
 				throw new Error(e);
 			}
@@ -509,6 +515,16 @@ public class BruteForceMethod
 		{
 			this.label = label;
 			this.valuator = valuator;
+		}
+
+		/**
+		 * Sort a list of moves, the better the first.
+		 *
+		 * @param moves
+		 */
+		final void sort(final List<String> moves)
+		{
+			// TODO
 		}
 
 		@Override

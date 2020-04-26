@@ -126,7 +126,7 @@ public abstract class DAWGSet extends AbstractSet<String> implements NavigableSe
 
     public void saveAsImage(boolean withNodeIds, boolean withIncomingTransitions) throws IOException {
         String graphViz = toGraphViz(withNodeIds, withIncomingTransitions);
-        File dotFile = File.createTempFile("dawg", ".dot");
+        File dotFile = File.createTempFile("org/quinto/dawg", ".dot");
         byte bytes[] = graphViz.getBytes("UTF-8");
         FileOutputStream fos = null;
         IOException ex = null;
@@ -153,7 +153,7 @@ public abstract class DAWGSet extends AbstractSet<String> implements NavigableSe
         File dir = new File(imagesPath);
         if (!dir.exists())
             dir.mkdirs();
-        File imageFile = File.createTempFile("dawg" + dotFileNameDateFormat.format(new Date()) + (System.nanoTime() % 1000000L), ".png", dir);
+        File imageFile = File.createTempFile("org/quinto/dawg" + dotFileNameDateFormat.format(new Date()) + (System.nanoTime() % 1000000L), ".png", dir);
         ProcessBuilder pb = new ProcessBuilder(dotExecutablePath, "-Tpng", dotFile.getAbsolutePath(), "-o", imageFile.getAbsolutePath());
         try {
             pb.start().waitFor();

@@ -1,10 +1,12 @@
 package org.quinto.dawg.util;
 
 import org.quinto.dawg.StringsFilter;
+
 import java.util.Arrays;
 import java.util.Iterator;
 
-public class IterableStringsFilter implements StringsFilter {
+public class IterableStringsFilter implements StringsFilter
+{
     private final Iterable<String> delegate;
 
     public IterableStringsFilter(Iterable<String> delegate) {

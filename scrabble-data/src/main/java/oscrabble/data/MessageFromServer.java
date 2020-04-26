@@ -7,6 +7,6 @@ import java.util.UUID;
 @Data
 public class MessageFromServer
 {
-	UUID id;
-	String text;
+	public UUID id;
+	public String text;
 }

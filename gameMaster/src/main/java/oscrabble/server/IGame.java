@@ -4,9 +4,11 @@ import oscrabble.ScrabbleException;
 import oscrabble.data.IDictionary;
 import oscrabble.data.MessageFromServer;
 import oscrabble.data.Player;
+import oscrabble.player.BruteForceMethod;
 import oscrabble.server.action.Action;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface IGame
 {
@@ -60,6 +62,23 @@ public interface IGame
 	 * @param message message
 	 */
 	void sendMessage(MessageFromServer message);
+
+	default void sendMessage(Player player, String content)
+	{
+		final MessageFromServer msg = new MessageFromServer();
+		msg.id = UUID.randomUUID();
+		msg.text = content;
+		sendMessage(msg);
+	}
+
+	/**
+	 * Get the rack of an player
+	 *
+	 * @param player
+	 * @return
+	 */
+	String getRack(Player player);
+
 
 //	/** TODO?
 //	 * Inform the server that a player leaves the game. This can lead to the end of game, dependently
