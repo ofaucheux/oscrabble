@@ -353,9 +353,9 @@ public class Game
 				final List<Character> requiredLetters = moveMI.requiredLetter;
 				for (final Character c : requiredLetters)
 				{
-					if (!remaining.remove(c))
+					if (!remaining.remove(c, 1))
 					{
-						if (!remaining.remove(' '))
+						if (!remaining.remove(' ', 1))
 						{
 							throw new ScrabbleException.ForbiddenPlayException
 									(MessageFormat.format(MESSAGES.getString("html.rack.with.0.br.has.not.the.required.stones.1"), player.rack, requiredLetters));

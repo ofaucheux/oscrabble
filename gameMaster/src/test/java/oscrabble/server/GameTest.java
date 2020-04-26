@@ -422,7 +422,7 @@ public class GameTest
 			// Joker on normal case
 			this.game = new Game(DICTIONARY);
 			final PredefinedPlayer anton = addPlayer("anton");
-			game.assertFirstLetters(" CELMNP");
+			game.assertFirstLetters(" CELMNPIERA");
 
 			startGame(true);
 			int move = 1;
@@ -437,17 +437,16 @@ public class GameTest
 
 		{
 			// Joker on blue case
-			// Rand: -6804219371477742897 - Chars: [ , C, E, L, M, N, P]
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
 			final PredefinedPlayer anton = addPlayer("Anton");
-			game.assertFirstLetters(" CELMNP");
+			game.assertFirstLetters(" CELMNPAISSE");
 			startGame(true);
 			int move = 1;
 			anton.moves.add("8D aMPLE");
 			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
 			assertEquals(14, this.game.getScore(anton));
 			anton.moves.add("D7 CAISSE");
-			this.game.awaitEndOfPlay(move, 1, TimeUnit.SECONDS);
+			this.game.awaitEndOfPlay(move, 1, TimeUnit.HOURS);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
 		}
