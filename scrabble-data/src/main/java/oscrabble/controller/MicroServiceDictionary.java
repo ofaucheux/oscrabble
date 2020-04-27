@@ -1,10 +1,9 @@
-package oscrabble.server;
+package oscrabble.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;

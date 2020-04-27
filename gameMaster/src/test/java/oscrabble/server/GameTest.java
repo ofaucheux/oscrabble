@@ -6,6 +6,7 @@ import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
 import oscrabble.data.objects.Grid;
 import oscrabble.dictionary.Application;
@@ -261,7 +262,7 @@ public class GameTest
 		);
 
 		startGame(true);
-		this.game.awaitEndOfPlay(moves.size(), 1, TimeUnit.MINUTES);
+		this.game.awaitEndOfPlay(moves.size());
 
 		// first rollback
 		assertFalse(this.grid.isEmpty("8K"));
@@ -284,7 +285,7 @@ public class GameTest
 		// play both last moves again
 		this.gustav.moves.add("N10 VENTA");
 		this.john.moves.add("8K HEM");
-		this.game.awaitEndOfPlay(moves.size(), 5, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(moves.size());
 		assertEquals(GameState.State.ENDED, this.game.getState());
 
 		Thread.sleep(this.game.delayBeforeEnds * 5000 / 2 + 500);
@@ -301,11 +302,11 @@ public class GameTest
 		startGame(true);
 
 		etienne.moves.add("H7 As");
-		this.game.awaitEndOfPlay(1, 30, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1);
 		assertFalse(etienne.isLastPlayError);
 
 		etienne.moves.add("8H SIF");
-		this.game.awaitEndOfPlay(2, 30, TimeUnit.MINUTES);
+		this.game.awaitEndOfPlay(2);
 		assertTrue(etienne.isLastPlayError);
 	}
 
@@ -326,7 +327,7 @@ public class GameTest
 		assertEquals(0, this.game.getRoundNr());
 
 		this.gustav.moves.add("8H APTES");
-		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(16, this.game.getScore(this.gustav));
 	}
@@ -341,7 +342,7 @@ public class GameTest
 		final int roundNr = this.game.getRoundNr();
 		final Bag<Character> startRack = this.gustav.rack;
 		this.gustav.moves.add("8H APTES");
-		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1);
 		assertEquals(16, this.game.getScore(this.gustav));
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
@@ -369,7 +370,7 @@ public class GameTest
 		this.game.listeners.add(listener);
 		this.startGame(true);
 		this.gustav.moves.add("H3 APPETEE");
-		this.game.awaitEndOfPlay(1, 1, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1);
 
 		assertTrue(playRejected.get());
 		assertEquals(this.game.getScore(this.gustav), 0);
@@ -395,7 +396,7 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
 		this.gustav.moves.add("G7 AS");
-		this.game.awaitEndOfPlay(1, 1, TimeUnit.MINUTES);
+		this.game.awaitEndOfPlay(1);
 		assertTrue(this.gustav.isLastPlayError);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
@@ -407,7 +408,7 @@ public class GameTest
 		this.game.assertFirstLetters("ASWEEDVIGIE");
 		startGame(true);
 		this.gustav.moves.add("H8 AS");
-		this.game.awaitEndOfPlay(1, 5, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1);
 		assertFalse(this.gustav.isLastPlayError);
 		this.john.moves.add("A3 VIGIE");
 		Thread.sleep(100);
@@ -425,11 +426,11 @@ public class GameTest
 		final Grid grid = this.game.getGrid();
 
 		etienne.moves.add("H7 As");
-		this.game.awaitEndOfPlay(1, 30, TimeUnit.SECONDS);
+		this.game.awaitEndOfPlay(1);
 		assertEquals(2, this.game.getScore(etienne));
 
 		etienne.moves.add("8H SI");
-		this.game.awaitEndOfPlay(2, 30, TimeUnit.MINUTES);
+		this.game.awaitEndOfPlay(2);
 		assertEquals(3, this.game.getScore(etienne));
 
 //		do
@@ -456,10 +457,10 @@ public class GameTest
 			startGame(true);
 			int move = 1;
 			anton.moves.add("8D PLaCE");
-			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
+			this.game.awaitEndOfPlay(move++);
 			assertEquals(22, this.game.getScore(anton));
 			anton.moves.add(RANDOM.nextBoolean() ? "F4 NIERa" : "F4 NIERA");
-			this.game.awaitEndOfPlay(move, 1, TimeUnit.SECONDS);
+			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
 		}
@@ -472,10 +473,10 @@ public class GameTest
 			startGame(true);
 			int move = 1;
 			anton.moves.add("8D aMPLE");
-			this.game.awaitEndOfPlay(move++, 1, TimeUnit.SECONDS);
+			this.game.awaitEndOfPlay(move++);
 			assertEquals(14, this.game.getScore(anton));
 			anton.moves.add("D7 CAISSE");
-			this.game.awaitEndOfPlay(move, 1, TimeUnit.HOURS);
+			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
 		}

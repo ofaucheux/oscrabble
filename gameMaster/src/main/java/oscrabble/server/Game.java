@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
+import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
@@ -928,6 +929,14 @@ public class Game
 	{
 		assert this.state == GameState.State.BEFORE_START;
 		this.assertFirstLetters = letters;
+	}
+
+	/**
+	 * cf. {@link Game#awaitEndOfPlay(int, long, TimeUnit)}
+	 */
+	public void awaitEndOfPlay(final int roundNr) throws TimeoutException, InterruptedException
+	{
+		awaitEndOfPlay(roundNr, 30, TimeUnit.SECONDS);
 	}
 
 	/**
