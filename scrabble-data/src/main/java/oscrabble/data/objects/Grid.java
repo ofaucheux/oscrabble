@@ -141,23 +141,40 @@ public class Grid
 		public Set<Square> getNeighbours()
 		{
 			final Set<Square> neighbours = new HashSet<>(4);
-			if (this.x != 0)
+			for (final Direction dir : Direction.values())
 			{
-				neighbours.add(Grid.this.squares[this.x - 1][this.y]);
-			}
-			if (this.x < Grid.this.size - 1)
-			{
-				neighbours.add(Grid.this.squares[this.x + 1][this.y]);
-			}
-			if (this.y != 0)
-			{
-				neighbours.add(Grid.this.squares[this.x][this.y -1]);
-			}
-			if (this.y < Grid.this.size - 1)
-			{
-				neighbours.add(Grid.this.squares[this.x][this.y + 1]);
+				if (!isFirstOfLine(dir))
+				{
+					neighbours.add(getPrevious(dir));
+				}
+				if (!isLastOfLine(dir))
+				{
+					neighbours.add(getNext(dir));
+				}
 			}
 			return neighbours;
+		}
+
+		public boolean isFirstOfLine(final Direction direction)
+		{
+			final int position = direction == Direction.HORIZONTAL ? this.x : this.y;
+			return position == 0;
+		}
+
+		public Square getPrevious(final Direction direction)
+		{
+			return getNeighbour(direction, -1);
+		}
+
+		public Square getNext(final Direction direction)
+		{
+			return getNeighbour(direction, +1);
+		}
+
+		public boolean isLastOfLine(final Direction direction)
+		{
+			final int position = direction == Direction.HORIZONTAL ? this.x : this.y;
+			return position == size - 1;
 		}
 	}
 
@@ -307,6 +324,30 @@ public class Grid
 	{
 		public Direction direction;
 		public int x, y;
+
+		public String getNotation()
+		{
+			return getNotation(this.x, this.y, this.direction);
+		}
+
+		public static String getNotation(final Grid.Square square, final Direction direction)
+		{
+			return getNotation(square.x, square.y, direction);
+		}
+
+		private static String getNotation(final int x, final int y, final Direction direction)
+		{
+			String sy = Character.toString((char) ('A' + y));
+			switch (direction)
+			{
+				case HORIZONTAL:
+					return sy + x;
+				case VERTICAL:
+					return x + sy;
+				default:
+					throw new AssertionError();
+			}
+		}
 	}
 }
 
