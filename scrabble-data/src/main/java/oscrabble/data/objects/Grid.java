@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.data.ScrabbleRules;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,6 +74,24 @@ public class Grid
 		return this.get(coordinate).c;
 	}
 
+	public Collection<Square> getAllSquares()
+	{
+		final ArrayList<Square> list = new ArrayList<>();
+		for (final Square[] line : this.squares)
+		{
+			for (final Square square : line)
+			{
+				list.add(square);
+			}
+		}
+		return list;
+	}
+
+	public int getSize()
+	{
+		return this.size;
+	}
+
 	/**
 	 * A square
 	 */
@@ -87,7 +109,7 @@ public class Grid
 
 		public Character c;
 
-		Square(final int x, final int y)
+		private Square(final int x, final int y)
 		{
 			this.x = x;
 			this.y = y;
@@ -114,6 +136,28 @@ public class Grid
 		{
 			return this.x == 0 || this.x == Grid.this.size + 1
 					|| this.y == 0 || this.y == Grid.this.size + 1;
+		}
+
+		public Set<Square> getNeighbours()
+		{
+			final Set<Square> neighbours = new HashSet<>(4);
+			if (this.x != 0)
+			{
+				neighbours.add(Grid.this.squares[this.x - 1][this.y]);
+			}
+			if (this.x < Grid.this.size - 1)
+			{
+				neighbours.add(Grid.this.squares[this.x + 1][this.y]);
+			}
+			if (this.y != 0)
+			{
+				neighbours.add(Grid.this.squares[this.x][this.y -1]);
+			}
+			if (this.y < Grid.this.size - 1)
+			{
+				neighbours.add(Grid.this.squares[this.x][this.y + 1]);
+			}
+			return neighbours;
 		}
 	}
 
