@@ -1,6 +1,4 @@
-// TODO: zu retten
-
-//package oscrabble.player;
+//package oscrabble.player.ai;
 //
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
@@ -15,7 +13,6 @@
 //import java.util.*;
 //
 //import static org.junit.jupiter.api.Assertions.*;
-//import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 //
 //class BruteForceMethodTest
 //{
