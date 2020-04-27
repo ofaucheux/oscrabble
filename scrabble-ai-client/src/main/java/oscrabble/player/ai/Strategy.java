@@ -34,12 +34,12 @@ public abstract class Strategy
 
 	public static class BestScore extends Strategy
 	{
-		final IGame game;
+//		final IGame game;
 
-		public BestScore(final IGame game)
+		public BestScore()
 		{
 			super("BEST SCORE");
-			this.game = game;
+//			this.game = game;
 		}
 
 		@Override

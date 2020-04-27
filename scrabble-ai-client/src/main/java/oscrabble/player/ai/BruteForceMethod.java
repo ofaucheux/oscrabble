@@ -1,6 +1,5 @@
 package oscrabble.player.ai;
 
-import javafx.scene.control.skin.TextInputControlSkin;
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
@@ -8,14 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.data.IDictionary;
-import oscrabble.data.MessageFromServer;
-import oscrabble.data.Square;
 import oscrabble.data.objects.Grid;
 import oscrabble.server.IGame;
 
 import java.io.*;
 import java.util.*;
-import java.util.function.Function;
 
 public class BruteForceMethod
 {
@@ -75,23 +71,23 @@ public class BruteForceMethod
 	}
 
 
-	Set<Position> getAnchors()
+	Set<Grid.Square> getAnchors()
 	{
-		final LinkedHashSet<Position> anchors = new LinkedHashSet<>();
+		final LinkedHashSet<Grid.Square> anchors = new LinkedHashSet<>();
 
 		if (grid.isEmpty())
 		{
 			// TODO: really treat this case
 			final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);
-			anchors.add(new Position(Direction.HORIZONTAL, center, center));
+			anchors.add(this.grid.get(center, center));
 		}
 		else
 		{
-			for (final Position square : getAllSquares())
+			for (final Grid.Square square : this.grid.getAllSquares())
 			{
 				if (!square.isEmpty())
 				{
-					for (final Position neighbour : square.getNeighbours())
+					for (final Grid.Square neighbour : square.getNeighbours())
 					{
 						if (neighbour.isEmpty())
 						{
@@ -102,20 +98,6 @@ public class BruteForceMethod
 			}
 		}
 		return anchors;
-	}
-	
-	private List<Position> getAllSquares()
-	{
-		final ArrayList<Position> positions = new ArrayList<>();
-		final int gridSize = this.dictionary.getScrabbleRules().gridSize;
-		for (int x = 0; x < gridSize; x++)
-		{
-			for (int y = 0; y < gridSize; y++)
-			{
-				positions.add(new Position(x, y));
-			}
-		}
-		return positions;
 	}
 
 	/**
@@ -135,12 +117,12 @@ public class BruteForceMethod
 			ctx.rack.add(c);
 		}
 
-		final Set<Position> anchors = getAnchors();
-		for (final Position anchor : anchors)
+		final Set<Grid.Square> anchors = getAnchors();
+		for (final Grid.Square anchor : anchors)
 		{
 			ctx.anchor = anchor;
 
-			for (final Direction direction : Direction.values())
+			for (final Grid.Direction direction : Grid.Direction.values())
 			{
 				ctx.direction = direction;
 				final StringBuilder partialWord = new StringBuilder();
@@ -148,11 +130,11 @@ public class BruteForceMethod
 
 				if (!anchor.isFirstOfLine(direction) && !anchor.getPrevious(direction).isEmpty())
 				{
-					Position square = anchor;
+					Grid.Square square = anchor;
 					do
 					{
 						square = square.getPrevious(direction);
-						partialWord.insert(0, square.getChar());
+						partialWord.insert(0, square.c);
 					} while (!square.isFirstOfLine(direction) && !square.getPrevious(direction).isEmpty());
 
 					node = node.transition(partialWord.toString());
@@ -161,7 +143,7 @@ public class BruteForceMethod
 				else
 				{
 					int nonAnchor = 0;
-					Position square = anchor;
+					Grid.Square square = anchor;
 					while (!square.isFirstOfLine(direction) && !anchors.contains(square = square.getPrevious(direction)) && square.isEmpty())
 					{
 						nonAnchor++;
@@ -203,7 +185,7 @@ public class BruteForceMethod
 	private void extendRight(final CalculateCtx ctx,
 							 final String partialWord,
 							 final DAWGNode node,
-							 final Position possibleNextSquare)
+							 final Grid.Square possibleNextSquare)
 	{
 
 		if (
@@ -241,7 +223,7 @@ public class BruteForceMethod
 						if (!possibleNextSquare.isLastOfLine(ctx.direction))
 						{
 							extendRight(ctx, partialWord + Character.toLowerCase(letter), nextNode,
-									possibleNextSquare.getFollowing(ctx.direction));
+									possibleNextSquare.getNext(ctx.direction));
 						}
 						ctx.rack.add(tile);
 					}
@@ -254,7 +236,7 @@ public class BruteForceMethod
 						if (!possibleNextSquare.isLastOfLine(ctx.direction))
 						{
 							extendRight(ctx, partialWord + letter, nextNode,
-									possibleNextSquare.getFollowing(ctx.direction));
+									possibleNextSquare.getNext(ctx.direction));
 						}
 						ctx.rack.add(tile);
 					}
@@ -263,13 +245,13 @@ public class BruteForceMethod
 		}
 		else
 		{
-			final Character letter = possibleNextSquare.getChar();
+			final Character letter = possibleNextSquare.c;
 			if (letter != null && getTransitions(node).contains(letter))
 			{
 				final DAWGNode nextNode = node.transition(letter);
 				if (!possibleNextSquare.isLastOfLine(ctx.direction))
 				{
-					extendRight(ctx, partialWord + letter, nextNode, possibleNextSquare.getFollowing(ctx.direction));
+					extendRight(ctx, partialWord + letter, nextNode, possibleNextSquare.getNext(ctx.direction));
 				}
 			}
 		}
@@ -289,28 +271,28 @@ public class BruteForceMethod
 		return transitions;
 	}
 
-	private void addLegalMove(final CalculateCtx ctx, final Position endSquare, final String word)
+	private void addLegalMove(final CalculateCtx ctx, final Grid.Square endSquare, final String word)
 	{
-		Position startSquare = endSquare;
+		Grid.Square startSquare = endSquare;
 		for (int i = 0; i < word.length() - 1; i++)
 		{
 			startSquare = startSquare.getPrevious(ctx.direction);
 		}
 		ctx.legalPlayTiles.add(
-				startSquare.getNotation(ctx.direction) + " " + word
+				Grid.Coordinate.getNotation(startSquare, ctx.direction) + " " + word
 		);
 	}
 
 	private Set<Character> getAllowedCrossCharacters(final CalculateCtx ctx,
-													 final Position crossSquare,
-													 final Direction crossDirection)
+													 final Grid.Square crossSquare,
+													 final Grid.Direction crossDirection)
 	{
 		if (!crossSquare.isEmpty())
 		{
 			throw new IllegalStateException("Should not be called on occupied square");
 		}
 
-		final Map<Position, Set<Character>> crossChecks = ctx.crosschecks.get(crossDirection);
+		final Map<Grid.Square, Set<Character>> crossChecks = ctx.crosschecks.get(crossDirection);
 		if (!crossChecks.containsKey(crossSquare))
 		{
 			final TreeSet<Character> allowed = new TreeSet<>();
@@ -318,28 +300,28 @@ public class BruteForceMethod
 
 			final StringBuilder sb = new StringBuilder();
 
-			Position square = crossSquare.getPrevious(crossDirection);
+			Grid.Square square = crossSquare.getPrevious(crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
-				sb.insert(0, square.getChar());
+				sb.insert(0, square.c);
 				square = square.getPrevious(crossDirection);
 			}
 
-			final int emptyPosition = sb.length();
+			final int emptySquare = sb.length();
 			sb.append(" ");
 
-			square = crossSquare.getFollowing(crossDirection);
+			square = crossSquare.getNext(crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
-				sb.append(square.getChar());
-				square = square.getFollowing(crossDirection);
+				sb.append(square.c);
+				square = square.getNext(crossDirection);
 			}
 
 			final boolean allowAll = sb.length() == 1;
 
 			for (char letter = 'A'; letter < 'Z'; letter++)
 			{
-				sb.setCharAt(emptyPosition, letter);
+				sb.setCharAt(emptySquare, letter);
 				if (allowAll || this.automaton.contains(sb.toString()))
 				{
 					allowed.add(letter);
@@ -473,7 +455,7 @@ public class BruteForceMethod
 	static class Configuration
 	{
 //		@Parameter(label = "#strategy")
-		Strategy strategy = new Strategy.BestScore(null);
+		Strategy strategy = new Strategy.BestScore();
 
 //		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
 		int throttle = 2;
@@ -484,91 +466,17 @@ public class BruteForceMethod
 
 	static class CalculateCtx
 	{
-		Direction direction;
-		Position anchor;
+		Grid.Direction direction;
+		Grid.Square anchor;
 		Grid grid;
 
 		List<Character> rack;
 		Set<String> legalPlayTiles = new LinkedHashSet<>();
 
-		final Map<Direction, Map<Position, Set<Character>>> crosschecks = new HashMap<>();
+		final Map<Grid.Direction, Map<Grid.Square, Set<Character>>> crosschecks = new HashMap<>();
 		{
-			this.crosschecks.put(Direction.HORIZONTAL, new HashMap<>());
-			this.crosschecks.put(Direction.VERTICAL, new HashMap<>());
+			this.crosschecks.put(Grid.Direction.HORIZONTAL, new HashMap<>());
+			this.crosschecks.put(Grid.Direction.VERTICAL, new HashMap<>());
 		}
 	}
-
-	private class Position 
-	{
-		private String getNotation(final Direction direction)
-		{
-			final String xPart = Integer.toString(x + 1);
-			final String yPart = Character.toString((char) ('A' + y));
-			return direction ==  Direction.HORIZONTAL
-					? xPart + yPart
-					: yPart + xPart;
-		}
-
-		public List<Position> getNeighbours()
-		{
-			final int gridSize = dictionary.getScrabbleRules().gridSize;
-			final ArrayList<Position> neighbours = new ArrayList<>(4);
-			if (x>0) neighbours.add(new Position(x - 1, y));
-			if (y>0) neighbours.add(new Position(x, y - 1));
-			if (x< gridSize-1) neighbours.add(new Position(x + 1, y));
-			if (y<gridSize-1) neighbours.add(new Position(x, y + 1));
-			return neighbours;
-		}
-
-		public boolean isFirstOfLine(final Direction direction)
-		{
-			return
-					(direction == Direction.HORIZONTAL && x == 0)
-					|| (direction == Direction.VERTICAL && y == 0);
-		}
-
-		public Position getPrevious(final Direction direction)
-		{
-			return new Position(
-					direction == Direction.HORIZONTAL ? x - 1 : x,
-					direction == Direction.VERTICAL ? y - 1 : y
-			);
-		}
-
-		public Character getChar()
-		{
-			return grid.getChar(getNotation(Direction.HORIZONTAL));
-		}
-
-		public boolean isBorder()
-		{
-			return x == 0 || y == 0 || x == gridSize - 1 || y == gridSize - 1;
-		}
-
-		public boolean isLastOfLine(final Direction direction)
-		{
-			return (direction == Direction.HORIZONTAL && x == gridSize - 1)
-					|| (direction == Direction.VERTICAL && y == gridSize - 1);
-		}
-
-		public Position getFollowing(final Direction direction)
-		{
-			return new Position(
-					direction == Direction.HORIZONTAL ? x + 1 : x,
-					direction == Direction.VERTICAL ? y + 1 : y
-			);
-		}
-	}
-
-
-	public enum Direction
-	{
-		HORIZONTAL, VERTICAL;
-
-		public Direction other()
-		{
-			return this == HORIZONTAL ? VERTICAL : HORIZONTAL;
-		}
-	}
-
 }
