@@ -67,7 +67,7 @@ class BruteForceMethodTest
 		startGame("ENFANIT");
 
 		final Random random = new Random();
-		this.instance.grid = game.getGrid();
+		this.instance.grid = this.game.getGrid();
 		final List<String> legalMoves = new ArrayList<>(this.instance.getLegalMoves("ENFANIT"));
 
 		assertTrue(legalMoves.contains("F8 ENFANT"));
@@ -77,27 +77,23 @@ class BruteForceMethodTest
 		{
 			this.playQueue.add(legalMoves.get(random.nextInt(legalMoves.size())));
 			this.game.awaitEndOfPlay(1);
-			assertFalse(player.isLastPlayError);
+			assertFalse(this.player.isLastPlayError);
 			this.game.rollbackLastMove(this.player);
 		}
 	}
-//
-//	@Test
-//	void testBlank() throws ParseException, ScrabbleException
-//	{
-//		final Grid grid = new Grid(16);
-//		grid.put((PlayTiles) PlayTiles.parseMove(grid, "J2 ELEPHANT"));
-//		final Rack rack = new Rack();
-//		for (final char c : "ASMETH".toCharArray())
-//		{
-//			rack.add(Tile.SIMPLE_GENERATOR.generateStone(c));
-//		}
-//		rack.add(Tile.SIMPLE_GENERATOR.generateStone(null));
-//		final Set<PlayTiles> playTiles = this.instance.getLegalMoves(grid, rack);
-//		assertTrue(playTiles.contains(PlayTiles.parseMove(grid, "5J PHASME")));
-//		assertTrue(playTiles.contains(PlayTiles.parseMove(grid, "5J PhASME")));
-//	}
-//
+
+	@Test
+	void testBlank() throws  ScrabbleException
+	{
+		startGame("ELEPHANT");
+
+		this.game.play(this.player, Action.parse("2J ELEPHAN"));
+		this.instance.grid = this.game.getGrid();
+		final Set<String> playTiles = this.instance.getLegalMoves("ASME TH");
+		assertTrue(playTiles.contains("J5 PHASME"));
+		assertTrue(playTiles.contains("J5 PhASME"));
+	}
+
 //	@Test
 //	void getAnchors() throws ScrabbleException
 //	{
@@ -123,20 +119,20 @@ class BruteForceMethodTest
 	 */
 	private void startGame(final String bag) throws ScrabbleException
 	{
-		game = new Game(DICTIONARY);
-		game.assertFirstLetters("ENFANITS");
-		player = new Game.Player("AI Player");
-		game.addPlayer(player);
-		playQueue = new ArrayBlockingQueue<>(100);
-		game.addListener(new AbstractGameListener()
+		this.game = new Game(DICTIONARY);
+		this.game.assertFirstLetters(bag);
+		this.player = new Game.Player("AI Player");
+		this.game.addPlayer(this.player);
+		this.playQueue = new ArrayBlockingQueue<>(100);
+		this.game.addListener(new AbstractGameListener()
 		{
 			@Override
 			public void onPlayRequired(final Game.Player player)
 			{
 				try
 				{
-					instance.grid = game.getGrid();
-					game.play(player, Action.parse(playQueue.take()));
+					BruteForceMethodTest.this.instance.grid = BruteForceMethodTest.this.game.getGrid();
+					BruteForceMethodTest.this.game.play(player, Action.parse(BruteForceMethodTest.this.playQueue.take()));
 				}
 				catch (ScrabbleException.ForbiddenPlayException | InterruptedException | ScrabbleException.NotInTurn e)
 				{
@@ -144,7 +140,7 @@ class BruteForceMethodTest
 				}
 			}
 		});
-		new Thread(() -> game.play()).start();
+		new Thread(() -> this.game.play()).start();
 	}
 
 	/**
