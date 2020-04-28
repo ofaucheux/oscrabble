@@ -1,5 +1,6 @@
 package oscrabble.data.objects;
 
+import javafx.geometry.HorizontalDirection;
 import org.junit.jupiter.api.Test;
 import oscrabble.data.ScrabbleRules;
 
@@ -10,13 +11,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GridTest
 {
+	@Test
+	public void notation()
+	{
+		final Grid g = new Grid(15);
+		assertEquals("A1", Grid.Coordinate.getNotation(g.get(0, 0), Grid.Direction.HORIZONTAL));
+
+		assertEquals("H8", Grid.Coordinate.getNotation(g.getCentralSquare(), Grid.Direction.HORIZONTAL));
+	}
 
 	@Test
 	public void neighbours()
 	{
-		final ScrabbleRules rules = new ScrabbleRules();
-		rules.gridSize = 15;
-		final Grid grid = new Grid(rules);
+		final Grid grid = new Grid(15);
 		Set<Grid.Square> neighbours;
 
 		neighbours = grid.get(4, 3).getNeighbours();

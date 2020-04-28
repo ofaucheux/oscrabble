@@ -5,6 +5,7 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Notation;
 import oscrabble.ScrabbleException;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
@@ -77,22 +78,18 @@ public class BruteForceMethod
 
 		if (this.grid.isEmpty())
 		{
-			// TODO: really treat this case
-			final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);
-			anchors.add(this.grid.get(center, center));
+			throw new IllegalStateException("Cannot get anchors on an empty grid.");
 		}
-		else
+
+		for (final Grid.Square square : this.grid.getAllSquares())
 		{
-			for (final Grid.Square square : this.grid.getAllSquares())
+			if (!square.isEmpty())
 			{
-				if (!square.isEmpty())
+				for (final Grid.Square neighbour : square.getNeighbours())
 				{
-					for (final Grid.Square neighbour : square.getNeighbours())
+					if (neighbour.isEmpty())
 					{
-						if (neighbour.isEmpty())
-						{
-							anchors.add(neighbour);
-						}
+						anchors.add(neighbour);
 					}
 				}
 			}
@@ -108,6 +105,10 @@ public class BruteForceMethod
 	 */
 	public Set<String> getLegalMoves(final String rack) 
 	{
+		if (this.grid.isEmpty())
+		{
+			return getLegalWordOnEmptyGrid(rack);
+		}
 
 		final CalculateCtx ctx = new CalculateCtx();
 		ctx.grid = grid;
@@ -157,6 +158,67 @@ public class BruteForceMethod
 		return ctx.legalPlayTiles;
 	}
 
+	private Set<String> getLegalWordOnEmptyGrid(final String rack)
+	{
+		if (!this.grid.isEmpty())
+		{
+			throw new IllegalStateException();
+		}
+
+		final List<Character> remaining = new LinkedList<>();
+		for (final char c : rack.toCharArray())
+		{
+			remaining.add(c);
+		}
+
+		final Set<String> words = new HashSet<>();
+		getWords(this.automaton.getSourceNode(), "", remaining, words);
+
+		final Set<String> moves = new HashSet<>();
+		final int center = grid.getCentralSquare().x;
+		for (final String word : words)
+		{
+			int start = center;
+			for (int i = 0; i < word.length(); i++)
+			{
+				moves.add(Grid.Coordinate.getNotation(center - i, center, Grid.Direction.HORIZONTAL) + " " + word);
+			}
+		}
+		return moves;
+	}
+
+	/**
+	 * Collect the possible words from a given node.
+	 *
+	 * @param position current node
+	 * @param reached word begin as it already has been computed
+	 * @param remainingChars remaining chars
+	 * @param collector bag to collect the results.
+	 */
+	private void getWords(final DAWGNode position, final String reached, final List<Character> remainingChars, final Set<String> collector)
+	{
+		if (remainingChars == null)
+		{
+			return;
+		}
+
+		for (final Character transition : getTransitions(position))
+		{
+			if (remainingChars.contains(transition))
+			{
+				remainingChars.remove(transition);
+				final String now = reached + transition;
+				final DAWGNode newNode = position.transition(transition);
+				if (newNode.isAcceptNode())
+				{
+					collector.add(now);
+				}
+				getWords(newNode, now, remainingChars, collector);
+				remainingChars.add(transition);
+			}
+		}
+	}
+
 	private void leftPart(final CalculateCtx ctx, final String partialWord, final DAWGNode node, final int limit)
 	{
 		extendRight(ctx, partialWord, node, ctx.anchor);
@@ -164,7 +226,6 @@ public class BruteForceMethod
 		{
 			for (final Character c : getTransitions(node))
 			{
-				String tile;
 				if (ctx.rack.contains(c))
 				{
 					ctx.rack.remove(c);

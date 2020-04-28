@@ -39,6 +39,12 @@ public class Grid
 		return get(coordinate.x, coordinate.y);
 	}
 
+	/**
+	 * (0-based coordinates)
+	 * @param x
+	 * @param y
+	 * @return the square
+	 */
 	public Square get(int x, int y)
 	{
 		return this.squares[x][y];
@@ -219,6 +225,12 @@ public class Grid
 		return c;
 	}
 
+	public Square getCentralSquare()
+	{
+		final int center = (int) Math.ceil(this.size / 2f) - 1;
+		return this.squares[center][center];
+	}
+
 	/**
 	 * Liefert den Bonus einer Zelle.
 	 * @param x {@code 0} for border
@@ -353,20 +365,29 @@ public class Grid
 			return getNotation(this.x, this.y, this.direction);
 		}
 
+		// tODO: move
 		public static String getNotation(final Grid.Square square, final Direction direction)
 		{
 			return getNotation(square.x, square.y, direction);
 		}
 
-		private static String getNotation(final int x, final int y, final Direction direction)
+		/**
+		 * The coordinates are 0-based.
+		 *
+		 * @param x
+		 * @param y
+		 * @param direction
+		 * @return
+		 */
+		public static String getNotation(final int x, final int y, final Direction direction)
 		{
 			String sy = Character.toString((char) ('A' + y));
 			switch (direction)
 			{
 				case HORIZONTAL:
-					return sy + x;
+					return sy + (x+1);
 				case VERTICAL:
-					return x + sy;
+					return (x + 1) + sy;
 				default:
 					throw new AssertionError();
 			}
