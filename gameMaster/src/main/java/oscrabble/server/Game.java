@@ -886,7 +886,7 @@ public class Game
 		long maxTime = unit.toMillis(timeout) + System.currentTimeMillis();
 		while (getRoundNr() < roundNr /* || todo !this.actions.get(roundNr - 1) */)
 		{
-			Thread.sleep(100);
+			Thread.sleep(20);
 			if (System.currentTimeMillis() > maxTime)
 			{
 				throw new TimeoutException(MessageFormat.format(MESSAGES.getString("end.of.play.0.still.not.reached.after.1.2"), roundNr, timeout, unit));
@@ -902,19 +902,23 @@ public class Game
 	private boolean containsCentralField(final Action.PlayTiles move) throws ScrabbleException.ForbiddenPlayException
 	{
 		// todo: beiing done.
-		final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);
+		final int center = grid.getCentralSquare().x;
 		final int length = move.word.length();
 
 		Grid.Coordinate c = move.startSquare;
+		final boolean ok;
 		switch (c.direction)
 		{
 			case VERTICAL:
-				return (c.x == center && (c.y <= center && (c.y + length - 1) >= center));
+				ok = (c.x == center && (c.y <= center && (c.y + length - 1) >= center));
+				break;
 			case HORIZONTAL:
-				return (c.y == center && (c.x <= center && (c.y + length - 1) >= center));
+				ok = c.y == center && (c.x <= center && (c.x + length - 1) >= center);
+				break;
 			default:
 				throw new AssertionError();
 		}
+		return ok;
 	}
 
 	/**

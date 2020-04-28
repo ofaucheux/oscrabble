@@ -193,25 +193,25 @@ public class Grid
 		}
 	}
 
-	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
 	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\w)(\\d+)");
+	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
 
 	public static Coordinate getCoordinate(final String notation) throws ScrabbleException.ForbiddenPlayException
 	{
 		final Direction direction;
 		final int groupX, groupY;
 		Matcher m;
-		if ((m = HORIZONTAL_COORDINATE_PATTERN.matcher(notation)).matches())
+		if ((m = HORIZONTAL_COORDINATE_PATTERN.matcher(notation)).matches()) // horizontal ist zuerst x, heißt: Buchstabe.
 		{
 			direction = Direction.HORIZONTAL;
-			groupX = 2;
-			groupY = 1;
+			groupX = 1;
+			groupY = 2;
 		}
 		else if ((m = VERTICAL_COORDINATE_PATTERN.matcher(notation)).matches())
 		{
 			direction = Direction.VERTICAL;
-			groupX = 1;
-			groupY = 2;
+			groupX = 2;
+			groupY = 1;
 		}
 		else
 		{
@@ -220,8 +220,8 @@ public class Grid
 
 		final Coordinate c = new Coordinate();
 		c.direction = direction;
-		c.x = Integer.parseInt(m.group(groupX));
-		c.y = m.group(groupY).charAt(0) - 'A' + 1;
+		c.x = m.group(groupX).charAt(0) - 'A';
+		c.y = Integer.parseInt(m.group(groupY)) - 1;
 		return c;
 	}
 
@@ -381,13 +381,13 @@ public class Grid
 		 */
 		public static String getNotation(final int x, final int y, final Direction direction)
 		{
-			String sy = Character.toString((char) ('A' + y));
+			String sx = Character.toString((char) ('A' + x));
 			switch (direction)
 			{
 				case HORIZONTAL:
-					return sy + (x+1);
+ 					return sx + (y+1);
 				case VERTICAL:
-					return (x + 1) + sy;
+					return (y + 1) + sx;
 				default:
 					throw new AssertionError();
 			}

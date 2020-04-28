@@ -61,26 +61,18 @@ class BruteForceMethodTest
 		assertFalse(node.isAcceptNode());
 	}
 
-//
-//	@Test
-//	void leftPart()
-//	{
-//		final BruteForceMethod.CalculateCtx ctx = new BruteForceMethod.CalculateCtx();
-//		ctx.rack = new Rack();
-//		for (final Character c : Arrays.asList('A', 'P', 'U', 'M', 'Q', 'M', 'E', 'X', 'T', 'O'))
-//		{
-//			ctx.rack.add(Tile.SIMPLE_GENERATOR.generateStone(c));
-//		}
-//	}
-
 	@Test
 	void getLegalMoves() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		startGame("ENFANIT");
 
 		final Random random = new Random();
-		instance.grid = game.getGrid();
+		this.instance.grid = game.getGrid();
 		final List<String> legalMoves = new ArrayList<>(this.instance.getLegalMoves("ENFANIT"));
+
+		assertTrue(legalMoves.contains("F8 ENFANT"));
+
+		// Test a lot of found possibilities
 		for (int i = 0; i < 100; i++)
 		{
 			this.playQueue.add(legalMoves.get(random.nextInt(legalMoves.size())));
