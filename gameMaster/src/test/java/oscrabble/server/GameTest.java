@@ -11,7 +11,7 @@ import oscrabble.data.GameState;
 import oscrabble.data.objects.Grid;
 import oscrabble.dictionary.Application;
 import oscrabble.dictionary.Language;
-import oscrabble.server.action.Action;
+import oscrabble.controller.Action;
 
 import java.net.URI;
 import java.util.*;

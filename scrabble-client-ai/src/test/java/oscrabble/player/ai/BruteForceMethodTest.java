@@ -8,7 +8,7 @@ import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.objects.Grid;
 import oscrabble.server.AbstractGameListener;
 import oscrabble.server.Game;
-import oscrabble.server.action.Action;
+import oscrabble.controller.Action;
 
 import java.net.URI;
 import java.util.*;
@@ -87,8 +87,8 @@ class BruteForceMethodTest
 	{
 		startGame("ELEPHANT");
 
-		this.game.play(this.player, Action.parse("2J ELEPHAN"));
-		this.instance.grid = this.game.getGrid();
+		this.instance.grid = new Grid(15);
+		this.instance.grid.play("2J ELEPHANT");
 		final Set<String> playTiles = this.instance.getLegalMoves("ASME TH");
 		assertTrue(playTiles.contains("J5 PHASME"));
 		assertTrue(playTiles.contains("J5 PhASME"));

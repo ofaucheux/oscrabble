@@ -3,6 +3,7 @@ package oscrabble.data.objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.controller.Action;
 import oscrabble.data.Square;
 
 import java.util.ArrayList;
@@ -96,6 +97,31 @@ public class Grid
 	public int getSize()
 	{
 		return this.size;
+	}
+
+
+	public void play(final String move) throws ScrabbleException.ForbiddenPlayException
+	{
+		play((Action.PlayTiles) Action.parse(move));
+	}
+
+	public void play(final Action.PlayTiles playTiles)
+	{
+		Grid.Square sq = get(playTiles.startSquare);
+		for (int i = 0; i < playTiles.word.length(); i++)
+		{
+			final char c = playTiles.word.charAt(i);
+			if (sq.isEmpty())
+			{
+				sq.c = c;
+			}
+			else if (Character.toUpperCase(sq.c) != Character.toUpperCase(c))
+			{
+				throw new AssertionError("The case is already occupied");
+			}
+
+			sq = sq.getNeighbour(playTiles.startSquare.direction, 1);
+		}
 	}
 
 	/**

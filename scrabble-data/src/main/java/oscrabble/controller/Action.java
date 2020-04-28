@@ -1,4 +1,4 @@
-package oscrabble.server.action;
+package oscrabble.controller;
 
 import oscrabble.ScrabbleException;
 import oscrabble.data.objects.Grid;

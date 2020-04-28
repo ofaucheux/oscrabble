@@ -1,6 +1,6 @@
 package oscrabble.server;
 
-import oscrabble.server.action.Action;
+import oscrabble.controller.Action;
 
 import java.util.Queue;
 

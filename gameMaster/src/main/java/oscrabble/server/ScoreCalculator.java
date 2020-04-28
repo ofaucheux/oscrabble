@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.data.objects.Grid;
-import oscrabble.server.action.Action;
+import oscrabble.controller.Action;
 
 import java.util.ArrayList;
 import java.util.List;

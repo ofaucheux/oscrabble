@@ -11,7 +11,7 @@ import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
-import oscrabble.server.action.Action;
+import oscrabble.controller.Action;
 
 import java.io.File;
 import java.io.FileReader;
@@ -51,7 +51,7 @@ public class Game
 	/**
 	 * Plays
 	 */
-	final LinkedList<oscrabble.server.action.Action> actions = new LinkedList<>();
+	final LinkedList<Action> actions = new LinkedList<>();
 
 	/**
 	 * Synchronize: to by synchronized by calls which change the state of the game
@@ -400,21 +400,7 @@ public class Game
 					}
 				}
 
-				Grid.Square sq = this.grid.get(playTiles.startSquare);
-				for (int i = 0; i < playTiles.word.length(); i++)
-				{
-					final char c = playTiles.word.charAt(i);
-					if (sq.isEmpty())
-					{
-						sq.c = c;
-					}
-					else
-					{
-						assert Character.toUpperCase(sq.c) == Character.toUpperCase(c); //  sollte schon oben getestet sein.
-					}
-
-					sq = sq.getNeighbour(playTiles.startSquare.direction, 1);
-				}
+				grid.play(playTiles);
 
 				player.rack.clear();
 				player.rack.addAll(remaining);
@@ -1037,7 +1023,7 @@ public class Game
 		/**
 		 * Last played action.
 		 */
-		oscrabble.server.action.Action lastAction;
+		Action lastAction;
 
 		public Player(final String name)
 		{

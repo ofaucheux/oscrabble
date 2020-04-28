@@ -206,7 +206,7 @@ public class BruteForceMethod
 		{
 			if (remainingChars.contains(transition))
 			{
-				remainingChars.remove(transition);
+				remainingChars.remove((Character)transition);
 				final String now = reached + transition;
 				final DAWGNode newNode = position.transition(transition);
 				if (newNode.isAcceptNode())
@@ -228,14 +228,14 @@ public class BruteForceMethod
 			{
 				if (ctx.rack.contains(c))
 				{
-					ctx.rack.remove(c);
+					ctx.rack.remove((Character)c);
 					leftPart(ctx, partialWord + c, node.transition(c), limit - 1);
 					ctx.rack.add(c);
 				}
 
 				if (ctx.rack.contains(' '))
 				{
-					ctx.rack.remove(' ');
+					ctx.rack.remove((Character)' ');
 					leftPart(ctx, partialWord + Character.toLowerCase(c), node.transition(c), limit - 1);
 					ctx.rack.add(' ');
 				}
@@ -280,7 +280,7 @@ public class BruteForceMethod
 					{
 						tile = ' ';
 						final DAWGNode nextNode = node.transition(letter);
-						ctx.rack.remove(tile);
+						ctx.rack.remove((Character)tile);
 						if (!possibleNextSquare.isLastOfLine(ctx.direction))
 						{
 							extendRight(ctx, partialWord + Character.toLowerCase(letter), nextNode,
