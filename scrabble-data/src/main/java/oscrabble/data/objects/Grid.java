@@ -3,6 +3,7 @@ package oscrabble.data.objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.data.Square;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -175,6 +176,15 @@ public class Grid
 			final int position = direction == Direction.HORIZONTAL ? this.x : this.y;
 			return position == size - 1;
 		}
+
+		oscrabble.data.Square toData()
+		{
+			final oscrabble.data.Square square = new oscrabble.data.Square();
+			square.tile = this.c;
+			square.x =this.x;
+			square.y = this.y;
+			return square;
+		}
 	}
 
 	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
@@ -283,6 +293,20 @@ public class Grid
 		{
 			return Bonus.NONE;
 		}
+	}
+
+	public oscrabble.data.Grid toData()
+	{
+		final oscrabble.data.Grid grid = new oscrabble.data.Grid();
+		grid.squares = new ArrayList<>();
+		for (final Square[] line : this.squares)
+		{
+			for (final Square square : line)
+			{
+				grid.squares.add(square.toData());
+			}
+		}
+		return grid;
 	}
 
 	/**

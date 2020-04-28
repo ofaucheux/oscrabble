@@ -6,10 +6,15 @@ import org.quinto.dawg.DAWGNode;
 import oscrabble.*;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.objects.Grid;
+import oscrabble.server.AbstractGameListener;
+import oscrabble.server.Game;
+import oscrabble.server.GameListener;
+import oscrabble.server.action.Action;
 
 import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,17 +24,38 @@ class BruteForceMethodTest
 	private static final Random RANDOM = new Random();
 	private BruteForceMethod instance;
 
-	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
+	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
 	private TestGrid grid;
+	private ArrayBlockingQueue<String> playQueue;
+	private Game game;
+	private Game.Player player;
 
 
 	@BeforeEach
-	public void BruteForceTest()
+	public void BruteForceTest() throws ScrabbleException
 	{
 		this.instance = new BruteForceMethod(DICTIONARY);
-//		this.instance.loadDictionary(DICTIONARY);
-		grid = new TestGrid(12);
-		this.instance.grid = grid;
+		game = new Game(DICTIONARY);
+		player = new Game.Player();
+		game.addPlayer(player);
+		playQueue = new ArrayBlockingQueue<>(100);
+		game.addListener(new AbstractGameListener()
+		{
+			@Override
+			public void onPlayRequired(final Game.Player player)
+			{
+				try
+				{
+					instance.grid = game.getGrid();
+					game.play(player, Action.parse(playQueue.take()));
+				}
+				catch (ScrabbleException.ForbiddenPlayException | InterruptedException | ScrabbleException.NotInTurn e)
+				{
+					throw new Error(e);
+				}
+			}
+		});
+		new Thread(() -> game.play()).start();
 	}
 
 	@Test
@@ -73,62 +99,49 @@ class BruteForceMethodTest
 	void getLegalMoves() throws ScrabbleException
 	{
 		final Random random = new Random();
+		instance.grid = game.getGrid();
+		final List<String> legalMoves = new ArrayList<>(this.instance.getLegalMoves("ENFANITS"));
 		for (int i = 0; i < 100; i++)
 		{
-			grid.clear();
-//			grid.put(1, 1, Move.Direction.HORIZONTAL, "Z");
-			grid.put(1, 1, Grid.Direction.HORIZONTAL, "MANDANT");
-			grid.put(4, 1, Grid.Direction.VERTICAL, "DECIME");
-			grid.put(1, 4, Grid.Direction.HORIZONTAL, "FINIES");
-//			final TextClient textClient = new TextClient(grid);
-//			textClient.refreshGrid();
-
-
-//			final Rack rack = new Rack();
-//			for (final char c : "ENFANITS".toCharArray())
-//			{
-//				rack.add(Tile.SIMPLE_GENERATOR.generateStone(c));
-//			}
-			final List<String> legalMoves = new ArrayList<>(this.instance.getLegalMoves("ENFANITS"));
-			grid.put(legalMoves.get(random.nextInt(legalMoves.size())));
-			textClient.refreshGrid();
+			this.playQueue.add(legalMoves.get(random.nextInt(legalMoves.size())));
+			this.game.rollbackLastMove(this.player);
 		}
 	}
-
-	@Test
-	void testBlank() throws ParseException, ScrabbleException
-	{
-		final Grid grid = new Grid(16);
-		grid.put((PlayTiles) PlayTiles.parseMove(grid, "J2 ELEPHANT"));
-		final Rack rack = new Rack();
-		for (final char c : "ASMETH".toCharArray())
-		{
-			rack.add(Tile.SIMPLE_GENERATOR.generateStone(c));
-		}
-		rack.add(Tile.SIMPLE_GENERATOR.generateStone(null));
-		final Set<PlayTiles> playTiles = this.instance.getLegalMoves(grid, rack);
-		assertTrue(playTiles.contains(PlayTiles.parseMove(grid, "5J PHASME")));
-		assertTrue(playTiles.contains(PlayTiles.parseMove(grid, "5J PhASME")));
-	}
-
-	@Test
-	void getAnchors() throws ScrabbleException
-	{
-		final Grid grid = new Grid( 6);
-		grid.put(new PlayTiles(grid.getSquare(3, 3), PlayTiles.Direction.HORIZONTAL, "Z"));
-		final Set<Grid.Square> anchors = this.instance.getAnchors(grid);
-		assertEquals(4, anchors.size());
-		assertFalse(anchors.contains(grid.new Square(2, 2)));
-		assertTrue(anchors.contains(grid.new Square(2, 3)));
-	}
-
-	@Test
-	void selectMethod()
-	{
-		final BruteForceMethod.Player player = instance.new Player("Test client");
-		player.editParameters();
-		player.editParameters();
-	}
+//
+//	@Test
+//	void testBlank() throws ParseException, ScrabbleException
+//	{
+//		final Grid grid = new Grid(16);
+//		grid.put((PlayTiles) PlayTiles.parseMove(grid, "J2 ELEPHANT"));
+//		final Rack rack = new Rack();
+//		for (final char c : "ASMETH".toCharArray())
+//		{
+//			rack.add(Tile.SIMPLE_GENERATOR.generateStone(c));
+//		}
+//		rack.add(Tile.SIMPLE_GENERATOR.generateStone(null));
+//		final Set<PlayTiles> playTiles = this.instance.getLegalMoves(grid, rack);
+//		assertTrue(playTiles.contains(PlayTiles.parseMove(grid, "5J PHASME")));
+//		assertTrue(playTiles.contains(PlayTiles.parseMove(grid, "5J PhASME")));
+//	}
+//
+//	@Test
+//	void getAnchors() throws ScrabbleException
+//	{
+//		final Grid grid = new Grid( 6);
+//		grid.put(new PlayTiles(grid.getSquare(3, 3), PlayTiles.Direction.HORIZONTAL, "Z"));
+//		final Set<Grid.Square> anchors = this.instance.getAnchors(grid);
+//		assertEquals(4, anchors.size());
+//		assertFalse(anchors.contains(grid.new Square(2, 2)));
+//		assertTrue(anchors.contains(grid.new Square(2, 3)));
+//	}
+//
+//	@Test
+//	void selectMethod()
+//	{
+//		final BruteForceMethod.Player player = instance.new Player("Test client");
+//		player.editParameters();
+//		player.editParameters();
+//	}
 
 	/**
 	 * Grid with extended functions.
@@ -159,4 +172,5 @@ class BruteForceMethodTest
 			}
 		}
 	}
+
 }

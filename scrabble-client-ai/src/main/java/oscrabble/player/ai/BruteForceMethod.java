@@ -75,7 +75,7 @@ public class BruteForceMethod
 	{
 		final LinkedHashSet<Grid.Square> anchors = new LinkedHashSet<>();
 
-		if (grid.isEmpty())
+		if (this.grid.isEmpty())
 		{
 			// TODO: really treat this case
 			final int center = (int) Math.ceil(this.dictionary.getScrabbleRules().gridSize / 2f);

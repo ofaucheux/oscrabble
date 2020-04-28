@@ -287,7 +287,7 @@ public class Game
 	 * @param player
 	 * @return the player
 	 */
-	<A extends Player> A addPlayer(final A player) throws ScrabbleException
+	public <A extends Player> A addPlayer(final A player) throws ScrabbleException
 	{
 		if (this.players.put(player.id, player) != null)
 		{
@@ -325,7 +325,7 @@ public class Game
 	 * @throws ScrabbleException.ForbiddenPlayException
 	 * @throws ScrabbleException.NotInTurn
 	 */
-	void play(final Player player, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
+	public void play(final Player player, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
 	{
 		if (player == null)
 		{
