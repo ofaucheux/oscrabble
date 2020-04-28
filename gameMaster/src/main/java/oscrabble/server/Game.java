@@ -181,7 +181,7 @@ public class Game
 //			}
 		}
 
-		this.grid = new Grid(this.dictionary.getScrabbleRules());
+		this.grid = new Grid(this.dictionary.getScrabbleRules().gridSize);
 		this.random = new Random();
 		this.waitingForPlay = new CountDownLatch(1);
 
@@ -201,7 +201,7 @@ public class Game
 		this.random = new Random(randomSeed);
 		this.dictionary = dictionary;
 //		this.sli = new ScrabbleLanguageInformation(language);
-		this.grid = new Grid(dictionary.getScrabbleRules());
+		this.grid = new Grid(dictionary.getScrabbleRules().gridSize);
 		this.propertyFile = null;
 		this.configuration = new Configuration();
 		this.state = GameState.State.BEFORE_START;

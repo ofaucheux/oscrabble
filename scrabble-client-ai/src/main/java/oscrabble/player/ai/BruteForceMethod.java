@@ -21,7 +21,7 @@ public class BruteForceMethod
 	CompressedDAWGSet automaton;
 	
 	/** The grid, to update after each round */
-	oscrabble.data.objects.Grid grid;
+	Grid grid;
 
 	private final int gridSize;
 

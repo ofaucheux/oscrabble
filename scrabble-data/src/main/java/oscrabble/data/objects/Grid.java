@@ -3,7 +3,6 @@ package oscrabble.data.objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
-import oscrabble.data.ScrabbleRules;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,9 +18,9 @@ public class Grid
 	private final Square[][] squares;
 	private final int size;
 
-	public Grid(final ScrabbleRules rules)
+	public Grid(final int gridSize)
 	{
-		this.size = rules.gridSize;
+		this.size = gridSize;
 
 		this.squares = new Square[this.size +2][];
 		for (int x = 0; x < this.squares.length; x++)
