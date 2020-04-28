@@ -275,9 +275,8 @@ public class Game
 	 */
 	public synchronized Player addPlayer(final oscrabble.data.Player jsonPlayer) throws ScrabbleException
 	{
-		final Player player = new Player();
+		final Player player = new Player(jsonPlayer.name);
 		player.id = jsonPlayer.id;
-		player.name = jsonPlayer.name;
 		return addPlayer(player);
 	}
 
@@ -632,9 +631,9 @@ public class Game
 		return new ArrayList<>(this.players.values());
 	}
 
-	public Iterable<HistoryEntry> getHistory()
+	public List<HistoryEntry> getHistory()
 	{
-		return this.history;
+		return Collections.unmodifiableList(this.history);
 	}
 
 	/**
@@ -759,7 +758,6 @@ public class Game
 
 		if ((this.assertFirstLetters != null))
 		{
-
 			final ArrayList<Character> start = new ArrayList<>();
 			final ArrayList<Character> remains = new ArrayList<>(this.bag);
 
@@ -776,8 +774,6 @@ public class Game
 			this.bag.addAll(start);
 			this.bag.addAll(remains);
 		}
-
-
 	}
 
 	/**
@@ -1016,7 +1012,7 @@ public class Game
 		/**
 		 * Name
 		 */
-		String name;
+		final String name;
 
 		/**
 		 * Password für die Kommunikation Player &lt;&gt; Server
@@ -1038,6 +1034,15 @@ public class Game
 		 * Last played action.
 		 */
 		oscrabble.server.action.Action lastAction;
+
+		public Player(final String name)
+		{
+			if (name == null)
+			{
+				throw new IllegalArgumentException("Player name not set");
+			}
+			this.name = name;
+		}
 
 		// TODO
 		public oscrabble.configuration.Configuration getConfiguration()

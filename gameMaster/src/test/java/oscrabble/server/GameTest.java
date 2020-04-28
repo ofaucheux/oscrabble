@@ -536,7 +536,7 @@ public class GameTest
 
 		PredefinedPlayer(final Game game, final String name)
 		{
-			this.name = name;
+			super(name);
 			this.id = name;
 			this.listener = new AbstractGameListener()
 			{

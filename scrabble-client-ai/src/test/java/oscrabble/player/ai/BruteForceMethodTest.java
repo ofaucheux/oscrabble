@@ -8,13 +8,12 @@ import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.objects.Grid;
 import oscrabble.server.AbstractGameListener;
 import oscrabble.server.Game;
-import oscrabble.server.GameListener;
 import oscrabble.server.action.Action;
 
 import java.net.URI;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,27 +34,6 @@ class BruteForceMethodTest
 	public void BruteForceTest() throws ScrabbleException
 	{
 		this.instance = new BruteForceMethod(DICTIONARY);
-		game = new Game(DICTIONARY);
-		player = new Game.Player();
-		game.addPlayer(player);
-		playQueue = new ArrayBlockingQueue<>(100);
-		game.addListener(new AbstractGameListener()
-		{
-			@Override
-			public void onPlayRequired(final Game.Player player)
-			{
-				try
-				{
-					instance.grid = game.getGrid();
-					game.play(player, Action.parse(playQueue.take()));
-				}
-				catch (ScrabbleException.ForbiddenPlayException | InterruptedException | ScrabbleException.NotInTurn e)
-				{
-					throw new Error(e);
-				}
-			}
-		});
-		new Thread(() -> game.play()).start();
 	}
 
 	@Test
@@ -96,14 +74,18 @@ class BruteForceMethodTest
 //	}
 
 	@Test
-	void getLegalMoves() throws ScrabbleException
+	void getLegalMoves() throws ScrabbleException, InterruptedException, TimeoutException
 	{
+		startGame("ENFANIT");
+
 		final Random random = new Random();
 		instance.grid = game.getGrid();
-		final List<String> legalMoves = new ArrayList<>(this.instance.getLegalMoves("ENFANITS"));
+		final List<String> legalMoves = new ArrayList<>(this.instance.getLegalMoves("ENFANIT"));
 		for (int i = 0; i < 100; i++)
 		{
 			this.playQueue.add(legalMoves.get(random.nextInt(legalMoves.size())));
+			this.game.awaitEndOfPlay(1);
+			assertFalse(player.isLastPlayError);
 			this.game.rollbackLastMove(this.player);
 		}
 	}
@@ -142,6 +124,36 @@ class BruteForceMethodTest
 //		player.editParameters();
 //		player.editParameters();
 //	}
+
+	/**
+	 *
+	 * @param bag first letters the bag must deliver.
+	 */
+	private void startGame(final String bag) throws ScrabbleException
+	{
+		game = new Game(DICTIONARY);
+		game.assertFirstLetters("ENFANITS");
+		player = new Game.Player("AI Player");
+		game.addPlayer(player);
+		playQueue = new ArrayBlockingQueue<>(100);
+		game.addListener(new AbstractGameListener()
+		{
+			@Override
+			public void onPlayRequired(final Game.Player player)
+			{
+				try
+				{
+					instance.grid = game.getGrid();
+					game.play(player, Action.parse(playQueue.take()));
+				}
+				catch (ScrabbleException.ForbiddenPlayException | InterruptedException | ScrabbleException.NotInTurn e)
+				{
+					throw new Error(e);
+				}
+			}
+		});
+		new Thread(() -> game.play()).start();
+	}
 
 	/**
 	 * Grid with extended functions.

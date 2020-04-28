@@ -19,6 +19,11 @@ public class ScrabbleException extends Exception
 		this(message + "\nCaused by: " + cause.toString());
 	}
 
+	@Override
+	public String toString()
+	{
+		return message;
+	}
 
 	/**
 	 * Exception reporting the use of an invalid secret.

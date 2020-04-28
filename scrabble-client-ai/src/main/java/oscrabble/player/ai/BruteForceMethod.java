@@ -232,7 +232,7 @@ public class BruteForceMethod
 					{
 						tile = letter;
 						final DAWGNode nextNode = node.transition(letter);
-						ctx.rack.remove(tile);
+						ctx.rack.remove((Character)tile);
 						if (!possibleNextSquare.isLastOfLine(ctx.direction))
 						{
 							extendRight(ctx, partialWord + letter, nextNode,
