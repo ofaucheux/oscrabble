@@ -16,18 +16,16 @@ import java.util.regex.Pattern;
 public class Grid
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Grid.class);
+	public static final int GRID_SIZE = 15;
 
 	private final Square[][] squares;
-	private final int size;
 
-	public Grid(final int gridSize)
+	public Grid()
 	{
-		this.size = gridSize;
-
-		this.squares = new Square[this.size +2][];
+		this.squares = new Square[GRID_SIZE +2][];
 		for (int x = 0; x < this.squares.length; x++)
 		{
-			this.squares[x] = new Square[this.size + 2];
+			this.squares[x] = new Square[GRID_SIZE + 2];
 			for (int y = 0; y < this.squares.length; y++)
 			{
 				this.squares[x][y] = new Square(x, y);
@@ -102,7 +100,7 @@ public class Grid
 
 	public int getSize()
 	{
-		return this.size;
+		return GRID_SIZE;
 	}
 
 
@@ -172,8 +170,8 @@ public class Grid
 
 		public boolean isBorder()
 		{
-			return this.x == 0 || this.x == Grid.this.size + 1
-					|| this.y == 0 || this.y == Grid.this.size + 1;
+			return this.x == 0 || this.x == Grid.GRID_SIZE + 1
+					|| this.y == 0 || this.y == Grid.GRID_SIZE + 1;
 		}
 
 		public Set<Square> getNeighbours()
@@ -212,7 +210,7 @@ public class Grid
 		public boolean isLastOfLine(final Direction direction)
 		{
 			final int position = direction == Direction.HORIZONTAL ? this.x : this.y;
-			return position == size - 1;
+			return position == GRID_SIZE - 1;
 		}
 
 		oscrabble.data.Square toData()
@@ -259,7 +257,7 @@ public class Grid
 
 	public Square getCentralSquare()
 	{
-		final int center = (int) Math.ceil(this.size / 2f) - 1;
+		final int center = (int) Math.ceil(GRID_SIZE / 2f) - 1;
 		return this.squares[center][center];
 	}
 
@@ -270,15 +268,15 @@ public class Grid
 	private Bonus calculateBonus(final int x, final int y)
 	{
 
-		final int midColumn = this.size / 2 + 1;
+		final int midColumn = GRID_SIZE / 2 + 1;
 
 		if (x > midColumn)
 		{
-			return calculateBonus(this.size - x +1, y);
+			return calculateBonus(GRID_SIZE - x +1, y);
 		}
 		else if (y > midColumn)
 		{
-			return calculateBonus(x, this.size - y + 1);
+			return calculateBonus(x, GRID_SIZE - y + 1);
 		}
 
 		if (x > y)
@@ -292,7 +290,7 @@ public class Grid
 			return Bonus.BORDER;
 		}
 
-//		if (this.size != SCRABBLE_SIZE)
+//		if (GRID_SIZE != SCRABBLE_SIZE)
 //		{
 //			return Bonus.NONE;
 //		}

@@ -15,7 +15,7 @@ class GridTest
 	@Test
 	public void notation() throws ScrabbleException.ForbiddenPlayException
 	{
-		final Grid g = new Grid(15);
+		final Grid g = new Grid();
 		assertEquals("A1", Grid.Coordinate.getNotation(g.get(0, 0), Grid.Direction.HORIZONTAL));
 
 		assertEquals("H8", Grid.Coordinate.getNotation(g.getCentralSquare(), Grid.Direction.HORIZONTAL));
@@ -28,7 +28,7 @@ class GridTest
 	@Test
 	public void neighbours()
 	{
-		final Grid grid = new Grid(15);
+		final Grid grid = new Grid();
 		Set<Grid.Square> neighbours;
 
 		neighbours = grid.get(4, 3).getNeighbours();
@@ -45,7 +45,7 @@ class GridTest
 	@Test
 	public void jokers() throws ScrabbleException.ForbiddenPlayException
 	{
-		final Grid grid = new Grid(15);
+		final Grid grid = new Grid();
 		assertEquals(3, grid.get("F6").letterBonus);
 		assertEquals(3, grid.get("A1").letterBonus);
 	}

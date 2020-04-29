@@ -87,7 +87,7 @@ class BruteForceMethodTest
 	{
 		startGame("ELEPHANT");
 
-		this.instance.grid = new Grid(15);
+		this.instance.grid = new Grid();
 		this.instance.grid.play("2J ELEPHANT");
 		final Set<String> playTiles = this.instance.getLegalMoves("ASME TH");
 		assertTrue(playTiles.contains("J5 PHASME"));
@@ -148,11 +148,6 @@ class BruteForceMethodTest
 	 */
 	private class TestGrid extends Grid
 	{
-		public TestGrid(final int gridSize)
-		{
-			super(gridSize);
-		}
-
 		public void put(final int x, final int y, final Direction direction, final String word)
 		{
 			Square sq = this.get(x - 1, y - 1);
