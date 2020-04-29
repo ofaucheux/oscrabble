@@ -18,6 +18,9 @@ public class Grid
 	public static final Logger LOGGER = LoggerFactory.getLogger(Grid.class);
 	public static final int GRID_SIZE = 15;
 
+	/**
+	 * Arrays with 17 cases, as the first and last are border.
+	 */
 	private final Square[][] squares;
 
 	public Grid()
@@ -133,10 +136,17 @@ public class Grid
 	 */
 	public class Square
 	{
-		public final int x;
-		public final int y;
+		/**
+		 * Values are 1-based: the case A1 has the coordinate (1,1). The case (1,0) exists, but is marked as border one.
+		 */
+		public final int x, y;
+
+		public final boolean isBorder;
+
 		public int letterBonus;
+
 		public int wordBonus;
+
 
 //		/**
 //		 * Action, which has filled this field.
@@ -149,6 +159,8 @@ public class Grid
 		{
 			this.x = x;
 			this.y = y;
+			this.isBorder = x == 0 || x == GRID_SIZE + 1
+					|| y == 0 || y == GRID_SIZE + 1;
 
 			final Bonus bonus = calculateBonus(x, y);
 			this.wordBonus = bonus.wordFactor;
@@ -250,14 +262,14 @@ public class Grid
 
 		final Coordinate c = new Coordinate();
 		c.direction = direction;
-		c.x = m.group(groupX).charAt(0) - 'A';
-		c.y = Integer.parseInt(m.group(groupY)) - 1;
+		c.x = m.group(groupX).charAt(0) - 'A' + 1;
+		c.y = Integer.parseInt(m.group(groupY));
 		return c;
 	}
 
 	public Square getCentralSquare()
 	{
-		final int center = (int) Math.ceil(GRID_SIZE / 2f) - 1;
+		final int center = (int) Math.ceil(GRID_SIZE / 2f);
 		return this.squares[center][center];
 	}
 
@@ -411,13 +423,13 @@ public class Grid
 		 */
 		public static String getNotation(final int x, final int y, final Direction direction)
 		{
-			String sx = Character.toString((char) ('A' + x));
+			String sx = Character.toString((char) ('A' + x-1));
 			switch (direction)
 			{
 				case HORIZONTAL:
- 					return sx + (y+1);
+ 					return sx + (y);
 				case VERTICAL:
-					return (y + 1) + sx;
+					return y + sx;
 				default:
 					throw new AssertionError();
 			}

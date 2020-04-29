@@ -16,13 +16,13 @@ class GridTest
 	public void notation() throws ScrabbleException.ForbiddenPlayException
 	{
 		final Grid g = new Grid();
-		assertEquals("A1", Grid.Coordinate.getNotation(g.get(0, 0), Grid.Direction.HORIZONTAL));
+		assertEquals("A1", Grid.Coordinate.getNotation(g.get(1, 1), Grid.Direction.HORIZONTAL));
 
 		assertEquals("H8", Grid.Coordinate.getNotation(g.getCentralSquare(), Grid.Direction.HORIZONTAL));
 
 		final Grid.Coordinate b4 = Grid.getCoordinate("B4");
-		assertEquals(1, b4.x);
-		assertEquals(3, b4.y);
+		assertEquals(2, b4.x);
+		assertEquals(4, b4.y);
 	}
 
 	@Test
@@ -47,6 +47,6 @@ class GridTest
 	{
 		final Grid grid = new Grid();
 		assertEquals(3, grid.get("F6").letterBonus);
-		assertEquals(3, grid.get("A1").letterBonus);
+		assertEquals(3, grid.get("A1").wordBonus);
 	}
 }
