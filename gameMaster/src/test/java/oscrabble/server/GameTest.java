@@ -301,7 +301,7 @@ public class GameTest
 		final PredefinedPlayer etienne = addPlayer("Etienne");
 		startGame(true);
 
-		etienne.moves.add("H7 As");
+		etienne.moves.add("G8 As");
 		this.game.awaitEndOfPlay(1);
 		assertFalse(etienne.isLastPlayError);
 
@@ -425,13 +425,13 @@ public class GameTest
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
-		etienne.moves.add("H7 As");
+		etienne.moves.add("H8 As");
 		this.game.awaitEndOfPlay(1);
 		assertEquals(2, this.game.getScore(etienne));
 
-		etienne.moves.add("8H SI");
+		etienne.moves.add("8I SI");
 		this.game.awaitEndOfPlay(2);
-		assertEquals(3, this.game.getScore(etienne));
+		assertEquals(4, this.game.getScore(etienne));
 
 //		do
 //		{
@@ -456,10 +456,10 @@ public class GameTest
 
 			startGame(true);
 			int move = 1;
-			anton.moves.add("8D PLaCE");
+			anton.moves.add("D8 PLaCE");
 			this.game.awaitEndOfPlay(move++);
 			assertEquals(22, this.game.getScore(anton));
-			anton.moves.add(RANDOM.nextBoolean() ? "F4 NIERa" : "F4 NIERA");
+			anton.moves.add(RANDOM.nextBoolean() ? "4F NIERa" : "4F NIERA");
 			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();
@@ -472,10 +472,10 @@ public class GameTest
 			this.game.assertFirstLetters(" CELMNPAISSE");
 			startGame(true);
 			int move = 1;
-			anton.moves.add("8D aMPLE");
+			anton.moves.add("D8 aMPLE");
 			this.game.awaitEndOfPlay(move++);
 			assertEquals(14, this.game.getScore(anton));
-			anton.moves.add("D7 CAISSE");
+			anton.moves.add("7D CAISSE");
 			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getScore(anton));
 			this.game.quitGame();

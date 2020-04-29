@@ -885,26 +885,19 @@ public class Game
 		return this.actions.size();
 	}
 
-	private boolean containsCentralField(final Action.PlayTiles move) throws ScrabbleException.ForbiddenPlayException
+	private boolean containsCentralField(final Action.PlayTiles move)
 	{
-		// todo: beiing done.
-		final int center = grid.getCentralSquare().x;
-		final int length = move.word.length();
-
-		Grid.Coordinate c = move.startSquare;
-		final boolean ok;
-		switch (c.direction)
+		final Grid.Square centralSquare = this.grid.getCentralSquare();
+		Grid.Square sq = this.grid.get(move.startSquare);
+		for (int i = 0; i < move.word.length(); i++)
 		{
-			case VERTICAL:
-				ok = (c.x == center && (c.y <= center && (c.y + length - 1) >= center));
-				break;
-			case HORIZONTAL:
-				ok = c.y == center && (c.x <= center && (c.x + length - 1) >= center);
-				break;
-			default:
-				throw new AssertionError();
+			if (sq.equals(centralSquare))
+			{
+				return true;
+			}
+			sq = sq.getNext(move.startSquare.direction);
 		}
-		return ok;
+		return false;
 	}
 
 	/**

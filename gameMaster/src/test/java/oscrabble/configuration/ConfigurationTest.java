@@ -1,6 +1,7 @@
 package oscrabble.configuration;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ class ConfigurationTest
 	public static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationTest.class);
 
 	@Test
+	@Disabled
 	void configuration() throws InterruptedException, IOException
 	{
 		final Config config1 = new Config();

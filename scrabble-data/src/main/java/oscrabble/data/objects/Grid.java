@@ -139,7 +139,7 @@ public class Grid
 		/**
 		 * Values are 1-based: the case A1 has the coordinate (1,1). The case (1,0) exists, but is marked as border one.
 		 */
-		public final int x, y;
+		private final int x, y;
 
 		public final boolean isBorder;
 
@@ -232,6 +232,12 @@ public class Grid
 			square.x =this.x;
 			square.y = this.y;
 			return square;
+		}
+
+		@Override
+		public String toString()
+		{
+			return Coordinate.getNotation(this, Direction.HORIZONTAL);
 		}
 	}
 
