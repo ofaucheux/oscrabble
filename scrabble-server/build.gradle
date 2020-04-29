@@ -9,6 +9,7 @@ plugins {
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
+
 dependencies {
 
     compile 'commons-codec:commons-codec:1.13'

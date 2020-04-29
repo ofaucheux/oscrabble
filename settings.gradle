@@ -1,6 +1,6 @@
 include 'scrabble-data'
 include "scrabble-dictionary"
-include "gameMaster"
+include "scrabble-server"
 include 'scrabble-client-ai'
 //include ':scrabble-client'
 
