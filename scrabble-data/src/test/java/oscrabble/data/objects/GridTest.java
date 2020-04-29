@@ -41,4 +41,12 @@ class GridTest
 		neighbours = grid.get(grid.getSize() - 1, grid.getSize() - 1).getNeighbours();
 		assertEquals(2, neighbours.size());
 	}
+
+	@Test
+	public void jokers() throws ScrabbleException.ForbiddenPlayException
+	{
+		final Grid grid = new Grid(15);
+		assertEquals(3, grid.get("F6").letterBonus);
+		assertEquals(3, grid.get("A1").letterBonus);
+	}
 }

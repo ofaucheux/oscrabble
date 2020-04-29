@@ -40,6 +40,12 @@ public class Grid
 		return get(coordinate.x, coordinate.y);
 	}
 
+	public Square get(final String coordinate) throws ScrabbleException.ForbiddenPlayException
+	{
+		final Coordinate c = getCoordinate(coordinate);
+		return get(c);
+	}
+
 	/**
 	 * (0-based coordinates)
 	 * @param x
