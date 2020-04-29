@@ -17,7 +17,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BruteForceMethodTest
+public class BruteForceMethodTest
 {
 
 	private static final Random RANDOM = new Random();
@@ -39,7 +39,7 @@ class BruteForceMethodTest
 	@Test
 	void loadDictionary()
 	{
-		for (final String word : Arrays.asList("HERBE", "AIMEE", "A", "ETUVES"))
+		for (final String word : Arrays.asList("HERBE", "AIMEE", "ETUVES"))
 		{
 			assertTrue(this.instance.automaton.contains(word), "Nicht gefunden: " + word);
 		}

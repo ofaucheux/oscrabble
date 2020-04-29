@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
-import oscrabble.data.Square;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -237,7 +236,12 @@ public class Grid
 		@Override
 		public String toString()
 		{
-			return Coordinate.getNotation(this, Direction.HORIZONTAL);
+			return getNotation(Direction.HORIZONTAL);
+		}
+
+		public String getNotation(final Direction direction)
+		{
+			return Coordinate.getNotation(this, direction);
 		}
 	}
 

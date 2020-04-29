@@ -5,7 +5,6 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Notation;
 import oscrabble.ScrabbleException;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
@@ -175,13 +174,21 @@ public class BruteForceMethod
 		getWords(this.automaton.getSourceNode(), "", remaining, words);
 
 		final Set<String> moves = new HashSet<>();
-		final int center = grid.getCentralSquare().x;
+		final Grid.Square centralSquare = this.grid.getCentralSquare();
 		for (final String word : words)
 		{
-			int start = center;
+			HashMap<Grid.Direction, Grid.Square> wordStart = new HashMap<>();
+			wordStart.put(Grid.Direction.HORIZONTAL, centralSquare);
+			wordStart.put(Grid.Direction.VERTICAL, centralSquare);
+
 			for (int i = 0; i < word.length(); i++)
 			{
-				moves.add(Grid.Coordinate.getNotation(center - i, center, Grid.Direction.HORIZONTAL) + " " + word);
+				for (final Grid.Direction d: wordStart.keySet())
+				{
+					final Grid.Square startSquare = wordStart.get(d);
+					moves.add(startSquare.getNotation(d) + " " + word);
+					wordStart.put(d, startSquare.getPrevious(d));
+				}
 			}
 		}
 		return moves;
