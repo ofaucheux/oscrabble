@@ -9,14 +9,10 @@ import oscrabble.server.Game;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
 class AIPlayerTest
 {
-
-	public static final Random RANDOM = new Random();
 
 	@Test
 	void onPlayRequired() throws ScrabbleException, TimeoutException, InterruptedException
@@ -36,9 +32,9 @@ class AIPlayerTest
 				try
 				{
 					bfm.grid = game.getGrid();
-					final List<String> moves = new ArrayList<>();
-					moves.addAll(bfm.getLegalMoves(game.getRack(player)));
-					game.play(player, Action.parse(moves.get(RANDOM.nextInt(moves.size()))));
+					final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(game.getRack(player)));
+					moves.sort((o1, o2) -> o1.length() - o2.length());
+					game.play(player, Action.parse(moves.get(moves.size() - 1)));
 				}
 				catch (ScrabbleException.ForbiddenPlayException | ScrabbleException.NotInTurn e)
 				{
