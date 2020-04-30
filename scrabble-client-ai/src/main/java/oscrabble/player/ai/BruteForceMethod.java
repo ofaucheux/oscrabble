@@ -288,7 +288,7 @@ public class BruteForceMethod
 						tile = ' ';
 						final DAWGNode nextNode = node.transition(letter);
 						ctx.rack.remove((Character)tile);
-						if (!possibleNextSquare.isLastOfLine(ctx.direction))
+						if (!possibleNextSquare.isBorder)
 						{
 							extendRight(ctx, partialWord + Character.toLowerCase(letter), nextNode,
 									possibleNextSquare.getNext(ctx.direction));
@@ -301,7 +301,7 @@ public class BruteForceMethod
 						tile = letter;
 						final DAWGNode nextNode = node.transition(letter);
 						ctx.rack.remove((Character)tile);
-						if (!possibleNextSquare.isLastOfLine(ctx.direction))
+						if (!possibleNextSquare.isBorder())
 						{
 							extendRight(ctx, partialWord + letter, nextNode,
 									possibleNextSquare.getNext(ctx.direction));
