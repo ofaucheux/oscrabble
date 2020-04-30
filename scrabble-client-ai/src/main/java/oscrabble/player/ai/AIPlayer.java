@@ -37,7 +37,7 @@ public class AIPlayer extends oscrabble.data.Player
 
 		try
 		{
-			final String rack = this.game.getRack(this);
+			final 	String rack = this.game.getRack(this);
 			Set<String> possibleMoves = new HashSet<>(bruteForceMethod.getLegalMoves(rack));
 
 			if (possibleMoves.isEmpty())

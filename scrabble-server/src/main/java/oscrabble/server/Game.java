@@ -411,6 +411,7 @@ public class Game
 					messages.add(SCRABBLE_MESSAGE);
 				}
 				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player.name, playTiles.notation, score));
+				LOGGER.info("Grid is now: " + grid);
 			}
 			else if (action instanceof Action.Exchange)
 			{
@@ -916,6 +917,16 @@ public class Game
 	public void awaitEndOfPlay(final int roundNr) throws TimeoutException, InterruptedException
 	{
 		awaitEndOfPlay(roundNr, 30, TimeUnit.SECONDS);
+	}
+
+	public String getRack(final Player player)
+	{
+		final StringBuffer sb = new StringBuffer();
+		for (final Character character : player.rack)
+		{
+			sb.append(character);
+		}
+		return sb.toString();
 	}
 
 	/**

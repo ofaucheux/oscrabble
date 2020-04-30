@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -357,6 +354,22 @@ public class Grid
 		{
 			return Bonus.NONE;
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		final StringBuffer sb = new StringBuffer("Grid{\n");
+		for (final Square[] line : this.squares)
+		{
+			for (final Square square : line)
+			{
+				sb.append(square.isBorder ? '#' : square.c == null ? ' ' : square.c);
+			}
+			sb.append('\n');
+		}
+		sb.append("}");
+		return sb.toString();
 	}
 
 	public oscrabble.data.Grid toData()
