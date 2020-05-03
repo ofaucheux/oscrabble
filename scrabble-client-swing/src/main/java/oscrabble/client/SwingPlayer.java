@@ -16,7 +16,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class SwingPlayer extends AbstractPlayer
+public class SwingPlayer extends Player
 {
 	static Playground playground;
 	private JRack jRack;

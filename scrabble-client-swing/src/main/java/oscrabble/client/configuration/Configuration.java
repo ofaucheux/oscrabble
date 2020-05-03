@@ -1,6 +1,8 @@
 package oscrabble.client.configuration;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -17,8 +19,7 @@ import java.util.*;
 public abstract class Configuration
 {
 
-	private final static Logger LOGGER = Logger.getLogger(Configuration.class);
-
+	public static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 	/**
 	 * listener to inform after a parameter has been changed
 	 */
@@ -43,7 +44,7 @@ public abstract class Configuration
 				catch (final Throwable e)
 				{
 					final ConfigurationException ex = new ConfigurationException("Error treating field " + field.getName(), e);
-					LOGGER.error(ex, ex);
+					LOGGER.error(ex.toString(), ex);
 					throw ex;
 				}
 			}

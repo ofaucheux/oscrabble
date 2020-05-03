@@ -5,7 +5,7 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import oscrabble.Grid;
+import oscrabble.controller;
 import oscrabble.Rack;
 import oscrabble.ScrabbleException;
 import oscrabble.server.action.Action;
@@ -670,7 +670,7 @@ class Playground
 		/**
 		 * Spielfeld des Scrabbles
 		 */
-		JGrid(final Grid grid, final ScrabbleLanguageInformation sli, final IGame game)
+		JGrid(final Grid grid, final ScrabbleRules sli, final IGame game)
 		{
 			this.grid = grid;
 			this.game = game;
