@@ -5,6 +5,7 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.data.objects.Grid;
 

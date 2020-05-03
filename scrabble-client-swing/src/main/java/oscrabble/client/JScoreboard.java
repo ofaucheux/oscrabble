@@ -1,10 +1,13 @@
 package oscrabble.client;
 
+import oscrabble.data.Player;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Panel for the display of the actual score.
@@ -12,35 +15,32 @@ import java.util.HashMap;
 class JScoreboard extends JPanel
 {
 	private final Playground playground;
-	private final IGame game;
-	private final HashMap<IPlayerInfo, ScorePanelLine> scoreLabels = new HashMap<>();
+	private final HashMap<Player, ScorePanelLine> scoreLabels = new HashMap<>();
 
-	JScoreboard(final Playground playground, final IGame game)
+	JScoreboard(final Playground playground)
 	{
 		this.playground = playground;
-		this.game = game;
 		setPreferredSize(new Dimension(200, 0));
 		setLayout(new GridBagLayout());
 		setBorder(new TitledBorder("Score"));
 	}
+//
+//	void refreshDisplay()
+//	{
+//		for (final IPlayerInfo playerInfo : this.game.getPlayers())
+//		{
+//			this.scoreLabels.get(playerInfo).score.setText(playerInfo.getScore() + " pts");
+//		}
+//	}
 
-	void refreshDisplay()
-	{
-		for (final IPlayerInfo playerInfo : this.game.getPlayers())
-		{
-			this.scoreLabels.get(playerInfo).score.setText(playerInfo.getScore() + " pts");
-		}
-	}
-
-	void prepareBoard()
+	void prepareBoard(final List<Player> players)
 	{
 		final double SMALL_WEIGHT = 0.1;
 		final double BIG_WEIGHT = 10;
 
 		final Dimension buttonDim = new Dimension(20, 20);
-		final List<IPlayerInfo> players = this.game.getPlayers();
 		final GridBagConstraints c = new GridBagConstraints();
-		for (final IPlayerInfo player : players)
+		for (final Player player : players)
 		{
 			final ScorePanelLine line = new ScorePanelLine();
 			this.scoreLabels.put(player, line);
@@ -57,7 +57,7 @@ class JScoreboard extends JPanel
 			c.gridx++;
 			c.weightx = BIG_WEIGHT;
 			c.anchor = GridBagConstraints.LINE_START;
-			final String name = player.getName();
+			final String name = player.name;
 			add(new JLabel(name), c);
 			c.weightx = SMALL_WEIGHT;
 
@@ -75,19 +75,21 @@ class JScoreboard extends JPanel
 				@Override
 				public void actionPerformed(final ActionEvent e)
 				{
+					// todo
 					final SwingWorker<Void, Void> worker = new SwingWorker<>()
 					{
 						@Override
 						protected Void doInBackground()
 						{
-							JScoreboard.this.game.editParameters(playground.swingPlayers.getFirst().getPlayerKey(), player);
+//							JScoreboard.this.game.editParameters(playground.swingPlayers.getFirst().getPlayerKey(), player);
 							return null;
 						}
 					};
 					worker.execute();
 				}
 			});
-			line.parameterButton.setVisible(player.hasEditableParameters());
+			// todo
+//			line.parameterButton.setVisible(player.hasEditableParameters());
 			add(line.parameterButton, c);
 
 		}
@@ -101,7 +103,7 @@ class JScoreboard extends JPanel
 		getParent().validate();
 	}
 
-	private class ScorePanelLine
+	private static class ScorePanelLine
 	{
 		private JLabel score;
 		private JLabel currentPlaying;
