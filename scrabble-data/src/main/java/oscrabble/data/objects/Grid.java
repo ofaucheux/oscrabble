@@ -78,21 +78,12 @@ public class Grid
 		return this.get(triple).c == null;
 	}
 
-	public Character getChar(final String notation) throws ScrabbleException.ForbiddenPlayException
-	{
-		final Coordinate coordinate = getCoordinate(notation);
-		return this.get(coordinate).c;
-	}
-
 	public Collection<Square> getAllSquares()
 	{
 		final ArrayList<Square> list = new ArrayList<>();
 		for (final Square[] line : this.squares)
 		{
-			for (final Square square : line)
-			{
-				list.add(square);
-			}
+			Collections.addAll(list, line);
 		}
 		return list;
 	}
@@ -314,7 +305,7 @@ public class Grid
 //			return Bonus.NONE;
 //		}
 //
-		assert (1 <= x && x <= y && y <= midColumn);
+		assert 1 <= x && x <= y;
 
 		if (x == y)
 		{
@@ -444,7 +435,7 @@ public class Grid
 		 * @param direction
 		 * @return
 		 */
-		public static String getNotation(final int x, final int y, final Direction direction)
+		private static String getNotation(final int x, final int y, final Direction direction)
 		{
 			String sx = Character.toString((char) ('A' + x-1));
 			switch (direction)

@@ -20,18 +20,16 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BruteForceMethodTest
 {
 
-	private static final Random RANDOM = new Random();
 	private BruteForceMethod instance;
 
 	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
-	private TestGrid grid;
 	private ArrayBlockingQueue<String> playQueue;
 	private Game game;
 	private Game.Player player;
 
 
 	@BeforeEach
-	public void BruteForceTest() throws ScrabbleException
+	public void BruteForceTest()
 	{
 		this.instance = new BruteForceMethod(DICTIONARY);
 	}
@@ -141,31 +139,6 @@ public class BruteForceMethodTest
 			}
 		});
 		new Thread(() -> this.game.play()).start();
-	}
-
-	/**
-	 * Grid with extended functions.
-	 */
-	private class TestGrid extends Grid
-	{
-		public void put(final int x, final int y, final Direction direction, final String word)
-		{
-			Square sq = this.get(x - 1, y - 1);
-			for (int i = 0; i < word.length(); i++)
-			{
-				sq.c = word.charAt(i);
-				sq = sq.getNeighbour(direction, 1);
-			}
-		}
-
-		public void clear()
-		{
-			final int size = this.getSize();
-			for (int i = 0; i < (size ^ 2); i++)
-			{
-				get(i % size, i / size).c = null;
-			}
-		}
 	}
 
 }

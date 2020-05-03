@@ -5,10 +5,8 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.ScrabbleException;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
-import oscrabble.server.IGame;
 
 import java.io.*;
 import java.util.*;
@@ -16,20 +14,15 @@ import java.util.*;
 public class BruteForceMethod
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(BruteForceMethod.class);
-	private final IDictionary dictionary;
 
 	CompressedDAWGSet automaton;
 	
 	/** The grid, to update after each round */
 	Grid grid;
 
-	private final int gridSize;
-
 	public BruteForceMethod(final IDictionary dictionary)
 	{
-		this.dictionary = dictionary;
 		loadDictionary(dictionary);
-		this.gridSize = dictionary.getScrabbleRules().gridSize;
 	}
 
 	void loadDictionary(final IDictionary dictionary)
@@ -110,7 +103,7 @@ public class BruteForceMethod
 		}
 
 		final CalculateCtx ctx = new CalculateCtx();
-		ctx.grid = grid;
+		ctx.grid = this.grid;
 		ctx.rack = new LinkedList<>();
 		for (final char c : rack.toCharArray())
 		{
@@ -213,6 +206,7 @@ public class BruteForceMethod
 		{
 			if (remainingChars.contains(transition))
 			{
+				//noinspection RedundantCast
 				remainingChars.remove((Character)transition);
 				final String now = reached + transition;
 				final DAWGNode newNode = position.transition(transition);
@@ -235,6 +229,7 @@ public class BruteForceMethod
 			{
 				if (ctx.rack.contains(c))
 				{
+					//noinspection RedundantCast
 					ctx.rack.remove((Character)c);
 					leftPart(ctx, partialWord + c, node.transition(c), limit - 1);
 					ctx.rack.add(c);
