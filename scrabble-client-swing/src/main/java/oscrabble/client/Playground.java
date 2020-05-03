@@ -5,22 +5,8 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import oscrabble.controller;
-import oscrabble.Rack;
-import oscrabble.ScrabbleException;
-import oscrabble.server.action.Action;
-import oscrabble.server.action.Exchange;
-import oscrabble.server.action.PlayTiles;
-import oscrabble.server.action.SkipTurn;
-import oscrabble.configuration.ConfigurationPanel;
-import oscrabble.dictionary.DictionaryComponent;
-import oscrabble.dictionary.ScrabbleLanguageInformation;
-import oscrabble.dictionary.Tile;
-import oscrabble.player.BruteForceMethod;
-import oscrabble.server.Game;
-import oscrabble.server.IGame;
-import oscrabble.server.IPlayerInfo;
-import oscrabble.server.Play;
+import oscrabble.data.ScrabbleRules;
+import oscrabble.data.objects.Grid;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -670,12 +656,11 @@ class Playground
 		/**
 		 * Spielfeld des Scrabbles
 		 */
-		JGrid(final Grid grid, final ScrabbleRules sli, final IGame game)
+		JGrid(final Grid grid, final ScrabbleRules sli)
 		{
 			this.grid = grid;
 			this.game = game;
 			final int numberOfRows = grid.getSize() + 2;
-			this.sli = sli;
 			this.dictionaryComponent = new DictionaryComponent(game);
 
 			this.setLayout(new BorderLayout());

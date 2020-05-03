@@ -1,4 +1,7 @@
-package oscrabble.dictionary;
+package oscrabble.client;
+
+import oscrabble.client.dictionary.DictionaryException;
+import oscrabble.client.dictionary.DictionaryService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,18 +22,13 @@ public class DictionaryComponent extends JTabbedPane
 	 */
 	private final Set<String> found = new HashSet<>();
 
-	/**
-	 * Provider
-	 */
-	private final WordMetainformationProvider wmip;
+	private DictionaryService dico;
 
 	/**
 	 * Erstellt ein {@link DictionaryComponent}-
-	 * @param wmip Provider
 	 */
-	public DictionaryComponent(final WordMetainformationProvider wmip)
+	public DictionaryComponent()
 	{
-		this.wmip = wmip;
 		// add a word
 		insertTab("+", null,null, "Search a word...", 0);
 		addMouseListener(new MouseAdapter()
@@ -81,11 +79,11 @@ public class DictionaryComponent extends JTabbedPane
 		}
 
 		Iterable<String> descriptions;
-		if (this.wmip != null)
+		if (this.dico != null)
 		{
 			try
 			{
-				descriptions = this.wmip.getDefinitions(word);
+				descriptions = this.dico.getDefinitions(word);
 				this.found.add(word);
 			}
 			catch (DictionaryException e)
@@ -114,4 +112,5 @@ public class DictionaryComponent extends JTabbedPane
 		addTab(word, sp);
 		setSelectedComponent(sp);
 	}
+
 }
