@@ -6,7 +6,6 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.data.ScrabbleRules;
-import oscrabble.data.Square;
 import oscrabble.data.objects.Grid;
 
 import javax.swing.*;
@@ -121,7 +120,7 @@ class Playground
 
 		this.jGrid = new JGrid(getGrid(), this.game.getScrabbleLanguageInformation(), this.game);
 		this.jGrid.setClient(this);
-		this.jScoreboard = new JScoreboard(this.game);
+		this.jScoreboard = new JScoreboard(this, this.game);
 		this.commandPrompt = new JTextField();
 		final CommandPromptAction promptListener = new CommandPromptAction();
 		this.commandPrompt.addActionListener(promptListener);
@@ -228,7 +227,7 @@ class Playground
 		possibleMovePanel.setSize(new Dimension(200, 300));
 		possibleMovePanel.setLayout(new BorderLayout());
 		final BruteForceMethod bruteForceMethod = new BruteForceMethod(	this.game.getDictionary());
-		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(bruteForceMethod));
+		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(this, bruteForceMethod));
 		showPossibilitiesButton.setFocusable(false);
 		resetPossibleMovesPanel();
 
@@ -411,10 +410,10 @@ class Playground
 		}
 
 		this.currentPlay = play;
-		for (final Map.Entry<IPlayerInfo, Playground.JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
+		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
 		{
 			final IPlayerInfo playerInfo = entry.getKey();
-			final Playground.JScoreboard.ScorePanelLine line = entry.getValue();
+			final JScoreboard.ScorePanelLine line = entry.getValue();
 			line.currentPlaying.setVisible(this.currentPlay != null && playerInfo.getName().equals(this.currentPlay.player.getName()));
 		}
 
@@ -472,107 +471,6 @@ class Playground
 	int getNumberSwingPlayers()
 	{
 		return this.swingPlayers.size();
-	}
-
-	/**
-	 * Panel for the display of the actual score.
-	 */
-	private class JScoreboard extends JPanel
-	{
-		private final IGame game;
-		private final HashMap<IPlayerInfo, ScorePanelLine> scoreLabels = new HashMap<>();
-
-		JScoreboard(final IGame game)
-		{
-			this.game = game;
-			setPreferredSize(new Dimension(200, 0));
-			setLayout(new GridBagLayout());
-			setBorder(new TitledBorder("Score"));
-		}
-
-		void refreshDisplay()
-		{
-			for (final IPlayerInfo playerInfo : this.game.getPlayers())
-			{
-				this.scoreLabels.get(playerInfo).score.setText(playerInfo.getScore() + " pts");
-			}
-		}
-
-		void prepareBoard()
-		{
-			final double SMALL_WEIGHT = 0.1;
-			final double BIG_WEIGHT = 10;
-
-			final Dimension buttonDim = new Dimension(20, 20);
-			final List<IPlayerInfo> players = this.game.getPlayers();
-			final GridBagConstraints c = new GridBagConstraints();
-			for (final IPlayerInfo player : players)
-			{
-				final ScorePanelLine line = new ScorePanelLine();
-				this.scoreLabels.put(player, line);
-
-				c.insets = new Insets(0, 0, 0, 0);
-				c.gridy++;
-				c.gridx = 0;
-				c.weightx = SMALL_WEIGHT;
-				line.currentPlaying = new JLabel("►");
-				line.currentPlaying.setPreferredSize(buttonDim);
-				line.currentPlaying.setVisible(false);
-				add(line.currentPlaying, c);
-
-				c.gridx++;
-				c.weightx = BIG_WEIGHT;
-				c.anchor = GridBagConstraints.LINE_START;
-				final String name = player.getName();
-				add(new JLabel(name), c);
-				c.weightx = SMALL_WEIGHT;
-
-				c.gridx++;
-				c.anchor = GridBagConstraints.LINE_END;
-				line.score = new JLabel();
-				add(line.score, c);
-
-				c.gridx++;
-				line.parameterButton = new JButton();
-				line.parameterButton.setPreferredSize(buttonDim);
-				line.parameterButton.setFocusable(false);
-				line.parameterButton.setAction(new AbstractAction("...")
-				{
-					@Override
-					public void actionPerformed(final ActionEvent e)
-					{
-						final SwingWorker<Void, Void> worker = new SwingWorker<>()
-						{
-							@Override
-							protected Void doInBackground()
-							{
-								JScoreboard.this.game.editParameters(Playground.this.swingPlayers.getFirst().getPlayerKey(), player);
-								return null;
-							}
-						};
-						worker.execute();
-					}
-				});
-				line.parameterButton.setVisible(player.hasEditableParameters());
-				add(line.parameterButton, c);
-
-			}
-
-			c.gridy++;
-			c.gridx = 0;
-			c.weighty = 5.0f;
-			add(new JPanel(), c);
-
-			setPreferredSize(new Dimension(200, 50 * players.size()));
-			getParent().validate();
-		}
-
-		private class ScorePanelLine
-		{
-			private JLabel score;
-			private JLabel currentPlaying;
-			private JButton parameterButton;
-		}
 	}
 
 	private DisplayedMessage lastMessage;
@@ -1263,28 +1161,6 @@ class Playground
 		}
 	}
 
-	static class RackCell extends JComponent
-	{
-		private Tile tile;
-
-		RackCell()
-		{
-			setPreferredSize(JTile.CELL_DIMENSION);
-		}
-
-		@Override
-		protected void paintComponent(final Graphics g)
-		{
-			super.paintComponent(g);
-			JTile.drawStone((Graphics2D) g, this, this.tile, Color.black);
-		}
-
-		public void setTile(final Tile tile)
-		{
-			this.tile = tile;
-		}
-	}
-
 	/**
 	 * Filter, das alles Eingetragene Uppercase schreibt
 	 */
@@ -1358,167 +1234,6 @@ class Playground
 
 	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
 	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
-
-	/**
-	 * This action display the list of possible and authorized moves.
-	 */
-	private class PossibleMoveDisplayer extends AbstractAction
-	{
-
-		private final BruteForceMethod bruteForceMethod;
-
-		/**
-		 * Group of buttons for the order
-		 */
-		private final ButtonGroup orderButGroup;
-
-		/**
-		 * List of legal moves
-		 */
-		private ArrayList<Grid.MoveMetaInformation> legalMoves;
-
-		/**
-		 * Swing list of sorted possible moves
-		 */
-		private final JList<Grid.MoveMetaInformation> moveList;
-
-		PossibleMoveDisplayer(final BruteForceMethod bruteForceMethod)
-		{
-			super(LABEL_DISPLAY);
-			this.bruteForceMethod = bruteForceMethod;
-			this.orderButGroup = new ButtonGroup();
-			this.moveList = new JList<>();
-			this.moveList.setCellRenderer(new DefaultListCellRenderer()
-			{
-				@Override
-				public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
-				{
-					final Component label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-					if (value instanceof Grid.MoveMetaInformation)
-					{
-						final Grid.MoveMetaInformation mmi = (Grid.MoveMetaInformation) value;
-						this.setText(mmi.getPlayTiles().toString() + "  " + mmi.getScore() + " pts");
-					}
-					return label;
-				}
-			});
-
-			this.moveList.addListSelectionListener(event -> {
-				PlayTiles playTiles = null;
-				for (int i = event.getFirstIndex(); i <= event.getLastIndex(); i++)
-				{
-					if (this.moveList.isSelectedIndex(i))
-					{
-						playTiles = this.moveList.getModel().getElementAt(i).getPlayTiles();
-						break;
-					}
-				}
-				Playground.this.jGrid.highlightMove(playTiles);
-			});
-
-			this.moveList.addMouseListener(new MouseAdapter()
-			{
-				@Override
-				public void mouseClicked(final MouseEvent e)
-				{
-					if (e.getClickCount() >= 2)
-					{
-						new SwingWorker<>()
-						{
-							@Override
-							protected Object doInBackground() throws Exception
-							{
-								Thread.sleep(100);  // let time to object to be selected by other listener
-								final List<Grid.MoveMetaInformation> selection = PossibleMoveDisplayer.this.moveList.getSelectedValuesList();
-								if (selection.size() != 1)
-								{
-									return null;
-								}
-
-								final PlayTiles playTiles = selection.get(0).getPlayTiles();
-								play(playTiles);
-								Playground.this.commandPrompt.setText("");
-
-								return null;
-							}
-						}.execute();
-					}
-				}
-			});
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent e)
-		{
-			try
-			{
-				if (this.moveList.isDisplayable())
-				{
-					resetPossibleMovesPanel();
-					showPossibilitiesButton.setText(LABEL_DISPLAY);
-					return;
-				}
-
-				final SwingPlayer player = getCurrentSwingPlayer();
-				if (player == null)
-				{
-					showMessage(MESSAGES.getString("player.not.at.turn"));
-					return;
-				}
-
-				final Set<PlayTiles> playTiles = this.bruteForceMethod.getLegalMoves(getGrid(),
-						Playground.this.game.getRack(player, player.getPlayerKey()));
-				this.legalMoves = new ArrayList<>();
-
-				for (final PlayTiles playTile : playTiles)
-				{
-					this.legalMoves.add(getGrid().getMetaInformation(playTile));
-				}
-
-				possibleMovePanel.add(
-						new JScrollPane(this.moveList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
-				);
-
-				final JPanel orderMethodPanel = new JPanel();
-				possibleMovePanel.add(orderMethodPanel, BorderLayout.NORTH);
-				orderMethodPanel.add(new OrderButton(MESSAGES.getString("score"), Grid.MoveMetaInformation.SCORE_COMPARATOR));
-				orderMethodPanel.add(new OrderButton(MESSAGES.getString("length"), Grid.MoveMetaInformation.WORD_LENGTH_COMPARATOR));
-				this.orderButGroup.getElements().asIterator().next().doClick();
-				possibleMovePanel.validate();
-			}
-			catch (ScrabbleException e1)
-			{
-				e1.printStackTrace();
-			}
-
-			showPossibilitiesButton.setText(LABEL_HIDE);
-		}
-
-		/**
-		 * Radio button for the selection of the order of the word list.
-		 */
-		private class OrderButton extends JRadioButton
-		{
-			final Comparator<Grid.MoveMetaInformation> comparator;
-
-			private OrderButton(final String label, final Comparator<Grid.MoveMetaInformation> comparator)
-			{
-				super();
-				this.comparator = comparator;
-
-				PossibleMoveDisplayer.this.orderButGroup.add(this);
-				setAction(new AbstractAction(label)
-				{
-					@Override
-					public void actionPerformed(final ActionEvent e)
-					{
-						PossibleMoveDisplayer.this.legalMoves.sort(OrderButton.this.comparator.reversed());
-						PossibleMoveDisplayer.this.moveList.setListData(new Vector<>(PossibleMoveDisplayer.this.legalMoves));
-					}
-				});
-			}
-		}
-	}
 
 	/**
 	 * Play the move: inform the server about it and clear the client input field.
