@@ -1,10 +1,10 @@
 package oscrabble.data.objects;
 
-import javafx.geometry.HorizontalDirection;
 import org.junit.jupiter.api.Test;
 import oscrabble.ScrabbleException;
-import oscrabble.data.ScrabbleRules;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,5 +48,20 @@ class GridTest
 		final Grid grid = new Grid();
 		assertEquals(3, grid.get("F6").letterBonus);
 		assertEquals(3, grid.get("A1").wordBonus);
+	}
+
+	@Test
+	public void getWords() throws ScrabbleException.ForbiddenPlayException
+	{
+		final Grid g = new Grid();
+		g.play("G3 RHuME");
+		g.play("2H CHIEN");
+		final Set<String> words = g.getWords("H3");
+		assertEquals(g.getWords("3H"), words);
+		assertEquals(new HashSet<>(Arrays.asList("CHIEN", "RHUME")), words);
+		assertEquals(new HashSet<>(Arrays.asList("RHUME")), g.getWords("G3"));
+
+		assertTrue(g.getWords("B3").isEmpty());
+		assertTrue(g.getWords("A1").isEmpty());
 	}
 }

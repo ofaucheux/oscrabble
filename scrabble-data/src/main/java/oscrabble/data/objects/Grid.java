@@ -119,6 +119,41 @@ public class Grid
 	}
 
 	/**
+	 * @param coordinate coordinate of square
+	 * @return the words which the square is part of.
+	 * @throws ScrabbleException.ForbiddenPlayException - // TODO: other exception
+	 */
+	public Set<String> getWords(final String coordinate) throws ScrabbleException.ForbiddenPlayException
+	{
+		final Square origin = get(coordinate);
+		if (origin.isEmpty())
+		{
+			return Collections.emptySet();
+		}
+
+		final LinkedHashSet<String> words = new LinkedHashSet<>();
+		for (final Direction dir : Direction.values())
+		{
+			final StringBuffer sb = new StringBuffer();
+			Square sq = origin;
+			while (!(sq = sq.getPrevious(dir)).isBorder() && !sq.isEmpty())
+			{
+				sb.insert(0, sq.getLetter());
+			}
+			sb.append((sq = origin).getLetter());
+			while (!(sq = sq.getNext(dir)).isBorder() && !sq.isEmpty())
+			{
+				sb.append(sq.getLetter());
+			}
+			if (sb.length() > 1)
+			{
+				words.add(sb.toString());
+			}
+		}
+		return words;
+	}
+
+	/**
 	 * A square
 	 */
 	public class Square
@@ -227,9 +262,36 @@ public class Grid
 			return getNotation(Direction.HORIZONTAL);
 		}
 
+		/**
+		 *
+		 * @return the uppercase character of the stone played on this square, {@code null} if no such.
+		 */
+		Character getLetter()
+		{
+			return this.c == null ? null : Character.toUpperCase(this.c);
+		}
+
 		public String getNotation(final Direction direction)
 		{
 			return Coordinate.getNotation(this, direction);
+		}
+
+		/**
+		 *
+		 * @return x-coordinate, 1-based
+		 */
+		public int getX()
+		{
+			return this.x;
+		}
+
+		/**
+		 *
+		 * @return y-coordinate, 1-based.
+		 */
+		public int getY()
+		{
+			return this.y;
 		}
 	}
 
