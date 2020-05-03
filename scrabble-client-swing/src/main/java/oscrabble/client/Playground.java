@@ -3,11 +3,18 @@ package oscrabble.client;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.ScrabbleException;
+import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
+import oscrabble.data.GameState;
+import oscrabble.data.HistoryEntry;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.data.objects.Grid;
+import oscrabble.player.ai.BruteForceMethod;
+import oscrabble.server.IGame;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -90,12 +97,12 @@ class Playground
 	/**
 	 * Listing of the history of the game
 	 */
-	private JList<Game.HistoryEntry> historyList;
+	private JList<HistoryEntry> historyList;
 
 	/**
 	 * Currently played play.
 	 */
-	private Play currentPlay;
+	private oscrabble.data.Action currentPlay;
 
 	/**
 	 * Registered Swing players
@@ -119,9 +126,9 @@ class Playground
 	{
 		assert this.jGrid == null;
 
-		this.jGrid = new JGrid(getGrid(), this.game.getScrabbleLanguageInformation(), this.game);
+		this.jGrid = new JGrid(getGrid());
 		this.jGrid.setClient(this);
-		this.jScoreboard = new JScoreboard(this, this.game);
+		this.jScoreboard = new JScoreboard(this);
 		this.commandPrompt = new JTextField();
 		final CommandPromptAction promptListener = new CommandPromptAction();
 		this.commandPrompt.addActionListener(promptListener);
@@ -172,7 +179,7 @@ class Playground
 			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
 			{
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setText(((Game.HistoryEntry) value).formatAsString());
+				setText(((HistoryEntry) value).move);
 				return this;
 			}
 		});
@@ -184,64 +191,68 @@ class Playground
 		);
 
 		// highlight the selected item in the list
-		this.historyList.addListSelectionListener(event -> {
-			if (event.getValueIsAdjusting())
-			{
-				return;
-			}
-			for (int index = event.getFirstIndex() ; index <= event.getLastIndex(); index++)
-			{
-				if (this.historyList.isSelectedIndex(index))
-				{
-					final Game.HistoryEntry selected = this.historyList.getModel().getElementAt(index);
-					if (selected.isPlayTileAction())
-					{
-						final PlayTiles playTiles = selected.getPlayTiles();
-						this.jGrid.highlightWord(new ArrayList<>(playTiles.getSquares().keySet()));
-					}
-				}
-			}
-		});
+		// TODO
+//		this.historyList.addListSelectionListener(event -> {
+//			if (event.getValueIsAdjusting())
+//			{
+//				return;
+//			}
+//			for (int index = event.getFirstIndex() ; index <= event.getLastIndex(); index++)
+//			{
+//				if (this.historyList.isSelectedIndex(index))
+//				{
+//					final HistoryEntry selected = this.historyList.getModel().getElementAt(index);
+//					if (selected.isPlayTileAction())
+//					{
+//						final PlayTiles playTiles = selected.getPlayTiles();
+//						this.jGrid.highlightWord(new ArrayList<>(playTiles.getSquares().keySet()));
+//					}
+//				}
+//			}
+//		});
 
 		panel1.add(historyPanel);
-		panel1.add(new JButton(new AbstractAction(MESSAGES.getString("rollback"))
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
-				try
-				{
-					final SwingPlayer first = Playground.this.swingPlayers.getFirst();
-					Playground.this.game.rollbackLastMove(first, first.getPlayerKey());
-				}
-				catch (final Throwable ex)
-				{
-					LOGGER.error("Cannot play action " + e, ex);
-					JOptionPane.showMessageDialog(panel1, ex.toString());
-				}
-			}
-		}
-		));
+		// todo: rollback
+//		panel1.add(new JButton(new AbstractAction(MESSAGES.getString("rollback"))
+//		{
+//			@Override
+//			public void actionPerformed(final ActionEvent e)
+//			{
+//				try
+//				{
+//					final SwingPlayer first = Playground.this.swingPlayers.getFirst();
+//					Playground.this.game.rollbackLastMove(first, first.getPlayerKey());
+//				}
+//				catch (final Throwable ex)
+//				{
+//					LOGGER.error("Cannot play action " + e, ex);
+//					JOptionPane.showMessageDialog(panel1, ex.toString());
+//				}
+//			}
+//		}
+//		));
 
 		possibleMovePanel = new JPanel();
 		possibleMovePanel.setBorder(new TitledBorder(MESSAGES.getString("possible.moves")));
 		possibleMovePanel.setSize(new Dimension(200, 300));
 		possibleMovePanel.setLayout(new BorderLayout());
-		final BruteForceMethod bruteForceMethod = new BruteForceMethod(	this.game.getDictionary());
-		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(this, bruteForceMethod));
-		showPossibilitiesButton.setFocusable(false);
-		resetPossibleMovesPanel();
+		// todo: AI Empfehlungen
+//		final BruteForceMethod bruteForceMethod = new BruteForceMethod(	this.game.getDictionary());
+//		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(this, bruteForceMethod));
+//		showPossibilitiesButton.setFocusable(false);
+//		resetPossibleMovesPanel();
 
 		panel1.add(possibleMovePanel);
 		panel1.add(Box.createVerticalGlue());
 
-		final ConfigurationPanel configPanel = new ConfigurationPanel(
-				this.game.getConfiguration(),
-				null,
-				Collections.singleton("dictionary")
-		);
-		panel1.add(configPanel);
-		configPanel.setBorder(new TitledBorder(MESSAGES.getString("server.configuration")));
+		// todo: configpanel
+//		final ConfigurationPanel configPanel = new ConfigurationPanel(
+//				this.game.getConfiguration(),
+//				null,
+//				Collections.singleton("dictionary")
+//		);
+//		panel1.add(configPanel);
+//		configPanel.setBorder(new TitledBorder(MESSAGES.getString("server.configuration")));
 		eastPanel.add(panel1, BorderLayout.CENTER);
 		this.gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
@@ -273,14 +284,6 @@ class Playground
 
 	}
 
-	/**
-	 * @return grid of the game.
-	 */
-	private Grid getGrid()
-	{
-		return this.game.getGrid();
-	}
-
 	private static void resetPossibleMovesPanel()
 	{
 		possibleMovePanel.removeAll();
@@ -296,14 +299,14 @@ class Playground
 	 * @param caller the caller of the function
 	 * @param play   the occurred play
 	 */
-	public void afterPlay(final SwingPlayer caller, final Play play)
+	public void afterPlay(final SwingPlayer caller, final Action play)
 	{
 		if (caller != this.swingPlayers.getFirst())
 		{
 			return;
 		}
 
-		this.jGrid.lastAction = play.action;
+//		this.jGrid.lastAction = action;
 		refreshUI(null);
 
 		this.flashFuture = this.executor.schedule(
@@ -337,10 +340,11 @@ class Playground
 		}
 
 		this.jGrid.repaint();
-		this.jScoreboard.refreshDisplay();
+		// TODO?
+//		this.jScoreboard.refresh();
 
-		final Iterable<Game.HistoryEntry> history = this.game.getHistory();
-		this.historyList.setListData(IterableUtils.toList(history).toArray(new Game.HistoryEntry[0]));
+		final Iterable<GameState> history = this.game.getHistory();
+		this.historyList.setListData(IterableUtils.toList(history).toArray(new HistoryEntry[0]));
 	}
 
 	/**
@@ -554,7 +558,7 @@ class Playground
 		/**
 		 * Spielfeld des Scrabbles
 		 */
-		JGrid(final Grid grid, final ScrabbleRules sli)
+		JGrid(final Grid grid)
 		{
 			this.grid = grid;
 			final int numberOfRows = grid.getSize();
@@ -811,10 +815,10 @@ class Playground
 					final AffineTransform saved = ((Graphics2D) g).getTransform();
 					switch (JGrid.this.preparedPlayTiles.getDirection())
 					{
-						case Direction.VERTICAL:
+						case Grid.Direction.VERTICAL:
 							g2.translate(h / 2f, 6f);
 							break;
-						case Direction.HORIZONTAL:
+						case Grid.Direction.HORIZONTAL:
 							g2.rotate(-Math.PI / 2);
 							g2.translate(-h / 2f, 6f);
 							break;
@@ -889,11 +893,11 @@ class Playground
 		try
 		{
 			final String currentPrompt = this.commandPrompt.getText();
-			final Action action = PlayTiles.parseMove(getGrid(), currentPrompt, true);
+			final oscrabble.controller.Action action = Action.parse(getGrid(), currentPrompt, true);
 			if (action instanceof PlayTiles)
 			{
 				playTiles = (PlayTiles) action;
-				if (playTiles.startSquare == cell.square)
+				if (playTiles.startSquare.getNotation().equals(cell.square.getCoordinate()))
 				{
 					playTiles = playTiles.getInvertedDirectionCopy();
 				}
@@ -1046,11 +1050,11 @@ class Playground
 				}
 				catch (ScrabbleException e)
 				{
-					LOGGER.error(e);
+					LOGGER.error(e.toString(), e);
 					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
 				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				action = PlayTiles.parseMove(Playground.this.game.getGrid(), inputWord.toString(), true);
+				action = Action.parse(Playground.this.game.getGrid(), inputWord.toString(), true);
 
 				//
 				// Check if jokers are needed and try to position them
@@ -1107,7 +1111,7 @@ class Playground
 						}
 					}
 				}
-				action = PlayTiles.parseMove(getGrid(), inputWord.toString(), true);
+				action = Action.parse(inputWord.toString());
 				LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 			}
 			else
@@ -1245,20 +1249,20 @@ class Playground
 	{
 		final SwingPlayer player = getCurrentSwingPlayer();
 		assert player != null;
-		this.game.play(player.getPlayerKey(), this.currentPlay, playTiles);
+		this.game.play(this.currentPlay.notation);
 	}
 
-	/**
-	 * @return the current player or {@code null} when current not Swing one
-	 */
-	private SwingPlayer getCurrentSwingPlayer()
-	{
-		if (!(this.currentPlay.player instanceof SwingPlayer))
-		{
-			return null;
-		}
-		return (SwingPlayer) this.currentPlay.player;
-	}
+//	/**
+//	 * @return the current player or {@code null} when current not Swing one
+//	 */
+//	private SwingPlayer getCurrentSwingPlayer()
+//	{
+//		if (!(this.currentPlay.player instanceof SwingPlayer))
+//		{
+//			return null;
+//		}
+//		return (SwingPlayer) this.currentPlay.player;
+//	}
 
 	/**
 	 * A message and the time it was displayed.

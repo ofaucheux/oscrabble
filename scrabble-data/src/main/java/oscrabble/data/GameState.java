@@ -12,7 +12,7 @@ public class GameState
 
 	State state;
 	Set<Player> players;
-	List<Action> actions;
+	List<Action> playedActions;
 	Grid grid;
 	Bag bag;
 }
