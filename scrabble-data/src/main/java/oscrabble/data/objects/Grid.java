@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
+import oscrabble.exception.IllegalCoordinate;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -37,7 +38,7 @@ public class Grid
 		return get(coordinate.x, coordinate.y);
 	}
 
-	public Square get(final String coordinate) throws ScrabbleException.ForbiddenPlayException
+	public Square get(final String coordinate)
 	{
 		final Coordinate c = getCoordinate(coordinate);
 		return get(c);
@@ -121,9 +122,8 @@ public class Grid
 	/**
 	 * @param coordinate coordinate of square
 	 * @return the words which the square is part of.
-	 * @throws ScrabbleException.ForbiddenPlayException - // TODO: other exception
 	 */
-	public Set<String> getWords(final String coordinate) throws ScrabbleException.ForbiddenPlayException
+	public Set<String> getWords(final String coordinate)
 	{
 		final Square origin = get(coordinate);
 		if (origin.isEmpty())
@@ -298,7 +298,7 @@ public class Grid
 	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\w)(\\d+)");
 	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
 
-	public static Coordinate getCoordinate(final String notation) throws ScrabbleException.ForbiddenPlayException
+	public static Coordinate getCoordinate(final String notation) throws IllegalCoordinate
 	{
 		final Direction direction;
 		final int groupX, groupY;
@@ -317,7 +317,7 @@ public class Grid
 		}
 		else
 		{
-			throw new ScrabbleException.ForbiddenPlayException("Cannot parse coordinate: " + notation);
+			throw new IllegalCoordinate(notation);
 		}
 
 		final Coordinate c = new Coordinate();
@@ -412,7 +412,7 @@ public class Grid
 	@Override
 	public String toString()
 	{
-		final StringBuffer sb = new StringBuffer("Grid{\n");
+		final StringBuilder sb = new StringBuilder("Grid{\n");
 		for (final Square[] line : this.squares)
 		{
 			for (final Square square : line)
