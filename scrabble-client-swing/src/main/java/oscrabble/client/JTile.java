@@ -1,5 +1,7 @@
 package oscrabble.client;
 
+import oscrabble.data.objects.Grid;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -25,6 +27,11 @@ class JTile extends JComponent
 		setPreferredSize(CELL_DIMENSION);
 		setTransferHandler(new TransferHandler("name"));
 		addMouseListener(new DragMouseAdapter());
+	}
+
+	public JTile(final Grid.Square square)
+	{
+		this(square.c, square.letterBonus, square.isJoker());
 	}
 
 	public static void drawStone(final Graphics2D g2, final Container container, final JTile tile, final Color black)

@@ -616,7 +616,6 @@ class Playground
 		private final HashMap<Grid.Square, MatteBorder> specialBorders = new HashMap<>();
 
 		private final Grid grid;
-		private final ScrabbleLanguageInformation sli;
 
 		/**
 		 *
@@ -689,28 +688,25 @@ class Playground
 						this.background.add(cell);
 
 						final Color cellColor;
-						switch (cell.square.getBonus())
+						if (cell.square.letterBonus == 2)
 						{
-							case Bonus.NONE:
-								cellColor = SCRABBLE_GREEN;
-								break;
-							case Bonus.BORDER:
-								cellColor = Color.black;
-								break;
-							case Bonus.LIGHT_BLUE:
-								cellColor = Color.decode("0x00BFFF");
-								break;
-							case Bonus.DARK_BLUE:
-								cellColor = Color.blue;
-								break;
-							case Bonus.RED:
-								cellColor = Color.red;
-								break;
-							case Bonus.ROSE:
-								cellColor = Color.decode("#F6CEF5").darker();
-								break;
-							default:
-								throw new AssertionError();
+							cellColor = Color.decode("0x00BFFF");
+						}
+						else if (cell.square.letterBonus == 3)
+						{
+							cellColor = Color.blue;
+						}
+						else if (cell.square.wordBonus == 2)
+						{
+							cellColor = Color.decode("#F6CEF5").darker();
+						}
+						else if (cell.square.wordBonus == 3)
+						{
+							cellColor = Color.red;
+						}
+						else
+						{
+							cellColor = SCRABBLE_GREEN;
 						}
 
 						cell.setBackground(cellColor);
@@ -800,9 +796,9 @@ class Playground
 		class JSquare extends JComponent
 		{
 			private final AbstractAction showDefinitionAction;
-			private final Square square;
+			private final Grid.Square square;
 
-			JSquare(final Square square)
+			JSquare(final Grid.Square square)
 			{
 				this.square = square;
 				final JPopupMenu popup = new JPopupMenu();
@@ -811,7 +807,7 @@ class Playground
 					@Override
 					public void actionPerformed(final ActionEvent e)
 					{
-						JGrid.this.grid.getWords(square.coordinate).forEach(
+						JGrid.this.grid.getWords(square.getCoordinate()).forEach(
 								word -> showDefinition(word)
 						);
 					}
@@ -822,7 +818,7 @@ class Playground
 					@Override
 					public void popupMenuWillBecomeVisible(final PopupMenuEvent e)
 					{
-						final Set<String> words = JGrid.this.grid.getWords(square.coordinate);
+						final Set<String> words = JGrid.this.grid.getWords(square.getCoordinate());
 						if (words.isEmpty())
 						{
 							popup.remove(menuItem);
@@ -876,7 +872,7 @@ class Playground
 				}
 
 				JTile tile;
-				if (this.square.tile != null)
+				if (this.square.c != null)
 				{
 					tile = new JTile(this.square);
 					//noinspection StatementWithEmptyBody

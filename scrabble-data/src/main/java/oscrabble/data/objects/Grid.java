@@ -278,6 +278,15 @@ public class Grid
 
 		/**
 		 *
+		 * @return the coordinate of the square in form "A1"
+		 */
+		public String getCoordinate()
+		{
+			return Coordinate.getNotation(this, Direction.HORIZONTAL);
+		}
+
+		/**
+		 *
 		 * @return x-coordinate, 1-based
 		 */
 		public int getX()
@@ -292,6 +301,11 @@ public class Grid
 		public int getY()
 		{
 			return this.y;
+		}
+
+		public boolean isJoker()
+		{
+			return false;
 		}
 	}
 
