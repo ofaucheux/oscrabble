@@ -3,9 +3,10 @@ package oscrabble.client;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.text.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.data.ScrabbleRules;
+import oscrabble.data.Square;
 import oscrabble.data.objects.Grid;
 
 import javax.swing.*;
@@ -23,8 +24,6 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.text.Normalizer;
 import java.text.ParseException;
-import java.util.List;
-import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -39,12 +38,12 @@ import java.util.regex.Pattern;
 class Playground
 {
 	private final static int CELL_SIZE = 40;
-	public static final Logger LOGGER = Logger.getLogger(Playground.class);
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
 	private static final Pattern PATTERN_PASS_COMMAND = Pattern.compile("-\\s*");
 	static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
 	public static final ResourceBundle MESSAGES = Game.MESSAGES;
+	public static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
 	 * The game
@@ -217,7 +216,7 @@ class Playground
 				}
 				catch (final Throwable ex)
 				{
-					LOGGER.error(ex, ex);
+					LOGGER.error("Cannot play action " + e, ex);
 					JOptionPane.showMessageDialog(panel1, ex.toString());
 				}
 			}
@@ -618,10 +617,11 @@ class Playground
 
 		private final Grid grid;
 		private final ScrabbleLanguageInformation sli;
+
 		/**
 		 *
 		 */
-		private final IGame game;
+//		private final Grid game;
 
 		private final Map<Grid.Square, Tile> preparedMoveStones;
 
@@ -650,7 +650,7 @@ class Playground
 		/**
 		 * Last played action
 		 */
-		private Action lastAction;
+		private UUID lastAction;
 
 
 		/**
@@ -659,9 +659,8 @@ class Playground
 		JGrid(final Grid grid, final ScrabbleRules sli)
 		{
 			this.grid = grid;
-			this.game = game;
-			final int numberOfRows = grid.getSize() + 2;
-			this.dictionaryComponent = new DictionaryComponent(game);
+			final int numberOfRows = grid.getSize();
+			this.dictionaryComponent = new DictionaryComponent();
 
 			this.setLayout(new BorderLayout());
 			this.background = new JPanel();
@@ -673,18 +672,20 @@ class Playground
 			{
 				for (int x = 0; x < numberOfRows; x++)
 				{
+					final String columnLetter = Character.toString((char) ((int) 'A' + x - 1));
+					final String lineNumber = Integer.toString(y);
 					if (x == 0 || x == borderColumn)
 					{
 						this.background.add(new BorderCell(
-								y == 0 || y == borderColumn ? "" : Integer.toString(y)));
+								y == 0 || y == borderColumn ? "" : lineNumber));
 					}
 					else if (y == 0 || y == borderColumn)
 					{
-						this.background.add(new BorderCell(Character.toString((char) ((int) 'A' + x - 1))));
+						this.background.add(new BorderCell(columnLetter));
 					}
 					else
 					{
-						final StoneCell cell = new StoneCell(x, y);
+						final JSquare cell = new JSquare(grid.get(columnLetter + lineNumber));
 						this.background.add(cell);
 
 						final Color cellColor;
@@ -791,29 +792,26 @@ class Playground
 			}
 
 
-			for (final String mutation : this.game.getMutations(word))
-			{
-				this.dictionaryComponent.showDescription(mutation);
-			}
+			this.dictionaryComponent.showDescription(word);
 			dictionaryFrame.setVisible(true);
 			dictionaryFrame.toFront();
 		}
 
-		class StoneCell extends JComponent
+		class JSquare extends JComponent
 		{
-			private final Grid.Square square;
 			private final AbstractAction showDefinitionAction;
+			private final Square square;
 
-			StoneCell(final int x, final int y)
+			JSquare(final Square square)
 			{
-				this.square = JGrid.this.grid.getSquare(x, y);
+				this.square = square;
 				final JPopupMenu popup = new JPopupMenu();
 				this.showDefinitionAction = new AbstractAction()
 				{
 					@Override
 					public void actionPerformed(final ActionEvent e)
 					{
-						JGrid.this.grid.getWords(StoneCell.this.square).forEach(
+						JGrid.this.grid.getWords(square.coordinate).forEach(
 								word -> showDefinition(word)
 						);
 					}
@@ -824,7 +822,7 @@ class Playground
 					@Override
 					public void popupMenuWillBecomeVisible(final PopupMenuEvent e)
 					{
-						final Set<String> words = JGrid.this.grid.getWords(StoneCell.this.square);
+						final Set<String> words = JGrid.this.grid.getWords(square.coordinate);
 						if (words.isEmpty())
 						{
 							popup.remove(menuItem);
@@ -832,7 +830,7 @@ class Playground
 						else
 						{
 							popup.add(menuItem);
-							StoneCell.this.showDefinitionAction.putValue(javax.swing.Action.NAME, (words.size() > 1 ? MESSAGES.getString("show.definitions") : MESSAGES.getString("show.definition")));
+							JSquare.this.showDefinitionAction.putValue(javax.swing.Action.NAME, (words.size() > 1 ? MESSAGES.getString("show.definitions") : MESSAGES.getString("show.definition")));
 						}
 					}
 
@@ -855,7 +853,7 @@ class Playground
 					{
 						if (JGrid.this.client != null)
 						{
-							JGrid.this.client.setStartCell(StoneCell.this);
+							JGrid.this.client.setStartCell(JSquare.this);
 						}
 					}
 				});
@@ -877,17 +875,18 @@ class Playground
 					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
 				}
 
-				Tile tile;
+				JTile tile;
 				if (this.square.tile != null)
 				{
+					tile = new JTile(this.square);
 					//noinspection StatementWithEmptyBody
-					if (JGrid.this.hideNewStones && JGrid.this.game.getSettingAction(this.square.tile) == JGrid.this.lastAction)
+					if (JGrid.this.hideNewStones && JGrid.this.lastAction != null && JGrid.this.lastAction.equals(this.square.settingPlay))
 					{
 						// don't draw
 					}
 					else
 					{
-						JTile.drawStone(g2, this, this.square.tile, Color.black);
+						JTile.drawStone(g2, this, tile, Color.black);
 					}
 				}
 				else if ((tile = JGrid.this.preparedMoveStones.get(this.square)) != null)
@@ -989,7 +988,7 @@ class Playground
 	 *
 	 * @param cell Cell
 	 */
-	private void setStartCell(final JGrid.StoneCell cell)
+	private void setStartCell(final JGrid.JSquare cell)
 	{
 		PlayTiles playTiles = null;
 		try

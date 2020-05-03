@@ -170,10 +170,10 @@ public class Grid
 		public int wordBonus;
 
 
-//		/**
-//		 * Action, which has filled this field.
-//		 */
-//		public Action action;
+		/**
+		 * Action, which has filled this field.
+		 */
+		public UUID action;
 
 		public Character c;
 
@@ -251,8 +251,8 @@ public class Grid
 		{
 			final oscrabble.data.Square square = new oscrabble.data.Square();
 			square.tile = this.c;
-			square.x =this.x;
-			square.y = this.y;
+//			square.x =this.x;
+//			square.y = this.y;
 			return square;
 		}
 

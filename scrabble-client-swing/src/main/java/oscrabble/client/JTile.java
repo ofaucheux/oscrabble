@@ -27,6 +27,10 @@ class JTile extends JComponent
 		addMouseListener(new DragMouseAdapter());
 	}
 
+	public static void drawStone(final Graphics2D g2, final Container container, final JTile tile, final Color black)
+	{
+		drawStone(g2, container, tile.letter, tile.value, tile.isJoker, black);
+	}
 
 	@Override
 	protected void paintComponent(final Graphics g)
