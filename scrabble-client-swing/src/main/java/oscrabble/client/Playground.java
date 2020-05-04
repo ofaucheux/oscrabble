@@ -524,7 +524,7 @@ class Playground
 		 */
 //		private final Grid game;
 
-		private final Map<Grid.Square, Tile> preparedMoveStones;
+		private final Map<Grid.Square, Character> preparedMoveStones;
 
 		/**
 		 * Frame für die Anzeige der Definition von Wärtern
@@ -552,7 +552,6 @@ class Playground
 		 * Last played action
 		 */
 		private UUID lastAction;
-
 
 		/**
 		 * Spielfeld des Scrabbles
@@ -768,11 +767,12 @@ class Playground
 				}
 
 				JTile tile;
+				Character c;
 				if (this.square.c != null)
 				{
 					tile = new JTile(this.square);
 					//noinspection StatementWithEmptyBody
-					if (JGrid.this.hideNewStones && JGrid.this.lastAction != null && JGrid.this.lastAction.equals(this.square.settingPlay))
+					if (JGrid.this.hideNewStones && this.square.action == JGrid.this.lastAction)
 					{
 						// don't draw
 					}
@@ -781,9 +781,9 @@ class Playground
 						JTile.drawStone(g2, this, tile, Color.black);
 					}
 				}
-				else if ((tile = JGrid.this.preparedMoveStones.get(this.square)) != null)
+				else if ((c = preparedMoveStones.get(this.square)) != null)
 				{
-					JTile.drawStone(g2, this, tile, Color.blue);
+					JTile.drawStone(g2, this, tiles.get(c), Color.blue);
 				}
 
 				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);
@@ -794,34 +794,34 @@ class Playground
 					);
 				}
 
-				// Markiert die Start Zelle des Wortes
-				if (JGrid.this.preparedPlayTiles != null && JGrid.this.preparedPlayTiles.startSquare == this.square)
-				{
-					g.setColor(Color.BLACK);
-					final Polygon p = new Polygon();
-					final int h = getHeight();
-					final int POLYGONE_SIZE = h / 3;
-					p.addPoint(-POLYGONE_SIZE / 2, 0);
-					p.addPoint(0, POLYGONE_SIZE / 2);
-					p.addPoint(POLYGONE_SIZE / 2, 0);
-
-					final AffineTransform saved = ((Graphics2D) g).getTransform();
-					switch (JGrid.this.preparedPlayTiles.getDirection())
-					{
-						case Grid.Direction.VERTICAL:
-							g2.translate(h / 2f, 6f);
-							break;
-						case Grid.Direction.HORIZONTAL:
-							g2.rotate(-Math.PI / 2);
-							g2.translate(-h / 2f, 6f);
-							break;
-						default:
-							throw new IllegalStateException("Unexpected value: " + JGrid.this.preparedPlayTiles.getDirection());
-					}
-					g.fillPolygon(p);
-					((Graphics2D) g).setTransform(saved);
-
-				}
+				// Markiert die Start Zelle des Wortes todo
+//				if (JGrid.this.preparedPlayTiles != null && JGrid.this.preparedPlayTiles.startSquare == this.square)
+//				{
+//					g.setColor(Color.BLACK);
+//					final Polygon p = new Polygon();
+//					final int h = getHeight();
+//					final int POLYGONE_SIZE = h / 3;
+//					p.addPoint(-POLYGONE_SIZE / 2, 0);
+//					p.addPoint(0, POLYGONE_SIZE / 2);
+//					p.addPoint(POLYGONE_SIZE / 2, 0);
+//
+//					final AffineTransform saved = ((Graphics2D) g).getTransform();
+//					switch (JGrid.this.preparedPlayTiles.getDirection())
+//					{
+//						case Grid.Direction.VERTICAL:
+//							g2.translate(h / 2f, 6f);
+//							break;
+//						case Grid.Direction.HORIZONTAL:
+//							g2.rotate(-Math.PI / 2);
+//							g2.translate(-h / 2f, 6f);
+//							break;
+//						default:
+//							throw new IllegalStateException("Unexpected value: " + JGrid.this.preparedPlayTiles.getDirection());
+//					}
+//					g.fillPolygon(p);
+//					((Graphics2D) g).setTransform(saved);
+//
+//				}
 			}
 
 		}
@@ -859,7 +859,7 @@ class Playground
 				final Font font = g2.getFont().deriveFont(JTile.getCharacterSize(this)).deriveFont(Font.BOLD);
 				g2.setFont(font);
 				FontMetrics metrics = g.getFontMetrics(font);
-				final String label = square.getX() == 0 ? Integer.toString(square.getY()) : Character.toString(('A' + square.getY()) - 1);
+				final String label = square.getX() == 0 ? Integer.toString(square.getY()) : Character.toString((char) ('A' + square.getY() - 1));
 				int tx = (getWidth() - metrics.stringWidth(label)) / 2;
 				int ty = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
 				g.drawString(label, tx, ty);
@@ -877,43 +877,43 @@ class Playground
 	}
 
 	/**
-	 * Set a cell as the start of the future tipped word.
+	 * Set a cell as the start of the future tipped word. todo
 	 *
 	 * @param cell Cell
 	 */
-	private void setStartCell(final JGrid.JSquare cell)
-	{
-		PlayTiles playTiles = null;
-		try
-		{
-			final String currentPrompt = this.commandPrompt.getText();
-			final oscrabble.controller.Action action = Action.parse(getGrid(), currentPrompt, true);
-			if (action instanceof PlayTiles)
-			{
-				playTiles = (PlayTiles) action;
-				if (playTiles.startSquare.getNotation().equals(cell.square.getCoordinate()))
-				{
-					playTiles = playTiles.getInvertedDirectionCopy();
-				}
-				else
-				{
-					playTiles = playTiles.getTranslatedCopy(cell.square);
-				}
-			}
-		}
-		catch (ParseException e)
-		{
-			// OK: noch kein Prompt vorhanden.
-		}
-
-		if (playTiles == null)
-		{
-			playTiles = new PlayTiles(cell.square, Grid.Direction.HORIZONTAL, "");
-		}
-
-		this.commandPrompt.setText(playTiles.getNotation() + (playTiles.word.isEmpty() ? " " : ""));
-
-	}
+//	private void setStartCell(final JGrid.JSquare cell)
+//	{
+//		PlayTiles playTiles = null;
+//		try
+//		{
+//			final String currentPrompt = this.commandPrompt.getText();
+//			final oscrabble.controller.Action action = Action.parse(currentPrompt);
+//			if (action instanceof PlayTiles)
+//			{
+//				playTiles = (PlayTiles) action;
+//				if (playTiles.startSquare.getNotation().equals(cell.square.getCoordinate()))
+//				{
+//					playTiles = playTiles.getInvertedDirectionCopy();
+//				}
+//				else
+//				{
+//					playTiles = playTiles.getTranslatedCopy(cell.square);
+//				}
+//			}
+//		}
+//		catch (ParseException | ScrabbleException.ForbiddenPlayException e)
+//		{
+//			// OK: noch kein Prompt vorhanden, oder nicht parsable.
+//		}
+//
+//		if (playTiles == null)
+//		{
+//			playTiles = new PlayTiles(cell.square, Grid.Direction.HORIZONTAL, "");
+//		}
+//
+//		this.commandPrompt.setText(playTiles.getNotation() + (playTiles.word.isEmpty() ? " " : ""));
+//
+//	}
 
 
 	private class CommandPromptAction extends AbstractAction implements DocumentListener
@@ -935,18 +935,18 @@ class Playground
 						return null;
 					}))
 			);
-
-			this.commands.put("isValid", new Command("check if a word is valid", (args -> {
-				final String word = args[0];
-				final Collection<String> mutations = Playground.this.game.getDictionary().getMutations(
-						word.toUpperCase());
-				final boolean isValid = mutations != null && !mutations.isEmpty();
-				telnetFrame.appendConsoleText(
-						isValid ? "blue" : "red",
-						word + (isValid ? (" is valid " + mutations) : " is not valid"),
-						true);
-				return null;
-			})));
+// todo?
+//			this.commands.put("isValid", new Command("check if a word is valid", (args -> {
+//				final String word = args[0];
+//				final Collection<String> mutations = Playground.this.game.getDictionary().getMutations(
+//						word.toUpperCase());
+//				final boolean isValid = mutations != null && !mutations.isEmpty();
+//				telnetFrame.appendConsoleText(
+//						isValid ? "blue" : "red",
+//						word + (isValid ? (" is valid " + mutations) : " is not valid"),
+//						true);
+//				return null;
+//			})));
 		}
 
 		@Override
@@ -978,15 +978,16 @@ class Playground
 				if (swingPlayer != null && swingPlayer == Playground.this.currentPlay.player)
 				{
 					final Matcher m;
-					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
-					{
-						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, new Exchange(m.group(1)));
-					}
-					else if (PATTERN_PASS_COMMAND.matcher(command).matches())
-					{
-						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, SkipTurn.SINGLETON);
-					}
-					else
+					// Todo
+//					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
+//					{
+//						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, new Exchange(m.group(1)));
+//					}
+//					else if (PATTERN_PASS_COMMAND.matcher(command).matches())
+//					{
+//						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, SkipTurn.SINGLETON);
+//					}
+//					else
 					{
 						final PlayTiles preparedPlayTiles = ((PlayTiles) getPreparedMove());
 						play(preparedPlayTiles);
@@ -1008,11 +1009,12 @@ class Playground
 
 		private Action getPreparedMove() throws JokerPlacementException, ParseException
 		{
-			final SwingPlayer player = getCurrentSwingPlayer();
-			if (player == null)
-			{
-				throw new IllegalStateException("Player is not current one");
-			}
+			// TODO
+//			final SwingPlayer player = getCurrentSwingPlayer();
+//			if (player == null)
+//			{
+//				throw new IllegalStateException("Player is not current one");
+//			}
 
 			String command = Playground.this.commandPrompt.getText();
 			final StringBuilder sb = new StringBuilder();
@@ -1241,8 +1243,9 @@ class Playground
 	 */
 	private void play(final PlayTiles playTiles) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
 	{
-		final SwingPlayer player = getCurrentSwingPlayer();
-		assert player != null;
+		// TODO
+//		final SwingPlayer player = getCurrentSwingPlayer();
+//		assert player != null;
 		this.game.play(this.currentPlay.notation);
 	}
 
