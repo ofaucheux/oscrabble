@@ -2,7 +2,6 @@ package oscrabble.client;
 
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +10,7 @@ import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.GameState;
 import oscrabble.data.HistoryEntry;
-import oscrabble.data.ScrabbleRules;
 import oscrabble.data.objects.Grid;
-import oscrabble.player.ai.BruteForceMethod;
 import oscrabble.server.IGame;
 
 import javax.swing.*;
@@ -49,7 +46,7 @@ class Playground
 	private static final Pattern PATTERN_PASS_COMMAND = Pattern.compile("-\\s*");
 	static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
-	public static final ResourceBundle MESSAGES = Game.MESSAGES;
+	public static final ResourceBundle MESSAGES = SwingPlayer.MESSAGES;
 	public static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
@@ -126,8 +123,8 @@ class Playground
 	{
 		assert this.jGrid == null;
 
-		this.jGrid = new JGrid(getGrid());
-		this.jGrid.setClient(this);
+		this.jGrid = new JGrid();
+		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard(this);
 		this.commandPrompt = new JTextField();
 		final CommandPromptAction promptListener = new CommandPromptAction();
@@ -148,7 +145,8 @@ class Playground
 				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, MESSAGES.getString("quit.the.game"), MESSAGES.getString("confirm.quit"), JOptionPane.YES_NO_OPTION);
 				if (confirm == JOptionPane.YES_OPTION)
 				{
-					Playground.this.game.setState(IGame.State.ENDED);
+					// TODO: schickt "ende" dem Server
+//					Playground.this.game.setState(IGame.State.ENDED);
 					Playground.this.gridFrame.dispose();
 				}
 			}
@@ -369,22 +367,23 @@ class Playground
 			throw new AssertionError("Game already set");
 		}
 		this.game = game;
-		this.game.addListener(new Game.GameListener()
-		{
-			private final CircularFifoQueue<Game.ScrabbleEvent> dummyQueue = new CircularFifoQueue<>(1);
-
-			@Override
-			public Queue<Game.ScrabbleEvent> getIncomingEventQueue()
-			{
-				return this.dummyQueue;
-			}
-
-			@Override
-			public void afterGameEnd()
-			{
-				Playground.this.executor.shutdown();
-			}
-		});
+		// TODO: gerade dies ist wichtig.
+//		this.game.addListener(new Game.GameListener()
+//		{
+//			private final CircularFifoQueue<Game.ScrabbleEvent> dummyQueue = new CircularFifoQueue<>(1);
+//
+//			@Override
+//			public Queue<Game.ScrabbleEvent> getIncomingEventQueue()
+//			{
+//				return this.dummyQueue;
+//			}
+//
+//			@Override
+//			public void afterGameEnd()
+//			{
+//				Playground.this.executor.shutdown();
+//			}
+//		});
 	}
 
 	/**
@@ -537,7 +536,7 @@ class Playground
 		/**
 		 * Client mit dem diese Grid verknüpft ist
 		 */
-		private Playground client;
+		private Playground playground;
 
 		/**
 		 * Vorbereiteter Spielzug
@@ -569,25 +568,18 @@ class Playground
 			this.background.setLayout(new GridLayout(numberOfRows, numberOfRows));
 
 			// Draw each Cell
-			final int borderColumn = numberOfRows - 1;
 			for (int y = 0; y < numberOfRows; y++)
 			{
 				for (int x = 0; x < numberOfRows; x++)
 				{
-					final String columnLetter = Character.toString((char) ((int) 'A' + x - 1));
-					final String lineNumber = Integer.toString(y);
-					if (x == 0 || x == borderColumn)
+					final Grid.Square square = grid.get(x, y);
+					if (square.isBorder)
 					{
-						this.background.add(new BorderCell(
-								y == 0 || y == borderColumn ? "" : lineNumber));
-					}
-					else if (y == 0 || y == borderColumn)
-					{
-						this.background.add(new BorderCell(columnLetter));
+						this.background.add(new BorderCell(square));
 					}
 					else
 					{
-						final JSquare cell = new JSquare(grid.get(columnLetter + lineNumber));
+						final JSquare cell = new JSquare(square);
 						this.background.add(cell);
 
 						final Color cellColor;
@@ -624,22 +616,23 @@ class Playground
 			this.preparedMoveStones = new LinkedHashMap<>();
 		}
 
-		/**
-		 * Zeigt den vorbereiteten Spielzug auf dem Grid
-		 *
-		 * @param playTiles der Zug zu zeigen. {@code null} für gar keinen Zug.
-		 */
-		void highlightMove(final PlayTiles playTiles)
-		{
-			this.preparedPlayTiles = playTiles;
-			this.preparedMoveStones.clear();
-			if (playTiles != null)
-			{
-				final ArrayList<Grid.Square> squares = new ArrayList<>(this.preparedMoveStones.keySet());
-				this.preparedMoveStones.putAll(playTiles.getStones(this.grid, this.sli));
-				highlightWord(squares);
-			}
-		}
+//	todo
+//		/**
+//		 * Zeigt den vorbereiteten Spielzug auf dem Grid
+//		 *
+//		 * @param playTiles der Zug zu zeigen. {@code null} für gar keinen Zug.
+//		 */
+//		void highlightMove(final PlayTiles playTiles)
+//		{
+//			this.preparedPlayTiles = playTiles;
+//			this.preparedMoveStones.clear();
+//			if (playTiles != null)
+//			{
+//				final ArrayList<Grid.Square> squares = new ArrayList<>(this.preparedMoveStones.keySet());
+//				this.preparedMoveStones.putAll(playTiles.getStones(this.grid, this.sli));
+//				highlightWord(squares);
+//			}
+//		}
 
 		private void highlightWord(final ArrayList<Grid.Square> squares)
 		{
@@ -750,9 +743,9 @@ class Playground
 					@Override
 					public void mouseClicked(final MouseEvent e)
 					{
-						if (JGrid.this.client != null)
+						if (JGrid.this.playground != null)
 						{
-							JGrid.this.client.setStartCell(JSquare.this);
+							JGrid.this.playground.setStartCell(JSquare.this);
 						}
 					}
 				});
@@ -839,11 +832,11 @@ class Playground
 		private static class BorderCell extends JComponent
 		{
 
-			private final String label;
+			private final Grid.Square square;
 
-			BorderCell(final String label)
+			BorderCell(final Grid.Square square)
 			{
-				this.label = label;
+				this.square = square;
 			}
 
 			@Override
@@ -866,19 +859,20 @@ class Playground
 				final Font font = g2.getFont().deriveFont(JTile.getCharacterSize(this)).deriveFont(Font.BOLD);
 				g2.setFont(font);
 				FontMetrics metrics = g.getFontMetrics(font);
-				int tx = (getWidth() - metrics.stringWidth(this.label)) / 2;
+				final String label = square.getX() == 0 ? Integer.toString(square.getY()) : Character.toString(('A' + square.getY()) - 1);
+				int tx = (getWidth() - metrics.stringWidth(label)) / 2;
 				int ty = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
-				g.drawString(this.label, tx, ty);
+				g.drawString(label, tx, ty);
 			}
 		}
 
-		void setClient(final Playground client)
+		void setPlayground(final Playground client)
 		{
-			if (this.client != null)
+			if (this.playground != null)
 			{
 				throw new AssertionError("The client is already set");
 			}
-			this.client = client;
+			this.playground = client;
 		}
 	}
 
@@ -914,7 +908,7 @@ class Playground
 
 		if (playTiles == null)
 		{
-			playTiles = new PlayTiles(cell.square, PlayTiles.Direction.HORIZONTAL, "");
+			playTiles = new PlayTiles(cell.square, Grid.Direction.HORIZONTAL, "");
 		}
 
 		this.commandPrompt.setText(playTiles.getNotation() + (playTiles.word.isEmpty() ? " " : ""));

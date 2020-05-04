@@ -14,10 +14,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.UUID;
 
 public class SwingPlayer extends Player
 {
+	/**
+	 * Resource Bundle
+	 */
+	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
+
 	static Playground playground;
 	private JRack jRack;
 	JDialog rackFrame;

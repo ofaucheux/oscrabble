@@ -154,7 +154,7 @@ public class Grid
 	}
 
 	/**
-	 * A square
+	 * A square (possibly a border one) with coordinate, contained tile and bonus.
 	 */
 	public class Square
 	{
