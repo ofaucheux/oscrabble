@@ -9,10 +9,10 @@ import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
+import oscrabble.data.HistoryEntry;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
-import oscrabble.data.objects.HistoryEntry;
 
 import java.io.File;
 import java.io.FileReader;
@@ -482,7 +482,10 @@ public class Game
 				player.lastAction = action;
 				this.actions.add(action);
 				dispatch(toInform -> toInform.afterPlay(action));
-				final HistoryEntry historyEntry = new HistoryEntry(player, action, actionRejected, score, drawn, moveMI);
+				final HistoryEntry historyEntry = new HistoryEntry();
+				historyEntry.player = player.id;
+				historyEntry.move = action.notation;
+				historyEntry.score = score;
 				this.history.add(historyEntry);
 				this.toPlay.pop();
 				this.toPlay.add(player);
@@ -508,48 +511,49 @@ public class Game
 		}
 	}
 
-	public synchronized void rollbackLastMove(final Player caller) throws ScrabbleException
-	{
-		synchronized (this.changing)
-		{
-			LOGGER.info("Rollback last move on demand of " + caller);
-			if (this.history.isEmpty())
-			{
-				throw new ScrabbleException.InvalidStateException(MESSAGES.getString("no.move.played.for.the.time"));
-			}
-			final HistoryEntry historyEntry = this.history.remove(this.history.size() - 1);
-			LOGGER.info("Rollback " + historyEntry.formatAsString());
-
-			final Player rollbackedPlayer = historyEntry.player;
-			rollbackedPlayer.rack.removeAll(historyEntry.drawn);
-			historyEntry.metaInformation.getFilledSquares().forEach(
-					square -> {
-						rollbackedPlayer.rack.add(square.c);
-						square.c = null;
-					}
-			);
-
-			this.players.values().forEach(p ->
-					p.score -= historyEntry.scores.getOrDefault(p, 0)
-			);
-			assert this.toPlay.peekLast() == rollbackedPlayer;
-
-			if (this.state == GameState.State.STARTED)
-			{
-				this.actions.removeLast();
-			}
-
-			this.toPlay.removeLast();
-			this.toPlay.addFirst(rollbackedPlayer);
-//			dispatch(toInform -> toInform.afterRollback());
-
-			setState(GameState.State.STARTED);
-
-			this.waitingForPlay.countDown();
-			this.changing.notify();
-		}
-
-	}
+	/** todo */
+//	public synchronized void rollbackLastMove(final Player caller) throws ScrabbleException
+//	{
+//		synchronized (this.changing)
+//		{
+//			LOGGER.info("Rollback last move on demand of " + caller);
+//			if (this.history.isEmpty())
+//			{
+//				throw new ScrabbleException.InvalidStateException(MESSAGES.getString("no.move.played.for.the.time"));
+//			}
+//			final HistoryEntry historyEntry = this.history.remove(this.history.size() - 1);
+//			LOGGER.info("Rollback " + historyEntry);
+//
+//			final Player rollbackedPlayer = historyEntry.player;
+//			rollbackedPlayer.rack.removeAll(historyEntry.drawn);
+//			historyEntry.metaInformation.getFilledSquares().forEach(
+//					square -> {
+//						rollbackedPlayer.rack.add(square.c);
+//						square.c = null;
+//					}
+//			);
+//
+//			this.players.values().forEach(p ->
+//					p.score -= historyEntry.scores.getOrDefault(p, 0)
+//			);
+//			assert this.toPlay.peekLast() == rollbackedPlayer;
+//
+//			if (this.state == GameState.State.STARTED)
+//			{
+//				this.actions.removeLast();
+//			}
+//
+//			this.toPlay.removeLast();
+//			this.toPlay.addFirst(rollbackedPlayer);
+////			dispatch(toInform -> toInform.afterRollback());
+//
+//			setState(GameState.State.STARTED);
+//
+//			this.waitingForPlay.countDown();
+//			this.changing.notify();
+//		}
+//
+//	}
 
 //	//	public void playerConfigHasChanged(final Player player, final UUID playerKey)
 //	{
@@ -589,11 +593,11 @@ public class Game
 							gift += this.dictionary.getScrabbleRules().letters.get(tile).points;
 						}
 						player.score -= gift;
-						historyEntry.scores.put(player, -gift);
+//						todo ? historyEntry.scores.put(player, -gift);
 						if (firstEndingPlayer != null)
 						{
 							firstEndingPlayer.score += gift;
-							historyEntry.scores.put(firstEndingPlayer, historyEntry.scores.get(firstEndingPlayer) + gift);
+//							todo? historyEntry.scores.put(firstEndingPlayer, historyEntry.scores.get(firstEndingPlayer) + gift);
 						}
 						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), player.name, gift)).append("\n");
 					}

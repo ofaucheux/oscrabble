@@ -145,7 +145,7 @@ public class SwingPlayer
 
 	public void updateRack()
 	{
-		this.jRack.update();
+		this.jRack.update(null);
 	}
 
 	private class JRack extends JPanel
