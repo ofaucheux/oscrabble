@@ -1,7 +1,6 @@
 package oscrabble.client;
 
 import org.apache.commons.collections4.IterableUtils;
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,6 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.*;
@@ -123,7 +121,7 @@ class Playground
 	{
 		assert this.jGrid == null;
 
-		this.jGrid = new JGrid();
+		this.jGrid = new JGrid(null);
 		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard(this);
 		this.commandPrompt = new JTextField();
@@ -403,29 +401,28 @@ class Playground
 			return;
 		}
 		display();
-		this.jScoreboard.prepareBoard();
+		this.jScoreboard.prepareBoard(null /*todo*/);
 	}
 
-	public void onPlayRequired(final SwingPlayer caller, final Play play)
+	public void onPlayRequired(final SwingPlayer caller)
 	{
 		if (!isFirstRegistered(caller))
 		{
 			return;
 		}
 
-		this.currentPlay = play;
-		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
-		{
-			final IPlayerInfo playerInfo = entry.getKey();
-			final JScoreboard.ScorePanelLine line = entry.getValue();
-			line.currentPlaying.setVisible(this.currentPlay != null && playerInfo.getName().equals(this.currentPlay.player.getName()));
-		}
+//		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
+//		{
+//			final IPlayerInfo playerInfo = entry.getKey();
+//			final JScoreboard.ScorePanelLine line = entry.getValue();
+//			line.currentPlaying.setVisible(this.currentPlay != null && playerInfo.getName().equals(this.currentPlay.player.getName()));
+//		}
 
 		final Cursor cursor;
-		if (this.currentPlay.player instanceof SwingPlayer
-				&& this.swingPlayers.contains(this.currentPlay.player))
+		if (true /* todo this.currentPlay.player instanceof SwingPlayer
+				&& this.swingPlayers.contains(this.currentPlay.player)) */)
 		{
-			((SwingPlayer) this.currentPlay.player).updateRack();
+			// ((SwingPlayer) this.currentPlay.player).updateRack();
 			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 		}
 		else
@@ -744,7 +741,7 @@ class Playground
 					{
 						if (JGrid.this.playground != null)
 						{
-							JGrid.this.playground.setStartCell(JSquare.this);
+//							JGrid.this.playground.setStartCell(JSquare.this); todo
 						}
 					}
 				});
@@ -783,7 +780,7 @@ class Playground
 				}
 				else if ((c = preparedMoveStones.get(this.square)) != null)
 				{
-					JTile.drawStone(g2, this, tiles.get(c), Color.blue);
+					JTile.drawStone(g2, this, /* TODO tiles.get(c) */ null, Color.blue);
 				}
 
 				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);
@@ -879,7 +876,7 @@ class Playground
 	/**
 	 * Set a cell as the start of the future tipped word. todo
 	 *
-	 * @param cell Cell
+//	 * @param cell Cell
 	 */
 //	private void setStartCell(final JGrid.JSquare cell)
 //	{
@@ -974,9 +971,9 @@ class Playground
 
 			try
 			{
-				final SwingPlayer swingPlayer = getCurrentSwingPlayer();
-				if (swingPlayer != null && swingPlayer == Playground.this.currentPlay.player)
-				{
+//				final SwingPlayer swingPlayer = getCurrentSwingPlayer();
+//				if (swingPlayer != null && swingPlayer == Playground.this.currentPlay.player)
+//				{
 					final Matcher m;
 					// Todo
 //					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
@@ -993,21 +990,21 @@ class Playground
 						play(preparedPlayTiles);
 					}
 					Playground.this.commandPrompt.setText("");
-					resetPossibleMovesPanel();
-				}
-				else
-				{
-					JOptionPane.showMessageDialog(Playground.this.jGrid, MESSAGES.getString("it.s.not.your.turn"));
-				}
+//					resetPossibleMovesPanel();
+//				}
+//				else
+//				{
+//					JOptionPane.showMessageDialog(Playground.this.jGrid, MESSAGES.getString("it.s.not.your.turn"));
+//				}
 			}
-			catch (final JokerPlacementException | ParseException | ScrabbleException.NotInTurn | ScrabbleException.InvalidSecretException ex)
+			catch (final JokerPlacementException | ParseException | ScrabbleException.NotInTurn | ScrabbleException.InvalidSecretException | ScrabbleException.ForbiddenPlayException ex)
 			{
 				showMessage(ex.getMessage());
 				Playground.this.commandPrompt.setText("");
 			}
 		}
 
-		private Action getPreparedMove() throws JokerPlacementException, ParseException
+		private Action getPreparedMove() throws JokerPlacementException, ParseException, ScrabbleException.ForbiddenPlayException
 		{
 			// TODO
 //			final SwingPlayer player = getCurrentSwingPlayer();
@@ -1039,74 +1036,74 @@ class Playground
 			Action action;
 			if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
 			{
-				final Rack rack;
-				try
-				{
-					rack = Playground.this.game.getRack(player, player.getPlayerKey());
-				}
-				catch (ScrabbleException e)
-				{
-					LOGGER.error(e.toString(), e);
-					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
-				}
+				final JRackCell rack;
+//				try
+//				{
+//					rack = Playground.this.game.getRack(player, player.getPlayerKey());
+//				}
+//				catch (ScrabbleException e)
+//				{
+//					LOGGER.error(e.toString(), e);
+//					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
+//				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				action = Action.parse(Playground.this.game.getGrid(), inputWord.toString(), true);
+				action = Action.parse(inputWord.toString());
 
-				//
-				// Check if jokers are needed and try to position them
-				//
-				if (action instanceof PlayTiles)
-				{
-					final PlayTiles playTiles = (PlayTiles) action;
-					LOGGER.debug("Word before positioning jokers: " + playTiles.word);
-					int remainingJokers = rack.countJoker();
-					final HashSetValuedHashMap<Character, Integer> requiredLetters = new HashSetValuedHashMap<>();
-					int i = inputWord.indexOf(" ") + 1;
-					for (final Map.Entry<Grid.Square, Character> square : playTiles.getSquares().entrySet())
-					{
-						if (square.getKey().isEmpty())
-						{
-							if (Character.isLowerCase(inputWord.charAt(i)))
-							{
-								remainingJokers--;
-							}
-							else
-							{
-								requiredLetters.put(square.getValue(), i);
-							}
-						}
-						i++;
-					}
-
-					for (final Character letter : requiredLetters.keys())
-					{
-						final int inRack = rack.countLetter(letter);
-						final int required = requiredLetters.get(letter).size();
-						final int missing = required - inRack;
-						if (missing > 0)
-						{
-							if (remainingJokers < missing)
-							{
-								throw new JokerPlacementException(MESSAGES.getString("no.enough.jokers"), null);
-							}
-
-							if (missing == required)
-							{
-								for (final Integer pos : requiredLetters.get(letter))
-								{
-									inputWord.replace(pos, pos + 1, Character.toString(Character.toLowerCase(letter)));
-								}
-								remainingJokers -= missing;
-							}
-							else
-							{
-								throw new JokerPlacementException(
-										MESSAGES.getString("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
-										null);
-							}
-						}
-					}
-				}
+//				//
+//				// todo Check if jokers are needed and try to position them
+//				//
+//				if (action instanceof PlayTiles)
+//				{
+//					final PlayTiles playTiles = (PlayTiles) action;
+//					LOGGER.debug("Word before positioning jokers: " + playTiles.word);
+//					int remainingJokers = rack.countJoker();
+//					final HashSetValuedHashMap<Character, Integer> requiredLetters = new HashSetValuedHashMap<>();
+//					int i = inputWord.indexOf(" ") + 1;
+//					for (final Map.Entry<Grid.Square, Character> square : playTiles.getSquares().entrySet())
+//					{
+//						if (square.getKey().isEmpty())
+//						{
+//							if (Character.isLowerCase(inputWord.charAt(i)))
+//							{
+//								remainingJokers--;
+//							}
+//							else
+//							{
+//								requiredLetters.put(square.getValue(), i);
+//							}
+//						}
+//						i++;
+//					}
+//
+//					for (final Character letter : requiredLetters.keys())
+//					{
+//						final int inRack = rack.countLetter(letter);
+//						final int required = requiredLetters.get(letter).size();
+//						final int missing = required - inRack;
+//						if (missing > 0)
+//						{
+//							if (remainingJokers < missing)
+//							{
+//								throw new JokerPlacementException(MESSAGES.getString("no.enough.jokers"), null);
+//							}
+//
+//							if (missing == required)
+//							{
+//								for (final Integer pos : requiredLetters.get(letter))
+//								{
+//									inputWord.replace(pos, pos + 1, Character.toString(Character.toLowerCase(letter)));
+//								}
+//								remainingJokers -= missing;
+//							}
+//							else
+//							{
+//								throw new JokerPlacementException(
+//										MESSAGES.getString("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
+//										null);
+//							}
+//						}
+//					}
+//				}
 				action = Action.parse(inputWord.toString());
 				LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 			}
@@ -1137,7 +1134,7 @@ class Playground
 			{
 				getPreparedMove();
 			}
-			catch (JokerPlacementException | ParseException e1)
+			catch (JokerPlacementException | ParseException | ScrabbleException.ForbiddenPlayException e1)
 			{
 				LOGGER.debug(e1.getMessage());
 			}

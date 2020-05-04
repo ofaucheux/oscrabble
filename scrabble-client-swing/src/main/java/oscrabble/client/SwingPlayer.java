@@ -2,11 +2,6 @@ package oscrabble.client;
 
 import oscrabble.ScrabbleException;
 import oscrabble.client.configuration.Configuration;
-import oscrabble.configuration.Configuration;
-import oscrabble.dictionary.Tile;
-import oscrabble.player.AbstractPlayer;
-import oscrabble.server.Game;
-import oscrabble.server.Play;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -18,7 +13,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-public class SwingPlayer extends Player
+public class SwingPlayer
 {
 	/**
 	 * Resource Bundle
@@ -26,12 +21,21 @@ public class SwingPlayer extends Player
 	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
 
 	static Playground playground;
+
+	/**
+	 * Name of the player
+	 */
+	private final String name;
+
+	/**
+	 * Rack to display the tiles of this player.
+	 */
 	private JRack jRack;
 	JDialog rackFrame;
 
 	public SwingPlayer(final String name)
 	{
-		super(null, name);
+		this.name = name;
 		if (playground == null)
 		{
 			playground = new Playground();
@@ -40,29 +44,30 @@ public class SwingPlayer extends Player
 		this.jRack = new JRack();
 	}
 
-	UUID getPlayerKey()
-	{
-		return this.playerKey;
-	}
+//	UUID getPlayerKey()
+//	{
+//		return this.playerKey;
+//	}
 
-	@Override
-	public void setGame(final Game game)
-	{
-		super.setGame(game);
-		playground.setGame(game);
-	}
+	// TODO?
+//	public void setGame(final Game game)
+//	{
+//		super.setGame(game);
+//		playground.setGame(game);
+//	}
 
-	@Override
-	public Configuration getConfiguration()
-	{
-		return null;
-	}
+//	@Override
+//	todo
+//	public Configuration getConfiguration()
+//	{
+//		return null;
+//	}
 
 	private void createUI()
 	{
 		this.rackFrame = new JDialog(playground.gridFrame);
 		this.rackFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		this.rackFrame.setTitle(this.getName());
+		this.rackFrame.setTitle(this.name);
 
 		this.rackFrame.setLayout(new BorderLayout());
 		this.rackFrame.add(this.jRack);
@@ -99,35 +104,36 @@ public class SwingPlayer extends Player
 		});
 		this.rackFrame.add(moreActionMenu, BorderLayout.AFTER_LINE_ENDS);
 
-		popupMenu.add(new JMenuItem(new AbstractAction(Game.MESSAGES.getString("exchange.tiles"))
-		{
-			@Override
-			public void actionPerformed(final ActionEvent actionEvent)
-			{
-				final int remaining = SwingPlayer.this.game.getNumberTilesInBag();
-				final int minimum = SwingPlayer.this.game.getRequiredTilesInBagForExchange();
-				if (remaining < minimum)
-				{
-					playground.showMessage(MessageFormat.format(
-							Game.MESSAGES.getString("exchange.of.tiles.not.authorized.because.number.of.tiles.in.bag.0.smaller.as.1"),
-							remaining,
-							minimum)
-					);
-				}
-				else
-				{
-					playground.showMessage(Game.MESSAGES.getString("to.exchange.tiles.enter.letters.to.exchange.p.ex.abc"));
-				}
-			}
-		}));
-		popupMenu.add(new JMenuItem(new AbstractAction(Game.MESSAGES.getString("pass.the.turn"))
-		{
-			@Override
-			public void actionPerformed(final ActionEvent actionEvent)
-			{
-				playground.showMessage(Game.MESSAGES.getString("to.pass.the.turn.enter"));
-			}
-		}));
+		// todo
+//		popupMenu.add(new JMenuItem(new AbstractAction(MESSAGES.getString("exchange.tiles"))
+//		{
+//			@Override
+//			public void actionPerformed(final ActionEvent actionEvent)
+//			{
+//				final int remaining = SwingPlayer.this.game.getNumberTilesInBag();
+//				final int minimum = SwingPlayer.this.game.getRequiredTilesInBagForExchange();
+//				if (remaining < minimum)
+//				{
+//					playground.showMessage(MessageFormat.format(
+//							MESSAGES.getString("exchange.of.tiles.not.authorized.because.number.of.tiles.in.bag.0.smaller.as.1"),
+//							remaining,
+//							minimum)
+//					);
+//				}
+//				else
+//				{
+//					playground.showMessage(MESSAGES.getString("to.exchange.tiles.enter.letters.to.exchange.p.ex.abc"));
+//				}
+//			}
+//		}));
+//		popupMenu.add(new JMenuItem(new AbstractAction(MESSAGES.getString("pass.the.turn"))
+//		{
+//			@Override
+//			public void actionPerformed(final ActionEvent actionEvent)
+//			{
+//				playground.showMessage(MESSAGES.getString("to.pass.the.turn.enter"));
+//			}
+//		}));
 
 		this.rackFrame.pack();
 		this.rackFrame.setVisible(true);
@@ -157,80 +163,69 @@ public class SwingPlayer extends Player
 			}
 		}
 
-		void update()
-		{
-			try
-			{
-				final ArrayList<Tile> tiles = new ArrayList<>(
-						SwingPlayer.this.game.getRack(SwingPlayer.this, SwingPlayer.this.playerKey));
-
-				for (int i = 0; i < RACK_SIZE; i++)
-				{
-					this.cells[i].setTile(
-							i >= tiles.size() ? null : tiles.get(i)
-					);
-				}
-				this.repaint();
-			}
-			catch (ScrabbleException e)
-			{
-				playground.showMessage(e.getMessage());
-			}
-		}
+//		void update()
+//		{
+//			try
+//			{
+//				final ArrayList<Tile> tiles = new ArrayList<>(
+//						SwingPlayer.this.game.getRack(SwingPlayer.this, SwingPlayer.this.playerKey));
+//
+//				for (int i = 0; i < RACK_SIZE; i++)
+//				{
+//					this.cells[i].setTile(
+//							i >= tiles.size() ? null : tiles.get(i)
+//					);
+//				}
+//				this.repaint();
+//			}
+//			catch (ScrabbleException e)
+//			{
+//				playground.showMessage(e.getMessage());
+//			}
+//		}
 	}
 
-	@Override
 	public void afterRollback()
 	{
 		playground.refreshUI(this);
 	}
 
 
-	@Override
 	public void onDispatchMessage(final String msg)
 	{
 		playground.showMessage(msg);
 	}
 
-	@Override
-	public void afterPlay(final Play played)
+	public void afterPlay()
 	{
-		playground.afterPlay(this, played);
-		this.jRack.update();
+		playground.afterPlay(this, null);
+		this.jRack.update(null);
 	}
 
-	@Override
 	public void beforeGameStart()
 	{
 		playground.beforeGameStart();
-		this.jRack.update();
+		this.jRack.update(null);
 		createUI();
 	}
 
-	@Override
 	public boolean isObserver()
 	{
 		return false;
 	}
 
-	@Override
-	public Game.PlayerType getType()
+
+	public void onPlayRequired()
 	{
-		return Game.PlayerType.SWING;
-	}
+		// todo: wahrscheinlich nicht.
+//		if (playground.getNumberSwingPlayers() > 1)
+//		{
+//			this.jRack.setBorder(play.player == this
+//					? new LineBorder(Color.green.darker(), 6)
+//					: null);
+//			SwingUtilities.invokeLater(() -> this.rackFrame.pack());
+//		}
 
-
-	@Override
-	public void onPlayRequired(final Play play)
-	{
-		if (playground.getNumberSwingPlayers() > 1)
-		{
-			this.jRack.setBorder(play.player == this
-					? new LineBorder(Color.green.darker(), 6)
-					: null);
-			SwingUtilities.invokeLater(() -> this.rackFrame.pack());
-		}
-
-		playground.onPlayRequired(this, play);
+		playground.onPlayRequired(this);
 	}
 }
