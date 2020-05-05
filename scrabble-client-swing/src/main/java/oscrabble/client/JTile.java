@@ -1,6 +1,6 @@
 package oscrabble.client;
 
-import oscrabble.data.objects.Grid;
+import oscrabble.data.objects.Square;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,7 +29,7 @@ class JTile extends JComponent
 		addMouseListener(new DragMouseAdapter());
 	}
 
-	public JTile(final Grid.Square square)
+	public JTile(final Square square)
 	{
 		this(square.c, square.letterBonus, square.isJoker());
 	}

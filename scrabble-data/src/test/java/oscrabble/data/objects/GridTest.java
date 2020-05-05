@@ -29,7 +29,7 @@ class GridTest
 	public void neighbours()
 	{
 		final Grid grid = new Grid();
-		Set<Grid.Square> neighbours;
+		Set<Square> neighbours;
 
 		neighbours = grid.getNeighbours(grid.get(4, 3));
 		assertEquals(4, neighbours.size());

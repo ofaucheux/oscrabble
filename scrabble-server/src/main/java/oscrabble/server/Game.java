@@ -11,9 +11,9 @@ import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
 import oscrabble.data.HistoryEntry;
 import oscrabble.data.IDictionary;
-import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
+import oscrabble.data.objects.Square;
 
 import java.io.File;
 import java.io.FileReader;
@@ -939,8 +939,8 @@ public class Game
 
 	private boolean containsCentralField(final Action.PlayTiles move)
 	{
-		final Grid.Square centralSquare = this.grid.getCentralSquare();
-		Grid.Square sq = this.grid.get(move.startSquare);
+		final Square centralSquare = this.grid.getCentralSquare();
+		Square sq = this.grid.get(move.startSquare);
 		for (int i = 0; i < move.word.length(); i++)
 		{
 			if (sq.equals(centralSquare))

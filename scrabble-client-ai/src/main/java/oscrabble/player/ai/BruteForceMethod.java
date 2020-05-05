@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
+import oscrabble.data.objects.Square;
 
 import java.io.*;
 import java.util.*;
@@ -64,20 +65,20 @@ public class BruteForceMethod
 	}
 
 
-	Set<Grid.Square> getAnchors()
+	Set<Square> getAnchors()
 	{
-		final LinkedHashSet<Grid.Square> anchors = new LinkedHashSet<>();
+		final LinkedHashSet<Square> anchors = new LinkedHashSet<>();
 
 		if (this.grid.isEmpty())
 		{
 			throw new IllegalStateException("Cannot get anchors on an empty grid.");
 		}
 
-		for (final Grid.Square square : this.grid.getAllSquares())
+		for (final Square square : this.grid.getAllSquares())
 		{
 			if (!square.isEmpty())
 			{
-				for (final Grid.Square neighbour : grid.getNeighbours(square))
+				for (final Square neighbour : grid.getNeighbours(square))
 				{
 					if (neighbour.isEmpty())
 					{
@@ -110,8 +111,8 @@ public class BruteForceMethod
 			ctx.rack.add(c);
 		}
 
-		final Set<Grid.Square> anchors = getAnchors();
-		for (final Grid.Square anchor : anchors)
+		final Set<Square> anchors = getAnchors();
+		for (final Square anchor : anchors)
 		{
 			ctx.anchor = anchor;
 
@@ -123,7 +124,7 @@ public class BruteForceMethod
 
 				if (!anchor.isFirstOfLine(direction) && !grid.getPrevious(anchor, direction).isEmpty())
 				{
-					Grid.Square square = anchor;
+					Square square = anchor;
 					do
 					{
 						square = grid.getPrevious(square, direction);
@@ -136,7 +137,7 @@ public class BruteForceMethod
 				else
 				{
 					int nonAnchor = 0;
-					Grid.Square square = anchor;
+					Square square = anchor;
 					while (!square.isFirstOfLine(direction) && !anchors.contains(square = grid.getPrevious(square, direction)) && square.isEmpty())
 					{
 						nonAnchor++;
@@ -167,10 +168,10 @@ public class BruteForceMethod
 		getWords(this.automaton.getSourceNode(), "", remaining, words);
 
 		final Set<String> moves = new HashSet<>();
-		final Grid.Square centralSquare = this.grid.getCentralSquare();
+		final Square centralSquare = this.grid.getCentralSquare();
 		for (final String word : words)
 		{
-			HashMap<Grid.Direction, Grid.Square> wordStart = new HashMap<>();
+			HashMap<Grid.Direction, Square> wordStart = new HashMap<>();
 			wordStart.put(Grid.Direction.HORIZONTAL, centralSquare);
 			wordStart.put(Grid.Direction.VERTICAL, centralSquare);
 
@@ -178,7 +179,7 @@ public class BruteForceMethod
 			{
 				for (final Grid.Direction d: wordStart.keySet())
 				{
-					final Grid.Square startSquare = wordStart.get(d);
+					final Square startSquare = wordStart.get(d);
 					moves.add(startSquare.getNotation(d) + " " + word);
 					wordStart.put(d, grid.getPrevious(startSquare, d));
 				}
@@ -248,7 +249,7 @@ public class BruteForceMethod
 	private void extendRight(final CalculateCtx ctx,
 							 final String partialWord,
 							 final DAWGNode node,
-							 final Grid.Square possibleNextSquare)
+							 final Square possibleNextSquare)
 	{
 
 		if (
@@ -334,9 +335,9 @@ public class BruteForceMethod
 		return transitions;
 	}
 
-	private void addLegalMove(final CalculateCtx ctx, final Grid.Square endSquare, final String word)
+	private void addLegalMove(final CalculateCtx ctx, final Square endSquare, final String word)
 	{
-		Grid.Square startSquare = endSquare;
+		Square startSquare = endSquare;
 		for (int i = 0; i < word.length() - 1; i++)
 		{
 			startSquare = grid.getPrevious(startSquare, ctx.direction);
@@ -347,7 +348,7 @@ public class BruteForceMethod
 	}
 
 	private Set<Character> getAllowedCrossCharacters(final CalculateCtx ctx,
-													 final Grid.Square crossSquare,
+													 final Square crossSquare,
 													 final Grid.Direction crossDirection)
 	{
 		if (!crossSquare.isEmpty())
@@ -355,7 +356,7 @@ public class BruteForceMethod
 			throw new IllegalStateException("Should not be called on occupied square");
 		}
 
-		final Map<Grid.Square, Set<Character>> crossChecks = ctx.crosschecks.get(crossDirection);
+		final Map<Square, Set<Character>> crossChecks = ctx.crosschecks.get(crossDirection);
 		if (!crossChecks.containsKey(crossSquare))
 		{
 			final TreeSet<Character> allowed = new TreeSet<>();
@@ -363,7 +364,7 @@ public class BruteForceMethod
 
 			final StringBuilder sb = new StringBuilder();
 
-			Grid.Square square = grid.getPrevious(crossSquare, crossDirection);
+			Square square = grid.getPrevious(crossSquare, crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
 				sb.insert(0, square.c);
@@ -410,13 +411,13 @@ public class BruteForceMethod
 	static class CalculateCtx
 	{
 		Grid.Direction direction;
-		Grid.Square anchor;
+		Square anchor;
 		Grid grid;
 
 		List<Character> rack;
 		Set<String> legalPlayTiles = new LinkedHashSet<>();
 
-		final Map<Grid.Direction, Map<Grid.Square, Set<Character>>> crosschecks = new HashMap<>();
+		final Map<Grid.Direction, Map<Square, Set<Character>>> crosschecks = new HashMap<>();
 		{
 			this.crosschecks.put(Grid.Direction.HORIZONTAL, new HashMap<>());
 			this.crosschecks.put(Grid.Direction.VERTICAL, new HashMap<>());

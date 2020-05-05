@@ -6,6 +6,7 @@ import oscrabble.ScrabbleException;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
+import oscrabble.data.objects.Square;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ScoreCalculator
 
 		int wordFactor = 1;
 		int crosswordScores = 0;
-		Grid.Square sq = grid.get(action.startSquare);
+		Square sq = grid.get(action.startSquare);
 		for (int i = 0; i < action.word.length(); i++)
 		{
 			final char c = action.word.charAt(i);
@@ -48,7 +49,7 @@ public class ScoreCalculator
 
 				// Berechnet die Querwörter und ihre Scores
 				final StringBuilder crossword = new StringBuilder();
-				Grid.Square cursor;
+				Square cursor;
 				cursor = sq;
 				final Grid.Direction crossDirection = action.startSquare.direction.other();
 				int crosswordScore = 0;
@@ -115,7 +116,7 @@ public class ScoreCalculator
 		/**
 		 * Square the move will fill and which are not filled for the move
 		 */
-		private final ArrayList<Grid.Square> filledSquares = new ArrayList<>();
+		private final ArrayList<Square> filledSquares = new ArrayList<>();
 
 		int score;
 		private int requiredBlanks;
@@ -132,7 +133,7 @@ public class ScoreCalculator
 			return this.score;
 		}
 
-		public Iterable<Grid.Square> getFilledSquares()
+		public Iterable<Square> getFilledSquares()
 		{
 			return this.filledSquares;
 		}

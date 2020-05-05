@@ -10,6 +10,7 @@ import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.GameState;
 import oscrabble.data.HistoryEntry;
 import oscrabble.data.objects.Grid;
+import oscrabble.data.objects.Square;
 import oscrabble.server.IGame;
 
 import javax.swing.*;
@@ -512,7 +513,7 @@ class Playground
 	 */
 	static class JGrid extends JPanel
 	{
-		private final HashMap<Grid.Square, MatteBorder> specialBorders = new HashMap<>();
+		private final HashMap<Square, MatteBorder> specialBorders = new HashMap<>();
 
 		private final Grid grid;
 
@@ -521,7 +522,7 @@ class Playground
 		 */
 //		private final Grid game;
 
-		private final Map<Grid.Square, Character> preparedMoveStones;
+		private final Map<Square, Character> preparedMoveStones;
 
 		/**
 		 * Frame für die Anzeige der Definition von Wärtern
@@ -568,7 +569,7 @@ class Playground
 			{
 				for (int x = 0; x < numberOfRows; x++)
 				{
-					final Grid.Square square = grid.get(x, y);
+					final Square square = grid.get(x, y);
 					if (square.isBorder)
 					{
 						this.background.add(new BorderCell(square));
@@ -630,7 +631,7 @@ class Playground
 //			}
 //		}
 
-		private void highlightWord(final ArrayList<Grid.Square> squares)
+		private void highlightWord(final ArrayList<Square> squares)
 		{
 			final int INSET = 4;
 			final Color preparedMoveColor = Color.RED;
@@ -688,9 +689,9 @@ class Playground
 		class JSquare extends JComponent
 		{
 			private final AbstractAction showDefinitionAction;
-			private final Grid.Square square;
+			private final Square square;
 
-			JSquare(final Grid.Square square)
+			JSquare(final Square square)
 			{
 				this.square = square;
 				final JPopupMenu popup = new JPopupMenu();
@@ -829,9 +830,9 @@ class Playground
 		private static class BorderCell extends JComponent
 		{
 
-			private final Grid.Square square;
+			private final Square square;
 
-			BorderCell(final Grid.Square square)
+			BorderCell(final Square square)
 			{
 				this.square = square;
 			}
