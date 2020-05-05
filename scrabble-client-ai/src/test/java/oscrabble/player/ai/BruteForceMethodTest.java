@@ -9,6 +9,7 @@ import oscrabble.data.objects.Grid;
 import oscrabble.server.AbstractGameListener;
 import oscrabble.server.Game;
 import oscrabble.controller.Action;
+import oscrabble.server.PlayerInformation;
 
 import java.net.URI;
 import java.util.*;
@@ -25,7 +26,7 @@ public class BruteForceMethodTest
 	public static final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
 	private ArrayBlockingQueue<String> playQueue;
 	private Game game;
-	private Game.Player player;
+	private PlayerInformation player;
 
 
 	@BeforeEach
@@ -119,13 +120,13 @@ public class BruteForceMethodTest
 	{
 		this.game = new Game(DICTIONARY);
 		this.game.assertFirstLetters(bag);
-		this.player = new Game.Player("AI Player");
+		this.player = new PlayerInformation("AI Player");
 		this.game.addPlayer(this.player);
 		this.playQueue = new ArrayBlockingQueue<>(100);
 		this.game.addListener(new AbstractGameListener()
 		{
 			@Override
-			public void onPlayRequired(final Game.Player player)
+			public void onPlayRequired(final PlayerInformation player)
 			{
 				try
 				{

@@ -10,7 +10,7 @@ import java.util.Queue;
 public class AbstractGameListener implements GameListener
 {
 	@Override
-	public void onPlayRequired(final Game.Player player)
+	public void onPlayRequired(final PlayerInformation player)
 	{
 	}
 
@@ -51,7 +51,7 @@ public class AbstractGameListener implements GameListener
 	}
 
 	@Override
-	public void afterRejectedAction(final Game.Player player, final Action action)
+	public void afterRejectedAction(final PlayerInformation player, final Action action)
 	{
 	}
 }

@@ -45,7 +45,7 @@ public class Game
 	/**
 	 * Players linked to their ids.
 	 */
-	final LinkedHashMap<String, Player> players = new LinkedHashMap<>();
+	final LinkedHashMap<UUID, PlayerInformation> players = new LinkedHashMap<>();
 
 	/**
 	 * Plays
@@ -61,7 +61,7 @@ public class Game
 	/**
 	 * List of the users, the first to play at head
 	 */
-	final LinkedList<Player> toPlay = new LinkedList<>();
+	final LinkedList<PlayerInformation> toPlay = new LinkedList<>();
 
 	private Grid grid;
 	private final Random random;
@@ -273,9 +273,9 @@ public class Game
 	 * @param jsonPlayer player
 	 * @return the player
 	 */
-	public synchronized Player addPlayer(final oscrabble.data.Player jsonPlayer) throws ScrabbleException
+	public synchronized PlayerInformation addPlayer(final oscrabble.data.Player jsonPlayer) throws ScrabbleException
 	{
-		final Player player = new Player(jsonPlayer.name);
+		final PlayerInformation player = new PlayerInformation(jsonPlayer.name);
 		player.id = jsonPlayer.id;
 		return addPlayer(player);
 	}
@@ -286,7 +286,7 @@ public class Game
 	 * @param player
 	 * @return the player
 	 */
-	public <A extends Player> A addPlayer(final A player) throws ScrabbleException
+	public <A extends PlayerInformation> A addPlayer(final A player) throws ScrabbleException
 	{
 		if (this.players.put(player.id, player) != null)
 		{
@@ -310,7 +310,7 @@ public class Game
 //			checkKey(jsonAction.player, clientKey);
 
 			final Action action = Action.parse(jsonAction);
-			final Player player = this.players.get(jsonAction.player);
+			final PlayerInformation player = this.players.get(jsonAction.player);
 			play(player, action);
 		}
 	}
@@ -324,7 +324,7 @@ public class Game
 	 * @throws ScrabbleException.ForbiddenPlayException
 	 * @throws ScrabbleException.NotInTurn
 	 */
-	public void play(final Player player, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
+	public void play(final PlayerInformation player, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
 	{
 		if (player == null)
 		{
@@ -517,7 +517,7 @@ public class Game
 		this.state = data.state;
 		for (final oscrabble.data.Player dataplayer : data.players)
 		{
-			final Player player = this.players.get(dataplayer.name);
+			final PlayerInformation player = this.players.get(dataplayer.name);
 			player.rack.tiles.clear();
 			player.rack.tiles.addAll(dataplayer.rack.tiles);
 			player.score = dataplayer.score;
@@ -534,7 +534,7 @@ public class Game
 	GameState getGameState()
 	{
 		final ArrayList<oscrabble.data.Player> players = new ArrayList<>();
-		for (final Player player : this.players.values())
+		for (final PlayerInformation player : this.players.values())
 		{
 			players.add(player.toData());
 		}
@@ -567,7 +567,7 @@ public class Game
 				}
 		);
 
-		final Player onTurn = this.toPlay.peekFirst();
+		final PlayerInformation onTurn = this.toPlay.peekFirst();
 		final GameState state = GameState
 				.builder()
 				.state(getState())
@@ -582,7 +582,7 @@ public class Game
 	}
 
 	/** todo */
-	public synchronized void rollbackLastMove(final Player caller) throws ScrabbleException
+	public synchronized void rollbackLastMove(final PlayerInformation caller) throws ScrabbleException
 	{
 		throw new AssertionError("Not implemented");
 //		synchronized (this.changing)
@@ -631,7 +631,7 @@ public class Game
 //		saveConfiguration();
 //	}
 
-	public synchronized Player getPlayerToPlay()
+	public synchronized PlayerInformation getPlayerToPlay()
 	{
 		return this.toPlay.getFirst();
 	}
@@ -641,7 +641,7 @@ public class Game
 	 *
 	 * @param firstEndingPlayer player which has first emptied its rack, or {@code null} if nobody has cleared it.
 	 */
-	private synchronized void endGame(final Player firstEndingPlayer, final HistoryEntry historyEntry)
+	private synchronized void endGame(final PlayerInformation firstEndingPlayer, final HistoryEntry historyEntry)
 	{
 		LOGGER.info("Games ends. Player which have clear its rack: " + (firstEndingPlayer == null ? null : firstEndingPlayer.name));
 		final StringBuffer message = new StringBuffer();
@@ -689,7 +689,7 @@ public class Game
 //		dispatch(l -> l.onDispatchMessage(message));
 	}
 
-	public List<Player> getPlayers()
+	public List<PlayerInformation> getPlayers()
 	{
 		return new ArrayList<>(this.players.values());
 	}
@@ -705,7 +705,7 @@ public class Game
 	 * @param player Player to refill the rack
 	 * @return list of drawn tiles.
 	 */
-	private Set<Character> refillRack(final Player player)
+	private Set<Character> refillRack(final PlayerInformation player)
 	{
 		final Set<Character> drawn = new HashSet<>();
 		while (!this.bag.isEmpty() && player.rack.tiles.size() < RACK_SIZE)
@@ -747,7 +747,7 @@ public class Game
 					}
 				}
 
-				final Player player = this.toPlay.peekFirst();
+				final PlayerInformation player = this.toPlay.peekFirst();
 				assert player != null;
 				LOGGER.info("Let's play " + player);
 				this.waitingForPlay = new CountDownLatch(1);
@@ -789,7 +789,7 @@ public class Game
 		}
 
 		// Fill racks
-		for (final Player player : this.toPlay)
+		for (final PlayerInformation player : this.toPlay)
 		{
 			refillRack(player);
 		}
@@ -871,7 +871,7 @@ public class Game
 	}
 
 
-	public synchronized int getScore(final Player player)
+	public synchronized int getScore(final PlayerInformation player)
 	{
 		return player.score;
 	}
@@ -890,7 +890,7 @@ public class Game
 //	}
 
 
-	public void quit(final Player player, final String secret, final String message) throws ScrabbleException
+	public void quit(final PlayerInformation player, final String secret, final String message) throws ScrabbleException
 	{
 		checkSecret(player, secret);
 		final String msg = MessageFormat.format(MESSAGES.getString("player.0.quits.with.message.1"), player, message);
@@ -912,7 +912,7 @@ public class Game
 		return this.configuration;
 	}
 
-	private void checkSecret(final Player player, final String secret) throws ScrabbleException.InvalidSecretException
+	private void checkSecret(final PlayerInformation player, final String secret) throws ScrabbleException.InvalidSecretException
 	{
 		// TODO
 //		if (secret == null || !secret.equals(player.secret))
@@ -995,7 +995,7 @@ public class Game
 		awaitEndOfPlay(roundNr, 30, TimeUnit.SECONDS);
 	}
 
-	public String getRack(final Player player)
+	public String getRack(final PlayerInformation player)
 	{
 		final StringBuffer sb = new StringBuffer();
 		for (final Character character : player.rack.tiles)
@@ -1070,79 +1070,6 @@ public class Game
 //		}
 //
 //	}
-
-	public static class Player
-	{
-		/**
-		 * Was last play an error?
-		 */
-		// TODO: remove
-		public boolean isLastPlayError;
-
-		/**
-		 * Name
-		 */
-		final String name;
-
-		/**
-		 * Password für die Kommunikation Player &lt;&gt; Server
-		 */
-		String id;
-
-//		/**
-//		 * Queue  to receive events from client
-//		 */
-//		BlockingQueue<ScrabbleEvent> incomingEventQueue;
-
-		/**
-		 * Tiles in the rack, space for a joker.
-		 */
-		Bag rack = Bag.builder().tiles(new ArrayList<>()).build();
-
-		int score;
-		/**
-		 * Last played action.
-		 */
-		Action lastAction;
-
-		public Player(final String name)
-		{
-			if (name == null)
-			{
-				throw new IllegalArgumentException("Player name not set");
-			}
-			this.name = name;
-		}
-
-		// TODO
-		public oscrabble.configuration.Configuration getConfiguration()
-		{
-			return null;
-		}
-
-		/**
-		 * Construct a data object
-		 * @return the object
-		 */
-		public oscrabble.data.Player toData()
-		{
-			final oscrabble.data.Player data = oscrabble.data.Player.builder()
-					.id(this.id)
-					.name(this.name)
-					.score(this.score)
-					.rack(this.rack)
-					.build();
-			return data;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "Player{" +
-					"name='" + this.name + '\'' +
-					'}';
-		}
-	}
 
 	/**
 	 * Configuration parameters of a game. The list of players is not part of the configuration.

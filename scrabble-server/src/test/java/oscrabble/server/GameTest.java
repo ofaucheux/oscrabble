@@ -350,7 +350,7 @@ public class GameTest
 		final TestListener listener = new TestListener()
 		{
 			@Override
-			public void afterRejectedAction(final Game.Player player, final Action action){}
+			public void afterRejectedAction(final PlayerInformation player, final Action action){}
 			{
 				playRejected.set(true);
 			}
@@ -514,7 +514,7 @@ public class GameTest
 	/**
 	 * A player playing pre-defined turns.
 	 */
-	private class PredefinedPlayer extends Game.Player
+	private class PredefinedPlayer extends PlayerInformation
 	{
 		final ArrayBlockingQueue<String> moves = new ArrayBlockingQueue<>(1024);
 
@@ -536,7 +536,7 @@ public class GameTest
 				}
 
 				@Override
-				public void onPlayRequired(final Game.Player player)
+				public void onPlayRequired(final PlayerInformation player)
 				{
 					if (player == PredefinedPlayer.this)
 						try
