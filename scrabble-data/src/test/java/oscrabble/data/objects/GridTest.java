@@ -31,19 +31,19 @@ class GridTest
 		final Grid grid = new Grid();
 		Set<Grid.Square> neighbours;
 
-		neighbours = grid.get(4, 3).getNeighbours();
+		neighbours = grid.getNeighbours(grid.get(4, 3));
 		assertEquals(4, neighbours.size());
 		assertTrue(neighbours.contains(grid.get(4, 4)));
 
-		neighbours = grid.get(0, 4).getNeighbours();
+		neighbours = grid.getNeighbours(grid.get(0, 4));
 		assertEquals(3, neighbours.size());
 
-		neighbours = grid.get(grid.getSize() - 1, grid.getSize() - 1).getNeighbours();
+		neighbours = grid.getNeighbours(grid.get(grid.getSize() - 1, grid.getSize() - 1));
 		assertEquals(2, neighbours.size());
 	}
 
 	@Test
-	public void jokers() throws ScrabbleException.ForbiddenPlayException
+	public void jokers()
 	{
 		final Grid grid = new Grid();
 		assertEquals(3, grid.get("F6").letterBonus);

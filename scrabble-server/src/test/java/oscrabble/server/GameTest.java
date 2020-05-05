@@ -9,8 +9,6 @@ import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
 import oscrabble.data.objects.Grid;
-import oscrabble.dictionary.Application;
-import oscrabble.dictionary.Language;
 import oscrabble.controller.Action;
 
 import java.net.URI;
@@ -29,7 +27,6 @@ public class GameTest
 	public static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
 	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
-	private static Application application;
 
 	private Game game;
 	private Grid grid;
@@ -44,19 +41,10 @@ public class GameTest
 //		application.start();
 		DICTIONARY = new MicroServiceDictionary(
 				URI.create("http://localhost:8080/"),
-				Language.FRENCH.toString()
+				"FRENCH" // todo: in dico client jar
 		);
 
 		Thread.setDefaultUncaughtExceptionHandler((t,e) -> LOGGER.error(e.toString(), e));
-	}
-
-	@AfterAll
-	public static void stop()
-	{
-		if (application != null)
-		{
-			application.stop();
-		}
 	}
 
 	@BeforeEach
