@@ -929,7 +929,7 @@ public class Game
 			{
 				return true;
 			}
-			sq = sq.getNext(move.startSquare.direction);
+			sq = grid.getNext(sq, move.startSquare.direction);
 		}
 		return false;
 	}

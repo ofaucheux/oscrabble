@@ -115,7 +115,7 @@ public class Grid
 				throw new AssertionError("The case is already occupied");
 			}
 
-			sq = sq.getNeighbour(playTiles.startSquare.direction, 1);
+			sq = getNeighbour(sq, playTiles.startSquare.direction, 1);
 		}
 	}
 
@@ -136,12 +136,12 @@ public class Grid
 		{
 			final StringBuffer sb = new StringBuffer();
 			Square sq = origin;
-			while (!(sq = sq.getPrevious(dir)).isBorder() && !sq.isEmpty())
+			while (!(sq = getPrevious(sq, dir)).isBorder() && !sq.isEmpty())
 			{
 				sb.insert(0, sq.getLetter());
 			}
 			sb.append((sq = origin).getLetter());
-			while (!(sq = sq.getNext(dir)).isBorder() && !sq.isEmpty())
+			while (!(sq = getNext(sq, dir)).isBorder() && !sq.isEmpty())
 			{
 				sb.append(sq.getLetter());
 			}
@@ -156,7 +156,7 @@ public class Grid
 	/**
 	 * A square (possibly a border one) with coordinate, contained tile and bonus.
 	 */
-	public class Square
+	public static class Square
 	{
 		/**
 		 * Values are 1-based: the case A1 has the coordinate (1,1). The case (1,0) exists, but is marked as border one.
@@ -194,51 +194,16 @@ public class Grid
 			return this.c == null;
 		}
 
-		public Square getNeighbour(final Direction direction, int value)
-		{
-			return Grid.this.get(
-					this.x + (direction == Direction.HORIZONTAL ? value : 0),
-					this.y + (direction == Direction.VERTICAL ? value : 0)
-			);
-		}
-
 		public boolean isBorder()
 		{
 			return this.x == 0 || this.x == Grid.GRID_SIZE + 1
 					|| this.y == 0 || this.y == Grid.GRID_SIZE + 1;
 		}
 
-		public Set<Square> getNeighbours()
-		{
-			final Set<Square> neighbours = new HashSet<>(4);
-			for (final Direction dir : Direction.values())
-			{
-				if (!isFirstOfLine(dir))
-				{
-					neighbours.add(getPrevious(dir));
-				}
-				if (!isLastOfLine(dir))
-				{
-					neighbours.add(getNext(dir));
-				}
-			}
-			return neighbours;
-		}
-
 		public boolean isFirstOfLine(final Direction direction)
 		{
 			final int position = direction == Direction.HORIZONTAL ? this.x : this.y;
 			return position == 0;
-		}
-
-		public Square getPrevious(final Direction direction)
-		{
-			return getNeighbour(direction, -1);
-		}
-
-		public Square getNext(final Direction direction)
-		{
-			return getNeighbour(direction, +1);
 		}
 
 		public boolean isLastOfLine(final Direction direction)
@@ -347,11 +312,48 @@ public class Grid
 		return this.squares[center][center];
 	}
 
+
+	public Square getNeighbour(final Square sq, final Direction direction, int value)
+	{
+		return Grid.this.get(
+				sq.x + (direction == Direction.HORIZONTAL ? value : 0),
+				sq.y + (direction == Direction.VERTICAL ? value : 0)
+		);
+	}
+
+
+	public Set<Square> getNeighbours(final Square sq)
+	{
+		final Set<Square> neighbours = new HashSet<>(4);
+		for (final Direction dir : Direction.values())
+		{
+			if (!sq.isFirstOfLine(dir))
+			{
+				neighbours.add(getPrevious(sq, dir));
+			}
+			if (!sq.isLastOfLine(dir))
+			{
+				neighbours.add(getNext(sq, dir));
+			}
+		}
+		return neighbours;
+	}
+
+	public Square getPrevious(final Square sq, final Direction direction)
+	{
+		return getNeighbour(sq, direction, -1);
+	}
+
+	public Square getNext(final Square sq, final Direction direction)
+	{
+		return getNeighbour(sq, direction, +1);
+	}
+
 	/**
 	 * Liefert den Bonus einer Zelle.
 	 * @param x {@code 0} for border
 	 */
-	private Bonus calculateBonus(final int x, final int y)
+	private static Bonus calculateBonus(final int x, final int y)
 	{
 
 		final int midColumn = GRID_SIZE / 2 + 1;
