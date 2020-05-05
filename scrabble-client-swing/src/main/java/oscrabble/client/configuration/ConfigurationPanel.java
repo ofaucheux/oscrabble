@@ -3,6 +3,7 @@ package oscrabble.client.configuration;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
+import oscrabble.client.SwingPlayer;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -230,7 +231,7 @@ public final class ConfigurationPanel extends JPanel
 	{
 		if (text.startsWith("#"))
 		{
-			return Game.MESSAGES.getString(text.substring(1));
+			return SwingPlayer.MESSAGES.getString(text.substring(1));
 		}
 		else
 		{

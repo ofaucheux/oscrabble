@@ -11,6 +11,7 @@ import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
 import oscrabble.data.HistoryEntry;
 import oscrabble.data.IDictionary;
+import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
 
@@ -59,6 +60,7 @@ public class Game
 	 */
 	final Object changing = new Object();
 	private final ScoreCalculator scoreCalculator;
+	private final ArrayList<GameState> states = new ArrayList<>();
 	/**
 	 * List of the users, the first to play at head
 	 */
@@ -478,6 +480,8 @@ public class Game
 		{
 			if (done)
 			{
+				this.states.add(getGameState());
+
 				drawn = refillRack(player);
 				player.lastAction = action;
 				this.actions.add(action);
@@ -511,9 +515,33 @@ public class Game
 		}
 	}
 
+	private GameState getGameState()
+	{
+		final ArrayList<oscrabble.data.Player> players = new ArrayList<>();
+		for (final Player player : this.players.values())
+		{
+			players.add(player.toData());
+		}
+
+		final ArrayList<oscrabble.data.Action> playedActions = new ArrayList<>();
+		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
+
+		final GameState state = GameState
+				.builder()
+				.state(getState())
+				.players(players)
+				.playedActions(playedActions)
+				.grid(this.grid.toData())
+				.bag(bag)
+				.build();
+
+		return state;
+	}
+
 	/** todo */
-//	public synchronized void rollbackLastMove(final Player caller) throws ScrabbleException
-//	{
+	public synchronized void rollbackLastMove(final Player caller) throws ScrabbleException
+	{
+		throw new AssertionError("Not implemented");
 //		synchronized (this.changing)
 //		{
 //			LOGGER.info("Rollback last move on demand of " + caller);
@@ -553,7 +581,7 @@ public class Game
 //			this.changing.notify();
 //		}
 //
-//	}
+	}
 
 //	//	public void playerConfigHasChanged(final Player player, final UUID playerKey)
 //	{
@@ -1002,7 +1030,6 @@ public class Game
 
 	public static class Player
 	{
-
 		/**
 		 * Was last play an error?
 		 */
@@ -1047,6 +1074,20 @@ public class Game
 		public oscrabble.configuration.Configuration getConfiguration()
 		{
 			return null;
+		}
+
+		/**
+		 * Construct a data object
+		 * @return the object
+		 */
+		public oscrabble.data.Player toData()
+		{
+			final oscrabble.data.Player data = oscrabble.data.Player.builder()
+					.id(this.id)
+					.name(this.name)
+					.score(this.score)
+					.build();
+			return data;
 		}
 
 		@Override

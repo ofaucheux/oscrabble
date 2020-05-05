@@ -3,17 +3,24 @@ package oscrabble.player.ai;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.data.Player;
 import oscrabble.server.IGame;
 
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.UUID;
 
-public class AIPlayer extends oscrabble.data.Player
+public class AIPlayer
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(AIPlayer.class);
 	private final BruteForceMethod bruteForceMethod;
 	private final BruteForceMethod.Configuration configuration;
+
+	/**
+	 * Name
+	 */
+	private final String name;
 	private IGame game; // TODO
 
 //		private ComparatorSelector selector;
@@ -37,12 +44,12 @@ public class AIPlayer extends oscrabble.data.Player
 
 		try
 		{
-			final 	String rack = this.game.getRack(this);
+			final String rack = null; // this.game.getRack(this); // TODO
 			Set<String> possibleMoves = new HashSet<>(bruteForceMethod.getLegalMoves(rack));
 
 			if (possibleMoves.isEmpty())
 			{
-				this.game.sendMessage(this, "No possible moves anymore");
+				// todo				this.game.sendMessage(this, "No possible moves anymore");
 				this.game.play("-");
 			}
 			else
@@ -130,4 +137,18 @@ public class AIPlayer extends oscrabble.data.Player
 //		{
 //			return (Configuration) this.configuration;
 //		}
+
+	/**
+	 *
+	 * @return a representation of this player.
+	 */
+	Player toData()
+	{
+		final Player player = Player.builder()
+				.id(this.name)
+				.name(this.name)
+				.score(0)
+				.build();
+		return player;
+	}
 }

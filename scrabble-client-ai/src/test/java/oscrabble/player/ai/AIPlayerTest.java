@@ -22,7 +22,7 @@ class AIPlayerTest
 		final Game game = new Game(DICTIONARY);
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);
 		final AIPlayer player = new AIPlayer(bfm, "AI Player");
-		game.addPlayer(player);
+		game.addPlayer(player.toData());
 //		final ArrayBlockingQueue<String> playQueue = new ArrayBlockingQueue<>(100);
 		game.addListener(new AbstractGameListener()
 		{
