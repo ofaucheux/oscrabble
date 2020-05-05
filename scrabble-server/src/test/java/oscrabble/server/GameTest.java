@@ -571,7 +571,7 @@ public class GameTest
 				}
 			});
 
-			th.setName("Player Thread - " + this.name);
+			th.setName("Player Thread - " + this.uuid);
 			th.setDaemon(true);
 			th.start();
 		}

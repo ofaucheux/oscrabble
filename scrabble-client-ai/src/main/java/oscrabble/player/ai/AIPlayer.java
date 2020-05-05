@@ -141,7 +141,7 @@ public class AIPlayer extends AbstractPlayer
 	Player toData()
 	{
 		final Player player = Player.builder()
-				.id(this.name)
+				.id(this.uuid)
 				.name(this.name)
 				.score(0)
 				.rack(this.rack)

@@ -11,6 +11,7 @@ import oscrabble.data.*;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
 import oscrabble.data.objects.Square;
+import oscrabble.player.AbstractPlayer;
 
 import java.io.File;
 import java.io.FileReader;
@@ -275,24 +276,13 @@ public class Game
 	 */
 	public synchronized PlayerInformation addPlayer(final oscrabble.data.Player jsonPlayer) throws ScrabbleException
 	{
-		final PlayerInformation player = new PlayerInformation(jsonPlayer.name);
-		player.id = jsonPlayer.id;
-		return addPlayer(player);
-	}
-
-	/**
-	 * Add a player
-	 *
-	 * @param player
-	 * @return the player
-	 */
-	public <A extends PlayerInformation> A addPlayer(final A player) throws ScrabbleException
-	{
-		if (this.players.put(player.id, player) != null)
+		final PlayerInformation pi = new PlayerInformation(jsonPlayer.id);
+		if (this.players.put(pi.uuid, pi) != null)
 		{
-			throw new ScrabbleException("Player ID already registred");
+			throw new ScrabbleException("Player ID already registered");
 		}
-		return player;
+		pi.setName(jsonPlayer.name);
+		return pi;
 	}
 
 	/**
@@ -328,7 +318,7 @@ public class Game
 	{
 		if (player == null)
 		{
-			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + player.name);
+			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + player.uuid);
 		}
 
 		if (this.toPlay.peekFirst() != player)
@@ -336,7 +326,7 @@ public class Game
 			throw new ScrabbleException.NotInTurn(player.name);
 		}
 
-		LOGGER.info(player.name + " plays " + action.notation);
+		LOGGER.info(player.uuid + " plays " + action.notation);
 
 		int score = 0;  // TODO: should not be there. History should not use score anymore
 		boolean actionRejected = false;
@@ -410,7 +400,7 @@ public class Game
 				{
 					messages.add(SCRABBLE_MESSAGE);
 				}
-				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player.name, playTiles.notation, score));
+				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player.uuid, playTiles.notation, score));
 				LOGGER.info("Grid is now: " + grid);
 			}
 			else if (action instanceof Action.Exchange)
@@ -436,12 +426,12 @@ public class Game
 				}
 				Collections.shuffle(this.bag, this.random);
 				moveMI = null;
-				LOGGER.info(player.name + " exchanges " + exchange.toExchange.length + " stones");
+				LOGGER.info(player.uuid + " exchanges " + exchange.toExchange.length + " stones");
 			}
 			else if (action instanceof Action.SkipTurn)
 			{
-				LOGGER.info(player.name + " skips its turn");
-				this.dispatchMessage(MessageFormat.format(MESSAGES.getString("0.skips.its.turn"), player.name));
+				LOGGER.info(player.uuid + " skips its turn");
+				this.dispatchMessage(MessageFormat.format(MESSAGES.getString("0.skips.its.turn"), player.uuid));
 			}
 			else
 			{
@@ -643,7 +633,7 @@ public class Game
 	 */
 	private synchronized void endGame(final PlayerInformation firstEndingPlayer, final HistoryEntry historyEntry)
 	{
-		LOGGER.info("Games ends. Player which have clear its rack: " + (firstEndingPlayer == null ? null : firstEndingPlayer.name));
+		LOGGER.info("Games ends. Player which have clear its rack: " + (firstEndingPlayer == null ? null : firstEndingPlayer.uuid));
 		final StringBuffer message = new StringBuffer();
 		if (firstEndingPlayer == null)
 		{
@@ -651,7 +641,7 @@ public class Game
 		}
 		else
 		{
-			message.append(MessageFormat.format(MESSAGES.getString("0.has.cleared.its.rack"), firstEndingPlayer.name)).append('\n');
+			message.append(MessageFormat.format(MESSAGES.getString("0.has.cleared.its.rack"), firstEndingPlayer.uuid)).append('\n');
 		}
 		this.players.forEach(
 				(dummy, player) ->
@@ -670,7 +660,7 @@ public class Game
 							firstEndingPlayer.score += gift;
 //							todo? historyEntry.scores.put(firstEndingPlayer, historyEntry.scores.get(firstEndingPlayer) + gift);
 						}
-						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), player.name, gift)).append("\n");
+						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), player.uuid, gift)).append("\n");
 					}
 				});
 

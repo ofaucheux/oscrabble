@@ -4,11 +4,12 @@ import oscrabble.controller.Action;
 import oscrabble.data.Bag;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Information the server holds about a player.
  */
-public class PlayerInformation
+class PlayerInformation
 {
 	/**
 	 * Was last play an error?
@@ -19,7 +20,7 @@ public class PlayerInformation
 	/**
 	 * Name
 	 */
-	final String name;
+	final UUID uuid;
 
 	/**
 	 * Password für die Kommunikation Player &lt;&gt; Server
@@ -42,13 +43,18 @@ public class PlayerInformation
 	 */
 	Action lastAction;
 
-	public PlayerInformation(final String name)
+	/**
+	 * Name of the player
+	 */
+	String name;
+
+	public PlayerInformation(final UUID uuid)
 	{
-		if (name == null)
+		if (uuid == null)
 		{
 			throw new IllegalArgumentException("Player name not set");
 		}
-		this.name = name;
+		this.uuid = uuid;
 	}
 
 	// TODO
@@ -64,7 +70,7 @@ public class PlayerInformation
 	public oscrabble.data.Player toData()
 	{
 		final oscrabble.data.Player data = oscrabble.data.Player.builder()
-				.id(this.id)
+				.id(this.uuid)
 				.name(this.name)
 				.score(this.score)
 				.rack(this.rack)
@@ -76,7 +82,13 @@ public class PlayerInformation
 	public String toString()
 	{
 		return "Player{" +
-				"name='" + this.name + '\'' +
+				"name='" + this.uuid + '\'' +
 				'}';
 	}
+
+	public void setName(final String name)
+	{
+		this.name = name;
+	}
 }
+

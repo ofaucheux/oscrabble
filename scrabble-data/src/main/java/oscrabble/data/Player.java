@@ -3,11 +3,13 @@ package oscrabble.data;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 @Builder
 public class Player
 {
-	public String id;
+	public UUID id;
 	public String name;
 	public int score;
 	public Bag rack;

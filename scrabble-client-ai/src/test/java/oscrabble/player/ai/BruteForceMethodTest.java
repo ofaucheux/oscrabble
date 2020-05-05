@@ -9,7 +9,6 @@ import oscrabble.data.objects.Grid;
 import oscrabble.server.AbstractGameListener;
 import oscrabble.server.Game;
 import oscrabble.controller.Action;
-import oscrabble.server.PlayerInformation;
 
 import java.net.URI;
 import java.util.*;
