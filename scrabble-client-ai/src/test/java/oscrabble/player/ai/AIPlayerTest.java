@@ -65,7 +65,7 @@ class AIPlayerTest
 						final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(player0.rack.tiles));
 						moves.sort((o1, o2) -> o1.length() - o2.length());
 						System.out.println("ici");
-						//						game.play(player, Action.parse(moves.get(moves.size() - 1)));
+						controller.play(player.buildAction(moves.get(0)));
 					}
 					Thread.sleep(500);
 				} while (gameState.state != GameState.State.ENDED);

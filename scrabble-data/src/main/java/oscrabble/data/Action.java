@@ -1,5 +1,6 @@
 package oscrabble.data;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Objects;
@@ -9,6 +10,7 @@ import java.util.UUID;
  * Interface for plays a player can play.
  */
 @Data
+@Builder
 public class Action
 {
 	/**

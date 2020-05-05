@@ -3,22 +3,20 @@ package oscrabble.player.ai;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.data.Action;
 import oscrabble.data.Bag;
 import oscrabble.data.Player;
+import oscrabble.player.AbstractPlayer;
 import oscrabble.server.IGame;
 
 import java.util.*;
 
-public class AIPlayer
+public class AIPlayer extends AbstractPlayer
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(AIPlayer.class);
 	private final BruteForceMethod bruteForceMethod;
 	private final BruteForceMethod.Configuration configuration;
 
-	/**
-	 * Name
-	 */
-	private final String name;
 	private IGame game; // TODO
 	private Bag rack = Bag.builder().build();
 
@@ -150,4 +148,5 @@ public class AIPlayer
 				.build();
 		return player;
 	}
+
 }

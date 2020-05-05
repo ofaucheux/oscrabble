@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import oscrabble.ScrabbleException;
+import oscrabble.data.Action;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
 
@@ -44,6 +45,26 @@ public class Controller
 		catch (ScrabbleException e)
 		{
 			return new ResponseEntity(ExceptionUtils.getStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Play an action. TODO: the player should sign the action
+	 *
+	 * @param action action to play
+	 * @return ok or not ok.
+	 */
+	@GetMapping(value = "/play", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> play(@RequestBody Action action)
+	{
+		try
+		{
+			this.game.play(action);
+			return ResponseEntity.ok().build();
+		}
+		catch (ScrabbleException e)
+		{
+			return new ResponseEntity(ExceptionUtils.getStackFrames(e), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
