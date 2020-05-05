@@ -10,4 +10,5 @@ public class Player
 	public String id;
 	public String name;
 	public int score;
+	public Bag rack;
 }

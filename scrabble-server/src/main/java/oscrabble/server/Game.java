@@ -66,9 +66,9 @@ public class Game
 	 */
 	LinkedList<Player> toPlay = new LinkedList<>();
 
-	private final Grid grid;
+	private Grid grid;
 	private final Random random;
-	private final LinkedList<Character> bag = new LinkedList<>();
+	private LinkedList<Character> bag = new LinkedList<>();
 	private final IDictionary dictionary;
 
 	/**
@@ -480,7 +480,6 @@ public class Game
 		{
 			if (done)
 			{
-				this.states.add(getGameState());
 
 				drawn = refillRack(player);
 				player.lastAction = action;
@@ -493,6 +492,7 @@ public class Game
 				this.history.add(historyEntry);
 				this.toPlay.pop();
 				this.toPlay.add(player);
+				this.states.add(getGameState());
 
 				if (player.rack.isEmpty())
 				{
@@ -515,6 +515,24 @@ public class Game
 		}
 	}
 
+	private void hydrateGameState(final GameState data)
+	{
+		this.state = data.state;
+		for (final oscrabble.data.Player dataplayer : data.players)
+		{
+			final Player player = this.players.get(dataplayer.name);
+			player.rack = new HashBag<Character>(dataplayer.rack.tiles);
+			player.score = dataplayer.score;
+		}
+
+		this.grid = Grid.fromData(data.grid);
+		this.bag = new LinkedList<>(data.bag.tiles);
+	}
+
+	/**
+	 * Create a state object
+	 * @return the state object
+	 */
 	private GameState getGameState()
 	{
 		final ArrayList<oscrabble.data.Player> players = new ArrayList<>();
@@ -1033,6 +1051,7 @@ public class Game
 		/**
 		 * Was last play an error?
 		 */
+		// TODO: remove
 		public boolean isLastPlayError;
 
 		/**
@@ -1053,7 +1072,7 @@ public class Game
 		/**
 		 * Tiles in the rack, space for a joker.
 		 */
-		final Bag<Character> rack = new HashBag<>();
+		Bag<Character> rack = new HashBag<>();
 
 		int score;
 		/**

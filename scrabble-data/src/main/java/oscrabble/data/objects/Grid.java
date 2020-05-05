@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
+import oscrabble.data.Square;
 import oscrabble.exception.IllegalCoordinate;
 
 import java.util.*;
@@ -20,17 +21,61 @@ public class Grid
 	 */
 	private final Square[][] squares;
 
+	/**
+	 * Create a grid, inclusive its squares.
+	 */
 	public Grid()
 	{
-		this.squares = new Square[GRID_SIZE +2][];
+		this(true);
+	}
+
+	/**
+	 * Create a grid.
+	 * @param fillGrid are the intern squares to be created too?
+	 */
+	private Grid(final boolean fillGrid)
+	{
+		this.squares = new Square[GRID_SIZE + 2][];
+		if (fillGrid)
+		{
+			fillGrid(true);
+		}
+	}
+
+	/**
+	 * Fill the grid with empty squares
+	 */
+	void fillGrid(boolean inclusiveInside)
+	{
 		for (int x = 0; x < this.squares.length; x++)
 		{
 			this.squares[x] = new Square[GRID_SIZE + 2];
 			for (int y = 0; y < this.squares.length; y++)
 			{
-				this.squares[x][y] = new Square(x, y);
+				if (inclusiveInside || x == 0 || y == 0 || x == GRID_SIZE + 1 || y == GRID_SIZE + 1)
+				{
+					this.squares[x][y] = new Square(x, y);
+				}
 			}
 		}
+	}
+
+	/**
+	 * Create a grid from a data object.
+	 *
+	 * @param data -
+	 * @return the new grid
+	 */
+	public static Grid fromData(final oscrabble.data.Grid data)
+	{
+		final Grid g = new Grid(false);
+		g.fillGrid(false);
+		for (final oscrabble.data.Square sq : data.squares)
+		{
+			final Coordinate coordinate = getCoordinate(sq.coordinate);
+			g.squares[coordinate.x][coordinate.y] = Square.fromData(sq);
+		}
+		return g;
 	}
 
 	public Square get(final Coordinate coordinate)
@@ -46,8 +91,8 @@ public class Grid
 
 	/**
 	 * (0-based coordinates)
-	 * @param x
-	 * @param y
+	 * @param x x
+	 * @param y y
 	 * @return the square
 	 */
 	public Square get(int x, int y)
@@ -73,7 +118,7 @@ public class Grid
 		return true;
 	}
 
-	public boolean isEmpty(final String coordinate) throws ScrabbleException.ForbiddenPlayException
+	public boolean isEmpty(final String coordinate)
 	{
 		final Coordinate triple = getCoordinate(coordinate);
 		return this.get(triple).c == null;
@@ -134,7 +179,7 @@ public class Grid
 		final LinkedHashSet<String> words = new LinkedHashSet<>();
 		for (final Direction dir : Direction.values())
 		{
-			final StringBuffer sb = new StringBuffer();
+			final StringBuilder sb = new StringBuilder();
 			Square sq = origin;
 			while (!(sq = getPrevious(sq, dir)).isBorder() && !sq.isEmpty())
 			{
@@ -189,6 +234,26 @@ public class Grid
 			this.letterBonus = bonus.charFactor;
 		}
 
+		/**
+		 * Create a square from a data object.
+		 * @param data source
+		 * @return created square
+		 */
+		public static Square fromData(final oscrabble.data.Square data)
+		{
+			final Coordinate c = Grid.getCoordinate(data.coordinate);
+			if ((c.x < 1 || c.y < 1))
+			{
+				throw new AssertionError();
+			}
+			final Square sq = new Square(c.x, c.y);
+			sq.action = data.settingPlay;
+			sq.letterBonus = data.letterBonus;
+			sq.wordBonus = data.wordBonus;
+			sq.c = data.tile;
+			return sq;
+		}
+
 		public boolean isEmpty()
 		{
 			return this.c == null;
@@ -200,12 +265,14 @@ public class Grid
 					|| this.y == 0 || this.y == Grid.GRID_SIZE + 1;
 		}
 
+		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 		public boolean isFirstOfLine(final Direction direction)
 		{
 			final int position = direction == Direction.HORIZONTAL ? this.x : this.y;
 			return position == 0;
 		}
 
+		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 		public boolean isLastOfLine(final Direction direction)
 		{
 			final int position = direction == Direction.HORIZONTAL ? this.x : this.y;
@@ -214,10 +281,13 @@ public class Grid
 
 		oscrabble.data.Square toData()
 		{
-			final oscrabble.data.Square square = new oscrabble.data.Square();
-			square.tile = this.c;
-//			square.x =this.x;
-//			square.y = this.y;
+			final oscrabble.data.Square square = oscrabble.data.Square.builder()
+					.tile(this.c)
+					.coordinate(this.getCoordinate())
+					.letterBonus(this.letterBonus)
+					.wordBonus(this.wordBonus)
+					.settingPlay(this.action)
+					.build();
 			return square;
 		}
 

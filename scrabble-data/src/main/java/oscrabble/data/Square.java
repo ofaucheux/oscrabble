@@ -1,10 +1,12 @@
 package oscrabble.data;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
+@Builder
 public class Square
 {
 	public Character tile;
@@ -24,5 +26,10 @@ public class Square
 	/**
 	 * Bonus of the square // TODO: fill it
 	 */
-	public String bonus;
+	public int letterBonus;
+
+	/**
+	 * Bonus of the square // TODO: fill it
+	 */
+	public int wordBonus;
 }

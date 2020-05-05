@@ -77,7 +77,7 @@ public class BruteForceMethod
 		{
 			if (!square.isEmpty())
 			{
-				for (final Grid.Square neighbour : square.getNeighbours())
+				for (final Grid.Square neighbour : grid.getNeighbours(square))
 				{
 					if (neighbour.isEmpty())
 					{
@@ -121,14 +121,14 @@ public class BruteForceMethod
 				final StringBuilder partialWord = new StringBuilder();
 				DAWGNode node = this.automaton.getSourceNode();
 
-				if (!anchor.isFirstOfLine(direction) && !anchor.getPrevious(direction).isEmpty())
+				if (!anchor.isFirstOfLine(direction) && !grid.getPrevious(anchor, direction).isEmpty())
 				{
 					Grid.Square square = anchor;
 					do
 					{
-						square = square.getPrevious(direction);
+						square = grid.getPrevious(square, direction);
 						partialWord.insert(0, square.c);
-					} while (!square.isFirstOfLine(direction) && !square.getPrevious(direction).isEmpty());
+					} while (!square.isFirstOfLine(direction) && !grid.getPrevious(square, direction).isEmpty());
 
 					node = node.transition(partialWord.toString());
 					extendRight(ctx, partialWord.toString(), node, anchor);
@@ -137,7 +137,7 @@ public class BruteForceMethod
 				{
 					int nonAnchor = 0;
 					Grid.Square square = anchor;
-					while (!square.isFirstOfLine(direction) && !anchors.contains(square = square.getPrevious(direction)) && square.isEmpty())
+					while (!square.isFirstOfLine(direction) && !anchors.contains(square = grid.getPrevious(square, direction)) && square.isEmpty())
 					{
 						nonAnchor++;
 					}
@@ -180,7 +180,7 @@ public class BruteForceMethod
 				{
 					final Grid.Square startSquare = wordStart.get(d);
 					moves.add(startSquare.getNotation(d) + " " + word);
-					wordStart.put(d, startSquare.getPrevious(d));
+					wordStart.put(d, grid.getPrevious(startSquare, d));
 				}
 			}
 		}
@@ -257,7 +257,7 @@ public class BruteForceMethod
 						&& possibleNextSquare != ctx.anchor
 		)
 		{
-			addLegalMove(ctx, possibleNextSquare.getPrevious(ctx.direction), partialWord);
+			addLegalMove(ctx, grid.getPrevious(possibleNextSquare, ctx.direction), partialWord);
 		}
 
 		if (possibleNextSquare.isBorder())
@@ -286,7 +286,7 @@ public class BruteForceMethod
 						if (!possibleNextSquare.isBorder)
 						{
 							extendRight(ctx, partialWord + Character.toLowerCase(letter), nextNode,
-									possibleNextSquare.getNext(ctx.direction));
+									grid.getNext(possibleNextSquare, ctx.direction));
 						}
 						ctx.rack.add(tile);
 					}
@@ -299,7 +299,7 @@ public class BruteForceMethod
 						if (!possibleNextSquare.isBorder())
 						{
 							extendRight(ctx, partialWord + letter, nextNode,
-									possibleNextSquare.getNext(ctx.direction));
+									grid.getNext(possibleNextSquare, ctx.direction));
 						}
 						ctx.rack.add(tile);
 					}
@@ -314,7 +314,7 @@ public class BruteForceMethod
 				final DAWGNode nextNode = node.transition(letter);
 				if (!possibleNextSquare.isLastOfLine(ctx.direction))
 				{
-					extendRight(ctx, partialWord + letter, nextNode, possibleNextSquare.getNext(ctx.direction));
+					extendRight(ctx, partialWord + letter, nextNode, grid.getNext(possibleNextSquare, ctx.direction));
 				}
 			}
 		}
@@ -339,7 +339,7 @@ public class BruteForceMethod
 		Grid.Square startSquare = endSquare;
 		for (int i = 0; i < word.length() - 1; i++)
 		{
-			startSquare = startSquare.getPrevious(ctx.direction);
+			startSquare = grid.getPrevious(startSquare, ctx.direction);
 		}
 		ctx.legalPlayTiles.add(
 				Grid.Coordinate.getNotation(startSquare, ctx.direction) + " " + word
@@ -363,21 +363,21 @@ public class BruteForceMethod
 
 			final StringBuilder sb = new StringBuilder();
 
-			Grid.Square square = crossSquare.getPrevious(crossDirection);
+			Grid.Square square = grid.getPrevious(crossSquare, crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
 				sb.insert(0, square.c);
-				square = square.getPrevious(crossDirection);
+				square = grid.getPrevious(square, crossDirection);
 			}
 
 			final int emptySquare = sb.length();
 			sb.append(" ");
 
-			square = crossSquare.getNext(crossDirection);
+			square = grid.getNext(crossSquare, crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
 				sb.append(square.c);
-				square = square.getNext(crossDirection);
+				square = grid.getNext(square, crossDirection);
 			}
 
 			final boolean allowAll = sb.length() == 1;
