@@ -52,7 +52,7 @@ public class ScoreCalculator
 				cursor = sq;
 				final Grid.Direction crossDirection = action.startSquare.direction.other();
 				int crosswordScore = 0;
-				while (!(cursor = cursor.getNeighbour(crossDirection, -1)).isBorder() && !cursor.isEmpty())
+				while (!(cursor = grid.getNeighbour(cursor, crossDirection, -1)).isBorder() && !cursor.isEmpty())
 				{
 					crossword.insert(0, cursor.c);
 					crosswordScore += getPoints(cursor.c);
@@ -61,7 +61,7 @@ public class ScoreCalculator
 				crossword.append(c);
 
 				cursor = sq;
-				while (!(cursor = cursor.getNeighbour(crossDirection, 1)).isBorder() && !cursor.isEmpty())
+				while (!(cursor = grid.getNeighbour(cursor, crossDirection, 1)).isBorder() && !cursor.isEmpty())
 				{
 					crossword.append(cursor.c);
 					if (Character.isUpperCase(cursor.c))
@@ -86,7 +86,7 @@ public class ScoreCalculator
 				mmi.score += getPoints(sq.c) * sq.letterBonus;
 			}
 
-			sq = sq.getNeighbour(action.startSquare.direction, 1);
+			sq = grid.getNeighbour(sq, action.startSquare.direction, 1);
 		}
 		mmi.score *= wordFactor;
 		mmi.score += crosswordScores;
