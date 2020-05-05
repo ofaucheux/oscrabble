@@ -20,7 +20,7 @@ public class AIPlayer
 	 */
 	private final String name;
 	private IGame game; // TODO
-	private Bag rack;
+	private Bag rack = Bag.builder().build();
 
 //		private ComparatorSelector selector;
 

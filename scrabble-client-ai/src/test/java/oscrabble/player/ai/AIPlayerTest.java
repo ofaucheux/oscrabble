@@ -9,6 +9,7 @@ import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
+import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
 import oscrabble.server.AbstractGameListener;
 import oscrabble.server.Controller;
@@ -60,7 +61,8 @@ class AIPlayerTest
 					if (PLAYER_NAME.equals(gameState.getPlayerOnTurn()))
 					{
 						bfm.grid = Grid.fromData(gameState.getGrid());
-						final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(gameState.getPlayers().get(0).rack.tiles));
+						final Player player0 = gameState.getPlayers().get(0);
+						final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(player0.rack.tiles));
 						moves.sort((o1, o2) -> o1.length() - o2.length());
 						System.out.println("ici");
 						//						game.play(player, Action.parse(moves.get(moves.size() - 1)));

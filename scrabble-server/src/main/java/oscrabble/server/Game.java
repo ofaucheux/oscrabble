@@ -1,6 +1,5 @@
 package oscrabble.server;
 
-import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,10 +7,7 @@ import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
 import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.data.GameState;
-import oscrabble.data.HistoryEntry;
-import oscrabble.data.IDictionary;
-import oscrabble.data.ScrabbleRules;
+import oscrabble.data.*;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
 import oscrabble.data.objects.Square;
@@ -357,7 +353,7 @@ public class Game
 
 				// check possibility
 				moveMI = this.scoreCalculator.getMetaInformation(this.grid, playTiles);
-				final HashBag<Character> remaining = new HashBag<>(player.rack);
+				final HashBag<Character> remaining = new HashBag<>(player.rack.tiles);
 
 				final List<Character> requiredLetters = moveMI.requiredLetter;
 				for (final Character c : requiredLetters)
@@ -406,8 +402,8 @@ public class Game
 
 				grid.play(playTiles);
 
-				player.rack.clear();
-				player.rack.addAll(remaining);
+				player.rack.tiles.clear();
+				player.rack.tiles.addAll(remaining);
 
 				score = moveMI.getScore();
 				if (moveMI.isScrabble)
@@ -425,7 +421,7 @@ public class Game
 				}
 
 				final Action.Exchange exchange = (Action.Exchange) action;
-				final HashBag<Character> newRack = new HashBag<>(player.rack);
+				final HashBag<Character> newRack = new HashBag<>(player.rack.tiles);
 				for (final char ex : exchange.toExchange)
 				{
 					if (!newRack.remove(ex))
@@ -495,7 +491,7 @@ public class Game
 				this.toPlay.add(player);
 				this.states.add(getGameState());
 
-				if (player.rack.isEmpty())
+				if (player.rack.tiles.isEmpty())
 				{
 					endGame(player, historyEntry);
 				}
@@ -522,7 +518,8 @@ public class Game
 		for (final oscrabble.data.Player dataplayer : data.players)
 		{
 			final Player player = this.players.get(dataplayer.name);
-			player.rack = new HashBag<Character>(dataplayer.rack.tiles);
+			player.rack.tiles.clear();
+			player.rack.tiles.addAll(dataplayer.rack.tiles);
 			player.score = dataplayer.score;
 		}
 
@@ -662,7 +659,7 @@ public class Game
 					if (player != firstEndingPlayer)
 					{
 						int gift = 0;
-						for (final Character tile : player.rack)
+						for (final Character tile : player.rack.tiles)
 						{
 							gift += this.dictionary.getScrabbleRules().letters.get(tile).points;
 						}
@@ -711,11 +708,11 @@ public class Game
 	private Set<Character> refillRack(final Player player)
 	{
 		final Set<Character> drawn = new HashSet<>();
-		while (!this.bag.isEmpty() && player.rack.size() < RACK_SIZE)
+		while (!this.bag.isEmpty() && player.rack.tiles.size() < RACK_SIZE)
 		{
 			final Character poll = this.bag.poll();
 			drawn.add(poll);
-			player.rack.add(poll);
+			player.rack.tiles.add(poll);
 		}
 		LOGGER.trace("Remaining stones in the bag: " + this.bag.size());
 		return drawn;
@@ -1001,7 +998,7 @@ public class Game
 	public String getRack(final Player player)
 	{
 		final StringBuffer sb = new StringBuffer();
-		for (final Character character : player.rack)
+		for (final Character character : player.rack.tiles)
 		{
 			sb.append(character);
 		}
@@ -1100,7 +1097,7 @@ public class Game
 		/**
 		 * Tiles in the rack, space for a joker.
 		 */
-		Bag<Character> rack = new HashBag<>();
+		Bag rack = Bag.builder().tiles(new ArrayList<>()).build();
 
 		int score;
 		/**
@@ -1133,6 +1130,7 @@ public class Game
 					.id(this.id)
 					.name(this.name)
 					.score(this.score)
+					.rack(this.rack)
 					.build();
 			return data;
 		}
