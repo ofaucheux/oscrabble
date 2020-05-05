@@ -288,20 +288,6 @@ public class Grid
 		return sb.toString();
 	}
 
-	public oscrabble.data.Grid toData()
-	{
-		final oscrabble.data.Grid grid = new oscrabble.data.Grid();
-		grid.squares = new ArrayList<>();
-		for (final oscrabble.data.objects.Square[] line : this.squares)
-		{
-			for (final oscrabble.data.objects.Square square : line)
-			{
-				grid.squares.add(square.toData());
-			}
-		}
-		return grid;
-	}
-
 	/**
 	 * Get the column nummer matching a letter, as in A8.
 	 */

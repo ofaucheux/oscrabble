@@ -18,6 +18,10 @@ public class GameState
 
 	public State state;
 	public List<Player> players;
+	/**
+	 * Id of the player on turn, null if no such
+	 */
+	public String playerOnTurn;
 	public List<Action> playedActions;
 	public Grid grid;
 	public Bag bag;

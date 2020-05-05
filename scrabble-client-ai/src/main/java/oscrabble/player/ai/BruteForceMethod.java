@@ -5,6 +5,7 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.data.Bag;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
@@ -96,7 +97,7 @@ public class BruteForceMethod
 	 * @param rack Rack
 	 * @return all the moves
 	 */
-	public Set<String> getLegalMoves(final String rack) 
+	public Set<String> getLegalMoves(final Collection<Character> rack)
 	{
 		if (this.grid.isEmpty())
 		{
@@ -106,10 +107,7 @@ public class BruteForceMethod
 		final CalculateCtx ctx = new CalculateCtx();
 		ctx.grid = this.grid;
 		ctx.rack = new LinkedList<>();
-		for (final char c : rack.toCharArray())
-		{
-			ctx.rack.add(c);
-		}
+		ctx.rack.addAll(rack);
 
 		final Set<Square> anchors = getAnchors();
 		for (final Square anchor : anchors)
@@ -151,18 +149,14 @@ public class BruteForceMethod
 		return ctx.legalPlayTiles;
 	}
 
-	private Set<String> getLegalWordOnEmptyGrid(final String rack)
+	private Set<String> getLegalWordOnEmptyGrid(final Collection<Character> rack)
 	{
 		if (!this.grid.isEmpty())
 		{
 			throw new IllegalStateException();
 		}
 
-		final List<Character> remaining = new LinkedList<>();
-		for (final char c : rack.toCharArray())
-		{
-			remaining.add(c);
-		}
+		final List<Character> remaining = new LinkedList<>(rack);
 
 		final Set<String> words = new HashSet<>();
 		getWords(this.automaton.getSourceNode(), "", remaining, words);
@@ -394,6 +388,13 @@ public class BruteForceMethod
 			crossChecks.put(crossSquare, allowed);
 		}
 		return crossChecks.get(crossSquare);
+	}
+
+	public Set<String> getLegalMoves(final String rack)
+	{
+		final ArrayList<Character> list = new ArrayList<>(rack.length());
+		rack.chars().forEach(c -> list.add((char) c));
+		return getLegalMoves(list);
 	}
 
 	static class Configuration

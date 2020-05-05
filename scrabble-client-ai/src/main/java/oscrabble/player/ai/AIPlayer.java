@@ -3,13 +3,11 @@ package oscrabble.player.ai;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.data.Bag;
 import oscrabble.data.Player;
 import oscrabble.server.IGame;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class AIPlayer
 {
@@ -22,6 +20,7 @@ public class AIPlayer
 	 */
 	private final String name;
 	private IGame game; // TODO
+	private Bag rack;
 
 //		private ComparatorSelector selector;
 
@@ -35,7 +34,7 @@ public class AIPlayer
 		this.name = name;
 	}
 
-	public void onPlayRequired(final AIPlayer player) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
+	public void onPlayRequired(final AIPlayer player, final Collection<Character> rack) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
 	{
 		if (player != AIPlayer.this)
 		{
@@ -44,7 +43,6 @@ public class AIPlayer
 
 		try
 		{
-			final String rack = null; // this.game.getRack(this); // TODO
 			Set<String> possibleMoves = new HashSet<>(bruteForceMethod.getLegalMoves(rack));
 
 			if (possibleMoves.isEmpty())
@@ -148,6 +146,7 @@ public class AIPlayer
 				.id(this.name)
 				.name(this.name)
 				.score(0)
+				.rack(this.rack)
 				.build();
 		return player;
 	}

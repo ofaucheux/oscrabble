@@ -11,6 +11,7 @@ import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
 import oscrabble.data.HistoryEntry;
 import oscrabble.data.IDictionary;
+import oscrabble.data.ScrabbleRules;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
 import oscrabble.data.objects.Square;
@@ -64,7 +65,7 @@ public class Game
 	/**
 	 * List of the users, the first to play at head
 	 */
-	LinkedList<Player> toPlay = new LinkedList<>();
+	final LinkedList<Player> toPlay = new LinkedList<>();
 
 	private Grid grid;
 	private final Random random;
@@ -533,7 +534,7 @@ public class Game
 	 * Create a state object
 	 * @return the state object
 	 */
-	private GameState getGameState()
+	GameState getGameState()
 	{
 		final ArrayList<oscrabble.data.Player> players = new ArrayList<>();
 		for (final Player player : this.players.values())
@@ -544,12 +545,39 @@ public class Game
 		final ArrayList<oscrabble.data.Action> playedActions = new ArrayList<>();
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
 
+
+		final oscrabble.data.Grid grid = new oscrabble.data.Grid();
+		grid.squares = new ArrayList<>();
+		final Map<Character, ScrabbleRules.Letter> lettersDefinition = this.dictionary.getScrabbleRules().getLetters();
+		this.grid.getAllSquares().forEach(s ->
+				{
+					if (s.isBorder)
+					{
+						return;
+					}
+
+					final Character tile = s.c;
+					final oscrabble.data.Square square = oscrabble.data.Square.builder()
+							.settingPlay(s.action)
+							.wordBonus(s.wordBonus)
+							.letterBonus(s.letterBonus)
+							.coordinate(s.getCoordinate())
+							.tile(tile)
+							.joker(tile != null && Character.isLowerCase(tile))
+							.value(tile == null ? 0 : lettersDefinition.get(tile).points)
+							.build();
+					grid.squares.add(square);
+				}
+		);
+
+		final Player onTurn = this.toPlay.peekFirst();
 		final GameState state = GameState
 				.builder()
 				.state(getState())
 				.players(players)
+				.playerOnTurn(onTurn == null ? null : onTurn.id)
 				.playedActions(playedActions)
-				.grid(this.grid.toData())
+				.grid(grid)
 				.bag(bag)
 				.build();
 
