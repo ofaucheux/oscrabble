@@ -47,7 +47,7 @@ public class Game
 	/**
 	 * ID of the game
 	 */
-	private final UUID id;
+	final UUID id;
 
 	/**
 	 * Seed initially used to create the random generator.

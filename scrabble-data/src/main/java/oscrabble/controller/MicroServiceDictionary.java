@@ -66,7 +66,7 @@ public class MicroServiceDictionary implements IDictionary
 	{
 		if (this.scrabbleRules == null)
 		{
-			final URI uri = this.uri.resolve(this.language + "/getScrabbleRules");
+			final URI uri = this.uri.resolve('/' + this.language + "/getScrabbleRules");
 			this.scrabbleRules = REST_TEMPLATE.getForObject(uri, ScrabbleRules.class);
 		}
 		return this.scrabbleRules;
