@@ -38,6 +38,17 @@ public class Game
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
 	private static final String PLAYER_PREFIX = "player.";
 	private static final String KEY_METHOD = "method";
+
+	/**
+	 * Used dictionary TODO: not static
+	 */
+	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
+
+	/**
+	 * ID of the game
+	 */
+	private final UUID id;
+
 	/**
 	 * Seed initially used to create the random generator.
 	 */
@@ -63,6 +74,7 @@ public class Game
 	 * List of the users, the first to play at head
 	 */
 	final LinkedList<PlayerInformation> toPlay = new LinkedList<>();
+
 
 	private Grid grid;
 	private final Random random;
@@ -102,6 +114,7 @@ public class Game
 
 	public Game(final File propertyFile) throws ConfigurationException
 	{
+		this.id = UUID.randomUUID();
 		if (propertyFile == null)
 		{
 			throw new IllegalArgumentException("Property file cannot be null");
@@ -198,10 +211,10 @@ public class Game
 	 */
 	public Game(final IDictionary dictionary, final long randomSeed)
 	{
+		this.id = UUID.randomUUID();
 		// TODO: random weg, prüfen ob der Constructor sinnvoll ist - ist für Tests
 		this.random = new Random(randomSeed);
 		this.dictionary = dictionary;
-//		this.sli = new ScrabbleLanguageInformation(language);
 		this.grid = new Grid();
 		this.propertyFile = null;
 		this.configuration = new Configuration();
@@ -574,6 +587,7 @@ public class Game
 		final PlayerInformation onTurn = this.toPlay.peekFirst();
 		final GameState state = GameState
 				.builder()
+				.gameId(this.id)
 				.state(getState())
 				.players(players)
 				.playerOnTurn(onTurn == null ? null : onTurn.uuid)

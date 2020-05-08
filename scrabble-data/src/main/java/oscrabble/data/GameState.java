@@ -12,12 +12,15 @@ import java.util.UUID;
 public class GameState
 {
 	/**
+	 * ID of the game
+	 */
+	public UUID gameId;
+
+	/**
 	 * State of the game
 	 */
-	public enum State
-	{BEFORE_START, STARTED, ENDED,}
-
 	public State state;
+
 	public List<Player> players;
 
 	/**
@@ -34,4 +37,11 @@ public class GameState
 	 * Actual turn id. The turn is 0 until the game has started.
 	 */
 	public int turnId;
+
+	/**
+	 * State of a game
+	 */
+	public enum State
+	{BEFORE_START, STARTED, ENDED,}
+
 }
