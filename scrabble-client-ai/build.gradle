@@ -15,5 +15,5 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.9'
 
     compile(project(":scrabble-data"))
-    testCompile(project(":scrabble-server"))
+//    testCompile(project(":scrabble-server"))
 }

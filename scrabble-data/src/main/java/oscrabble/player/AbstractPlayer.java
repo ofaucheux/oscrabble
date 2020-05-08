@@ -1,6 +1,8 @@
 package oscrabble.player;
 
 import oscrabble.data.Action;
+import oscrabble.data.Player;
+import oscrabble.server.IGame;
 
 import java.util.UUID;
 

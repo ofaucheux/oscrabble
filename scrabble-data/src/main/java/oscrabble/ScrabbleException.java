@@ -69,4 +69,15 @@ public class ScrabbleException extends Exception
 			super("The player " + playerName + " is not in turn");
 		}
 	}
+
+	/**
+	 * Thrown by communication problem: if the communication has failed or the result was an error.
+	 */
+	public static class CommunicationException extends ScrabbleException
+	{
+		public CommunicationException(final String message)
+		{
+			super(message);
+		}
+	}
 }

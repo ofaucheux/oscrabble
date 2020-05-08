@@ -286,6 +286,19 @@ public class Game
 	}
 
 	/**
+	 * Add a player in the game.
+	 * @param player player to add this game to.
+	 */
+	public void addPlayer(final AbstractPlayer player) throws ScrabbleException
+	{
+		final Player jsonPlayer = Player.builder()
+				.id(player.uuid)
+				.name(player.name)
+				.build();
+		addPlayer(jsonPlayer);
+	}
+
+	/**
 	 * Play an action.
 	 * @param jsonAction action to play.
 	 * @return the score
@@ -301,7 +314,7 @@ public class Game
 
 			final Action action = Action.parse(jsonAction);
 			final PlayerInformation player = this.players.get(jsonAction.player);
-			play(player, action);
+			play(player.uuid, action);
 		}
 	}
 
@@ -309,16 +322,17 @@ public class Game
 	 * Play an action
 	 *
 	 * @param action
-	 * @param player
+	 * @param playerID
 	 * @return score
 	 * @throws ScrabbleException.ForbiddenPlayException
 	 * @throws ScrabbleException.NotInTurn
 	 */
-	public void play(final PlayerInformation player, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
+	public void play(final UUID playerID, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
 	{
+		final PlayerInformation player = this.players.get(playerID);
 		if (player == null)
 		{
-			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + player.uuid);
+			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + playerID);
 		}
 
 		if (this.toPlay.peekFirst() != player)
@@ -453,7 +467,7 @@ public class Game
 //				player.onDispatchMessage(e.getLocalizedMessage());
 			if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
 			{
-				this.dispatch(p -> p.onPlayRequired(player));
+				this.dispatch(p -> p.onPlayRequired(player.uuid));
 				score = 0;
 			}
 			else
@@ -562,7 +576,7 @@ public class Game
 				.builder()
 				.state(getState())
 				.players(players)
-				.playerOnTurn(onTurn == null ? null : onTurn.id)
+				.playerOnTurn(onTurn == null ? null : onTurn.uuid)
 				.playedActions(playedActions)
 				.grid(grid)
 				.bag(bag)
@@ -741,7 +755,7 @@ public class Game
 				assert player != null;
 				LOGGER.info("Let's play " + player);
 				this.waitingForPlay = new CountDownLatch(1);
-				dispatch(p -> p.onPlayRequired(player));
+				dispatch(p -> p.onPlayRequired(player.uuid));
 				while (!this.waitingForPlay.await(500, TimeUnit.MILLISECONDS))
 				{
 					if (this.state != GameState.State.STARTED)
@@ -864,6 +878,11 @@ public class Game
 	public synchronized int getScore(final PlayerInformation player)
 	{
 		return player.score;
+	}
+
+	public synchronized int getScore(final UUID playerID)
+	{
+		return getScore(this.players.get(playerID));
 	}
 
 // TOdo?

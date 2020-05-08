@@ -10,6 +10,7 @@ import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.GameState;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
+import oscrabble.player.AbstractPlayer;
 
 import java.net.URI;
 import java.util.*;
@@ -69,7 +70,8 @@ public class GameTest
 	private PredefinedPlayer addPlayer(final String name) throws ScrabbleException
 	{
 		final PredefinedPlayer player = new PredefinedPlayer(this.game, name);
-		return this.game.addPlayer(player);
+		this.game.addPlayer(player);
+		return player;
 	}
 
 	@AfterEach
@@ -514,7 +516,7 @@ public class GameTest
 	/**
 	 * A player playing pre-defined turns.
 	 */
-	private class PredefinedPlayer extends PlayerInformation
+	private class PredefinedPlayer extends AbstractPlayer
 	{
 		final ArrayBlockingQueue<String> moves = new ArrayBlockingQueue<>(1024);
 
@@ -522,10 +524,12 @@ public class GameTest
 
 		private final AbstractGameListener listener;
 
+		private final Game game;
+
 		PredefinedPlayer(final Game game, final String name)
 		{
-			super(name);
-			this.id = name;
+			super();
+			this.name = name;
 			this.listener = new AbstractGameListener()
 			{
 
@@ -536,12 +540,12 @@ public class GameTest
 				}
 
 				@Override
-				public void onPlayRequired(final PlayerInformation player)
+				public void onPlayRequired(final UUID onTurn)
 				{
-					if (player == PredefinedPlayer.this)
+					if (onTurn == PredefinedPlayer.this.uuid)
 						try
 						{
-							GameTest.this.game.play(PredefinedPlayer.this, Action.parse(PredefinedPlayer.this.moves.poll(60, TimeUnit.SECONDS)));
+							GameTest.this.game.play(PredefinedPlayer.this.uuid, Action.parse(PredefinedPlayer.this.moves.poll(60, TimeUnit.SECONDS)));
 						}
 						catch (ScrabbleException | InterruptedException e)
 						{
@@ -549,7 +553,7 @@ public class GameTest
 						}
 				}
 			};
-
+			this.game = game;
 			game.addListener(this.listener);
 			final Thread th = new Thread(() ->
 			{
@@ -574,6 +578,12 @@ public class GameTest
 			th.setName("Player Thread - " + this.uuid);
 			th.setDaemon(true);
 			th.start();
+		}
+
+
+		int getScore()
+		{
+			return game.getScore(this.uuid);
 		}
 	}
 }

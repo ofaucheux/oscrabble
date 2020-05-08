@@ -3,6 +3,7 @@ package oscrabble.server;
 import oscrabble.controller.Action;
 
 import java.util.Queue;
+import java.util.UUID;
 
 /**
  * Abstract listener
@@ -10,7 +11,7 @@ import java.util.Queue;
 public class AbstractGameListener implements GameListener
 {
 	@Override
-	public void onPlayRequired(final PlayerInformation player)
+	public void onPlayRequired(final UUID player)
 	{
 	}
 

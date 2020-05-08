@@ -3,6 +3,7 @@ package oscrabble.player.ai;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Action;
 import oscrabble.data.Bag;
 import oscrabble.data.Player;
@@ -17,7 +18,7 @@ public class AIPlayer extends AbstractPlayer
 	private final BruteForceMethod bruteForceMethod;
 	private final BruteForceMethod.Configuration configuration;
 
-	private IGame game; // TODO
+	private MicroServiceScrabbleServer game; // TODO
 	private Bag rack = Bag.builder().build();
 
 //		private ComparatorSelector selector;
@@ -59,7 +60,7 @@ public class AIPlayer extends AbstractPlayer
 
 				final LinkedList<String> sortedMoves = new LinkedList<>(possibleMoves);
 				this.configuration.strategy.sort(sortedMoves);
-				if (this.game.getPlayerToPlay().equals(this))  // check the player still is on turn and no rollback toke place.
+				if (this.uuid.equals(this.game.getPlayerOnTurn()))  // check the player still is on turn and no rollback toke place.
 				{
 					LOGGER.info("Play " + sortedMoves.getFirst());
 					this.game.play(sortedMoves.getFirst());

@@ -3,6 +3,7 @@ package oscrabble.server;
 import oscrabble.controller.Action;
 
 import java.util.Queue;
+import java.util.UUID;
 
 
 /**
@@ -13,7 +14,7 @@ public interface GameListener
 	/**
 	 * Sent to all players to indicate who now has to play.
 	 */
-	default void onPlayRequired(final PlayerInformation player) { }
+	default void onPlayRequired(final UUID player) { }
 
 	default void onDispatchMessage(String msg) { }
 
@@ -42,6 +43,5 @@ public interface GameListener
 	 * @param action the action which lead to the problem
 	 */
 	default void afterRejectedAction(final PlayerInformation player, final Action action){}
-
 }
 

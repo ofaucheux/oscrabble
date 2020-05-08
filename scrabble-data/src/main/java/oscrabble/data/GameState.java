@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -18,11 +19,19 @@ public class GameState
 
 	public State state;
 	public List<Player> players;
+
 	/**
 	 * Id of the player on turn, null if no such
 	 */
-	public String playerOnTurn;
+	public UUID playerOnTurn;
+
 	public List<Action> playedActions;
+
 	public Grid grid;
 	public Bag bag;
+
+	/**
+	 * Actual turn id. The turn is 0 until the game has started.
+	 */
+	public int turnId;
 }

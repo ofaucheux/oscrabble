@@ -7,12 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import oscrabble.ScrabbleException;
 import oscrabble.data.Action;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
 
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -35,12 +37,12 @@ public class Controller
 	}
 
 	@GetMapping(value = "/addPlayer", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> addPlayer(@RequestBody Player player)
+	public ResponseEntity<UUID> addPlayer(@RequestBody Player player)
 	{
 		try
 		{
-			this.game.addPlayer(player);
-			return ResponseEntity.ok().build();
+			final PlayerInformation pi = this.game.addPlayer(player);
+			return new ResponseEntity<>(pi.uuid, HttpStatus.OK);
 		}
 		catch (ScrabbleException e)
 		{
@@ -54,7 +56,7 @@ public class Controller
 	 * @param action action to play
 	 * @return ok or not ok.
 	 */
-	@GetMapping(value = "/play", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/play", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> play(@RequestBody Action action)
 	{
 		try

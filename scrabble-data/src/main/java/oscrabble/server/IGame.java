@@ -16,7 +16,7 @@ public interface IGame
 	 * Registriert einen neuen Spieler.
 	 * @param player der Spieler
 	 */
-	void addPlayer(Player player);
+	<A extends Object> A addPlayer(Player player) throws ScrabbleException;
 
 //	/**
 //	 * Register a listener.
@@ -31,19 +31,19 @@ public interface IGame
 	 * @return score score of this play
 	 */
 	int play(/* TODO UUID clientKey */ String action) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException, ScrabbleException.NotInTurn;
+//
+//	/**
+//	 *
+//	 * @return den Spiel, der am Ball ist.
+//	 */
+//	PlayerInformation getPlayerToPlay();
 
-	/**
-	 *
-	 * @return den Spiel, der am Ball ist.
-	 */
-	Player getPlayerToPlay();
-
-	List<Player> getPlayers();
+//	List<Player> getPlayers();
 
 	/**
 	 * @return the history of the game.
 	 */
-	Iterable<GameState> getHistory();
+//	Iterable<GameState> getHistory();
 
 	IDictionary getDictionary();
 

@@ -4,20 +4,19 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import oscrabble.ScrabbleException;
-import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
+import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
-import oscrabble.server.AbstractGameListener;
-import oscrabble.server.Controller;
-import oscrabble.server.Game;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.concurrent.*;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 class AIPlayerTest
 {
@@ -27,14 +26,7 @@ class AIPlayerTest
 	@BeforeAll
 	static void before()
 	{
-		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-		{
-			@Override
-			public void uncaughtException(final Thread t, final Throwable e)
-			{
-				LOGGER.error(t.toString(), e);
-			}
-		});
+		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error(t.toString(), e));
 	}
 
 	@Test
@@ -42,33 +34,32 @@ class AIPlayerTest
 	{
 
 		final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
+		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer(URI.create("http://localhost:" + MicroServiceScrabbleServer.DEFAULT_PORT));
 
-		final Controller controller = new Controller(new Game(DICTIONARY));
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);
 		final String PLAYER_NAME = "AI Player";
 		final AIPlayer player = new AIPlayer(bfm, PLAYER_NAME);
-		controller.addPlayer(player.toData());
-		controller.startGame();
+		final UUID playerUUID = server.addPlayer(player.toData());
+		server.startGame();
 
 		final Callable<Void> test = () -> {
 			try
 			{
-				GameState gameState;
+				GameState state;
 				do
 				{
-					gameState = controller.getState().getBody();
-					LOGGER.info(gameState.toString());
-					if (PLAYER_NAME.equals(gameState.getPlayerOnTurn()))
+					state = server.getState();
+					if (playerUUID.equals(state.getPlayerOnTurn()))
 					{
-						bfm.grid = Grid.fromData(gameState.getGrid());
-						final Player player0 = gameState.getPlayers().get(0);
+						bfm.grid = Grid.fromData(state.getGrid());
+						final Player player0 = state.getPlayers().get(0);
 						final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(player0.rack.tiles));
 						moves.sort((o1, o2) -> o1.length() - o2.length());
 						System.out.println("ici");
-						controller.play(player.buildAction(moves.get(0)));
+						server.play(player.buildAction(moves.get(0)));
 					}
 					Thread.sleep(500);
-				} while (gameState.state != GameState.State.ENDED);
+				} while (state.state != GameState.State.ENDED);
 			}
 			catch (Throwable e)
 			{
