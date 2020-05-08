@@ -7,14 +7,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import oscrabble.ScrabbleException;
 import oscrabble.data.Action;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -66,13 +67,13 @@ public class Controller
 	}
 
 	@PostMapping(value = "/{game}/addPlayer", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UUID> addPlayer(final @PathVariable UUID game, @RequestBody String playername)
+	public ResponseEntity<Player> addPlayer(final @PathVariable UUID game, @RequestBody String playername)
 	{
 		try
 		{
 			final Player p = Player.builder().id(UUID.randomUUID()).name(playername).build();
 			final PlayerInformation pi = getGame(game).addPlayer(p);
-			return new ResponseEntity<>(pi.uuid, HttpStatus.OK);
+			return new ResponseEntity<>(pi.toData(), HttpStatus.OK);
 		}
 		catch (ScrabbleException e)
 		{
