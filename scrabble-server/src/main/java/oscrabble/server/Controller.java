@@ -50,6 +50,10 @@ public class Controller
 	{
 		if (uuid.equals(UUID_ZERO))
 		{
+			if (GAMES.isEmpty())
+			{
+				throw new ScrabbleException("No game cretated");
+			}
 			uuid = GAMES.lastKey();
 		}
 
@@ -62,11 +66,12 @@ public class Controller
 	}
 
 	@PostMapping(value = "/{game}/addPlayer", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UUID> addPlayer(final @PathVariable UUID game, @RequestBody Player player)
+	public ResponseEntity<UUID> addPlayer(final @PathVariable UUID game, @RequestBody String playername)
 	{
 		try
 		{
-			final PlayerInformation pi = getGame(game).addPlayer(player);
+			final Player p = Player.builder().id(UUID.randomUUID()).name(playername).build();
+			final PlayerInformation pi = getGame(game).addPlayer(p);
 			return new ResponseEntity<>(pi.uuid, HttpStatus.OK);
 		}
 		catch (ScrabbleException e)
