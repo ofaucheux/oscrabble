@@ -1,12 +1,18 @@
 package oscrabble.server;
 
-import org.apache.commons.collections4.Bag;
 import org.junit.Assert;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
+import oscrabble.data.Bag;
 import oscrabble.data.GameState;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
@@ -22,6 +28,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
 
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class GameTest
 {
 
@@ -203,7 +212,6 @@ public class GameTest
 	 * @throws TimeoutException
 	 */
 	@Test
-	@Disabled
 	void completeKnownGame() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		final List<PredefinedPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
@@ -244,7 +252,7 @@ public class GameTest
 						switch (GameTest.this.game.getRoundNr())
 						{
 							case 1:
-								Assert.assertEquals(78, GameTest.this.gustav.score);
+								Assert.assertEquals(78, GameTest.this.gustav.getScore());
 								break;
 						}
 					}
@@ -264,13 +272,13 @@ public class GameTest
 		assertTrue(this.grid.isEmpty("8K"));
 		assertFalse(this.grid.isEmpty("8L"));
 		assertTrue(this.grid.isEmpty("8M"));
-		assertEquals(this.john, this.game.getPlayerToPlay());
+		assertEquals(this.john.uuid, this.game.getPlayerToPlay().uuid);
 
 		// second rollback
 		assertFalse(this.grid.isEmpty("N10"));
 		this.game.rollbackLastMove(null);
 		assertTrue(this.grid.isEmpty("N10"));
-		assertEquals(this.gustav, this.game.getPlayerToPlay());
+		assertEquals(this.gustav.uuid, this.game.getPlayerToPlay().uuid);
 
 		// play both last moves again
 		this.gustav.moves.add("N10 VENTA");
@@ -293,11 +301,11 @@ public class GameTest
 
 		etienne.moves.add("G8 As");
 		this.game.awaitEndOfPlay(1);
-		assertFalse(etienne.isLastPlayError);
+		assertFalse(etienne.isLastPlayError());
 
 		etienne.moves.add("8H SIF");
 		this.game.awaitEndOfPlay(2);
-		assertTrue(etienne.isLastPlayError);
+		assertTrue(etienne.isLastPlayError());
 	}
 
 	@Test
@@ -312,14 +320,14 @@ public class GameTest
 
 		this.gustav.moves.add("H3 APPETQE");
 		Thread.sleep(100);
-		assertEquals(this.game.getScore(this.gustav), 0);
+		assertEquals(this.gustav.getScore(), 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(0, this.game.getRoundNr());
 
 		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
-		assertEquals(16, this.game.getScore(this.gustav));
+		assertEquals(16, this.gustav.getScore());
 	}
 
 	@Test
@@ -330,17 +338,17 @@ public class GameTest
 		this.startGame(true);
 
 		final int roundNr = this.game.getRoundNr();
-		final Bag<Character> startRack = this.gustav.rack;
+		final Bag startRack = this.gustav.getRack();
 		this.gustav.moves.add("8H APTES");
 		this.game.awaitEndOfPlay(1);
-		assertEquals(16, this.game.getScore(this.gustav));
+		assertEquals(16, this.gustav.getScore());
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
 		this.game.rollbackLastMove(this.gustav);
 		assertEquals(roundNr, this.game.getRoundNr());
-		assertEquals(0, this.game.getScore(this.gustav));
-		assertEquals(this.gustav, this.game.getPlayerToPlay());
-		assertEquals(startRack, this.gustav.rack);
+		assertEquals(0, this.gustav.getScore());
+		assertEquals(this.gustav.uuid, this.game.getPlayerToPlay().uuid);
+		assertEquals(startRack, this.gustav.getRack());
 	}
 
 
@@ -363,7 +371,7 @@ public class GameTest
 		this.game.awaitEndOfPlay(1);
 
 		assertTrue(playRejected.get());
-		assertEquals(this.game.getScore(this.gustav), 0);
+		assertEquals(this.gustav.getScore(), 0);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -375,7 +383,7 @@ public class GameTest
 		startGame(true);
 		this.gustav.moves.add("H8 A");
 		Thread.sleep(100);
-		assertTrue(this.gustav.isLastPlayError);
+		assertTrue(this.gustav.isLastPlayError());
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -387,7 +395,7 @@ public class GameTest
 		startGame(true);
 		this.gustav.moves.add("G7 AS");
 		this.game.awaitEndOfPlay(1);
-		assertTrue(this.gustav.isLastPlayError);
+		assertTrue(this.gustav.isLastPlayError());
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -399,10 +407,10 @@ public class GameTest
 		startGame(true);
 		this.gustav.moves.add("H8 AS");
 		this.game.awaitEndOfPlay(1);
-		assertFalse(this.gustav.isLastPlayError);
+		assertFalse(this.gustav.isLastPlayError());
 		this.john.moves.add("A3 VIGIE");
 		Thread.sleep(100);
-		assertTrue(this.john.isLastPlayError);
+		assertTrue(this.john.isLastPlayError());
 	}
 
 	@Test
@@ -417,11 +425,11 @@ public class GameTest
 
 		etienne.moves.add("H8 As");
 		this.game.awaitEndOfPlay(1);
-		assertEquals(2, this.game.getScore(etienne));
+		assertEquals(2, etienne.getScore());
 
 		etienne.moves.add("8I SI");
 		this.game.awaitEndOfPlay(2);
-		assertEquals(4, this.game.getScore(etienne));
+		assertEquals(4, etienne.getScore());
 
 //		do
 //		{
@@ -448,10 +456,10 @@ public class GameTest
 			int move = 1;
 			anton.moves.add("D8 PLaCE");
 			this.game.awaitEndOfPlay(move++);
-			assertEquals(22, this.game.getScore(anton));
+			assertEquals(22, anton.getScore());
 			anton.moves.add(RANDOM.nextBoolean() ? "4F NIERa" : "4F NIERA");
 			this.game.awaitEndOfPlay(move);
-			assertEquals(28, this.game.getScore(anton));
+			assertEquals(28, anton.getScore());
 			this.game.quitGame();
 		}
 
@@ -464,10 +472,10 @@ public class GameTest
 			int move = 1;
 			anton.moves.add("D8 aMPLE");
 			this.game.awaitEndOfPlay(move++);
-			assertEquals(14, this.game.getScore(anton));
+			assertEquals(14, anton.getScore());
 			anton.moves.add("7D CAISSE");
 			this.game.awaitEndOfPlay(move);
-			assertEquals(28, this.game.getScore(anton));
+			assertEquals(28, anton.getScore());
 			this.game.quitGame();
 		}
 	}
@@ -583,7 +591,17 @@ public class GameTest
 
 		int getScore()
 		{
-			return game.getScore(this.uuid);
+			return this.game.players.get(this.uuid).score;
+		}
+
+		public boolean isLastPlayError()
+		{
+			return this.game.players.get(this.uuid).isLastPlayError;
+		}
+
+		public oscrabble.data.Bag getRack()
+		{
+			return this.game.players.get(this.uuid).rack;
 		}
 	}
 }

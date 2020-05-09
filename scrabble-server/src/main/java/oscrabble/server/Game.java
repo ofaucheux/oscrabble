@@ -600,7 +600,7 @@ public class Game
 	}
 
 	/** todo */
-	public synchronized void rollbackLastMove(final PlayerInformation caller) throws ScrabbleException
+	public synchronized void rollbackLastMove(final AbstractPlayer caller) throws ScrabbleException
 	{
 		throw new AssertionError("Not implemented");
 //		synchronized (this.changing)
