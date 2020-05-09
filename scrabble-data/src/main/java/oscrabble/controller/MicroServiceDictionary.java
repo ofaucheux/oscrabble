@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import oscrabble.ScrabbleError;
 import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;
 
@@ -64,12 +66,19 @@ public class MicroServiceDictionary implements IDictionary
 	@Override
 	public ScrabbleRules getScrabbleRules()
 	{
-		if (this.scrabbleRules == null)
+		try
 		{
-			final URI uri = this.uri.resolve('/' + this.language + "/getScrabbleRules");
-			this.scrabbleRules = REST_TEMPLATE.getForObject(uri, ScrabbleRules.class);
+			if (this.scrabbleRules == null)
+			{
+				final URI uri = this.uri.resolve('/' + this.language + "/getScrabbleRules");
+				this.scrabbleRules = REST_TEMPLATE.getForObject(uri, ScrabbleRules.class);
+			}
+			return this.scrabbleRules;
 		}
-		return this.scrabbleRules;
+		catch (RestClientException e)
+		{
+			throw new ScrabbleError("Cannot read scrabble rules", e);
+		}
 	}
 
 }
