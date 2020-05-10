@@ -25,7 +25,14 @@ class Dictionary
 
 	private final String name;
 
-	final HashMap<String, UpperCaseWord> words = new HashMap<>();
+	final TreeMap<String, UpperCaseWord> words = new TreeMap<>((o1, o2) -> {
+		if (o1.length() < o2.length())
+			return -1;
+		else if (o1.length() > o2.length())
+			return 1;
+		else
+			return o1.compareTo(o2);
+	});
 
 	private final Pattern stripAccentPattern;
 
@@ -43,7 +50,7 @@ class Dictionary
 		return dictionary;
 	}
 
-	private Dictionary(final String name)
+	Dictionary(final String name)
 	{
 		LOGGER.info("Create dictionary " + name);
 		this.name = name;
@@ -110,8 +117,6 @@ class Dictionary
 			final ComparatorChain<String> sizeComparator = new ComparatorChain<>();
 			sizeComparator.addComparator((o1,o2)-> o1.length() - o2.length());
 			sizeComparator.addComparator(String::compareTo);
-			final TreeSet<String> sizeSortedWords = new TreeSet<>(sizeComparator);
-			sizeSortedWords.addAll(this.words.keySet());
 
 			for (int wordLength = 2; wordLength < 15; wordLength++)
 			{
@@ -122,26 +127,26 @@ class Dictionary
 						continue;
 					}
 					LOGGER.debug("Read Admissible for " + wordLength + " characters");
-					final List<String> admissibleWords = IOUtils.readLines(reader);
-
-					final Set<String> refusedWords = new HashSet<>(sizeSortedWords.subSet(
-							StringUtils.repeat('A', wordLength),
-							StringUtils.repeat('A', wordLength + 1)
-					));
-					refusedWords.removeAll(admissibleWords);
-
-					for (final String refused : refusedWords)
+					final LinkedList<String> admissibleWords = new LinkedList<>(IOUtils.readLines(reader));
 					{
-						final UpperCaseWord uc;
-						if ((uc = this.words.get(toUpperCase(refused))) != null)
+						final ListIterator<String> it = admissibleWords.listIterator();
+						while (it.hasNext())
 						{
-							uc.mutations.remove(refused);
-							if (uc.mutations.isEmpty())
-							{
-								this.words.remove(uc.uppercase);
-							}
+							it.set(toUpperCase(it.next()));
 						}
 					}
+
+					final SortedMap<String, UpperCaseWord> sameLengthEntries = this.words.subMap(
+							StringUtils.repeat('A', wordLength),
+							StringUtils.repeat('A', wordLength + 1)
+					);
+					final Iterator<String> it = sameLengthEntries.keySet().iterator();
+					it.forEachRemaining(
+							scrabbleWord -> {
+								if (!admissibleWords.contains(scrabbleWord))
+									it.remove();
+							}
+					);
 				}
 
 				this.md5 = DigestUtils.md5Hex(this.words.toString());
