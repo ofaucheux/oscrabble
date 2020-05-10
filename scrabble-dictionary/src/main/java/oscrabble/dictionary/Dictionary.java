@@ -50,7 +50,7 @@ class Dictionary
 		return dictionary;
 	}
 
-	Dictionary(final String name)
+	private Dictionary(final String name)
 	{
 		LOGGER.info("Create dictionary " + name);
 		this.name = name;
