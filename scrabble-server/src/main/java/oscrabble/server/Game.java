@@ -648,7 +648,7 @@ public class Game
 	}
 
 	/** todo */
-	public synchronized void rollbackLastMove(final AbstractPlayer caller) throws ScrabbleException
+	public synchronized void rollbackLastMove(final UUID caller) throws ScrabbleException
 	{
 		throw new AssertionError("Not implemented");
 //		synchronized (this.changing)
@@ -753,6 +753,17 @@ public class Game
 	private void dispatchMessage(final String message)
 	{
 //		dispatch(l -> l.onDispatchMessage(message));
+	}
+
+	/**
+	 * Get player information.
+	 *
+	 * @param id
+	 * @return
+	 */
+	PlayerInformation getPlayer(final UUID id)
+	{
+		return this.players.get(id);
 	}
 
 	public List<PlayerInformation> getPlayers()

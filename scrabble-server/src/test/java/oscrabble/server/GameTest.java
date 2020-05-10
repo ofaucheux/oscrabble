@@ -2,7 +2,6 @@ package oscrabble.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.Charsets;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
 import org.junit.runner.RunWith;
@@ -15,17 +14,15 @@ import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
+import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
-import oscrabble.player.AbstractPlayer;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,9 +41,9 @@ public class GameTest
 
 	private Game game;
 	private Grid grid;
-	private PredefinedPlayer gustav;
-	private PredefinedPlayer john;
-	private PredefinedPlayer jurek;
+	private UUID gustav;
+	private UUID john;
+	private UUID jurek;
 
 	@BeforeAll
 	public static void mocken()
@@ -80,11 +77,14 @@ public class GameTest
 	 * @param name name of the player
 	 * @return this player
 	 */
-	private PredefinedPlayer addPlayer(final String name) throws ScrabbleException
+	private UUID addPlayer(final String name) throws ScrabbleException
 	{
-		final PredefinedPlayer player = new PredefinedPlayer(this.game, name);
+		final Player player = Player.builder()
+				.name(name)
+				.id(UUID.randomUUID())
+				.build();
 		this.game.addPlayer(player);
-		return player;
+		return player.id;
 	}
 
 	@AfterEach
@@ -252,7 +252,7 @@ public class GameTest
 //
 //		for (int i = 0; i < moves.size(); i++)
 //		{
-//			players.get(i % players.size()).moves.add(moves.get(i));
+//			players.get(i % game.play(players.size()), Action.parse(moves.get(i));
 //		}
 //
 //		this.game.listeners.add(
@@ -264,7 +264,7 @@ public class GameTest
 //						switch (GameTest.this.game.getRoundNr())
 //						{
 //							case 1:
-//								Assert.assertEquals(78, GameTest.this.gustav.getScore());
+//								Assert.assertEquals(78, GameTest.game.getPlayer(gustav).score);
 //								break;
 //						}
 //					}
@@ -293,8 +293,8 @@ public class GameTest
 //		assertEquals(this.gustav.uuid, this.game.getPlayerToPlay().uuid);
 //
 //		// play both last moves again
-//		this.gustav.moves.add("N10 VENTA");
-//		this.john.moves.add("8K HEM");
+//		game.play(this.gustav, Action.parse("N10 VENTA");
+//		game.play(this.john, Action.parse("8K HEM");
 //		this.game.awaitEndOfPlay(moves.size());
 //		assertEquals(GameState.State.ENDED, this.game.getState());
 //
@@ -311,11 +311,11 @@ public class GameTest
 //		final PredefinedPlayer etienne = addPlayer("Etienne");
 //		startGame(true);
 //
-//		etienne.moves.add("G8 As");
+//		game.play(etienne, Action.parse("G8 As");
 //		this.game.awaitEndOfPlay(1);
 //		assertFalse(etienne.isLastPlayError());
 //
-//		etienne.moves.add("8H SIF");
+//		game.play(etienne, Action.parse("8H SIF");
 //		this.game.awaitEndOfPlay(2);
 //		assertTrue(etienne.isLastPlayError());
 //	}
@@ -331,16 +331,16 @@ public class GameTest
 		this.startGame(true);
 		assertEquals(0, this.game.getRoundNr());
 
-		this.gustav.moves.add("H3 APPETQE");
+		this.game.play(this.gustav, Action.parse("H3 APPETQE"));
 		Thread.sleep(100);
-		assertEquals(this.gustav.getScore(), 0);
+		assertEquals(this.game.getPlayer(this.gustav).score, 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(0, this.game.getRoundNr());
 
-		this.gustav.moves.add("8H APTES");
+		this.game.play(this.gustav, Action.parse("8H APTES"));
 		this.game.awaitEndOfPlay(1);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
-		assertEquals(16, this.gustav.getScore());
+		assertEquals(16, this.game.getPlayer(this.gustav).score);
 	}
 
 	@Test
@@ -352,17 +352,17 @@ public class GameTest
 		this.startGame(true);
 
 		final int roundNr = this.game.getRoundNr();
-		final Bag startRack = this.gustav.getRack();
-		this.gustav.moves.add("8H APTES");
+		final Bag startRack = this.game.getPlayer(this.gustav).rack;
+		this.game.play(this.gustav, Action.parse("8H APTES"));
 		this.game.awaitEndOfPlay(1);
-		assertEquals(16, this.gustav.getScore());
+		assertEquals(16, this.game.getPlayer(this.gustav).score);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
 		this.game.rollbackLastMove(this.gustav);
 		assertEquals(roundNr, this.game.getRoundNr());
-		assertEquals(0, this.gustav.getScore());
-		assertEquals(this.gustav.uuid, this.game.getPlayerToPlay().uuid);
-		assertEquals(startRack, this.gustav.getRack());
+		assertEquals(0, this.game.getPlayer(this.gustav).score);
+		assertEquals(this.gustav, this.game.getPlayerToPlay().uuid);
+		assertEquals(startRack, this.game.getPlayer(this.gustav).rack);
 	}
 
 
@@ -382,11 +382,11 @@ public class GameTest
 		};
 		this.game.listeners.add(listener);
 		this.startGame(true);
-		this.gustav.moves.add("H3 APPETEE");
+		this.game.play(this.gustav, Action.parse("H3 APPETEE"));
 		this.game.awaitEndOfPlay(1);
 
 		assertTrue(playRejected.get());
-		assertEquals(this.gustav.getScore(), 0);
+		assertEquals(this.game.getPlayer(this.gustav).score, 0);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -396,9 +396,9 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.game.assertFirstLetters("A");
 		startGame(true);
-		this.gustav.moves.add("H8 A");
+		this.game.play(this.gustav, Action.parse("H8 A"));
 		Thread.sleep(100);
-		assertTrue(this.gustav.isLastPlayError());
+		assertTrue(this.game.getPlayer(this.gustav).isLastPlayError);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -408,9 +408,9 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.game.play(this.gustav.uuid, Action.parse("G7 AS"));
+		this.game.play(this.gustav, Action.parse("G7 AS"));
 		this.game.awaitEndOfPlay(1);
-		assertTrue(this.gustav.isLastPlayError());
+		assertTrue(this.game.getPlayer(this.gustav).isLastPlayError);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -420,12 +420,11 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.game.assertFirstLetters("ASWEEDVIGIE");
 		startGame(true);
-		this.gustav.moves.add("H8 AS");
-		this.game.awaitEndOfPlay(1);
-		assertFalse(this.gustav.isLastPlayError());
-		this.john.moves.add("A3 VIGIE");
+		this.game.play(this.gustav, Action.parse("H8 AS"));
+		assertFalse(this.game.getPlayer(this.gustav).isLastPlayError);
+		this.game.play(this.john, Action.parse("A3 VIGIE"));
 		Thread.sleep(100);
-		assertTrue(this.john.isLastPlayError());
+		assertTrue(this.game.getPlayer(this.john).isLastPlayError);
 	}
 
 	@Test
@@ -434,17 +433,17 @@ public class GameTest
 		this.game = new Game(DICTIONARY, 2346975568742590367L);
 		this.game.assertFirstLetters("FTINOA ");
 
-		final PredefinedPlayer etienne = addPlayer("Etienne");
+		final UUID etienne = addPlayer("Etienne");
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
-		etienne.moves.add("H8 As");
+		this.game.play(etienne, Action.parse("H8 As"));
 		this.game.awaitEndOfPlay(1);
-		assertEquals(2, etienne.getScore());
+		assertEquals(2, this.game.getPlayer(etienne).score);
 
-		etienne.moves.add("8I SI");
+		this.game.play(etienne, Action.parse("8I SI"));
 		this.game.awaitEndOfPlay(2);
-		assertEquals(4, etienne.getScore());
+		assertEquals(4, this.game.getPlayer(etienne).score);
 
 //		do
 //		{
@@ -464,33 +463,33 @@ public class GameTest
 		{
 			// Joker on normal case
 			this.game = new Game(DICTIONARY);
-			final PredefinedPlayer anton = addPlayer("anton");
+			final UUID anton = addPlayer("anton");
 			this.game.assertFirstLetters(" CELMNPIERA");
 
 			startGame(true);
 			int move = 1;
-			anton.moves.add("D8 PLaCE");
+			this.game.play(anton, Action.parse("D8 PLaCE"));
 			this.game.awaitEndOfPlay(move++);
-			assertEquals(22, anton.getScore());
-			anton.moves.add(RANDOM.nextBoolean() ? "4F NIERa" : "4F NIERA");
+			assertEquals(22, this.game.getPlayer(anton).score);
+			this.game.play(anton, Action.parse(RANDOM.nextBoolean() ? "4F NIERa" : "4F NIERA"));
 			this.game.awaitEndOfPlay(move);
-			assertEquals(28, anton.getScore());
+			assertEquals(28, this.game.getPlayer(anton).score);
 			this.game.quitGame();
 		}
 
 		{
 			// Joker on blue case
 			this.game = new Game(DICTIONARY, -6804219371477742897L);
-			final PredefinedPlayer anton = addPlayer("Anton");
+			final UUID anton = addPlayer("Anton");
 			this.game.assertFirstLetters(" CELMNPAISSE");
 			startGame(true);
 			int move = 1;
-			anton.moves.add("D8 aMPLE");
+			this.game.play(anton, Action.parse("D8 aMPLE"));
 			this.game.awaitEndOfPlay(move++);
-			assertEquals(14, anton.getScore());
-			anton.moves.add("7D CAISSE");
+			assertEquals(14, this.game.getPlayer(anton).score);
+			this.game.play(anton, Action.parse("7D CAISSE"));
 			this.game.awaitEndOfPlay(move);
-			assertEquals(28, anton.getScore());
+			assertEquals(28, this.game.getPlayer(anton).score);
 			this.game.quitGame();
 		}
 	}
@@ -535,91 +534,91 @@ public class GameTest
 		}
 
 	}
-
-	/**
-	 * A player playing pre-defined turns.
-	 */
-	private class PredefinedPlayer extends AbstractPlayer
-	{
-		final ArrayBlockingQueue<String> moves = new ArrayBlockingQueue<>(1024);
-
-		private final ArrayBlockingQueue<ScrabbleEvent> scrabbleEvents = new ArrayBlockingQueue<>(1024);
-
-		private final AbstractGameListener listener;
-
-		private final Game game;
-
-		PredefinedPlayer(final Game game, final String name)
-		{
-			super();
-			this.name = name;
-			this.listener = new AbstractGameListener()
-			{
-
-				@Override
-				public Queue<ScrabbleEvent> getIncomingEventQueue()
-				{
-					return PredefinedPlayer.this.scrabbleEvents;
-				}
-
-				@Override
-				public void onPlayRequired(final UUID onTurn)
-				{
-					if (onTurn == PredefinedPlayer.this.uuid)
-						try
-						{
-							GameTest.this.game.play(PredefinedPlayer.this.uuid, Action.parse(PredefinedPlayer.this.moves.poll(60, TimeUnit.SECONDS)));
-						}
-						catch (ScrabbleException | InterruptedException e)
-						{
-							throw new Error(e);
-						}
-				}
-			};
-			this.game = game;
-			game.addListener(this.listener);
-			final Thread th = new Thread(() ->
-			{
-				try
-				{
-					while (true)
-					{
-						final ScrabbleEvent event = this.scrabbleEvents.poll(1, TimeUnit.MINUTES);
-						if (event == null)
-						{
-							throw new AssertionError("No input from server");
-						}
-						event.accept(this.listener);
-					}
-				}
-				catch (InterruptedException e)
-				{
-					throw new Error(e);
-				}
-			});
-
-			th.setName("Player Thread - " + this.uuid);
-			th.setDaemon(true);
-			th.start();
-		}
-
-
-		int getScore()
-		{
-			return this.game.players.get(this.uuid).score;
-		}
-
-		public boolean isLastPlayError()
-		{
-			return this.game.players.get(this.uuid).isLastPlayError;
-		}
-
-		public oscrabble.data.Bag getRack()
-		{
-			return this.game.players.get(this.uuid).rack;
-		}
-	}
-}
+//
+//	/**
+//	 * A player playing pre-defined turns.
+//	 */
+//	private class PredefinedPlayer extends AbstractPlayer
+//	{
+////		final ArrayBlockingQueue<String> moves = new ArrayBlockingQueue<>(1024);
+//
+//		private final ArrayBlockingQueue<ScrabbleEvent> scrabbleEvents = new ArrayBlockingQueue<>(1024);
+//
+//		private final AbstractGameListener listener;
+//
+//		private final Game game;
+//
+//		PredefinedPlayer(final Game game, final String name)
+//		{
+//			super();
+//			this.name = name;
+//			this.listener = new AbstractGameListener()
+//			{
+//
+//				@Override
+//				public Queue<ScrabbleEvent> getIncomingEventQueue()
+//				{
+//					return PredefinedPlayer.this.scrabbleEvents;
+//				}
+//
+//				@Override
+//				public void onPlayRequired(final UUID onTurn)
+//				{
+//					if (onTurn == PredefinedPlayer.this.uuid)
+//						try
+//						{
+//							GameTest.this.game.play(PredefinedPlayer.this.uuid, Action.parse(PredefinedPlayer.this.moves.poll(60, TimeUnit.SECONDS)));
+//						}
+//						catch (ScrabbleException | InterruptedException e)
+//						{
+//							throw new Error(e);
+//						}
+//				}
+//			};
+//			this.game = game;
+//			game.addListener(this.listener);
+//			final Thread th = new Thread(() ->
+//			{
+//				try
+//				{
+//					while (true)
+//					{
+//						final ScrabbleEvent event = this.scrabbleEvents.poll(1, TimeUnit.MINUTES);
+//						if (event == null)
+//						{
+//							throw new AssertionError("No input from server");
+//						}
+//						event.accept(this.listener);
+//					}
+//				}
+//				catch (InterruptedException e)
+//				{
+//					throw new Error(e);
+//				}
+//			});
+//
+//			th.setName("Player Thread - " + this.uuid);
+//			th.setDaemon(true);
+//			th.start();
+//		}
+//
+//
+//		int getScore()
+//		{
+//			return this.game.players.get(this.uuid).score;
+//		}
+//
+//		public boolean isLastPlayError()
+//		{
+//			return this.game.players.get(this.uuid).isLastPlayError;
+//		}
+//
+//		public oscrabble.data.Bag getRack()
+//		{
+//			return this.game.players.get(this.uuid).rack;
+//		}
+//	}
+//}
 
 /**
  * Default listener. Does nothing.
@@ -658,6 +657,6 @@ abstract class TestListener implements GameListener
 	{
 		return this.queue;
 	}
-
+}
 }
 
