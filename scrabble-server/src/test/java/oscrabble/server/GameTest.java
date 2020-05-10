@@ -1,25 +1,22 @@
 package oscrabble.server;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import oscrabble.ScrabbleException;
+import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.Bag;
-import oscrabble.data.GameState;
 import oscrabble.data.objects.Grid;
-import oscrabble.controller.Action;
 import oscrabble.player.AbstractPlayer;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Queue;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -205,110 +202,111 @@ public class GameTest
 //		}
 //	}
 
-	/**
-	 * TODO: enable it again. For this, define the order of the rack.
-	 * @throws ScrabbleException
-	 * @throws InterruptedException
-	 * @throws TimeoutException
-	 */
-	@Test
-	void completeKnownGame() throws ScrabbleException, InterruptedException, TimeoutException
-	{
-		final List<PredefinedPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
-		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
-				/*  1 */ "H3 APPETES",
-				/*  2 */ "G9 VIGIE",
-				/*  3 */ "7C WOmBATS",
-				/*  4 */ "3G FATIGUE",
-				/*  5 */ "12A DETELAI",
-				/*  6 */ "8A ABUS",
-				/*  7 */ "13G ESTIMAIT",
-				/*  8 */ "5G EPErONNA",
-				/*  9 */ "O3 ECIMER",
-				/* 10 */ "D3 KOUROS",
-				/* 11 */ "L8 ECHOUA",
-				/* 12 */ "3A FOLKS",
-				/* 13 */ "A1 DEFUNT",
-				/* 14 */ "1A DRAYOIR",
-				/* 15 */ "L2 QUAND",
-				/* 16 */ "1A DRAYOIRE",
-				/* 17 */ "11I ENJOUE",
-				/* 18 */ "B10 RIELS",
-				/* 19 */ "N10 VENTA",
-				/* 20 */ "8K HEM"
-		));
+//	/**
+//	 * TODO: enable it again. For this, define the order of the rack.
+//	 * @throws ScrabbleException
+//	 * @throws InterruptedException
+//	 * @throws TimeoutException
+//	 */
+//	@Test
+//	void completeKnownGame() throws ScrabbleException, InterruptedException, TimeoutException
+//	{
+//		final List<PredefinedPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
+//		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
+//				/*  1 */ "H3 APPETES",
+//				/*  2 */ "G9 VIGIE",
+//				/*  3 */ "7C WOmBATS",
+//				/*  4 */ "3G FATIGUE",
+//				/*  5 */ "12A DETELAI",
+//				/*  6 */ "8A ABUS",
+//				/*  7 */ "13G ESTIMAIT",
+//				/*  8 */ "5G EPErONNA",
+//				/*  9 */ "O3 ECIMER",
+//				/* 10 */ "D3 KOUROS",
+//				/* 11 */ "L8 ECHOUA",
+//				/* 12 */ "3A FOLKS",
+//				/* 13 */ "A1 DEFUNT",
+//				/* 14 */ "1A DRAYOIR",
+//				/* 15 */ "L2 QUAND",
+//				/* 16 */ "1A DRAYOIRE",
+//				/* 17 */ "11I ENJOUE",
+//				/* 18 */ "B10 RIELS",
+//				/* 19 */ "N10 VENTA",
+//				/* 20 */ "8K HEM"
+//		));
+//
+//		for (int i = 0; i < moves.size(); i++)
+//		{
+//			players.get(i % players.size()).moves.add(moves.get(i));
+//		}
+//
+//		this.game.listeners.add(
+//				new TestListener()
+//				{
+//					@Override
+//					public void afterPlay(final Action play)
+//					{
+//						switch (GameTest.this.game.getRoundNr())
+//						{
+//							case 1:
+//								Assert.assertEquals(78, GameTest.this.gustav.getScore());
+//								break;
+//						}
+//					}
+//				}
+//		);
+//
+//		startGame(true);
+//		this.game.awaitEndOfPlay(moves.size());
+//
+//		// first rollback
+//		assertFalse(this.grid.isEmpty("8K"));
+//
+//		assertFalse(this.grid.isEmpty("8K"));
+//		assertFalse(this.grid.isEmpty("8L"));
+//		assertFalse(this.grid.isEmpty("8M"));
+//		this.game.rollbackLastMove(null);
+//		assertTrue(this.grid.isEmpty("8K"));
+//		assertFalse(this.grid.isEmpty("8L"));
+//		assertTrue(this.grid.isEmpty("8M"));
+//		assertEquals(this.john.uuid, this.game.getPlayerToPlay().uuid);
+//
+//		// second rollback
+//		assertFalse(this.grid.isEmpty("N10"));
+//		this.game.rollbackLastMove(null);
+//		assertTrue(this.grid.isEmpty("N10"));
+//		assertEquals(this.gustav.uuid, this.game.getPlayerToPlay().uuid);
+//
+//		// play both last moves again
+//		this.gustav.moves.add("N10 VENTA");
+//		this.john.moves.add("8K HEM");
+//		this.game.awaitEndOfPlay(moves.size());
+//		assertEquals(GameState.State.ENDED, this.game.getState());
+//
+//		Thread.sleep(this.game.delayBeforeEnds * 5000 / 2 + 500);
+//		assertEquals(GameState.State.ENDED, this.game.getState());
+//	}
+//
+//	@Test
+//	public void notAcceptedWord() throws ScrabbleException, InterruptedException, TimeoutException
+//	{
+//		this.game = new Game(DICTIONARY);  // for having only one player
+//		this.game.assertFirstLetters("FTINOA ");
+//
+//		final PredefinedPlayer etienne = addPlayer("Etienne");
+//		startGame(true);
+//
+//		etienne.moves.add("G8 As");
+//		this.game.awaitEndOfPlay(1);
+//		assertFalse(etienne.isLastPlayError());
+//
+//		etienne.moves.add("8H SIF");
+//		this.game.awaitEndOfPlay(2);
+//		assertTrue(etienne.isLastPlayError());
+//	}
 
-		for (int i = 0; i < moves.size(); i++)
-		{
-			players.get(i % players.size()).moves.add(moves.get(i));
-		}
-
-		this.game.listeners.add(
-				new TestListener()
-				{
-					@Override
-					public void afterPlay(final Action play)
-					{
-						switch (GameTest.this.game.getRoundNr())
-						{
-							case 1:
-								Assert.assertEquals(78, GameTest.this.gustav.getScore());
-								break;
-						}
-					}
-				}
-		);
-
-		startGame(true);
-		this.game.awaitEndOfPlay(moves.size());
-
-		// first rollback
-		assertFalse(this.grid.isEmpty("8K"));
-
-		assertFalse(this.grid.isEmpty("8K"));
-		assertFalse(this.grid.isEmpty("8L"));
-		assertFalse(this.grid.isEmpty("8M"));
-		this.game.rollbackLastMove(null);
-		assertTrue(this.grid.isEmpty("8K"));
-		assertFalse(this.grid.isEmpty("8L"));
-		assertTrue(this.grid.isEmpty("8M"));
-		assertEquals(this.john.uuid, this.game.getPlayerToPlay().uuid);
-
-		// second rollback
-		assertFalse(this.grid.isEmpty("N10"));
-		this.game.rollbackLastMove(null);
-		assertTrue(this.grid.isEmpty("N10"));
-		assertEquals(this.gustav.uuid, this.game.getPlayerToPlay().uuid);
-
-		// play both last moves again
-		this.gustav.moves.add("N10 VENTA");
-		this.john.moves.add("8K HEM");
-		this.game.awaitEndOfPlay(moves.size());
-		assertEquals(GameState.State.ENDED, this.game.getState());
-
-		Thread.sleep(this.game.delayBeforeEnds * 5000 / 2 + 500);
-		assertEquals(GameState.State.ENDED, this.game.getState());
-	}
-
-	@Test
-	public void notAcceptedWord() throws ScrabbleException, InterruptedException, TimeoutException
-	{
-		this.game = new Game(DICTIONARY);  // for having only one player
-		this.game.assertFirstLetters("FTINOA ");
-
-		final PredefinedPlayer etienne = addPlayer("Etienne");
-		startGame(true);
-
-		etienne.moves.add("G8 As");
-		this.game.awaitEndOfPlay(1);
-		assertFalse(etienne.isLastPlayError());
-
-		etienne.moves.add("8H SIF");
-		this.game.awaitEndOfPlay(2);
-		assertTrue(etienne.isLastPlayError());
-	}
-
-	@Test
+	@Test // TODO: reactivate retry
+	@Disabled
 	public void retryAccepted() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		// test retry accepted
@@ -331,6 +329,7 @@ public class GameTest
 	}
 
 	@Test
+	@Disabled // todo: reimplement rollback
 	public void rollback() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.grid = this.game.getGrid();
@@ -353,6 +352,7 @@ public class GameTest
 
 
 	@Test
+	@Disabled // todo: reimplement retry
 	public void retryForbidden() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
