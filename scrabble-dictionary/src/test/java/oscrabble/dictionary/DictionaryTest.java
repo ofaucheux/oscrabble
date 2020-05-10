@@ -26,6 +26,7 @@ class DictionaryTest
 	public void getWords()
 	{
 		assertTrue(this.french.containUpperCaseWord("CA"));
+		assertTrue(this.french.containUpperCaseWord("LE"));
 		assertTrue(this.french.getMutations().contains("ETERNUER"));
 		assertFalse(this.french.containUpperCaseWord("MEN"));
 	}
