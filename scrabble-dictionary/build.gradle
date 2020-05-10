@@ -1,14 +1,18 @@
 plugins
 {
-    id 'org.springframework.boot' version '2.2.6.RELEASE'
+//    id 'org.springframework.boot' version '2.2.6.RELEASE'
     id 'io.spring.dependency-management' version '1.0.7.RELEASE'
     id "io.freefair.lombok" version "5.0.0"
-    id "java";
+//    id "java";
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
+//
+//test {
+//    useJUnitPlatform()
+//}
 
 dependencies {
     compile 'commons-codec:commons-codec:1.13'
@@ -24,11 +28,14 @@ dependencies {
 
     // TODO: split the data for dictionary of the one for game.
     compile(project(":scrabble-data"))
+
+//    testCompile 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+//    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 }
 
-bootJar {
-    enabled = false
-}
+//bootJar {
+//    enabled = false
+//}
 
 jar {
    enabled = true
