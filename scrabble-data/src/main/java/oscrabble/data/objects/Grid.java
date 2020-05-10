@@ -14,11 +14,12 @@ public class Grid
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Grid.class);
 	public static final int GRID_SIZE = 15;
+	public static final int GRID_SIZE_PLUS_2 = GRID_SIZE + 2;
 
 	/**
-	 * Arrays with 17 cases, as the first and last are border.
+	 * Arrays the cases, as the first and last are border.
 	 */
-	private final oscrabble.data.objects.Square[][] squares;
+	private final oscrabble.data.objects.Square[] squares;
 
 	/**
 	 * Create a grid, inclusive its squares.
@@ -34,7 +35,7 @@ public class Grid
 	 */
 	private Grid(final boolean fillGrid)
 	{
-		this.squares = new oscrabble.data.objects.Square[GRID_SIZE + 2][];
+		this.squares = new oscrabble.data.objects.Square[(GRID_SIZE + 2) * (GRID_SIZE + 2)];
 		if (fillGrid)
 		{
 			fillGrid(true);
@@ -51,25 +52,7 @@ public class Grid
 		for (final oscrabble.data.Square dataSq : data.squares)
 		{
 			final Square sq = new Square(dataSq);
-			this.squares[sq.x][sq.y] = sq;
-		}
-	}
-
-	/**
-	 * Fill the grid with empty squares
-	 */
-	void fillGrid(boolean inclusiveInside)
-	{
-		for (int x = 0; x < this.squares.length; x++)
-		{
-			this.squares[x] = new oscrabble.data.objects.Square[GRID_SIZE + 2];
-			for (int y = 0; y < this.squares.length; y++)
-			{
-				if (inclusiveInside || x == 0 || y == 0 || x == GRID_SIZE + 1 || y == GRID_SIZE + 1)
-				{
-					this.squares[x][y] = new oscrabble.data.objects.Square(x, y);
-				}
-			}
+			this.squares[sq.x * GRID_SIZE_PLUS_2 + sq.y] = sq;
 		}
 	}
 
@@ -86,9 +69,28 @@ public class Grid
 		for (final oscrabble.data.Square sq : data.squares)
 		{
 			final Coordinate coordinate = getCoordinate(sq.coordinate);
-			g.squares[coordinate.x][coordinate.y] = oscrabble.data.objects.Square.fromData(sq);
+			g.squares[coordinate.x * GRID_SIZE_PLUS_2 + coordinate.y] = oscrabble.data.objects.Square.fromData(sq);
 		}
 		return g;
+	}
+
+	/**
+	 * Fill the grid with empty squares
+	 */
+	void fillGrid(boolean inclusiveInside)
+	{
+		for (int i = 0; i < GRID_SIZE_PLUS_2 * GRID_SIZE_PLUS_2 - 1; i++)
+		{
+			final int x = i / GRID_SIZE_PLUS_2;
+			final int y = i % GRID_SIZE_PLUS_2;
+			boolean border = i < GRID_SIZE_PLUS_2;
+			border |= i >= GRID_SIZE_PLUS_2 * (GRID_SIZE + 1);
+			border |= y == 0 || y == (GRID_SIZE + 1);
+			if (inclusiveInside || border)
+			{
+				this.squares[i] = new oscrabble.data.objects.Square(x, y);
+			}
+		}
 	}
 
 	public oscrabble.data.objects.Square get(final Coordinate coordinate)
@@ -110,7 +112,7 @@ public class Grid
 	 */
 	public oscrabble.data.objects.Square get(int x, int y)
 	{
-		return this.squares[x][y];
+		return this.squares[x * GRID_SIZE_PLUS_2 + y];
 	}
 
 	/**
@@ -118,14 +120,11 @@ public class Grid
 	 */
 	public boolean isEmpty()
 	{
-		for (final oscrabble.data.objects.Square[] lines : this.squares)
+		for (final oscrabble.data.objects.Square square : this.squares)
 		{
-			for (final oscrabble.data.objects.Square square : lines)
+			if (square.c != null)
 			{
-				if (square.c != null)
-				{
-					return false;
-				}
+				return false;
 			}
 		}
 		return true;
@@ -139,12 +138,7 @@ public class Grid
 
 	public Collection<oscrabble.data.objects.Square> getAllSquares()
 	{
-		final ArrayList<oscrabble.data.objects.Square> list = new ArrayList<>();
-		for (final oscrabble.data.objects.Square[] line : this.squares)
-		{
-			Collections.addAll(list, line);
-		}
-		return list;
+		return Arrays.asList(this.squares);
 	}
 
 	public int getSize()
@@ -245,8 +239,8 @@ public class Grid
 
 	public oscrabble.data.objects.Square getCentralSquare()
 	{
-		final int center = (int) Math.ceil(GRID_SIZE / 2f);
-		return this.squares[center][center];
+		final int center = this.squares.length / 2;
+		return this.squares[center];
 	}
 
 
@@ -290,13 +284,13 @@ public class Grid
 	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder("Grid{\n");
-		for (final oscrabble.data.objects.Square[] line : this.squares)
+		for (final oscrabble.data.objects.Square square : this.squares)
 		{
-			for (final oscrabble.data.objects.Square square : line)
+			sb.append(square.isBorder ? '#' : square.c == null ? ' ' : square.c);
+			if (square.y == GRID_SIZE + 1)
 			{
-				sb.append(square.isBorder ? '#' : square.c == null ? ' ' : square.c);
+				sb.append('\n');
 			}
-			sb.append('\n');
 		}
 		sb.append("}");
 		return sb.toString();
