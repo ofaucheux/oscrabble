@@ -278,7 +278,7 @@ class Dictionary
 	static class UpperCaseWord
 	{
 		public final String uppercase;
-		public final HashSet<String> mutations = new HashSet<>();
+		public final Set<String> mutations = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
 		UpperCaseWord(final String uppercase)
 		{
