@@ -121,7 +121,7 @@ public class Square
 	@Override
 	public String toString()
 	{
-		return getNotation(Grid.Direction.HORIZONTAL);
+		return isBorder ? "#" : getNotation(Grid.Direction.HORIZONTAL);
 	}
 
 	public String getNotation(final Grid.Direction direction)

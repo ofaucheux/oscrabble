@@ -79,7 +79,7 @@ public class Grid
 	 */
 	void fillGrid(boolean inclusiveInside)
 	{
-		for (int i = 0; i < GRID_SIZE_PLUS_2 * GRID_SIZE_PLUS_2 - 1; i++)
+		for (int i = 0; i < GRID_SIZE_PLUS_2 * GRID_SIZE_PLUS_2; i++)
 		{
 			final int x = i / GRID_SIZE_PLUS_2;
 			final int y = i % GRID_SIZE_PLUS_2;

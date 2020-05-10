@@ -408,7 +408,7 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.gustav.moves.add("G7 AS");
+		this.game.play(this.gustav.uuid, Action.parse("G7 AS"));
 		this.game.awaitEndOfPlay(1);
 		assertTrue(this.gustav.isLastPlayError());
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
