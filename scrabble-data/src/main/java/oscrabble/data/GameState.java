@@ -28,7 +28,7 @@ public class GameState
 	 */
 	public UUID playerOnTurn;
 
-	public List<Action> playedActions;
+	public List<HistoryEntry> playedActions;
 
 	public Grid grid;
 	public Bag bag;

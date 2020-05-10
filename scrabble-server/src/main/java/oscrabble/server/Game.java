@@ -68,7 +68,9 @@ public class Game
 	 * Synchronize: to by synchronized by calls which change the state of the game
 	 */
 	final Object changing = new Object();
+
 	private final ScoreCalculator scoreCalculator;
+
 	private final ArrayList<GameState> states = new ArrayList<>();
 	/**
 	 * List of the users, the first to play at head
@@ -77,22 +79,27 @@ public class Game
 
 
 	private Grid grid;
-	private final Random random;
 	private LinkedList<Character> bag = new LinkedList<>();
+
+	private final Random random;
+
 	private final IDictionary dictionary;
 
 	/**
 	 * Configuration of the game
 	 */
 	private final Configuration configuration;
+
 	/**
 	 * History of the game, a line played move (even if it was an error).
 	 */
 	private final List<HistoryEntry> history = Collections.synchronizedList(new LinkedList<>());
+
 	/**
 	 * File to save and read the game configuration
 	 */
 	private final File propertyFile;
+
 	/**
 	 * Delay (in seconds) before changing the state from ENDING to ENDED
 	 */
@@ -231,6 +238,47 @@ public class Game
 	public Game(final IDictionary dictionary)
 	{
 		this(dictionary, new Random().nextLong());
+	}
+
+	/**
+	 * Construct from a game state description
+	 * @param state state description
+	 */
+	public Game(final GameState state)
+	{
+		this.id = state.gameId;
+		this.state = state.state;
+		for (final Player sp : state.players)
+		{
+			final PlayerInformation pi = new PlayerInformation(sp);
+			this.players.put(pi.uuid, pi);
+			this.toPlay.add(pi);
+		}
+		if (state.playerOnTurn != null)
+		{
+			int i = 0;
+			while (this.toPlay.getFirst().uuid != state.playerOnTurn)
+			{
+				this.toPlay.addLast(this.toPlay.pop());
+				i++;
+				if (i > this.players.size())
+				{
+					throw new AssertionError("Cannot find the player at turn");
+				}
+			}
+		}
+
+		this.history.addAll(state.playedActions);
+
+		this.grid = new Grid(state.grid);
+		this.bag.addAll(state.bag.tiles);
+
+		// TODO: should be set otherwise
+		this.random = new Random();
+		this.dictionary = DICTIONARY;
+		this.configuration = new Configuration();
+		this.propertyFile = null;
+		this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 	}
 
 //	/**
@@ -556,7 +604,7 @@ public class Game
 			players.add(player.toData());
 		}
 
-		final ArrayList<oscrabble.data.Action> playedActions = new ArrayList<>();
+		final ArrayList<HistoryEntry> playedActions = new ArrayList<>();
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
 
 

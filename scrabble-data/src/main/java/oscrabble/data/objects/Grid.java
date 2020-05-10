@@ -42,6 +42,20 @@ public class Grid
 	}
 
 	/**
+	 * Construct from grid data
+	 * @param data grid data
+	 */
+	public Grid(final oscrabble.data.Grid data)
+	{
+		this(false);
+		for (final oscrabble.data.Square dataSq : data.squares)
+		{
+			final Square sq = new Square(dataSq);
+			this.squares[sq.x][sq.y] = sq;
+		}
+	}
+
+	/**
 	 * Fill the grid with empty squares
 	 */
 	void fillGrid(boolean inclusiveInside)

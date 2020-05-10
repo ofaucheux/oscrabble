@@ -2,6 +2,7 @@ package oscrabble.server;
 
 import oscrabble.controller.Action;
 import oscrabble.data.Bag;
+import oscrabble.data.Player;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -47,6 +48,18 @@ class PlayerInformation
 	 * Name of the player
 	 */
 	String name;
+
+	/**
+	 * Construct a player from a data object.
+	 * @param dataPlayer data object
+	 */
+	PlayerInformation(final Player dataPlayer)
+	{
+		this.uuid = dataPlayer.id;
+		this.name = dataPlayer.name;
+		this.score = dataPlayer.score;
+		this.rack = dataPlayer.rack;
+	}
 
 	public PlayerInformation(final UUID uuid)
 	{

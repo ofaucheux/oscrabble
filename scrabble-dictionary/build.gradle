@@ -2,7 +2,8 @@ plugins
 {
     id 'org.springframework.boot' version '2.2.6.RELEASE'
     id "io.freefair.lombok" version "5.0.0"
-    id "java";
+    id "java"
+    id "java-test-fixtures"
 }
 
 tasks.withType(JavaCompile) {

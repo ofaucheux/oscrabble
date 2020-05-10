@@ -40,6 +40,28 @@ public class Square
 	}
 
 	/**
+	 * Construct from a data object
+	 * @param dataSq data square
+	 */
+	public Square(final oscrabble.data.Square dataSq)
+	{
+		final Grid.Coordinate c = Grid.getCoordinate(dataSq.coordinate);
+		this.x = c.x;
+		this.y = c.y;
+		this.c = dataSq.tile;
+		if (dataSq.isJoker())
+		{
+			this.c = Character.toLowerCase(this.c);
+		}
+		this.action = dataSq.settingPlay;
+		this.letterBonus = dataSq.letterBonus;
+		this.wordBonus = dataSq.wordBonus;
+		this.isBorder = false;
+
+		assert (this.x > 0 && this.x <= Grid.GRID_SIZE && this.y > 0 && this.y <= Grid.GRID_SIZE);
+	}
+
+	/**
 	 * Create a square from a data object.
 	 * @param data source
 	 * @return created square
