@@ -9,6 +9,8 @@ repositories {
     mavenCentral()
 }
 
+lombok.config['lombok.anyConstructor.addConstructorProperties'] = 'true'
+
 dependencies {
 
     compile 'org.slf4j:slf4j-api:1.7.28'

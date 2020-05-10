@@ -1,5 +1,9 @@
 package oscrabble.server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.Charsets;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -10,10 +14,13 @@ import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.Bag;
+import oscrabble.data.GameState;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.AbstractPlayer;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
@@ -84,6 +91,14 @@ public class GameTest
 	public void endsGame()
 	{
 		this.game.quitGame();
+	}
+
+	@Test
+	void preparedGame() throws IOException
+	{
+		final String fixture = IOUtils.toString(GameTest.class.getResourceAsStream("game_1.json"), Charsets.UTF_8);
+		final GameState gameState = new ObjectMapper().readValue(fixture, GameState.class);
+		new Game(gameState);
 	}
 
 //	@Test TODO
