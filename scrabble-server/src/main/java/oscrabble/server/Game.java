@@ -619,14 +619,15 @@ public class Game
 					}
 
 					final Character tile = s.c;
+					final boolean isJoker = tile != null && Character.isLowerCase(tile);
 					final oscrabble.data.Square square = oscrabble.data.Square.builder()
 							.settingPlay(s.action)
 							.wordBonus(s.wordBonus)
 							.letterBonus(s.letterBonus)
 							.coordinate(s.getCoordinate())
 							.tile(tile)
-							.joker(tile != null && Character.isLowerCase(tile))
-							.value(tile == null ? 0 : lettersDefinition.get(tile).points)
+							.joker(isJoker)
+							.value(tile == null || isJoker ? 0 : lettersDefinition.get(tile).points)
 							.build();
 					grid.squares.add(square);
 				}
