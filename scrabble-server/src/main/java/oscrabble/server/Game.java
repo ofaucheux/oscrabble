@@ -257,7 +257,7 @@ public class Game
 		if (state.playerOnTurn != null)
 		{
 			int i = 0;
-			while (this.toPlay.getFirst().uuid != state.playerOnTurn)
+			while (!this.toPlay.getFirst().uuid.equals(state.playerOnTurn))
 			{
 				this.toPlay.addLast(this.toPlay.pop());
 				i++;
