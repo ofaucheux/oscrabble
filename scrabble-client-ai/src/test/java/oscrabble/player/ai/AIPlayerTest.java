@@ -40,7 +40,7 @@ class AIPlayerTest
 		final String PLAYER_NAME = "AI Player";
 		final UUID game = server.newGame();
 		final AIPlayer player = new AIPlayer(game, bfm, PLAYER_NAME);
-		final UUID playerUUID = server.addPlayer(game, player.toData());
+		final UUID playerUUID = server.addPlayer(game, player.toData()).id;
 		server.startGame(game);
 
 		final Callable<Void> test = () -> {
