@@ -15,10 +15,6 @@ import oscrabble.data.objects.Grid;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 class AIPlayerTest
 {
@@ -32,7 +28,7 @@ class AIPlayerTest
 	}
 
 	@Test
-	void onPlayRequired() throws InterruptedException, ScrabbleException.CommunicationException, ScrabbleException.ForbiddenPlayException
+	void onPlayRequired() throws ScrabbleException.CommunicationException, ScrabbleException.ForbiddenPlayException
 	{
 
 		final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
@@ -54,13 +50,24 @@ class AIPlayerTest
 			{
 				bfm.grid = Grid.fromData(state.getGrid());
 				final Player player0 = state.getPlayers().get(0);
-				final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(player0.rack.tiles));
+				final ArrayList<Character> rack = player0.rack.tiles;
+				if (rack.isEmpty())
+				{
+					System.out.println("Rack is empty");
+					return;
+				}
+				final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(rack));
 				moves.sort((o1, o2) -> o2.length() - o1.length());
+				if (moves.isEmpty())
+				{
+					System.out.println("No move anymore, Rack: " + rack);
+					return;
+				}
 				final Action action = player.buildAction(moves.get(0));
 				System.out.println("Plays: " + action.notation);
 				server.play(game, action);
+//				System.out.println(server.getState(game).state);
 			}
-			Thread.sleep(50);
 		} while (state.state != GameState.State.ENDED);
 	}
 }
