@@ -13,6 +13,7 @@ dependencies {
 //    compile 'org.slf4j:slf4j-log4j12:1.7.28'
     compile 'org.apache.commons:commons-collections4:4.4'
     compile 'org.apache.commons:commons-lang3:3.9'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
 
     compile(project(":scrabble-data"))
 //    testCompile(project(":scrabble-server"))
