@@ -40,18 +40,30 @@ public class MicroServiceScrabbleServer
 		this.uri = uri;
 	}
 
+
+	/**
+	 * Create a game
+	 * @return id of the created new game
+	 */
+	public UUID newGame()
+	{
+		final GameState state = REST_TEMPLATE.postForObject(resolve(null, "newGame"), null, GameState.class);
+		return state.gameId;
+	}
+
 	/**
 	 * @return state of the game
 	 * @throws ScrabbleException.CommunicationException
 	 */
-	public GameState getState() throws ScrabbleException.CommunicationException
+	public GameState getState(final UUID game) throws ScrabbleException.CommunicationException
 	{
-		final ResponseEntity<GameState> re = REST_TEMPLATE.getForEntity(uri.resolve("/getState"), GameState.class);
+		final ResponseEntity<GameState> re = REST_TEMPLATE.getForEntity(resolve(game, "getState"), GameState.class);
 		if (!re.getStatusCode().is2xxSuccessful())
 		{
 			throw new ScrabbleException.CommunicationException("Cannot get state: " + re.getStatusCode().getReasonPhrase());
 		}
 		final GameState gameState = re.getBody();
+		//noinspection ConstantConditions
 		LOGGER.info(gameState.toString());
 		return gameState;
 	}
@@ -60,11 +72,11 @@ public class MicroServiceScrabbleServer
 	 * @return id and name of the player on turn.
 	 * @throws ScrabbleException.CommunicationException -
 	 */
-	public Pair<UUID, String> getPlayerOnTurn() throws ScrabbleException.CommunicationException
+	public Pair<UUID, String> getPlayerOnTurn(final UUID game) throws ScrabbleException.CommunicationException
 	{
-		final GameState state = getState();
+		final GameState state = getState(game);
 		final UUID uuid = state.getPlayerOnTurn();
-		return state == null
+		return uuid == null
 				? null
 				: new Pair<>(uuid, listPlayer(state).get(uuid).name);
 	}
@@ -87,54 +99,67 @@ public class MicroServiceScrabbleServer
 	 * @param action the action
 	 * @throws ScrabbleException.ForbiddenPlayException
 	 */
-	public void play(final String action) throws ScrabbleException.ForbiddenPlayException
+	public void play(final UUID game, final String action) throws ScrabbleException.ForbiddenPlayException
 	{
 		final Action a = Action.parse(action);
-		REST_TEMPLATE.postForObject(uri.resolve("/play"), a, Action.class);
+		REST_TEMPLATE.postForObject(resolve(game, "play"), a, Action.class);
 	}
 
 	/**
 	 * Play an action.
 	 */
-	public void play(final oscrabble.data.Action buildAction) throws ScrabbleException.ForbiddenPlayException
+	public void play(final UUID game, final oscrabble.data.Action buildAction) throws ScrabbleException.ForbiddenPlayException
 	{
-		play(buildAction.toString());
+		play(game, buildAction.toString());
 	}
 
 	/**
 	 * Add a player
 	 * @param player the player
 	 */
-	public UUID addPlayer(final Player player)
+	public UUID addPlayer(final UUID game, final Player player)
 	{
-		return REST_TEMPLATE.postForObject(uri.resolve("/addPlayer"), player, UUID.class);
+		return REST_TEMPLATE.postForObject(resolve(game, "addPlayer"), player, UUID.class);
+	}
+
+	/**
+	 * Resolve the uri for a game method
+	 * @param game
+	 * @param method
+	 * @return the uri.
+	 */
+	private URI resolve(final UUID game, final String method)
+	{
+		return this.uri.resolve(
+				(game == null ? "" : ("/" + game))
+						+ "/" + method);
 	}
 
 	/**
 	 * Start the game.
 	 */
-	public void startGame()
+	public void startGame(final UUID game)
 	{
-		REST_TEMPLATE.getForObject(uri.resolve("/startGame"), Void.class);
+		REST_TEMPLATE.getForObject(resolve(game, "startGame"), Void.class);
 	}
 
 	/**
 	 * Get the grid.
 	 */
-	public Grid getGrid() throws ScrabbleException.CommunicationException
+	public Grid getGrid(final UUID game) throws ScrabbleException.CommunicationException
 	{
-		return Grid.fromData(getState().getGrid());
+		return Grid.fromData(getState(game).getGrid());
 	}
 
 	/**
 	 * Wait after a turn has finished.  // TODO: timeout
 	 * @param turnNumber the turn number (1 based)
 	 */
-	public void awaitEndOfPlay(final int turnNumber) throws ScrabbleException.CommunicationException, InterruptedException
+	public void awaitEndOfPlay(final UUID game, final int turnNumber) throws ScrabbleException.CommunicationException, InterruptedException
 	{
 		while (true)
 		{
-			final GameState state = getState();
+			final GameState state = getState(game);
 			if (state.turnId > turnNumber)
 			{
 				break;

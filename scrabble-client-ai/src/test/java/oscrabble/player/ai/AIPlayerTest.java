@@ -38,9 +38,10 @@ class AIPlayerTest
 
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);
 		final String PLAYER_NAME = "AI Player";
-		final AIPlayer player = new AIPlayer(bfm, PLAYER_NAME);
-		final UUID playerUUID = server.addPlayer(player.toData());
-		server.startGame();
+		final UUID game = server.newGame();
+		final AIPlayer player = new AIPlayer(game, bfm, PLAYER_NAME);
+		final UUID playerUUID = server.addPlayer(game, player.toData());
+		server.startGame(game);
 
 		final Callable<Void> test = () -> {
 			try
@@ -48,7 +49,7 @@ class AIPlayerTest
 				GameState state;
 				do
 				{
-					state = server.getState();
+					state = server.getState(game);
 					if (playerUUID.equals(state.getPlayerOnTurn()))
 					{
 						bfm.grid = Grid.fromData(state.getGrid());
@@ -56,7 +57,7 @@ class AIPlayerTest
 						final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(player0.rack.tiles));
 						moves.sort((o1, o2) -> o1.length() - o2.length());
 						System.out.println("ici");
-						server.play(player.buildAction(moves.get(0)));
+						server.play(game, player.buildAction(moves.get(0)));
 					}
 					Thread.sleep(500);
 				} while (state.state != GameState.State.ENDED);

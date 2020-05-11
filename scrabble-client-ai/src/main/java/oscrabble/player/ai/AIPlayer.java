@@ -4,11 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceScrabbleServer;
-import oscrabble.data.Action;
 import oscrabble.data.Bag;
 import oscrabble.data.Player;
 import oscrabble.player.AbstractPlayer;
-import oscrabble.server.IGame;
 
 import java.util.*;
 
@@ -18,13 +16,15 @@ public class AIPlayer extends AbstractPlayer
 	private final BruteForceMethod bruteForceMethod;
 	private final BruteForceMethod.Configuration configuration;
 
-	private MicroServiceScrabbleServer game; // TODO
+	private final UUID game;
+	private MicroServiceScrabbleServer server; // TODO
 	private Bag rack = Bag.builder().build();
 
 //		private ComparatorSelector selector;
 
-	public AIPlayer(final BruteForceMethod bruteForceMethod, final String name)
+	public AIPlayer(final UUID game, final BruteForceMethod bruteForceMethod, final String name)
 	{
+		this.game = game;
 		this.bruteForceMethod = bruteForceMethod;
 //			super(new Configuration(), name);
 		configuration = new BruteForceMethod.Configuration();
@@ -47,7 +47,7 @@ public class AIPlayer extends AbstractPlayer
 			if (possibleMoves.isEmpty())
 			{
 				// todo				this.game.sendMessage(this, "No possible moves anymore");
-				this.game.play("-");
+				this.server.play(game,"-");
 			}
 			else
 			{
@@ -60,10 +60,10 @@ public class AIPlayer extends AbstractPlayer
 
 				final LinkedList<String> sortedMoves = new LinkedList<>(possibleMoves);
 				this.configuration.strategy.sort(sortedMoves);
-				if (this.uuid.equals(this.game.getPlayerOnTurn()))  // check the player still is on turn and no rollback toke place.
+				if (this.uuid.equals(this.server.getPlayerOnTurn(game)))  // check the player still is on turn and no rollback toke place.
 				{
 					LOGGER.info("Play " + sortedMoves.getFirst());
-					this.game.play(sortedMoves.getFirst());
+					this.server.play(game, sortedMoves.getFirst());
 				}
 			}
 		}

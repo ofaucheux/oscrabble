@@ -67,7 +67,8 @@ public class BruteForceMethodTest
 		startGame("ENFANIT");
 
 		final Random random = new Random();
-		this.instance.grid = server.getGrid();
+		final UUID game = server.newGame();
+		this.instance.grid = server.getGrid(game);
 		final List<String> legalMoves = new ArrayList<>(this.instance.getLegalMoves("ENFANIT"));
 
 		assertTrue(legalMoves.contains("F8 ENFANT"));
@@ -76,7 +77,7 @@ public class BruteForceMethodTest
 		for (int i = 0; i < 100; i++)
 		{
 			this.playQueue.add(legalMoves.get(random.nextInt(legalMoves.size())));
-			server.awaitEndOfPlay(1);
+			server.awaitEndOfPlay(game, 1);
 //			assertFalse(this.player.isLastPlayError);
 //			server.rollbackLastMove(this.player);
 		}
