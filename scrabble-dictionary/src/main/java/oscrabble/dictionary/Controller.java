@@ -47,11 +47,14 @@ public class Controller
 	 * @throws UnknownLanguage
 	 */
 	@GetMapping("/{language}/getAdmissibleWords")
-	public ResponseEntity<Collection<String>> getAdmissibleWords(
+	public ResponseEntity<oscrabble.data.Dictionary> getAdmissibleWords(
 			@PathVariable("language") final String language
 	) throws UnknownLanguage
 	{
-		return new ResponseEntity<>(Dictionary.getDictionary(getLanguage(language)).words.keySet(), HttpStatus.OK);
+		final oscrabble.data.Dictionary dictionary = oscrabble.data.Dictionary.builder()
+				.words(Dictionary.getDictionary(getLanguage(language)).words.keySet())
+				.build();
+		return new ResponseEntity<>(dictionary, HttpStatus.OK);
 	}
 
 	/**

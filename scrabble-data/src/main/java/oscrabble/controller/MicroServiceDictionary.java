@@ -7,12 +7,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import oscrabble.ScrabbleError;
+import oscrabble.data.Dictionary;
 import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
 public class MicroServiceDictionary implements IDictionary
 {
@@ -37,7 +37,8 @@ public class MicroServiceDictionary implements IDictionary
 	public Collection<String> getAdmissibleWords()
 	{
 		//noinspection ConstantConditions
-		return Arrays.asList(REST_TEMPLATE.getForObject(this.uri.resolve(this.language + "/getAdmissibleWords"), String[].class));
+		final Dictionary d = REST_TEMPLATE.getForObject(this.uri.resolve(this.language + "/getAdmissibleWords"), Dictionary.class);
+		return d.words;
 	}
 
 	@Override
