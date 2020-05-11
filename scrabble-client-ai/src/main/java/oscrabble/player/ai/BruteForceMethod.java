@@ -126,7 +126,7 @@ public class BruteForceMethod
 					do
 					{
 						square = grid.getPrevious(square, direction);
-						partialWord.insert(0, square.c);
+						partialWord.insert(0, Character.toUpperCase(square.c));
 					} while (!square.isFirstOfLine(direction) && !grid.getPrevious(square, direction).isEmpty());
 
 					node = node.transition(partialWord.toString());

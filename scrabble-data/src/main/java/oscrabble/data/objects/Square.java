@@ -81,6 +81,10 @@ public class Square
 		return sq;
 	}
 
+	/**
+	 * Remark: a border square is empty.
+	 * @return if empty or not.
+	 */
 	public boolean isEmpty()
 	{
 		return this.c == null;
@@ -96,14 +100,14 @@ public class Square
 	public boolean isFirstOfLine(final Grid.Direction direction)
 	{
 		final int position = direction == Grid.Direction.HORIZONTAL ? this.x : this.y;
-		return position == 0;
+		return position == 1;
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isLastOfLine(final Grid.Direction direction)
 	{
 		final int position = direction == Grid.Direction.HORIZONTAL ? this.x : this.y;
-		return position == Grid.GRID_SIZE - 1;
+		return position == Grid.GRID_SIZE;
 	}
 
 	oscrabble.data.Square toData()
