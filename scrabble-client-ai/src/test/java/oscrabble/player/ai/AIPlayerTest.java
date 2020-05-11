@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.data.Action;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
@@ -54,11 +55,12 @@ class AIPlayerTest
 				bfm.grid = Grid.fromData(state.getGrid());
 				final Player player0 = state.getPlayers().get(0);
 				final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(player0.rack.tiles));
-				moves.sort((o1, o2) -> o1.length() - o2.length());
-				System.out.println("ici");
-				server.play(game, player.buildAction(moves.get(0)));
+				moves.sort((o1, o2) -> o2.length() - o1.length());
+				final Action action = player.buildAction(moves.get(0));
+				System.out.println("Plays: " + action.notation);
+				server.play(game, action);
 			}
-			Thread.sleep(500);
+			Thread.sleep(50);
 		} while (state.state != GameState.State.ENDED);
 	}
 }
