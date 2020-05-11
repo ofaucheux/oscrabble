@@ -140,7 +140,7 @@ public class MicroServiceScrabbleServer
 	 */
 	public void startGame(final UUID game)
 	{
-		REST_TEMPLATE.getForObject(resolve(game, "startGame"), Void.class);
+		REST_TEMPLATE.postForObject(resolve(game, "start"), null, Void.class);
 	}
 
 	/**
