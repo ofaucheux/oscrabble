@@ -345,19 +345,19 @@ public class Game
 		pi.setName(jsonPlayer.name);
 		return pi;
 	}
-
-	/**
-	 * Add a player in the game.
-	 * @param player player to add this game to.
-	 */
-	public void addPlayer(final AbstractPlayer player) throws ScrabbleException
-	{
-		final Player jsonPlayer = Player.builder()
-				.id(player.uuid)
-				.name(player.name)
-				.build();
-		addPlayer(jsonPlayer);
-	}
+//
+//	/**
+//	 * Add a player in the game.
+//	 * @param player player to add this game to.
+//	 */
+//	public void addPlayer(final AbstractPlayer player) throws ScrabbleException
+//	{
+//		final Player jsonPlayer = Player.builder()
+//				.id(player.uuid)
+//				.name(player.name)
+//				.build();
+//		addPlayer(jsonPlayer);
+//	}
 
 	/**
 	 * Play an action.
@@ -375,6 +375,10 @@ public class Game
 
 			final Action action = Action.parse(jsonAction);
 			final PlayerInformation player = this.players.get(jsonAction.player);
+			if (player == null)
+			{
+				throw new AssertionError("No player " + jsonAction.player);
+			}
 			play(player.uuid, action);
 		}
 	}

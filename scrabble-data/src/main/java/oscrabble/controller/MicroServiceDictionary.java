@@ -48,7 +48,7 @@ public class MicroServiceDictionary implements IDictionary
 		try
 		{
 			entity = REST_TEMPLATE.getForEntity(
-					this.uri.resolve(this.language + ("/word/") + word),
+					this.uri.resolve("/" + this.language + ("/word/") + word),
 					Object.class
 			);
 		}

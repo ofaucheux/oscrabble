@@ -14,7 +14,7 @@ public abstract class AbstractPlayer
 	/**
 	 * UUID of the player
 	 */
-	public final UUID uuid;
+	public UUID uuid;
 
 	/**
 	 * Name
@@ -23,7 +23,6 @@ public abstract class AbstractPlayer
 
 	protected AbstractPlayer()
 	{
-		uuid = UUID.randomUUID();
 	}
 
 	/**
@@ -32,10 +31,11 @@ public abstract class AbstractPlayer
 	 * @param notation the action in scrabble notation
 	 * @return the action
 	 */
-	public Action buildAction(final String notation)
+	public Action buildAction(/*final UUID playID, */final String notation)
 	{
 		final Action action = Action.builder()
 				.player(this.uuid)
+//				.playID(playID)
 				.playID(UUID.randomUUID())
 				.notation(notation)
 				.build();

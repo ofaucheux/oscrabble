@@ -92,34 +92,34 @@ public class MicroServiceScrabbleServer
 		state.players.forEach(p -> map.put(p.id, p));
 		return map;
 	}
-
-	/**
-	 * play an action
-	 *
-	 * @param action the action
-	 * @throws ScrabbleException.ForbiddenPlayException
-	 */
-	public void play(final UUID game, final String action) throws ScrabbleException.ForbiddenPlayException
-	{
-		final Action a = Action.parse(action);
-		REST_TEMPLATE.postForObject(resolve(game, "play"), a, Action.class);
-	}
+//
+//	/**
+//	 * play an action
+//	 *
+//	 * @param action the action
+//	 * @throws ScrabbleException.ForbiddenPlayException
+//	 */
+//	public void play(final UUID game, final String action) throws ScrabbleException.ForbiddenPlayException
+//	{
+//		final Action a = Action.parse(action);
+//		REST_TEMPLATE.postForObject(resolve(game, "play"), a, Action.class);
+//	}
 
 	/**
 	 * Play an action.
 	 */
 	public void play(final UUID game, final oscrabble.data.Action buildAction) throws ScrabbleException.ForbiddenPlayException
 	{
-		play(game, buildAction.toString());
+		REST_TEMPLATE.postForObject(resolve(game, "play"), buildAction, Action.class);
 	}
 
 	/**
 	 * Add a player
-	 * @param player the player
+	 * @param name of the player
 	 */
-	public Player addPlayer(final UUID game, final Player player)
+	public Player addPlayer(final UUID game, final String name)
 	{
-		return REST_TEMPLATE.postForObject(resolve(game, "addPlayer"), player, Player.class);
+		return REST_TEMPLATE.postForObject(resolve(game, "addPlayer"), name, Player.class);
 	}
 
 	/**

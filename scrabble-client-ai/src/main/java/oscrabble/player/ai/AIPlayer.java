@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.data.Action;
 import oscrabble.data.Bag;
 import oscrabble.data.Player;
 import oscrabble.player.AbstractPlayer;
@@ -33,7 +34,7 @@ public class AIPlayer extends AbstractPlayer
 		this.name = name;
 	}
 
-	public void onPlayRequired(final AIPlayer player, final Collection<Character> rack) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
+	public void onPlayRequired(final AIPlayer player, final Collection<Character> rack) throws ScrabbleException.NotInTurn
 	{
 		if (player != AIPlayer.this)
 		{
@@ -47,7 +48,7 @@ public class AIPlayer extends AbstractPlayer
 			if (possibleMoves.isEmpty())
 			{
 				// todo				this.game.sendMessage(this, "No possible moves anymore");
-				this.server.play(game,"-");
+				this.server.play(game, this.buildAction("-"));
 			}
 			else
 			{
@@ -63,7 +64,7 @@ public class AIPlayer extends AbstractPlayer
 				if (this.uuid.equals(this.server.getPlayerOnTurn(game)))  // check the player still is on turn and no rollback toke place.
 				{
 					LOGGER.info("Play " + sortedMoves.getFirst());
-					this.server.play(game, sortedMoves.getFirst());
+					this.server.play(game, buildAction(sortedMoves.getFirst()));
 				}
 			}
 		}

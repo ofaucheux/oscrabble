@@ -41,14 +41,15 @@ class AIPlayerTest
 		final String PLAYER_NAME = "AI Player";
 		final UUID game = server.newGame();
 		final AIPlayer player = new AIPlayer(game, bfm, PLAYER_NAME);
-		final UUID playerUUID = server.addPlayer(game, player.toData()).id;
+		final Player playerData = server.addPlayer(game, player.name);
+		player.uuid = playerData.id;
 		server.startGame(game);
 
 		GameState state;
 		do
 		{
 			state = server.getState(game);
-			if (playerUUID.equals(state.getPlayerOnTurn()))
+			if (player.uuid.equals(state.getPlayerOnTurn()))
 			{
 				bfm.grid = Grid.fromData(state.getGrid());
 				final Player player0 = state.getPlayers().get(0);
