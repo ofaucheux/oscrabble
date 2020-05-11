@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.GameState;
@@ -30,7 +31,7 @@ class AIPlayerTest
 	}
 
 	@Test
-	void onPlayRequired() throws InterruptedException
+	void onPlayRequired() throws InterruptedException, ScrabbleException.CommunicationException, ScrabbleException.ForbiddenPlayException
 	{
 
 		final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
@@ -43,34 +44,20 @@ class AIPlayerTest
 		final UUID playerUUID = server.addPlayer(game, player.toData()).id;
 		server.startGame(game);
 
-		final Callable<Void> test = () -> {
-			try
+		GameState state;
+		do
+		{
+			state = server.getState(game);
+			if (playerUUID.equals(state.getPlayerOnTurn()))
 			{
-				GameState state;
-				do
-				{
-					state = server.getState(game);
-					if (playerUUID.equals(state.getPlayerOnTurn()))
-					{
-						bfm.grid = Grid.fromData(state.getGrid());
-						final Player player0 = state.getPlayers().get(0);
-						final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(player0.rack.tiles));
-						moves.sort((o1, o2) -> o1.length() - o2.length());
-						System.out.println("ici");
-						server.play(game, player.buildAction(moves.get(0)));
-					}
-					Thread.sleep(500);
-				} while (state.state != GameState.State.ENDED);
+				bfm.grid = Grid.fromData(state.getGrid());
+				final Player player0 = state.getPlayers().get(0);
+				final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(player0.rack.tiles));
+				moves.sort((o1, o2) -> o1.length() - o2.length());
+				System.out.println("ici");
+				server.play(game, player.buildAction(moves.get(0)));
 			}
-			catch (Throwable e)
-			{
-				LOGGER.error(e.toString(), e);
-			}
-			return null;
-		};
-
-		final ExecutorService executor = Executors.newSingleThreadExecutor();
-		executor.submit(test);
-		executor.awaitTermination(60, TimeUnit.SECONDS);
+			Thread.sleep(500);
+		} while (state.state != GameState.State.ENDED);
 	}
 }

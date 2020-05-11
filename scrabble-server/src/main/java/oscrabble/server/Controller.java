@@ -7,10 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import oscrabble.ScrabbleException;
 import oscrabble.data.Action;
 import oscrabble.data.GameState;
@@ -35,7 +32,7 @@ public class Controller
 	{
 	}
 
-	@PostMapping(value = "/{game}/getState", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/{game}/getState", method = { RequestMethod.GET, RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<GameState> getState(final @PathVariable UUID game) throws ScrabbleException
 	{
 		return ResponseEntity.ok(getGame(game).getGameState());
@@ -101,7 +98,7 @@ public class Controller
 		}
 	}
 
-	@PostMapping(value = "/newGame", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/newGame", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
 	public GameState newGame()
 	{
 		final Game game = new Game(Game.DICTIONARY);
@@ -110,7 +107,7 @@ public class Controller
 	}
 
 
-	@PostMapping(value = "/{game}/start", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/{game}/start", method = { RequestMethod.GET, RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public void startGame(@PathVariable UUID game) throws ScrabbleException, InterruptedException
 	{
 		final Game g = getGame(game);
