@@ -1,28 +1,32 @@
-//package oscrabble.client;
-//
-//import org.junit.jupiter.api.AfterAll;
-//import org.junit.jupiter.api.Test;
-//import oscrabble.Grid;
-//import oscrabble.ScrabbleException;
-//import oscrabble.dictionary.Language;
-//import oscrabble.dictionary.ScrabbleLanguageInformation;
-//import oscrabble.dictionary.Tile;
-//import oscrabble.server.DummyGame;
-//
-//import javax.swing.*;
-//import java.awt.*;
-//
-//todo
-//public class PlaygroundTest
-//{
-//
-//	@Test
-//	void displayGrid() throws InterruptedException, ScrabbleException
-//	{
-//		final Grid grid = new Grid(Grid.SCRABBLE_SIZE);
-//		grid.set(grid.getSquare(1, 3), Tile.SIMPLE_GENERATOR.generateStone('A'));
-//		showGrid(grid);
-//	}
+package oscrabble.client;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Test;
+import oscrabble.data.GameState;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+public class PlaygroundTest
+{
+
+	@Test
+	void displayGrid() throws IOException, InterruptedException
+	{
+		final Playground playground = new Playground();
+		playground.createUI();
+
+		final InputStream resourceAsStream = PlaygroundTest.class.getResourceAsStream("game_1.json");
+		final GameState state = new ObjectMapper().readValue(resourceAsStream, GameState.class);
+		playground.setState(state);
+
+		playground.gridFrame.setVisible(true);
+		while (playground.gridFrame.isVisible())
+		{
+			Thread.sleep(100);
+		}
+	}
 //
 //	public static void showGrid(final Grid grid) throws InterruptedException, ScrabbleException
 //	{
@@ -99,4 +103,4 @@
 //			}
 //		}
 //	}
-//}
+}

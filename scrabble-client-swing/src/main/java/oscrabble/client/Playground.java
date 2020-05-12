@@ -7,6 +7,7 @@ import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.data.GameState;
 import oscrabble.data.HistoryEntry;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
@@ -123,11 +124,11 @@ class Playground
 	/**
 	 * create UI and display it
 	 */
-	void display()
+	void createUI()
 	{
 		assert this.jGrid == null;
 
-		this.jGrid = new JGrid(null);
+		this.jGrid = new JGrid();
 		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard(this);
 		this.commandPrompt = new JTextField();
@@ -146,7 +147,7 @@ class Playground
 			@Override
 			public void windowClosing(final WindowEvent e)
 			{
-				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, MESSAGES.getString("quit.the.game"), MESSAGES.getString("confirm.quit"), JOptionPane.YES_NO_OPTION);
+				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, /*MESSAGES.getString(*/"quit.the.game"/*)*/, /*MESSAGES.getString(*/"confirm.quit"/*)*/, JOptionPane.YES_NO_OPTION);
 				if (confirm == JOptionPane.YES_OPTION)
 				{
 					// TODO: schickt "ende" dem Server
@@ -401,7 +402,7 @@ class Playground
 		{
 			return;
 		}
-		display();
+		createUI();
 		this.jScoreboard.prepareBoard(null /*todo*/);
 	}
 
@@ -508,6 +509,11 @@ class Playground
 
 	}
 
+	public void setState(final GameState state)
+	{
+		this.jGrid.setGrid(state.getGrid());
+	}
+
 	/**
 	 * Darstellung der Spielfläche
 	 */
@@ -515,7 +521,7 @@ class Playground
 	{
 		private final HashMap<Square, MatteBorder> specialBorders = new HashMap<>();
 
-		private final Grid grid;
+		private Grid grid;
 
 		/**
 		 *
@@ -554,14 +560,22 @@ class Playground
 		/**
 		 * Spielfeld des Scrabbles
 		 */
-		JGrid(final Grid grid)
+		JGrid()
 		{
-			this.grid = grid;
-			final int numberOfRows = grid.getSize();
 			this.dictionaryComponent = new DictionaryComponent();
 
 			this.setLayout(new BorderLayout());
 			this.background = new JPanel();
+			this.preparedMoveStones = new LinkedHashMap<>();
+			final int size = 15 * CELL_SIZE;  // TODO: use a constant
+			this.setPreferredSize(new Dimension(size, size));
+			this.add(this.background);
+		}
+
+		void setGrid(oscrabble.data.Grid grid)
+		{
+			this.grid = new Grid(grid);
+			final int numberOfRows = this.grid.getSize();
 			this.background.setLayout(new GridLayout(numberOfRows, numberOfRows));
 
 			// Draw each Cell
@@ -569,7 +583,7 @@ class Playground
 			{
 				for (int x = 0; x < numberOfRows; x++)
 				{
-					final Square square = grid.get(x, y);
+					final Square square = this.grid.get(x + 1, y + 1);
 					if (square.isBorder)
 					{
 						this.background.add(new BorderCell(square));
@@ -607,10 +621,6 @@ class Playground
 					}
 				}
 			}
-			final int size = numberOfRows * CELL_SIZE;
-			this.setPreferredSize(new Dimension(size, size));
-			this.add(this.background);
-			this.preparedMoveStones = new LinkedHashMap<>();
 		}
 
 //	todo
