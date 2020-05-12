@@ -23,7 +23,7 @@ class JTileTest
 		frame.add(stone);
 		stone = new JTile('Y', 10, false);
 		frame.add(stone);
-		stone = new JTile('C', 0, true);
+		stone = new JTile('c', 0, true);
 		frame.add(stone);
 
 		frame.setVisible(true);

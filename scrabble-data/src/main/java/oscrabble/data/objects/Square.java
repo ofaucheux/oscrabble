@@ -162,7 +162,7 @@ public class Square
 
 	public boolean isJoker()
 	{
-		return false;
+		return this.c != null && Character.isLowerCase(this.c);
 	}
 
 	/**

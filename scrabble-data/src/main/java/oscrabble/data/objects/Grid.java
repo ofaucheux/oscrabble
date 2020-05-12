@@ -105,7 +105,7 @@ public class Grid
 	}
 
 	/**
-	 * (0-based coordinates)
+	 * (1-based coordinates: Borders are 0, first square is 1,1)
 	 * @param x x
 	 * @param y y
 	 * @return the square

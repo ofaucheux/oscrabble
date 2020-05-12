@@ -77,7 +77,7 @@ class JTile extends JComponent
 			final Font font = g2.getFont().deriveFont(characterSize).deriveFont(Font.BOLD);
 			g2.setFont(font);
 			FontMetrics metrics = g2.getFontMetrics(font);
-			final String str = Character.toString(letter);
+			final String str = Character.toString(letter).toUpperCase();
 			int tx = ((component.getWidth() - metrics.stringWidth(str)) / 2);
 			int ty = ((component.getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
 			g2.drawString(str, tx, ty);
