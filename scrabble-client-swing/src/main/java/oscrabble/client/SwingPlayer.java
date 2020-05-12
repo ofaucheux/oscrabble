@@ -2,6 +2,7 @@ package oscrabble.client;
 
 import oscrabble.ScrabbleException;
 import oscrabble.client.configuration.Configuration;
+import oscrabble.player.AbstractPlayer;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -13,7 +14,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-public class SwingPlayer
+public class SwingPlayer extends AbstractPlayer
 {
 	/**
 	 * Resource Bundle
@@ -21,11 +22,6 @@ public class SwingPlayer
 	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
 
 	static Playground playground;
-
-	/**
-	 * Name of the player
-	 */
-	private final String name;
 
 	/**
 	 * Rack to display the tiles of this player.
@@ -43,11 +39,6 @@ public class SwingPlayer
 		playground.addPlayer(this);
 		this.jRack = new JRack();
 	}
-
-//	UUID getPlayerKey()
-//	{
-//		return this.playerKey;
-//	}
 
 	// TODO?
 //	public void setGame(final Game game)

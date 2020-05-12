@@ -1,17 +1,16 @@
 package oscrabble.client;
 
-import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
-import oscrabble.data.GameState;
+import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.HistoryEntry;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
-import oscrabble.server.IGame;
+import oscrabble.player.AbstractPlayer;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -49,9 +48,15 @@ class Playground
 	public static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
-	 * The game
+	 * Server
 	 */
-	private IGame game;
+	private MicroServiceScrabbleServer server;
+
+	/**
+	 * Game ID
+	 */
+	private UUID game;
+
 
 	/**
 	 * Grid
@@ -340,8 +345,9 @@ class Playground
 		// TODO?
 //		this.jScoreboard.refresh();
 
-		final Iterable<GameState> history = this.game.getHistory();
-		this.historyList.setListData(IterableUtils.toList(history).toArray(new HistoryEntry[0]));
+//		TODO
+//		final Iterable<GameState> history = this.server.getState(game)
+//		this.historyList.setListData(IterableUtils.toList(history).toArray(new HistoryEntry[0]));
 	}
 
 	/**
@@ -357,15 +363,9 @@ class Playground
 	/**
 	 * Set the game.
 	 *
-	 * @param game game
 	 */
-	public void setGame(final IGame game)
+	public void setGame()
 	{
-		if (this.game != null && this.game != game)
-		{
-			throw new AssertionError("Game already set");
-		}
-		this.game = game;
 		// TODO: gerade dies ist wichtig.
 //		this.game.addListener(new Game.GameListener()
 //		{
@@ -875,6 +875,93 @@ class Playground
 	}
 
 	/**
+	 * Play the move: inform the server about it and clear the client input field.
+	 *
+	 * @param playTiles move to play
+	 */
+	private void play(final AbstractPlayer playerID, final PlayTiles playTiles) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException, ScrabbleException.ForbiddenPlayException
+	{
+		// TODO
+//		final SwingPlayer player = getCurrentSwingPlayer();
+//		assert player != null;
+		this.server.play(this.game, playerID.buildAction(playTiles.notation));
+	}
+
+	/**
+	 * Filter, das alles Eingetragene Uppercase schreibt
+	 */
+	private final static DocumentFilter UPPER_CASE_DOCUMENT_FILTER = new DocumentFilter()
+	{
+		public void insertString(DocumentFilter.FilterBypass fb, int offset,
+								 String text, AttributeSet attr) throws BadLocationException
+		{
+
+			fb.insertString(offset, toUpperCase(text), attr);
+		}
+
+		public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
+							String text, AttributeSet attrs) throws BadLocationException
+		{
+
+			fb.replace(offset, length, toUpperCase(text), attrs);
+		}
+
+		/**
+		 * Entfernt die Umlaute und liefert alles Uppercase.
+		 * TODO: für Frz. sinnvoll, für Deutsch aber sicherlich nicht..
+		 */
+		private String toUpperCase(String text)
+		{
+			text = Normalizer.normalize(text, Normalizer.Form.NFD);
+			text = text.replaceAll("[^\\p{ASCII}]", "");
+			text = text.replaceAll("\\p{M}", "");
+			return text.toUpperCase();
+		}
+	};
+
+	/**
+	 * Problem while placing joker.
+	 */
+	private static class JokerPlacementException extends Throwable
+	{
+		JokerPlacementException(final String message, final ScrabbleException e)
+		{
+			super(message, e);
+		}
+	}
+
+	/**
+	 * Eine Frame, die wie eine Telnet-Console sich immer erweiterndes Text anzeigt.
+	 */
+	private static class TelnetFrame
+	{
+
+		private final JLabel label;
+		private final JFrame frame;
+
+		TelnetFrame(final String title)
+		{
+			this.frame = new JFrame(title);
+			this.label = new JLabel("<html>");
+			this.label.setBorder(new BevelBorder(BevelBorder.LOWERED));
+			this.frame.add(new JScrollPane(this.label, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+		}
+
+		private void appendConsoleText(final String color, String text, final boolean escapeHtml)
+		{
+			this.label.setText(this.label.getText() + "\n<br><font color='" + color + "'>"
+					+ (escapeHtml ? StringEscapeUtils.escapeHtml4(text) : text)
+					+ "</font>");
+			this.frame.setVisible(true);
+		}
+
+	}
+
+	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
+	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
+
+	/**
 	 * Set a cell as the start of the future tipped word. todo
 	 *
 //	 * @param cell Cell
@@ -988,7 +1075,7 @@ class Playground
 //					else
 					{
 						final PlayTiles preparedPlayTiles = ((PlayTiles) getPreparedMove());
-						play(preparedPlayTiles);
+						play(swingPlayers.getFirst(), preparedPlayTiles);
 					}
 					Playground.this.commandPrompt.setText("");
 //					resetPossibleMovesPanel();
@@ -1158,93 +1245,6 @@ class Playground
 				this.action = action;
 			}
 		}
-	}
-
-	/**
-	 * Filter, das alles Eingetragene Uppercase schreibt
-	 */
-	private final static DocumentFilter UPPER_CASE_DOCUMENT_FILTER = new DocumentFilter()
-	{
-		public void insertString(DocumentFilter.FilterBypass fb, int offset,
-								 String text, AttributeSet attr) throws BadLocationException
-		{
-
-			fb.insertString(offset, toUpperCase(text), attr);
-		}
-
-		public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
-							String text, AttributeSet attrs) throws BadLocationException
-		{
-
-			fb.replace(offset, length, toUpperCase(text), attrs);
-		}
-
-		/**
-		 * Entfernt die Umlaute und liefert alles Uppercase.
-		 * TODO: für Frz. sinnvoll, für Deutsch aber sicherlich nicht..
-		 */
-		private String toUpperCase(String text)
-		{
-			text = Normalizer.normalize(text, Normalizer.Form.NFD);
-			text = text.replaceAll("[^\\p{ASCII}]", "");
-			text = text.replaceAll("\\p{M}", "");
-			return text.toUpperCase();
-		}
-	};
-
-	/**
-	 * Problem while placing joker.
-	 */
-	private static class JokerPlacementException extends Throwable
-	{
-		JokerPlacementException(final String message, final ScrabbleException e)
-		{
-			super(message, e);
-		}
-	}
-
-	/**
-	 * Eine Frame, die wie eine Telnet-Console sich immer erweiterndes Text anzeigt.
-	 */
-	private static class TelnetFrame
-	{
-
-		private final JLabel label;
-		private final JFrame frame;
-
-		TelnetFrame(final String title)
-		{
-			this.frame = new JFrame(title);
-			this.label = new JLabel("<html>");
-			this.label.setBorder(new BevelBorder(BevelBorder.LOWERED));
-			this.frame.add(new JScrollPane(this.label, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
-		}
-
-		private void appendConsoleText(final String color, String text, final boolean escapeHtml)
-		{
-			this.label.setText(this.label.getText() + "\n<br><font color='" + color + "'>"
-					+ (escapeHtml ? StringEscapeUtils.escapeHtml4(text) : text)
-					+ "</font>");
-			this.frame.setVisible(true);
-		}
-
-	}
-
-	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
-	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
-
-	/**
-	 * Play the move: inform the server about it and clear the client input field.
-	 *
-	 * @param playTiles move to play
-	 */
-	private void play(final PlayTiles playTiles) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException
-	{
-		// TODO
-//		final SwingPlayer player = getCurrentSwingPlayer();
-//		assert player != null;
-		this.game.play(this.currentPlay.notation);
 	}
 
 //	/**
