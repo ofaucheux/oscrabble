@@ -5,7 +5,6 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.data.Bag;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
@@ -126,7 +125,7 @@ public class BruteForceMethod
 					do
 					{
 						square = grid.getPrevious(square, direction);
-						partialWord.insert(0, Character.toUpperCase(square.c));
+						partialWord.insert(0, Character.toUpperCase(square.tile.c));
 					} while (!square.isFirstOfLine(direction) && !grid.getPrevious(square, direction).isEmpty());
 
 					node = node.transition(partialWord.toString());
@@ -303,7 +302,7 @@ public class BruteForceMethod
 		}
 		else
 		{
-			final Character letter = possibleNextSquare.c;
+			final Character letter = possibleNextSquare.tile.c;
 			if (letter != null && getTransitions(node).contains(letter))
 			{
 				final DAWGNode nextNode = node.transition(letter);
@@ -361,7 +360,7 @@ public class BruteForceMethod
 			Square square = grid.getPrevious(crossSquare, crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
-				sb.insert(0, square.c);
+				sb.insert(0, square.tile);
 				square = grid.getPrevious(square, crossDirection);
 			}
 
@@ -371,7 +370,7 @@ public class BruteForceMethod
 			square = grid.getNext(crossSquare, crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
-				sb.append(square.c);
+				sb.append(square.tile);
 				square = grid.getNext(square, crossDirection);
 			}
 

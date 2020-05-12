@@ -44,7 +44,7 @@ public class ScoreCalculator
 				mmi.filledSquares.add(sq);
 				mmi.requiredLetter.add(isBlank ? ' ' : c);
 
-				mmi.score += getPoints(c) * sq.letterBonus;;
+				mmi.score += getPoints(c) * sq.letterBonus;
 				wordFactor *= sq.wordBonus;
 
 				// Berechnet die Querwörter und ihre Scores
@@ -55,8 +55,8 @@ public class ScoreCalculator
 				int crosswordScore = 0;
 				while (!(cursor = grid.getNeighbour(cursor, crossDirection, -1)).isBorder() && !cursor.isEmpty())
 				{
-					crossword.insert(0, cursor.c);
-					crosswordScore += getPoints(cursor.c);
+					crossword.insert(0, cursor.tile);
+					crosswordScore += cursor.tile.points;
 				}
 
 				crossword.append(c);
@@ -64,11 +64,8 @@ public class ScoreCalculator
 				cursor = sq;
 				while (!(cursor = grid.getNeighbour(cursor, crossDirection, 1)).isBorder() && !cursor.isEmpty())
 				{
-					crossword.append(cursor.c);
-					if (Character.isUpperCase(cursor.c))
-					{
-						crosswordScore += getPoints(cursor.c);
-					}
+					crossword.append(cursor.tile);
+					crosswordScore += cursor.tile.points;
 				}
 
 				if (crossword.length() > 1)
@@ -80,11 +77,11 @@ public class ScoreCalculator
 			}
 			else
 			{
-				if (Character.toUpperCase(c) != Character.toUpperCase(sq.c))
+				if (Character.toUpperCase(c) != Character.toUpperCase(sq.tile.c))
 				{
-					throw new ScrabbleException.ForbiddenPlayException("Square " + sq + " already occupied by " + sq.c);
+					throw new ScrabbleException.ForbiddenPlayException("Square " + sq + " already occupied by " + sq.tile);
 				}
-				mmi.score += getPoints(sq.c) * sq.letterBonus;
+				mmi.score += sq.tile.points * sq.letterBonus;
 			}
 
 			sq = grid.getNeighbour(sq, action.startSquare.direction, 1);

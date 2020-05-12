@@ -757,9 +757,9 @@ class Playground
 
 				JTile tile;
 				Character c;
-				if (this.square.c != null)
+				if (this.square.tile != null)
 				{
-					tile = new JTile(this.square);
+					tile = new JTile(this.square.tile);
 					//noinspection StatementWithEmptyBody
 					if (JGrid.this.hideNewStones && this.square.action == JGrid.this.lastAction)
 					{

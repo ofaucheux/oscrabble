@@ -88,7 +88,7 @@ public class BruteForceMethodTest
 		startGame("ELEPHANT");
 
 		this.instance.grid = new Grid();
-		this.instance.grid.play("2J ELEPHANT");
+		this.instance.grid.play(null, "2J ELEPHANT");
 		final Set<String> playTiles = this.instance.getLegalMoves("ASME TH");
 		assertTrue(playTiles.contains("J5 PHASME"));
 		assertTrue(playTiles.contains("J5 PhASME"));

@@ -7,5 +7,5 @@ import java.util.ArrayList;
 @Builder
 public class Bag
 {
-	public ArrayList<Character> tiles;
+	public ArrayList<Tile> tiles;
 }

@@ -1,8 +1,6 @@
 package oscrabble.player.ai;
 
 
-import oscrabble.server.IGame;
-
 import java.util.Collections;
 import java.util.List;
 

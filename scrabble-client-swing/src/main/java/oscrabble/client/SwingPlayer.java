@@ -1,6 +1,7 @@
 package oscrabble.client;
 
 import oscrabble.data.Player;
+import oscrabble.data.Tile;
 import oscrabble.player.AbstractPlayer;
 
 import javax.swing.*;
@@ -24,7 +25,7 @@ public class SwingPlayer extends AbstractPlayer
 	 * Rack to display the tiles of this player.
 	 */
 	private final JRack jRack;
-	private final JDialog rackFrame;
+	protected final JDialog rackFrame;
 
 	// TODO?
 //	public void setGame(final Game game)
@@ -126,11 +127,10 @@ public class SwingPlayer extends AbstractPlayer
 	public void update(final Player inputData)
 	{
 		// TODO when name change
-		final ArrayList<Character> tiles = inputData.rack.tiles;
+		final ArrayList<Tile> tiles = inputData.rack.tiles;
 		for (int i = 0; i < tiles.size(); i++)
 		{
-			final Character character = tiles.get(i);
-			this.jRack.cells[i].setTile(new JTile(character, 0, false));
+			this.jRack.cells[i].setTile(new JTile(tiles.get(i)));
 		}
 		for (int i = tiles.size(); i < this.jRack.cells.length; i++)
 		{

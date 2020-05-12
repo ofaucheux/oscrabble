@@ -10,6 +10,7 @@ import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Action;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
+import oscrabble.data.Tile;
 import oscrabble.data.objects.Grid;
 
 import java.net.URI;
@@ -50,13 +51,17 @@ class AIPlayerTest
 			{
 				bfm.grid = Grid.fromData(state.getGrid());
 				final Player player0 = state.getPlayers().get(0);
-				final ArrayList<Character> rack = player0.rack.tiles;
+				final ArrayList<Tile> rack = player0.rack.tiles;
 				if (rack.isEmpty())
 				{
 					System.out.println("Rack is empty");
 					return;
 				}
-				final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(rack));
+
+				final ArrayList<Character> letters = new ArrayList<>();
+				rack.forEach(t -> letters.add(t.c));
+
+				final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(letters));
 				moves.sort((o1, o2) -> o2.length() - o1.length());
 				if (moves.isEmpty())
 				{

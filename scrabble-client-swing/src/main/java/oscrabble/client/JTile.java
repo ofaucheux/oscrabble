@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import oscrabble.data.Tile;
 import oscrabble.data.objects.Square;
 
 import javax.swing.*;
@@ -28,10 +29,15 @@ class JTile extends JComponent
 		setTransferHandler(new TransferHandler("name"));
 		addMouseListener(new DragMouseAdapter());
 	}
+//
+//	public JTile(final Square square)
+//	{
+//		this(square.tile, square.letterBonus /* TODO isfalse */, square.isJoker());
+//	}
 
-	public JTile(final Square square)
+	public JTile(final Tile tile)
 	{
-		this(square.c, square.letterBonus /* TODO isfalse */, square.isJoker());
+		this(tile.c, tile.points, tile.isJoker);
 	}
 
 	public static void drawStone(final Graphics2D g2, final Container container, final JTile tile, final Color black)

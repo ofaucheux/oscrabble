@@ -11,7 +11,6 @@ import oscrabble.data.*;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
 import oscrabble.data.objects.Square;
-import oscrabble.player.AbstractPlayer;
 
 import java.io.File;
 import java.io.FileReader;
@@ -76,10 +75,11 @@ public class Game
 	 * List of the users, the first to play at head
 	 */
 	final LinkedList<PlayerInformation> toPlay = new LinkedList<>();
+	private final ScrabbleRules scrabbleRules;
 
 
 	private Grid grid;
-	private LinkedList<Character> bag = new LinkedList<>();
+	private LinkedList<Tile> bag = new LinkedList<>();
 
 	private final Random random;
 
@@ -208,6 +208,7 @@ public class Game
 
 		setState(GameState.State.BEFORE_START);
 		LOGGER.info("Created game with random seed " + this.random);
+		scrabbleRules = dictionary.getScrabbleRules();
 	}
 
 	/**
@@ -227,6 +228,7 @@ public class Game
 		this.configuration = new Configuration();
 		this.state = GameState.State.BEFORE_START;
 		this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
+		scrabbleRules = dictionary.getScrabbleRules();
 	}
 
 	/**
@@ -279,6 +281,7 @@ public class Game
 		this.configuration = new Configuration();
 		this.propertyFile = null;
 		this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
+		scrabbleRules = dictionary.getScrabbleRules();
 	}
 
 //	/**
@@ -411,7 +414,7 @@ public class Game
 		boolean actionRejected = false;
 		ScoreCalculator.MoveMetaInformation moveMI = null;
 		boolean done = false;
-		final Set<Character> drawn;
+		final Set<Tile> drawn;
 		try
 		{
 			final ArrayList<String> messages = new ArrayList<>(5);
@@ -422,7 +425,7 @@ public class Game
 
 				// check possibility
 				moveMI = this.scoreCalculator.getMetaInformation(this.grid, playTiles);
-				final HashBag<Character> remaining = new HashBag<>(player.rack.tiles);
+				final HashBag<Tile> remaining = new HashBag<>(player.rack.tiles);
 
 				final List<Character> requiredLetters = moveMI.requiredLetter;
 				for (final Character c : requiredLetters)
@@ -469,7 +472,7 @@ public class Game
 					}
 				}
 
-				grid.play(playTiles);
+				grid.play(scrabbleRules, playTiles);
 
 				player.rack.tiles.clear();
 				player.rack.tiles.addAll(remaining);
@@ -490,7 +493,7 @@ public class Game
 				}
 
 				final Action.Exchange exchange = (Action.Exchange) action;
-				final HashBag<Character> newRack = new HashBag<>(player.rack.tiles);
+				final HashBag<Tile> newRack = new HashBag<>(player.rack.tiles);
 				for (final char ex : exchange.toExchange)
 				{
 					if (!newRack.remove(ex))
@@ -501,7 +504,7 @@ public class Game
 
 				for (final char c : exchange.toExchange)
 				{
-					this.bag.add(c);
+//					this.bag.add(c); TODO: consider tiles, not chars
 				}
 				Collections.shuffle(this.bag, this.random);
 				moveMI = null;
@@ -622,16 +625,13 @@ public class Game
 						return;
 					}
 
-					final Character tile = s.c;
-					final boolean isJoker = tile != null && Character.isLowerCase(tile);
+					final Tile tile = s.tile;
 					final oscrabble.data.Square square = oscrabble.data.Square.builder()
 							.settingPlay(s.action)
 							.wordBonus(s.wordBonus)
 							.letterBonus(s.letterBonus)
 							.coordinate(s.getCoordinate())
 							.tile(tile)
-							.joker(isJoker)
-							.value(tile == null || isJoker ? 0 : lettersDefinition.get(tile).points)
 							.build();
 					grid.squares.add(square);
 				}
@@ -730,9 +730,9 @@ public class Game
 					if (player != firstEndingPlayer)
 					{
 						int gift = 0;
-						for (final Character tile : player.rack.tiles)
+						for (final Tile tile : player.rack.tiles)
 						{
-							gift += this.dictionary.getScrabbleRules().letters.get(tile).points;
+							gift += tile.points;
 						}
 						player.score -= gift;
 //						todo ? historyEntry.scores.put(player, -gift);
@@ -787,12 +787,12 @@ public class Game
 	 * @param player Player to refill the rack
 	 * @return list of drawn tiles.
 	 */
-	private Set<Character> refillRack(final PlayerInformation player)
+	private Set<Tile> refillRack(final PlayerInformation player)
 	{
-		final Set<Character> drawn = new HashSet<>();
+		final Set<Tile> drawn = new HashSet<>();
 		while (!this.bag.isEmpty() && player.rack.tiles.size() < RACK_SIZE)
 		{
-			final Character poll = this.bag.poll();
+			final Tile poll = this.bag.poll();
 			drawn.add(poll);
 			player.rack.tiles.add(poll);
 		}
@@ -891,28 +891,44 @@ public class Game
 				{
 					for (int i = 0; i < info.prevalence; i++)
 					{
-						this.bag.add(letter);
+						final Tile tile = Tile.builder()
+								.isJoker(false)
+								.c(letter)
+								.points(info.points)
+								.build();
+						this.bag.add(tile);
 					}
 				}
 		);
 		for (int i = 0; i < this.dictionary.getScrabbleRules().numberBlanks; i++)
 		{
-			this.bag.add(' ');
+			this.bag.add(Tile.builder().c(' ').isJoker(true).points(0).build());
 		}
 		Collections.shuffle(this.bag, this.random);
 
 		if ((this.assertFirstLetters != null))
 		{
-			final ArrayList<Character> start = new ArrayList<>();
-			final ArrayList<Character> remains = new ArrayList<>(this.bag);
+			final ArrayList<Tile> start = new ArrayList<>();
+			final ArrayList<Tile> remains = new ArrayList<>(this.bag);
 
 			for (final char c : this.assertFirstLetters.toCharArray())
 			{
-				if (!remains.remove((Character) c))
+				final ListIterator<Tile> itRemain = remains.listIterator();
+				Tile found = null;
+				do
 				{
-					throw new IllegalStateException("Not enough letter " + c + " remaining in the bag");
-				}
-				start.add(c);
+					if (!itRemain.hasNext())
+					{
+						throw new IllegalStateException("Not enough letter " + c + " remaining in the bag");
+					}
+					final Tile next = itRemain.next();
+					if (next.c == c)
+					{
+						found = next;
+					}
+				} while (found == null);
+				remains.remove(found);
+				start.add(found);
 			}
 
 			this.bag.clear();
@@ -1085,9 +1101,9 @@ public class Game
 	public String getRack(final PlayerInformation player)
 	{
 		final StringBuffer sb = new StringBuffer();
-		for (final Character character : player.rack.tiles)
+		for (final Tile character : player.rack.tiles)
 		{
-			sb.append(character);
+			sb.append(character.c);
 		}
 		return sb.toString();
 	}

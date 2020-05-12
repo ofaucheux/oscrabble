@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
+import oscrabble.data.ScrabbleRules;
+import oscrabble.data.Tile;
 import oscrabble.exception.IllegalCoordinate;
 
 import java.util.*;
@@ -122,7 +124,7 @@ public class Grid
 	{
 		for (final oscrabble.data.objects.Square square : this.squares)
 		{
-			if (square.c != null)
+			if (square.tile != null)
 			{
 				return false;
 			}
@@ -133,7 +135,7 @@ public class Grid
 	public boolean isEmpty(final String coordinate)
 	{
 		final Coordinate triple = getCoordinate(coordinate);
-		return this.get(triple).c == null;
+		return this.get(triple).tile == null;
 	}
 
 	public Collection<oscrabble.data.objects.Square> getAllSquares()
@@ -147,22 +149,31 @@ public class Grid
 	}
 
 
-	public void play(final String move) throws ScrabbleException.ForbiddenPlayException
+	public void play(final ScrabbleRules rules, final String move) throws ScrabbleException.ForbiddenPlayException
 	{
-		play((Action.PlayTiles) Action.parse(move));
+		play(rules, (Action.PlayTiles) Action.parse(move));
 	}
 
-	public void play(final Action.PlayTiles playTiles)
+	public void play(final ScrabbleRules rules, final Action.PlayTiles playTiles)
 	{
 		oscrabble.data.objects.Square sq = get(playTiles.startSquare);
 		for (int i = 0; i < playTiles.word.length(); i++)
 		{
 			final char c = playTiles.word.charAt(i);
+			final char uppercase = Character.toUpperCase(c);
 			if (sq.isEmpty())
 			{
-				sq.c = c;
+				final boolean isJoker = Character.isLowerCase(c);
+				sq.tile = Tile.builder()
+						.isJoker(isJoker)
+						.c(uppercase)
+						.points(
+								isJoker || rules == null
+										? 0
+										: rules.getLetters().get(uppercase).points)
+						.build();
 			}
-			else if (Character.toUpperCase(sq.c) != Character.toUpperCase(c))
+			else if (Character.toUpperCase(sq.tile.c) != uppercase)
 			{
 				throw new AssertionError("The case is already occupied");
 			}
@@ -286,7 +297,7 @@ public class Grid
 		final StringBuilder sb = new StringBuilder("Grid{\n");
 		for (final oscrabble.data.objects.Square square : this.squares)
 		{
-			sb.append(square.isBorder ? '#' : square.c == null ? ' ' : square.c);
+			sb.append(square.isBorder ? '#' : square.tile == null ? ' ' : square.tile);
 			if (square.y == GRID_SIZE + 1)
 			{
 				sb.append('\n');

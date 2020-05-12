@@ -9,9 +9,7 @@ import java.util.UUID;
 @Builder
 public class Square
 {
-	public Character tile;
-	public int value; //  TODO to be filled
-	public boolean joker; // TODO to be filled
+	public Tile tile;
 
 	/**
 	 * the game play which set the tile on the square, if any

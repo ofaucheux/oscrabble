@@ -1,5 +1,7 @@
 package oscrabble.data.objects;
 
+import oscrabble.data.Tile;
+
 import java.util.UUID;
 
 /**
@@ -25,7 +27,7 @@ public class Square
 	 */
 	public UUID action;
 
-	public Character c;
+	public Tile tile;
 
 	Square(final int x, final int y)
 	{
@@ -48,11 +50,7 @@ public class Square
 		final Grid.Coordinate c = Grid.getCoordinate(dataSq.coordinate);
 		this.x = c.x;
 		this.y = c.y;
-		this.c = dataSq.tile;
-		if (dataSq.isJoker())
-		{
-			this.c = Character.toLowerCase(this.c);
-		}
+		this.tile = dataSq.tile;
 		this.action = dataSq.settingPlay;
 		this.letterBonus = dataSq.letterBonus;
 		this.wordBonus = dataSq.wordBonus;
@@ -77,7 +75,7 @@ public class Square
 		sq.action = data.settingPlay;
 		sq.letterBonus = data.letterBonus;
 		sq.wordBonus = data.wordBonus;
-		sq.c = data.tile;
+		sq.tile = data.tile;
 		return sq;
 	}
 
@@ -87,7 +85,7 @@ public class Square
 	 */
 	public boolean isEmpty()
 	{
-		return this.c == null;
+		return this.tile == null;
 	}
 
 	public boolean isBorder()
@@ -113,7 +111,7 @@ public class Square
 	oscrabble.data.Square toData()
 	{
 		final oscrabble.data.Square square = oscrabble.data.Square.builder()
-				.tile(this.c)
+				.tile(this.tile)
 				.coordinate(this.getCoordinate())
 				.letterBonus(this.letterBonus)
 				.wordBonus(this.wordBonus)
@@ -159,11 +157,11 @@ public class Square
 	{
 		return this.y;
 	}
-
-	public boolean isJoker()
-	{
-		return this.c != null && Character.isLowerCase(this.c);
-	}
+//
+//	public boolean isJoker()
+//	{
+//		return this.tile != null && Character.isLowerCase(this.tile);
+//	}
 
 	/**
 	 *
@@ -171,7 +169,7 @@ public class Square
 	 */
 	Character getLetter()
 	{
-		return this.c == null ? null : Character.toUpperCase(this.c);
+		return this.tile == null ? null : Character.toUpperCase(this.tile.c);
 	}
 
 	/**
