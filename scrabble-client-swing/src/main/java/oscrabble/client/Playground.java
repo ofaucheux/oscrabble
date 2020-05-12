@@ -386,15 +386,6 @@ class Playground
 		this.swingPlayers.add(swingPlayer);
 	}
 
-	public synchronized void beforeGameStart()
-	{
-		if (this.gridFrame != null)
-		{
-			return;
-		}
-		this.jScoreboard.prepareBoard(null /*todo*/);
-	}
-
 	public void onPlayRequired(final SwingPlayer caller)
 	{
 		if (!isFirstRegistered(caller))
@@ -501,6 +492,7 @@ class Playground
 	public void setState(final GameState state)
 	{
 		this.jGrid.setGrid(state.getGrid());
+		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 	}
 
 	/**

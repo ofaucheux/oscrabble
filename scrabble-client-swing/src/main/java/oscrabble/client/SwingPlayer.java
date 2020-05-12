@@ -195,7 +195,6 @@ public class SwingPlayer extends AbstractPlayer
 
 	public void beforeGameStart()
 	{
-		playground.beforeGameStart();
 		this.jRack.update(null);
 		createUI();
 	}

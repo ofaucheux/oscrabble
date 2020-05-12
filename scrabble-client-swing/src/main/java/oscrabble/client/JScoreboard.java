@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import org.apache.commons.collections4.map.LinkedMap;
 import oscrabble.data.Player;
 
 import javax.swing.*;
@@ -8,6 +9,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Panel for the display of the actual score.
@@ -15,6 +17,10 @@ import java.util.List;
 class JScoreboard extends JPanel
 {
 	private final Playground playground;
+
+	/**
+	 * Mapping player id -> corresponding line
+	 */
 	private final HashMap<Player, ScorePanelLine> scoreLabels = new HashMap<>();
 
 	JScoreboard(final Playground playground)
@@ -33,7 +39,8 @@ class JScoreboard extends JPanel
 //		}
 //	}
 
-	void prepareBoard(final List<Player> players)
+
+	void updateDisplay(final List<Player> players, final UUID playerOnTurn)
 	{
 		final double SMALL_WEIGHT = 0.1;
 		final double BIG_WEIGHT = 10;
@@ -42,56 +49,64 @@ class JScoreboard extends JPanel
 		final GridBagConstraints c = new GridBagConstraints();
 		for (final Player player : players)
 		{
-			final ScorePanelLine line = new ScorePanelLine();
-			this.scoreLabels.put(player, line);
-
-			c.insets = new Insets(0, 0, 0, 0);
-			c.gridy++;
-			c.gridx = 0;
-			c.weightx = SMALL_WEIGHT;
-			line.currentPlaying = new JLabel("►");
-			line.currentPlaying.setPreferredSize(buttonDim);
-			line.currentPlaying.setVisible(false);
-			add(line.currentPlaying, c);
-
-			c.gridx++;
-			c.weightx = BIG_WEIGHT;
-			c.anchor = GridBagConstraints.LINE_START;
-			final String name = player.name;
-			add(new JLabel(name), c);
-			c.weightx = SMALL_WEIGHT;
-
-			c.gridx++;
-			c.anchor = GridBagConstraints.LINE_END;
-			line.score = new JLabel();
-			add(line.score, c);
-
-			c.gridx++;
-			line.parameterButton = new JButton();
-			line.parameterButton.setPreferredSize(buttonDim);
-			line.parameterButton.setFocusable(false);
-			line.parameterButton.setAction(new AbstractAction("...")
+			ScorePanelLine line = this.scoreLabels.get(player);
+			if (line == null)
 			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
-					// todo
-					final SwingWorker<Void, Void> worker = new SwingWorker<>()
-					{
-						@Override
-						protected Void doInBackground()
-						{
-//							JScoreboard.this.game.editParameters(playground.swingPlayers.getFirst().getPlayerKey(), player);
-							return null;
-						}
-					};
-					worker.execute();
-				}
-			});
-			// todo
-//			line.parameterButton.setVisible(player.hasEditableParameters());
-			add(line.parameterButton, c);
+				line = new ScorePanelLine();
+				this.scoreLabels.put(player, line);
 
+				c.insets = new Insets(0, 0, 0, 0);
+				c.gridy++;
+				c.gridx = 0;
+				c.weightx = SMALL_WEIGHT;
+				line.currentPlaying = new JLabel("►");
+				line.currentPlaying.setPreferredSize(buttonDim);
+				line.currentPlaying.setVisible(false);
+				add(line.currentPlaying, c);
+
+				c.gridx++;
+				c.weightx = BIG_WEIGHT;
+				c.anchor = GridBagConstraints.LINE_START;
+				final String name = player.name;
+				line.nameLabel = new JLabel(name);
+				add(line.nameLabel, c);
+				c.weightx = SMALL_WEIGHT;
+
+				c.gridx++;
+				c.anchor = GridBagConstraints.LINE_END;
+				line.score = new JLabel();
+				add(line.score, c);
+
+				c.gridx++;
+				line.parameterButton = new JButton();
+				line.parameterButton.setPreferredSize(buttonDim);
+				line.parameterButton.setFocusable(false);
+				line.parameterButton.setAction(new AbstractAction("...")
+				{
+					@Override
+					public void actionPerformed(final ActionEvent e)
+					{
+						// todo
+						final SwingWorker<Void, Void> worker = new SwingWorker<>()
+						{
+							@Override
+							protected Void doInBackground()
+							{
+	//							JScoreboard.this.game.editParameters(playground.swingPlayers.getFirst().getPlayerKey(), player);
+								return null;
+							}
+						};
+						worker.execute();
+					}
+				});
+				// todo
+	//			line.parameterButton.setVisible(player.hasEditableParameters());
+				add(line.parameterButton, c);
+			}
+
+			line.nameLabel.setText(player.name);
+			line.currentPlaying.setVisible(player.id.equals(playerOnTurn));
+			line.score.setText(Integer.toString(player.score));
 		}
 
 		c.gridy++;
@@ -105,6 +120,7 @@ class JScoreboard extends JPanel
 
 	private static class ScorePanelLine
 	{
+		private JLabel nameLabel;
 		private JLabel score;
 		private JLabel currentPlaying;
 		private JButton parameterButton;
