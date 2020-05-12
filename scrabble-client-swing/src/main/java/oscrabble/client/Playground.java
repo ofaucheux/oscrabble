@@ -62,29 +62,29 @@ class Playground
 	/**
 	 * Grid
 	 */
-	JGrid jGrid;
+	private final JGrid jGrid;
 
 	/**
 	 * Command prompt
 	 */
-	private JTextField commandPrompt;
+	private final JTextField commandPrompt;
 
 	/**
 	 * Score board
 	 */
-	private JScoreboard jScoreboard;
+	private final JScoreboard jScoreboard;
 
-	private static TelnetFrame telnetFrame;
+	private final TelnetFrame telnetFrame;
 
 	/**
 	 * Panel for the display of possible moves and corresponding buttons
 	 */
-	private static JPanel possibleMovePanel;
+	private final JPanel possibleMovePanel;
 
 	/**
 	 * Button to display / hide the possible moves
 	 */
-	private static JButton showPossibilitiesButton;
+	private final JButton showPossibilitiesButton = null;  //TODO
 
 	/**
 	 * Thread executor
@@ -118,16 +118,6 @@ class Playground
 
 	Playground()
 	{
-	}
-
-
-	/**
-	 * create UI and display it
-	 */
-	void createUI()
-	{
-		assert this.jGrid == null;
-
 		this.jGrid = new JGrid();
 		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard(this);
@@ -287,7 +277,7 @@ class Playground
 
 	}
 
-	private static void resetPossibleMovesPanel()
+	private void resetPossibleMovesPanel()
 	{
 		possibleMovePanel.removeAll();
 		possibleMovePanel.invalidate();
@@ -402,7 +392,6 @@ class Playground
 		{
 			return;
 		}
-		createUI();
 		this.jScoreboard.prepareBoard(null /*todo*/);
 	}
 
