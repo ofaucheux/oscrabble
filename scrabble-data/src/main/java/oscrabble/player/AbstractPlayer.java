@@ -19,8 +19,9 @@ public abstract class AbstractPlayer
 	 */
 	public String name;
 
-	protected AbstractPlayer()
+	protected AbstractPlayer(final String name)
 	{
+		this.name = name;
 	}
 
 	/**

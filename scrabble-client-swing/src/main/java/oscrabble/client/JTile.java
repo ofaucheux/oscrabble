@@ -31,7 +31,7 @@ class JTile extends JComponent
 
 	public JTile(final Square square)
 	{
-		this(square.c, square.letterBonus, square.isJoker());
+		this(square.c, square.letterBonus /* TODO isfalse */, square.isJoker());
 	}
 
 	public static void drawStone(final Graphics2D g2, final Container container, final JTile tile, final Color black)

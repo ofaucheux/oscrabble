@@ -25,13 +25,13 @@ public class AIPlayer extends AbstractPlayer
 
 	public AIPlayer(final UUID game, final BruteForceMethod bruteForceMethod, final String name)
 	{
+		super(name);
 		this.game = game;
 		this.bruteForceMethod = bruteForceMethod;
 //			super(new Configuration(), name);
 		configuration = new BruteForceMethod.Configuration();
 		configuration.strategy = new Strategy.BestScore();
 		configuration.throttle = 2;
-		this.name = name;
 	}
 
 	public void onPlayRequired(final AIPlayer player, final Collection<Character> rack) throws ScrabbleException.NotInTurn

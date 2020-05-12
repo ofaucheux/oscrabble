@@ -1,18 +1,14 @@
 package oscrabble.client;
 
-import oscrabble.ScrabbleException;
-import oscrabble.client.configuration.Configuration;
+import oscrabble.data.Player;
 import oscrabble.player.AbstractPlayer;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.UUID;
 
 public class SwingPlayer extends AbstractPlayer
 {
@@ -23,22 +19,12 @@ public class SwingPlayer extends AbstractPlayer
 
 	static Playground playground;
 
+	static final int RACK_SIZE = 7;
 	/**
 	 * Rack to display the tiles of this player.
 	 */
-	private JRack jRack;
-	JDialog rackFrame;
-
-	public SwingPlayer(final String name)
-	{
-		this.name = name;
-		if (playground == null)
-		{
-			playground = new Playground();
-		}
-		playground.addPlayer(this);
-		this.jRack = new JRack();
-	}
+	private final JRack jRack;
+	private final JDialog rackFrame;
 
 	// TODO?
 //	public void setGame(final Game game)
@@ -54,8 +40,11 @@ public class SwingPlayer extends AbstractPlayer
 //		return null;
 //	}
 
-	private void createUI()
+	public SwingPlayer(final String name)
 	{
+		super(name);
+		this.jRack = new JRack();
+
 		this.rackFrame = new JDialog(playground.gridFrame);
 		this.rackFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.rackFrame.setTitle(this.name);
@@ -134,14 +123,22 @@ public class SwingPlayer extends AbstractPlayer
 		playground.afterUiCreated(this);
 	}
 
-	public void updateRack()
+	public void update(final Player inputData)
 	{
-		this.jRack.update(null);
+		// TODO when name change
+		final ArrayList<Character> tiles = inputData.rack.tiles;
+		for (int i = 0; i < tiles.size(); i++)
+		{
+			final Character character = tiles.get(i);
+			this.jRack.cells[i].setTile(new JTile(character, 0, false));
+		}
+		for (int i = tiles.size(); i < this.jRack.cells.length; i++)
+		{
+			this.jRack.cells[i] = null;
+		}
 	}
-
 	private class JRack extends JPanel
 	{
-		static final int RACK_SIZE = 7;
 		final JRackCell[] cells = new JRackCell[7];
 
 		private JRack()
@@ -196,7 +193,6 @@ public class SwingPlayer extends AbstractPlayer
 	public void beforeGameStart()
 	{
 		this.jRack.update(null);
-		createUI();
 	}
 
 	public boolean isObserver()
