@@ -546,7 +546,7 @@ class Playground
 			this.dictionaryComponent = new DictionaryComponent();
 
 			this.setLayout(new BorderLayout());
-			this.background = new JPanel();
+			this.background = new JPanel(new BorderLayout());
 			this.preparedMoveStones = new LinkedHashMap<>();
 			final int size = 15 * CELL_SIZE;  // TODO: use a constant
 			this.setPreferredSize(new Dimension(size, size));
@@ -557,8 +557,9 @@ class Playground
 		{
 			this.grid = new Grid(grid);
 			final int numberOfRows = this.grid.getSize();
-			this.background.removeAll();
-			this.background.setLayout(new GridLayout(numberOfRows, numberOfRows));
+
+			final JPanel p1 = new JPanel();
+			p1.setLayout(new GridLayout(numberOfRows, numberOfRows));
 
 			// Draw each Cell
 			for (int y = 0; y < numberOfRows; y++)
@@ -568,12 +569,12 @@ class Playground
 					final Square square = this.grid.get(x + 1, y + 1);
 					if (square.isBorder)
 					{
-						this.background.add(new BorderCell(square));
+						p1.add(new BorderCell(square));
 					}
 					else
 					{
 						final JSquare cell = new JSquare(square);
-						this.background.add(cell);
+						p1.add(cell);
 
 						final Color cellColor;
 						if (cell.square.letterBonus == 2)
@@ -603,6 +604,9 @@ class Playground
 					}
 				}
 			}
+
+			this.background.removeAll();
+			this.background.add(p1);
 		}
 
 //	todo
