@@ -1,10 +1,13 @@
 package oscrabble.data;
 
 import lombok.Builder;
+import lombok.Data;
+
 
 /**
  * A tile
  */
+@Data
 @Builder
 public class Tile
 {

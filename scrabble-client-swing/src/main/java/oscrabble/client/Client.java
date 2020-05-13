@@ -66,7 +66,7 @@ public class Client
 		LOGGER.info("Refresh UI with state " + state.hashCode());
 		this.playground.refreshUI(state);
 
-		final Player player = IterableUtils.find(state.getPlayers(), p -> p.id == this.player);
+		final Player player = IterableUtils.find(state.getPlayers(), p -> p.id.equals(this.player));
 		this.rack.setTiles(player.rack.tiles);
 	}
 
@@ -78,19 +78,18 @@ public class Client
 		@Override
 		public void run()
 		{
-			// Hash Code of the last known state.
-			int lastKnownState = -1;
+			GameState lastKnownState = null;
 
 			while (true)
 			{
 				try
 				{
-					Thread.sleep(100);
+					Thread.sleep(1000);
 					final GameState state = server.getState(game);
-					if (state.hashCode() != lastKnownState)
+					if (!state.equals(lastKnownState))
 					{
 						refreshUI(state);
-						lastKnownState = state.hashCode();
+						lastKnownState = state;
 					}
 				}
 				catch (InterruptedException | ScrabbleException.CommunicationException e)
