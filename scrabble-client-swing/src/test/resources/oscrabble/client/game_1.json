@@ -1,104 +1,131 @@
 {
-  "gameId": "70d5ca4f-142b-4b48-80a5-d8e8a9414ac8",
+  "gameId": "10656d5a-4911-48d2-9370-ab5aedb3162d",
   "state": "STARTED",
   "players": [
     {
-      "id": "39355e52-85ef-4075-902e-e763e09ae542",
+      "id": "6cd67ee8-d8b9-4e97-b76b-ffc631233dfd",
       "name": "AI Player",
-      "score": 79,
+      "score": 671,
       "rack": {
         "tiles": [
-          "G",
-          "H",
-          "J",
-          "R",
-          "P",
-          "R",
-          "S"
+          {
+            "isJoker": false,
+            "c": "Y",
+            "points": 10,
+            "joker": false
+          },
+          {
+            "isJoker": false,
+            "c": "Z",
+            "points": 10,
+            "joker": false
+          }
         ]
       }
     }
   ],
-  "playerOnTurn": "39355e52-85ef-4075-902e-e763e09ae542",
+  "playerOnTurn": "6cd67ee8-d8b9-4e97-b76b-ffc631233dfd",
   "playedActions": [],
   "grid": {
     "squares": [
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "A1",
         "letterBonus": 1,
         "wordBonus": 3
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A2",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "F",
+          "points": 4,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A3",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "F",
+          "points": 4,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A4",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "p",
-        "value": 0,
-        "joker": true,
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A6",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A7",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A8",
         "letterBonus": 1,
         "wordBonus": 3
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A9",
         "letterBonus": 1,
@@ -106,8 +133,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "A10",
         "letterBonus": 1,
@@ -115,8 +140,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "A11",
         "letterBonus": 1,
@@ -124,8 +147,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "A12",
         "letterBonus": 2,
@@ -133,17 +154,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "A13",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "D",
+          "points": 2,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "A14",
         "letterBonus": 1,
@@ -151,8 +173,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "A15",
         "letterBonus": 1,
@@ -160,17 +180,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "B1",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "H",
+          "points": 4,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B2",
         "letterBonus": 1,
@@ -178,8 +199,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "B3",
         "letterBonus": 1,
@@ -187,35 +206,37 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "B4",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "R",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "B6",
         "letterBonus": 3,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "B",
+          "points": 3,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B7",
         "letterBonus": 1,
@@ -223,17 +244,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "B8",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B9",
         "letterBonus": 1,
@@ -241,53 +263,66 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "B10",
         "letterBonus": 3,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "M",
+          "points": 2,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B11",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B12",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B13",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B14",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "B15",
         "letterBonus": 1,
@@ -295,8 +330,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "C1",
         "letterBonus": 1,
@@ -304,53 +337,66 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "C2",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "P",
+          "points": 3,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "C3",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "C4",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "C5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "O",
-        "value": 1,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "C6",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "C7",
         "letterBonus": 2,
@@ -358,17 +404,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "C8",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "C9",
         "letterBonus": 2,
@@ -376,8 +423,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "C10",
         "letterBonus": 1,
@@ -385,17 +430,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "C11",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "C12",
         "letterBonus": 1,
@@ -403,17 +449,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "C13",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "P",
+          "points": 3,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "C14",
         "letterBonus": 1,
@@ -421,8 +468,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "C15",
         "letterBonus": 1,
@@ -430,17 +475,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "D1",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "H",
+          "points": 4,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D2",
         "letterBonus": 1,
@@ -448,8 +494,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "D3",
         "letterBonus": 1,
@@ -457,170 +501,217 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "D4",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "C",
-        "value": 3,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "D6",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "M",
+          "points": 2,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D7",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D8",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D9",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D10",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D11",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D12",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D13",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": true,
+          "c": "E",
+          "points": 0,
+          "joker": true
+        },
         "settingPlay": null,
         "coordinate": "D14",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "D15",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "B",
+          "points": 3,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E1",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E2",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E3",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "G",
+          "points": 2,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E4",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E5",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": "H",
-        "value": 4,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E6",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E7",
         "letterBonus": 1,
@@ -628,17 +719,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "E8",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E9",
         "letterBonus": 1,
@@ -646,8 +738,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "E10",
         "letterBonus": 1,
@@ -655,17 +745,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "E11",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "K",
+          "points": 10,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E12",
         "letterBonus": 1,
@@ -673,17 +764,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "E13",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "E14",
         "letterBonus": 1,
@@ -691,8 +783,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "E15",
         "letterBonus": 1,
@@ -700,8 +790,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "F1",
         "letterBonus": 1,
@@ -709,8 +797,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "F2",
         "letterBonus": 3,
@@ -718,8 +804,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "F3",
         "letterBonus": 1,
@@ -727,8 +811,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "F4",
         "letterBonus": 1,
@@ -736,26 +818,25 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "F5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "A",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "F6",
         "letterBonus": 3,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "F7",
         "letterBonus": 1,
@@ -763,8 +844,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "F8",
         "letterBonus": 1,
@@ -772,62 +851,78 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "F9",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "C",
+          "points": 3,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "F10",
         "letterBonus": 3,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "F11",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "F12",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "F13",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "F14",
         "letterBonus": 3,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "F15",
         "letterBonus": 1,
@@ -835,8 +930,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G1",
         "letterBonus": 1,
@@ -844,8 +937,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G2",
         "letterBonus": 1,
@@ -853,8 +944,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G3",
         "letterBonus": 2,
@@ -862,8 +951,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G4",
         "letterBonus": 1,
@@ -871,17 +958,13 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "I",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "G6",
         "letterBonus": 1,
@@ -889,17 +972,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G7",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": "D",
-        "value": 2,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "G8",
         "letterBonus": 1,
@@ -907,17 +991,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G9",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "G10",
         "letterBonus": 1,
@@ -925,17 +1010,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G11",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "G12",
         "letterBonus": 1,
@@ -943,8 +1029,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G13",
         "letterBonus": 2,
@@ -952,8 +1036,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G14",
         "letterBonus": 1,
@@ -961,8 +1043,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "G15",
         "letterBonus": 1,
@@ -970,134 +1050,159 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "H1",
         "letterBonus": 1,
         "wordBonus": 3
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "J",
+          "points": 8,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H2",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "A",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "H3",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "T",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "H4",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": "O",
-        "value": 1,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "V",
+          "points": 4,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "N",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "H6",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "I",
-        "value": 1,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "D",
+          "points": 2,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H7",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "E",
-        "value": 1,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H8",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "C",
+          "points": 3,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H9",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H10",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H11",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H12",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": true,
+          "c": "A",
+          "points": 0,
+          "joker": true
+        },
         "settingPlay": null,
         "coordinate": "H13",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H14",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "H15",
         "letterBonus": 1,
@@ -1105,26 +1210,25 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "I1",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "I2",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "L",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "I3",
         "letterBonus": 2,
@@ -1132,26 +1236,25 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "I4",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "I5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "E",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "I6",
         "letterBonus": 1,
@@ -1159,17 +1262,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "I7",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": "B",
-        "value": 3,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "I8",
         "letterBonus": 1,
@@ -1177,17 +1281,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "I9",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "W",
+          "points": 10,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "I10",
         "letterBonus": 1,
@@ -1195,17 +1300,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "I11",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "I12",
         "letterBonus": 1,
@@ -1213,8 +1319,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "I13",
         "letterBonus": 2,
@@ -1222,17 +1326,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "I14",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "I15",
         "letterBonus": 1,
@@ -1240,26 +1345,25 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J1",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "M",
+          "points": 2,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "J2",
         "letterBonus": 3,
         "wordBonus": 1
       },
       {
-        "tile": "U",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "J3",
         "letterBonus": 1,
@@ -1267,17 +1371,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J4",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "J5",
         "letterBonus": 1,
@@ -1285,8 +1390,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J6",
         "letterBonus": 3,
@@ -1294,17 +1397,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J7",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "O",
-        "value": 1,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "D",
+          "points": 2,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "J8",
         "letterBonus": 1,
@@ -1312,17 +1416,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J9",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "J10",
         "letterBonus": 3,
@@ -1330,8 +1435,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J11",
         "letterBonus": 1,
@@ -1339,8 +1442,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J12",
         "letterBonus": 1,
@@ -1348,8 +1449,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J13",
         "letterBonus": 1,
@@ -1357,17 +1456,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "J14",
         "letterBonus": 3,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "Q",
+          "points": 8,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "J15",
         "letterBonus": 1,
@@ -1375,26 +1475,25 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K1",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "K2",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "N",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "K3",
         "letterBonus": 1,
@@ -1402,17 +1501,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K4",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "V",
+          "points": 4,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "K5",
         "letterBonus": 1,
@@ -1420,8 +1520,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K6",
         "letterBonus": 1,
@@ -1429,17 +1527,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K7",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "U",
-        "value": 1,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "K8",
         "letterBonus": 1,
@@ -1447,17 +1546,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K9",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "K10",
         "letterBonus": 1,
@@ -1465,8 +1565,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K11",
         "letterBonus": 1,
@@ -1474,8 +1572,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K12",
         "letterBonus": 1,
@@ -1483,8 +1579,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K13",
         "letterBonus": 1,
@@ -1492,89 +1586,114 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "K14",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "K15",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L1",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L2",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "E",
-        "value": 1,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L3",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "G",
+          "points": 2,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L4",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L5",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L6",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L7",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "T",
-        "value": 1,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L8",
         "letterBonus": 2,
@@ -1582,8 +1701,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "L9",
         "letterBonus": 1,
@@ -1591,8 +1708,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "L10",
         "letterBonus": 1,
@@ -1600,8 +1715,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "L11",
         "letterBonus": 1,
@@ -1609,8 +1722,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "L12",
         "letterBonus": 1,
@@ -1618,8 +1729,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "L13",
         "letterBonus": 1,
@@ -1627,17 +1736,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "L14",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "L15",
         "letterBonus": 2,
@@ -1645,26 +1755,25 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M1",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "M2",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "E",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "M3",
         "letterBonus": 1,
@@ -1672,17 +1781,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M4",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "X",
+          "points": 10,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "M5",
         "letterBonus": 1,
@@ -1690,8 +1800,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M6",
         "letterBonus": 1,
@@ -1699,17 +1807,13 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M7",
         "letterBonus": 2,
         "wordBonus": 1
       },
       {
-        "tile": "A",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "M8",
         "letterBonus": 1,
@@ -1717,8 +1821,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M9",
         "letterBonus": 2,
@@ -1726,8 +1828,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M10",
         "letterBonus": 1,
@@ -1735,8 +1835,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M11",
         "letterBonus": 1,
@@ -1744,8 +1842,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M12",
         "letterBonus": 1,
@@ -1753,8 +1849,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M13",
         "letterBonus": 1,
@@ -1762,17 +1856,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "M14",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "M15",
         "letterBonus": 1,
@@ -1780,26 +1875,25 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N1",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "N2",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": "S",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "N3",
         "letterBonus": 1,
@@ -1807,8 +1901,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N4",
         "letterBonus": 1,
@@ -1816,8 +1908,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N5",
         "letterBonus": 1,
@@ -1825,8 +1915,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N6",
         "letterBonus": 3,
@@ -1834,17 +1922,13 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N7",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": "I",
-        "value": 1,
-        "joker": false,
+        "tile": null,
         "settingPlay": null,
         "coordinate": "N8",
         "letterBonus": 1,
@@ -1852,8 +1936,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N9",
         "letterBonus": 1,
@@ -1861,8 +1943,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N10",
         "letterBonus": 3,
@@ -1870,8 +1950,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N11",
         "letterBonus": 1,
@@ -1879,8 +1957,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N12",
         "letterBonus": 1,
@@ -1888,8 +1964,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N13",
         "letterBonus": 1,
@@ -1897,17 +1971,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "N14",
         "letterBonus": 1,
         "wordBonus": 2
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "N15",
         "letterBonus": 1,
@@ -1915,17 +1990,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O1",
         "letterBonus": 1,
         "wordBonus": 3
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "O2",
         "letterBonus": 1,
@@ -1933,8 +2009,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O3",
         "letterBonus": 1,
@@ -1942,8 +2016,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O4",
         "letterBonus": 2,
@@ -1951,8 +2023,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O5",
         "letterBonus": 1,
@@ -1960,8 +2030,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O6",
         "letterBonus": 1,
@@ -1969,8 +2037,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O7",
         "letterBonus": 1,
@@ -1978,8 +2044,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O8",
         "letterBonus": 1,
@@ -1987,8 +2051,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O9",
         "letterBonus": 1,
@@ -1996,8 +2058,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O10",
         "letterBonus": 1,
@@ -2005,8 +2065,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O11",
         "letterBonus": 1,
@@ -2014,8 +2072,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O12",
         "letterBonus": 2,
@@ -2023,8 +2079,6 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O13",
         "letterBonus": 1,
@@ -2032,17 +2086,18 @@
       },
       {
         "tile": null,
-        "value": 0,
-        "joker": false,
         "settingPlay": null,
         "coordinate": "O14",
         "letterBonus": 1,
         "wordBonus": 1
       },
       {
-        "tile": null,
-        "value": 0,
-        "joker": false,
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
         "settingPlay": null,
         "coordinate": "O15",
         "letterBonus": 1,
@@ -2051,76 +2106,7 @@
     ]
   },
   "bag": {
-    "tiles": [
-      "A",
-      "Q",
-      "L",
-      "U",
-      "L",
-      "B",
-      "A",
-      "E",
-      "N",
-      "I",
-      "O",
-      "I",
-      "N",
-      "D",
-      "S",
-      "V",
-      "N",
-      "S",
-      "E",
-      "O",
-      "Y",
-      "E",
-      "P",
-      "U",
-      "R",
-      "S",
-      "A",
-      "I",
-      "I",
-      "D",
-      "R",
-      "W",
-      "O",
-      "X",
-      "A",
-      "E",
-      "G",
-      "T",
-      "E",
-      "E",
-      "S",
-      "L",
-      "Z",
-      "U",
-      "E",
-      "E",
-      "U",
-      "A",
-      "K",
-      "R",
-      "T",
-      "F",
-      "A",
-      "T",
-      "F",
-      "L",
-      " ",
-      "I",
-      "M",
-      "E",
-      "N",
-      "V",
-      "E",
-      "C",
-      "T",
-      "M",
-      "E",
-      "M"
-    ]
+    "tiles": []
   },
   "turnId": 0
 }
