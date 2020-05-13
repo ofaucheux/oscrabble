@@ -767,12 +767,13 @@ class Playground
 					}
 					else
 					{
-						JTile.drawStone(g2, this, tile, Color.black);
+						tile.paintComponent(g2);
 					}
 				}
 				else if ((c = preparedMoveStones.get(this.square)) != null)
 				{
-					JTile.drawStone(g2, this, /* TODO tiles.get(c) */ null, Color.blue);
+					// TODO
+//					JTile.drawTile(g2, this, /* TODO tiles.get(c) */ null, Color.blue);
 				}
 
 				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);

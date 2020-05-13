@@ -1,7 +1,7 @@
 package oscrabble.client;
 
+import org.springframework.lang.NonNull;
 import oscrabble.data.Tile;
-import oscrabble.data.objects.Square;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,27 +40,24 @@ class JTile extends JComponent
 		this(tile.c, tile.points, tile.isJoker);
 	}
 
-	public static void drawStone(final Graphics2D g2, final Container container, final JTile tile, final Color black)
+	/**
+	 *
+	 * @param g2
+	 * @param container
+	 * @param tile
+	 * @param black
+	 */
+	public static void drawTile(final Graphics2D g2, final Container container, @NonNull final JTile tile, final Color black)
 	{
-		drawStone(g2, container, tile.letter, tile.value, tile.isJoker, black);
+		drawTile(g2, container, tile.letter, tile.value, tile.isJoker, black);
 	}
 
-	@Override
-	protected void paintComponent(final Graphics g)
-	{
-		super.paintComponent(g);
-		drawStone((Graphics2D) g, this, this.letter, this.value, this.isJoker, Color.black);
-	}
-
-	private static final Color STONE_BACKGROUND_COLOR = Color.decode("0xF3E5AB");
-	private static final int ARC_WIDTH = 14;
-
-	static void drawStone(final Graphics2D g2,
-						  final Container component,
-						  final char letter,
-						  final int value,
-						  final boolean isJoker,
-						  final Color foregroundColor)
+	static void drawTile(final Graphics2D g2,
+						 final Container component,
+						 final char letter,
+						 final int value,
+						 final boolean isJoker,
+						 final Color foregroundColor)
 	{
 
 		g2.setPaint(STONE_BACKGROUND_COLOR);
@@ -99,6 +96,16 @@ class JTile extends JComponent
 				g2.drawString(points, px, py);
 			}
 		}
+	}
+
+	private static final Color STONE_BACKGROUND_COLOR = Color.decode("0xF3E5AB");
+	private static final int ARC_WIDTH = 14;
+
+	@Override
+	protected void paintComponent(final Graphics g)
+	{
+		super.paintComponent(g);
+		drawTile((Graphics2D) g, this, this.letter, this.value, this.isJoker, Color.black);
 	}
 
 	static float getCharacterSize(final Container cell)

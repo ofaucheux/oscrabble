@@ -20,7 +20,6 @@ public class SwingPlayer extends AbstractPlayer
 
 	static Playground playground;
 
-	static final int RACK_SIZE = 7;
 	/**
 	 * Rack to display the tiles of this player.
 	 */
@@ -137,42 +136,6 @@ public class SwingPlayer extends AbstractPlayer
 			this.jRack.cells[i] = null;
 		}
 	}
-	private class JRack extends JPanel
-	{
-		final JRackCell[] cells = new JRackCell[7];
-
-		private JRack()
-		{
-			this.setLayout(new GridLayout(1,7));
-			for (int i = 0; i < RACK_SIZE; i++)
-			{
-				this.cells[i] = new JRackCell();
-				add(this.cells[i]);
-			}
-		}
-
-//		void update()
-//		{
-//			try
-//			{
-//				final ArrayList<Tile> tiles = new ArrayList<>(
-//						SwingPlayer.this.game.getRack(SwingPlayer.this, SwingPlayer.this.playerKey));
-//
-//				for (int i = 0; i < RACK_SIZE; i++)
-//				{
-//					this.cells[i].setTile(
-//							i >= tiles.size() ? null : tiles.get(i)
-//					);
-//				}
-//				this.repaint();
-//			}
-//			catch (ScrabbleException e)
-//			{
-//				playground.showMessage(e.getMessage());
-//			}
-//		}
-	}
-
 	public void afterRollback()
 	{
 		playground.refreshUI(this);

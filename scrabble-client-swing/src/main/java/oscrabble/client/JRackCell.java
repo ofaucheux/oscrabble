@@ -3,6 +3,9 @@ package oscrabble.client;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Cell of a rack.
+ */
 class JRackCell extends JComponent
 {
 	private JTile tile;
@@ -16,7 +19,10 @@ class JRackCell extends JComponent
 	protected void paintComponent(final Graphics g)
 	{
 		super.paintComponent(g);
-		JTile.drawStone((Graphics2D) g, this, this.tile, Color.black);
+		if (this.tile != null)
+		{
+			JTile.drawTile((Graphics2D) g, this, this.tile, Color.black);
+		}
 	}
 
 	public void setTile(final JTile tile)
