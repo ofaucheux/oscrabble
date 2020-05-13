@@ -39,8 +39,7 @@ class AIPlayerTest
 		final String PLAYER_NAME = "AI Player";
 		final UUID game = server.newGame();
 		final AIPlayer player = new AIPlayer(game, bfm, PLAYER_NAME);
-		final Player playerData = server.addPlayer(game, player.name);
-		player.uuid = playerData.id;
+		player.uuid = server.addPlayer(game, player.name);
 		server.startGame(game);
 
 		GameState state;

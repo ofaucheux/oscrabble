@@ -117,9 +117,10 @@ public class MicroServiceScrabbleServer
 	 * Add a player
 	 * @param name of the player
 	 */
-	public Player addPlayer(final UUID game, final String name)
+	public UUID addPlayer(final UUID game, final String name)
 	{
-		return REST_TEMPLATE.postForObject(resolve(game, "addPlayer"), name, Player.class);
+		//noinspection ConstantConditions
+		return REST_TEMPLATE.postForObject(resolve(game, "addPlayer"), name, Player.class).id;
 	}
 
 	/**
