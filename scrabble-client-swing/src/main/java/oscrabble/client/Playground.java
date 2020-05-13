@@ -557,6 +557,7 @@ class Playground
 		{
 			this.grid = new Grid(grid);
 			final int numberOfRows = this.grid.getSize();
+			this.background.removeAll();
 			this.background.setLayout(new GridLayout(numberOfRows, numberOfRows));
 
 			// Draw each Cell
