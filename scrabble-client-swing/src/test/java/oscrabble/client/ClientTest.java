@@ -6,6 +6,7 @@ import oscrabble.controller.MicroServiceScrabbleServer;
 
 import java.net.URI;
 import java.util.UUID;
+import java.util.concurrent.*;
 
 class ClientTest
 {
@@ -22,9 +23,12 @@ class ClientTest
 		final Client client = new Client(this.server, game, edgar);
 		client.displayAll();
 
+		final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
+		service.schedule(() -> server.startGame(game), 3, TimeUnit.SECONDS);
+
 		do
 		{
-			Thread.sleep(100);
+			Thread.sleep(500);
 		} while (client.isVisible());
 	}
 }

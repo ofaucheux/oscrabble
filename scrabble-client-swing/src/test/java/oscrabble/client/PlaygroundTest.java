@@ -1,7 +1,6 @@
 package oscrabble.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import oscrabble.data.GameState;
 
@@ -18,7 +17,7 @@ public class PlaygroundTest
 
 		final InputStream resourceAsStream = PlaygroundTest.class.getResourceAsStream("game_1.json");
 		final GameState state = new ObjectMapper().readValue(resourceAsStream, GameState.class);
-		playground.setState(state);
+		playground.refreshUI(state);
 
 		playground.gridFrame.setVisible(true);
 		while (playground.gridFrame.isVisible())

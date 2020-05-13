@@ -300,7 +300,7 @@ class Playground
 		}
 
 //		this.jGrid.lastAction = action;
-		refreshUI(null);
+//		refreshUI();
 
 		this.flashFuture = this.executor.schedule(
 				() -> {
@@ -489,7 +489,7 @@ class Playground
 
 	}
 
-	public void setState(final GameState state)
+	public void refreshUI(final GameState state)
 	{
 		this.jGrid.setGrid(state.getGrid());
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
