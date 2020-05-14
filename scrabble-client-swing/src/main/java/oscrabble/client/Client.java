@@ -176,7 +176,7 @@ public class Client
 				// TODO: reduce the time to waite
 			}
 		}
-		catch (ScrabbleException.ForbiddenPlayException ex)
+		catch (ScrabbleException ex)
 		{
 			JOptionPane.showMessageDialog(playground.gridFrame, ex.getMessage());
 		}

@@ -862,7 +862,7 @@ class Playground
 	 *
 	 * @param playTiles move to play
 	 */
-	private void play(final AbstractPlayer playerID, final PlayTiles playTiles) throws ScrabbleException.NotInTurn, ScrabbleException.InvalidSecretException, ScrabbleException.ForbiddenPlayException
+	private void play(final AbstractPlayer playerID, final PlayTiles playTiles) throws ScrabbleException
 	{
 		// TODO
 //		final SwingPlayer player = getCurrentSwingPlayer();

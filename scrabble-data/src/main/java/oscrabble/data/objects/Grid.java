@@ -297,7 +297,7 @@ public class Grid
 		final StringBuilder sb = new StringBuilder("Grid{\n");
 		for (final oscrabble.data.objects.Square square : this.squares)
 		{
-			sb.append(square.isBorder ? '#' : square.tile == null ? ' ' : square.tile);
+			sb.append(square.isBorder ? '#' : square.tile == null ? ' ' : square.tile.c);
 			if (square.y == GRID_SIZE + 1)
 			{
 				sb.append('\n');
