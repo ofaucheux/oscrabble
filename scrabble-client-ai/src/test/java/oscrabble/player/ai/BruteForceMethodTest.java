@@ -72,14 +72,15 @@ public class BruteForceMethodTest
 
 		assertTrue(legalMoves.contains("F8 ENFANT"));
 
+		// todo: reactivate after possibility of rollback
 		// Test a lot of found possibilities
-		for (int i = 0; i < 100; i++)
-		{
-			this.playQueue.add(legalMoves.get(random.nextInt(legalMoves.size())));
-			server.awaitEndOfPlay(game, 1);
-//			assertFalse(this.player.isLastPlayError);
-//			server.rollbackLastMove(this.player);
-		}
+//		for (int i = 0; i < 100; i++)
+//		{
+//			this.playQueue.add(legalMoves.get(random.nextInt(legalMoves.size())));
+//			server.awaitEndOfPlay(game, 1);
+////			assertFalse(this.player.isLastPlayError);
+////			server.rollbackLastMove(this.player);
+//		}
 	}
 
 	@Test
