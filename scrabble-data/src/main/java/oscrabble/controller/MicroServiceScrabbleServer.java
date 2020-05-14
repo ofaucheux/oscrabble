@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import oscrabble.ScrabbleException;
 import oscrabble.data.Action;
 import oscrabble.data.GameState;
+import oscrabble.data.PlayActionResponse;
 import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
 
@@ -109,9 +110,13 @@ public class MicroServiceScrabbleServer
 	/**
 	 * Play an action.
 	 */
-	public void play(final UUID game, final Action buildAction)
+	public void play(final UUID game, final Action buildAction) throws ScrabbleException
 	{
-		REST_TEMPLATE.postForObject(resolve(game, "playAction"), buildAction, Action.class);
+		final PlayActionResponse response = REST_TEMPLATE.postForObject(resolve(game, "playAction"), buildAction, PlayActionResponse.class);
+		if (!response.success)
+		{
+			throw new ScrabbleException("Play refused: " + response.message);
+		}
 	}
 
 	/**

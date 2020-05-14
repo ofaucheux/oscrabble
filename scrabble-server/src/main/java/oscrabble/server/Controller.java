@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import oscrabble.ScrabbleException;
 import oscrabble.data.Action;
 import oscrabble.data.GameState;
+import oscrabble.data.PlayActionResponse;
 import oscrabble.data.Player;
 
 import java.util.UUID;
@@ -85,18 +86,20 @@ public class Controller
 	 * @return ok or not ok.
 	 */
 	@PostMapping(value = "/{game}/playAction", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<GameState> play(@PathVariable UUID game, @RequestBody Action action)
+	public ResponseEntity<PlayActionResponse> play(@PathVariable UUID game, @RequestBody Action action)
 	{
+		final PlayActionResponse.PlayActionResponseBuilder aBuilder = PlayActionResponse.builder().action(action);
 		try
 		{
 			final Game g = getGame(game);
 			g.play(action);
-			return new ResponseEntity<>(g.getGameState(), HttpStatus.OK);
+			aBuilder.success(true).message("success");
 		}
 		catch (ScrabbleException e)
 		{
-			return new ResponseEntity(ExceptionUtils.getStackFrames(e), HttpStatus.INTERNAL_SERVER_ERROR);
+			aBuilder.success(false).message(e.toString());
 		}
+		return new ResponseEntity<>(aBuilder.build(), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/newGame", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)

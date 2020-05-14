@@ -29,7 +29,7 @@ class AIPlayerTest
 	}
 
 	@Test
-	void onPlayRequired() throws ScrabbleException.CommunicationException, ScrabbleException.ForbiddenPlayException
+	void onPlayRequired() throws ScrabbleException
 	{
 
 		final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
