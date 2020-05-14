@@ -22,9 +22,7 @@ class ClientTest
 		final UUID edgar = this.server.addPlayer(game, "Edgar");
 		final Client client = new Client(this.server, game, edgar);
 		client.displayAll();
-
-		final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
-		service.schedule(() -> server.startGame(game), 3, TimeUnit.SECONDS);
+		server.startGame(game);
 
 		do
 		{
