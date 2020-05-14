@@ -675,7 +675,7 @@ class Playground
 			dictionaryFrame.toFront();
 		}
 
-		class JSquare extends JComponent
+		class JSquare extends JPanel
 		{
 			private final AbstractAction showDefinitionAction;
 			private final Square square;
@@ -683,6 +683,28 @@ class Playground
 			JSquare(final Square square)
 			{
 				this.square = square;
+				this.setLayout(new BorderLayout());
+
+				if (this.square.tile != null)
+				{
+					add(new JTile(this.square.tile));
+					//noinspection StatementWithEmptyBody
+//					if (JGrid.this.hideNewStones && this.square.action == JGrid.this.lastAction)
+//					{
+//						// don't draw todo: to implement in jtile
+//					}
+//					else
+//					{
+//						tile.paintComponent(g2);
+//					}
+				}
+//				else if ((c = preparedMoveStones.get(this.square)) != null)
+//				{
+//					 TODO
+//					JTile.drawTile(g2, this, /* TODO tiles.get(c) */ null, Color.blue);
+//				}
+
+
 				final JPopupMenu popup = new JPopupMenu();
 				this.showDefinitionAction = new AbstractAction()
 				{
@@ -729,10 +751,7 @@ class Playground
 					@Override
 					public void mouseClicked(final MouseEvent e)
 					{
-						if (JGrid.this.playground != null)
-						{
-//							JGrid.this.playground.setStartCell(JSquare.this); todo
-						}
+						//							JGrid.this.playground.setStartCell(JSquare.this); todo
 					}
 				});
 
@@ -746,33 +765,13 @@ class Playground
 				final Graphics2D g2 = (Graphics2D) g;
 				final Insets insets = getInsets();
 
-				// Wir erben direkt aus JComponent und müssen darum den Background selbst zeichnen
-				if (isOpaque() && getBackground() != null)
-				{
-					g2.setPaint(getBackground());
-					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
-				}
+				// Wir erben direkt aus JComponent und müssen darum den Background selbst zeichnen todo: check
+//				if (isOpaque() && getBackground() != null)
+//				{
+//					g2.setPaint(getBackground());
+//					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
+//				}
 
-				JTile tile;
-				Character c;
-				if (this.square.tile != null)
-				{
-					tile = new JTile(this.square.tile);
-					//noinspection StatementWithEmptyBody
-					if (JGrid.this.hideNewStones && this.square.action == JGrid.this.lastAction)
-					{
-						// don't draw
-					}
-					else
-					{
-						tile.paintComponent(g2);
-					}
-				}
-				else if ((c = preparedMoveStones.get(this.square)) != null)
-				{
-					// TODO
-//					JTile.drawTile(g2, this, /* TODO tiles.get(c) */ null, Color.blue);
-				}
 
 				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);
 				if (specialBorder != null)
