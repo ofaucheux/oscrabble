@@ -9,13 +9,6 @@ import java.util.UUID;
 @Builder
 public class Square
 {
-	public Tile tile;
-
-	/**
-	 * the game play which set the tile on the square, if any
-	 */
-	public UUID settingPlay; // TODO: to be filled
-
 	/**
 	 * Coordinate of the square
 	 */
@@ -30,4 +23,14 @@ public class Square
 	 * Bonus of the square // TODO: fill it
 	 */
 	public int wordBonus;
+
+	/**
+	 * Tile set on the square, if any.
+	 */
+	public Tile tile;
+
+	/**
+	 * the game play which set the tile on the square, if any
+	 */
+	public UUID settingPlay; // TODO: to be filled
 }
