@@ -15,7 +15,7 @@ public abstract class AbstractPlayer
 	public UUID uuid;
 
 	/**
-	 * Name
+	 * Name todo: remove?
 	 */
 	public String name;
 

@@ -7,14 +7,8 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
-import oscrabble.data.Action;
-import oscrabble.data.GameState;
-import oscrabble.data.Player;
-import oscrabble.data.Tile;
-import oscrabble.data.objects.Grid;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.UUID;
 
 class AIPlayerTest
@@ -29,7 +23,7 @@ class AIPlayerTest
 	}
 
 	@Test
-	void onPlayRequired() throws ScrabbleException
+	void onPlayRequired() throws InterruptedException
 	{
 
 		final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
@@ -38,40 +32,14 @@ class AIPlayerTest
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);
 		final String PLAYER_NAME = "AI Player";
 		final UUID game = server.newGame();
-		final AIPlayer player = new AIPlayer(game, bfm, PLAYER_NAME);
-		player.uuid = server.addPlayer(game, player.name);
+		final UUID playerID = server.addPlayer(game, PLAYER_NAME);
+		final AIPlayer player = new AIPlayer(bfm, game, playerID, server);
 		server.startGame(game);
+		player.startDaemonThread();
 
-		GameState state;
-		do
-		{
-			state = server.getState(game);
-			if (player.uuid.equals(state.getPlayerOnTurn()))
-			{
-				bfm.grid = Grid.fromData(state.getGrid());
-				final Player player0 = state.getPlayers().get(0);
-				final ArrayList<Tile> rack = player0.rack.tiles;
-				if (rack.isEmpty())
-				{
-					System.out.println("Rack is empty");
-					return;
-				}
-
-				final ArrayList<Character> letters = new ArrayList<>();
-				rack.forEach(t -> letters.add(t.c));
-
-				final ArrayList<String> moves = new ArrayList<>(bfm.getLegalMoves(letters));
-				moves.sort((o1, o2) -> o2.length() - o1.length());
-				if (moves.isEmpty())
-				{
-					System.out.println("No move anymore, Rack: " + rack);
-					return;
-				}
-				final Action action = player.buildAction(moves.get(0));
-				System.out.println("Plays: " + action.notation);
-				server.play(game, action);
-//				System.out.println(server.getState(game).state);
-			}
-		} while (state.state != GameState.State.ENDED);
+		do {
+			Thread.sleep(500);
+		}
+		while (/*server.getState(game).getState() != GameState.State.ENDED && */player.daemonThread.isAlive());
 	}
 }
