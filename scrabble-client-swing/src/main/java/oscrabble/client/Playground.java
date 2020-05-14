@@ -684,6 +684,7 @@ class Playground
 			{
 				this.square = square;
 				this.setLayout(new BorderLayout());
+				this.setPreferredSize(JTile.CELL_DIMENSION);
 
 				if (this.square.tile != null)
 				{

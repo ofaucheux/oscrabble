@@ -3,15 +3,13 @@ package oscrabble;
 public class ScrabbleException extends Exception
 {
 
-	public String message;
-
 	public ScrabbleException()
 	{
 	}
 
 	public ScrabbleException(final String message)
 	{
-		this.message = message;
+		super(message);
 	}
 
 	public ScrabbleException(final String message, final Throwable cause)
@@ -22,7 +20,7 @@ public class ScrabbleException extends Exception
 	@Override
 	public String toString()
 	{
-		return message;
+		return this.getMessage();
 	}
 
 	/**
@@ -56,7 +54,6 @@ public class ScrabbleException extends Exception
 		{
 			super(message);
 		}
-
 	}
 
 	/**
