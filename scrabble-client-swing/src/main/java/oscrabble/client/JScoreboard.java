@@ -1,6 +1,5 @@
 package oscrabble.client;
 
-import org.apache.commons.collections4.map.LinkedMap;
 import oscrabble.data.Player;
 
 import javax.swing.*;
@@ -21,7 +20,7 @@ class JScoreboard extends JPanel
 	/**
 	 * Mapping player id -> corresponding line
 	 */
-	private final HashMap<Player, ScorePanelLine> scoreLabels = new HashMap<>();
+	private final HashMap<UUID, ScorePanelLine> scoreLabels = new HashMap<>();
 
 	JScoreboard(final Playground playground)
 	{
@@ -49,11 +48,11 @@ class JScoreboard extends JPanel
 		final GridBagConstraints c = new GridBagConstraints();
 		for (final Player player : players)
 		{
-			ScorePanelLine line = this.scoreLabels.get(player);
+			ScorePanelLine line = this.scoreLabels.get(player.id);
 			if (line == null)
 			{
 				line = new ScorePanelLine();
-				this.scoreLabels.put(player, line);
+				this.scoreLabels.put(player.id, line);
 
 				c.insets = new Insets(0, 0, 0, 0);
 				c.gridy++;
