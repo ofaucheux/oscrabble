@@ -123,19 +123,19 @@ public class SwingPlayer extends AbstractPlayer
 		playground.afterUiCreated(this);
 	}
 
-	public void update(final Player inputData)
-	{
-		// TODO when name change
-		final ArrayList<Tile> tiles = inputData.rack.tiles;
-		for (int i = 0; i < tiles.size(); i++)
-		{
-			this.jRack.cells[i].setTile(new JTile(tiles.get(i)));
-		}
-		for (int i = tiles.size(); i < this.jRack.cells.length; i++)
-		{
-			this.jRack.cells[i] = null;
-		}
-	}
+//	public void update(final Player inputData)
+//	{
+//		 TODO? when name change
+//		final ArrayList<Tile> tiles = inputData.rack.tiles;
+//		for (int i = 0; i < tiles.size(); i++)
+//		{
+//			this.jRack.cells[i].setTile(new JTile(tiles.get(i)));
+//		}
+//		for (int i = tiles.size(); i < this.jRack.cells.length; i++)
+//		{
+//			this.jRack.cells[i] = null;
+//		}
+//	}
 	public void afterRollback()
 	{
 		playground.refreshUI(this);

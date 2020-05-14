@@ -18,7 +18,6 @@ public class AIPlayer extends AbstractPlayer
 
 	private final UUID game;
 	final Thread daemonThread;
-	private Bag rack = Bag.builder().build();
 	private final MicroServiceScrabbleServer server;
 
 //		private ComparatorSelector selector;
@@ -71,8 +70,8 @@ public class AIPlayer extends AbstractPlayer
 				if (this.uuid.equals(state.getPlayerOnTurn()))
 				{
 					this.bruteForceMethod.grid = Grid.fromData(state.getGrid());
+					final ArrayList<Tile>  rack = server.getRack(game, this.uuid).tiles;
 					final Player player0 = state.getPlayers().get(0);
-					final ArrayList<Tile> rack = player0.rack.tiles;
 					if (rack.isEmpty())
 					{
 						System.out.println("Rack is empty");
@@ -207,19 +206,5 @@ public class AIPlayer extends AbstractPlayer
 //			return (Configuration) this.configuration;
 //		}
 
-	/**
-	 *
-	 * @return a representation of this player.
-	 */
-	Player toData()
-	{
-		final Player player = Player.builder()
-				.id(this.uuid)
-				.name(this.name)
-				.score(0)
-				.rack(this.rack)
-				.build();
-		return player;
-	}
 
 }

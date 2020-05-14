@@ -9,11 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import oscrabble.ScrabbleException;
-import oscrabble.data.Action;
-import oscrabble.data.GameState;
-import oscrabble.data.PlayActionResponse;
-import oscrabble.data.Player;
+import oscrabble.data.*;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -37,6 +35,17 @@ public class Controller
 	public ResponseEntity<GameState> getState(final @PathVariable UUID game) throws ScrabbleException
 	{
 		return ResponseEntity.ok(getGame(game).getGameState());
+	}
+
+
+	/**
+	 * Tiles in the rack, space for a joker.
+	 */
+	@RequestMapping(value = "/{game}/getRack", method = { RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Bag> getRack(final @PathVariable UUID game, final @RequestBody UUID player) throws ScrabbleException
+	{
+		Bag rack = Bag.builder().tiles(new ArrayList<>()).build();
+		return ResponseEntity.ok(rack);
 	}
 
 	/**

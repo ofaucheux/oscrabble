@@ -392,7 +392,6 @@ public class GameTest
 		startGame(true);
 		this.game.play(this.gustav, Action.parse("H8 A"));
 		Thread.sleep(100);
-		assertTrue(this.game.getPlayer(this.gustav).isLastPlayError);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -402,9 +401,16 @@ public class GameTest
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		this.game.play(this.gustav, Action.parse("G7 AS"));
-		this.game.awaitEndOfPlay(1);
-		assertTrue(this.game.getPlayer(this.gustav).isLastPlayError);
+		try
+		{
+			this.game.play(this.gustav, Action.parse("G7 AS"));
+			this.game.awaitEndOfPlay(1);
+			fail();
+		}
+		catch (ScrabbleException.ForbiddenPlayException e)
+		{
+			// OK
+		}
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
@@ -415,10 +421,15 @@ public class GameTest
 		this.game.assertFirstLetters("ASWEEDVIGIE");
 		startGame(true);
 		this.game.play(this.gustav, Action.parse("H8 AS"));
-		assertFalse(this.game.getPlayer(this.gustav).isLastPlayError);
-		this.game.play(this.john, Action.parse("A3 VIGIE"));
-		Thread.sleep(100);
-		assertTrue(this.game.getPlayer(this.john).isLastPlayError);
+		try
+		{
+			this.game.play(this.john, Action.parse("A3 VIGIE"));
+			fail();
+		}
+		catch (ScrabbleException e)
+		{
+			// ok
+		}
 	}
 
 	@Test

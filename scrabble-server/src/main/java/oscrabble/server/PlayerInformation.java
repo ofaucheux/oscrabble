@@ -52,7 +52,6 @@ class PlayerInformation
 		this.uuid = dataPlayer.id;
 		this.name = dataPlayer.name;
 		this.score = dataPlayer.score;
-		this.rack = dataPlayer.rack;
 	}
 
 	public PlayerInformation(final UUID uuid)
@@ -80,7 +79,6 @@ class PlayerInformation
 				.id(this.uuid)
 				.name(this.name)
 				.score(this.score)
-				.rack(this.rack)
 				.build();
 		return data;
 	}

@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.data.Bag;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
 
@@ -65,13 +66,11 @@ public class Client
 		return this.playground.gridFrame.isVisible();
 	}
 
-	private void refreshUI(final GameState state)
+	private void refreshUI(final GameState state, final Bag rack)  // todo: display for several racks
 	{
 		LOGGER.info("Refresh UI with state " + state.hashCode());
 		this.playground.refreshUI(state);
-
-		final Player player = IterableUtils.find(state.getPlayers(), p -> p.id.equals(this.player));
-		this.rack.setTiles(player.rack.tiles);
+		this.rack.setTiles(rack.tiles);
 	}
 
 	private void prepareCommands()
@@ -118,7 +117,8 @@ public class Client
 					final GameState state = server.getState(game);
 					if (!state.equals(lastKnownState))
 					{
-						refreshUI(state);
+						final Bag rack = server.getRack(game, player);
+						refreshUI(state, rack);
 						lastKnownState = state;
 					}
 				}

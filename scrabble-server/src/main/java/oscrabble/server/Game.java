@@ -422,20 +422,21 @@ public class Game
 		return found;
 	}
 
-	private void hydrateGameState(final GameState data)
-	{
-		this.state = data.state;
-		for (final oscrabble.data.Player dataplayer : data.players)
-		{
-			final PlayerInformation player = this.players.get(dataplayer.name);
-			player.rack.tiles.clear();
-			player.rack.tiles.addAll(dataplayer.rack.tiles);
-			player.score = dataplayer.score;
-		}
-
-		this.grid = Grid.fromData(data.grid);
-		this.bag = new LinkedList<>(data.bag.tiles);
-	}
+//	TODO: needed?
+//	private void hydrateGameState(final GameState data)
+//	{
+//		this.state = data.state;
+//		for (final oscrabble.data.Player dataplayer : data.players)
+//		{
+//			final PlayerInformation player = this.players.get(dataplayer.name);
+//			player.rack.tiles.clear();
+//			player.rack.tiles.addAll(dataplayer.rack.tiles);
+//			player.score = dataplayer.score;
+//		}
+//
+//		this.grid = Grid.fromData(data.grid);
+//		this.bag = new LinkedList<>(data.bag.tiles);
+//	}
 
 	/**
 	 * Create a state object

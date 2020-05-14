@@ -7,10 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import oscrabble.ScrabbleException;
+import oscrabble.data.*;
 import oscrabble.data.Action;
-import oscrabble.data.GameState;
-import oscrabble.data.PlayActionResponse;
-import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
 
 import java.net.URI;
@@ -68,6 +66,20 @@ public class MicroServiceScrabbleServer
 		//noinspection ConstantConditions
 		LOGGER.info(gameState.toString());
 		return gameState;
+	}
+
+	/**
+	 * Get the bag of a player.
+	 *
+	 * @param game
+	 * @param player
+	 * @return
+	 */
+	public Bag getRack(final UUID game, final UUID player /* todo: secret */)
+	{
+		final GetRackRequest request = GetRackRequest.builder().player(player).build();
+		final Bag bag = REST_TEMPLATE.postForObject(resolve(game, "getRack"), request, Bag.class);
+		return bag;
 	}
 
 	/**
