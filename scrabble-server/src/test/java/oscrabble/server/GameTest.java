@@ -390,8 +390,15 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.game.assertFirstLetters("A");
 		startGame(true);
-		this.game.play(this.gustav, Action.parse("H8 A"));
-		Thread.sleep(100);
+		try
+		{
+			this.game.play(this.gustav, Action.parse("H8 A"));
+			fail();
+		}
+		catch (ScrabbleException.ForbiddenPlayException e)
+		{
+			// OK
+		}
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
