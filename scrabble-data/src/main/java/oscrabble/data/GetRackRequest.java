@@ -9,5 +9,5 @@ import java.util.UUID;
 @Builder
 public class GetRackRequest
 {
-	UUID player;
+	public UUID player;
 }
