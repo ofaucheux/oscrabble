@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import oscrabble.ScrabbleException;
+import oscrabble.data.Action;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
@@ -108,9 +109,9 @@ public class MicroServiceScrabbleServer
 	/**
 	 * Play an action.
 	 */
-	public void play(final UUID game, final oscrabble.data.Action buildAction) throws ScrabbleException.ForbiddenPlayException
+	public void play(final UUID game, final Action buildAction)
 	{
-		REST_TEMPLATE.postForObject(resolve(game, "play"), buildAction, Action.class);
+		REST_TEMPLATE.postForObject(resolve(game, "playAction"), buildAction, Action.class);
 	}
 
 	/**

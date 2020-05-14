@@ -116,8 +116,14 @@ class Playground
 	 */
 	JFrame gridFrame;
 
-	Playground()
+	/**
+	 * The client this playground is for
+	 */
+	private final Client client;
+
+	Playground(final Client client)
 	{
+		this.client = client;
 		this.jGrid = new JGrid();
 		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard(this);
@@ -458,41 +464,21 @@ class Playground
 
 	private DisplayedMessage lastMessage;
 
-	/**
-	 * Display a message. It will not be displayed if the same message has been displayed some seconds ago and no other one since.
-	 *
-	 * @param message message to display
-	 */
-	void showMessage(final Object message)
-	{
-		if (this.lastMessage != null
-				&& this.lastMessage.message.equals(message)
-				&& System.currentTimeMillis() < this.lastMessage.displayTime + 5000)
-		{
-			return;
-		}
-
-		this.lastMessage = new DisplayedMessage();
-		this.lastMessage.message = message;
-		this.lastMessage.displayTime = System.currentTimeMillis();
-
-		final KeyboardFocusManager previous = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager());
-		try
-		{
-			JOptionPane.showMessageDialog(null, message);
-		}
-		finally
-		{
-			KeyboardFocusManager.setCurrentKeyboardFocusManager(previous);
-		}
-
-	}
 
 	public void refreshUI(final GameState state)
 	{
 		this.jGrid.setGrid(state.getGrid());
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
+	}
+
+	public String getCommand()
+	{
+		return this.commandPrompt.getText();
+	}
+
+	public void clearPrompt()
+	{
+		this.commandPrompt.setText("");
 	}
 
 	/**
@@ -998,98 +984,38 @@ class Playground
 //	}
 
 
+//	/**
+//	 * @return the current player or {@code null} when current not Swing one
+//	 */
+//	private SwingPlayer getCurrentSwingPlayer()
+//	{
+//		if (!(this.currentPlay.player instanceof SwingPlayer))
+//		{
+//			return null;
+//		}
+//		return (SwingPlayer) this.currentPlay.player;
+//	}
+
 	private class CommandPromptAction extends AbstractAction implements DocumentListener
 	{
 
 		static final String KEYWORD_HELP = "?";
 		private Map<String, Command> commands = new LinkedHashMap<>();
 
-		CommandPromptAction()
-		{
-			this.commands.put(KEYWORD_HELP, new Command("display help", (args -> {
-						final StringBuffer sb = new StringBuffer();
-						sb.append("<table border=1>");
-						CommandPromptAction.this.commands.forEach(
-								(k, c) -> sb.append("<tr><td>").append(k).append("</td><td>").append(c.description).append("</td></tr>"));
-						sb.setLength(sb.length() - 1);
-						sb.append("</table>");
-						telnetFrame.appendConsoleText("blue", sb.toString(), false);
-						return null;
-					}))
-			);
-// todo?
-//			this.commands.put("isValid", new Command("check if a word is valid", (args -> {
-//				final String word = args[0];
-//				final Collection<String> mutations = Playground.this.game.getDictionary().getMutations(
-//						word.toUpperCase());
-//				final boolean isValid = mutations != null && !mutations.isEmpty();
-//				telnetFrame.appendConsoleText(
-//						isValid ? "blue" : "red",
-//						word + (isValid ? (" is valid " + mutations) : " is not valid"),
-//						true);
-//				return null;
-//			})));
-		}
-
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			String command = Playground.this.commandPrompt.getText();
-			if (command.isEmpty())
+			if (client == null)
 			{
+				JOptionPane.showMessageDialog(Playground.this.gridFrame, "This playground has no client");
 				return;
 			}
 
-			if (command.startsWith("/"))
-			{
-				final String[] splits = command.split("\\s+");
-				String keyword = splits[0].substring(1).toLowerCase();
-				if (!this.commands.containsKey(keyword))
-				{
-					keyword = KEYWORD_HELP;
-				}
-				Command c = this.commands.get(keyword);
-				telnetFrame.appendConsoleText("black", "> " + command, false);
-				c.action.apply(Arrays.copyOfRange(splits, 1, splits.length));
-				return;
-			}
-
-			try
-			{
-//				final SwingPlayer swingPlayer = getCurrentSwingPlayer();
-//				if (swingPlayer != null && swingPlayer == Playground.this.currentPlay.player)
-//				{
-					final Matcher m;
-					// Todo
-//					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
-//					{
-//						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, new Exchange(m.group(1)));
-//					}
-//					else if (PATTERN_PASS_COMMAND.matcher(command).matches())
-//					{
-//						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, SkipTurn.SINGLETON);
-//					}
-//					else
-					{
-						final PlayTiles preparedPlayTiles = ((PlayTiles) getPreparedMove());
-						play(swingPlayers.getFirst(), preparedPlayTiles);
-					}
-					Playground.this.commandPrompt.setText("");
-//					resetPossibleMovesPanel();
-//				}
-//				else
-//				{
-//					JOptionPane.showMessageDialog(Playground.this.jGrid, MESSAGES.getString("it.s.not.your.turn"));
-//				}
-			}
-			catch (final JokerPlacementException | ParseException | ScrabbleException.NotInTurn | ScrabbleException.InvalidSecretException | ScrabbleException.ForbiddenPlayException ex)
-			{
-				showMessage(ex.getMessage());
-				Playground.this.commandPrompt.setText("");
-			}
+			Playground.this.client.executeCommand(commandPrompt.getText());
+			commandPrompt.setText("");
 		}
 
-		private Action getPreparedMove() throws JokerPlacementException, ParseException, ScrabbleException.ForbiddenPlayException
+		private oscrabble.controller.Action getPreparedMove() throws Playground.JokerPlacementException, ParseException, ScrabbleException.ForbiddenPlayException
 		{
 			// TODO
 //			final SwingPlayer player = getCurrentSwingPlayer();
@@ -1118,7 +1044,7 @@ class Playground
 
 			final Pattern playCommandPattern = Pattern.compile("(?:play\\s+)?(.*)", Pattern.CASE_INSENSITIVE);
 			Matcher matcher;
-			Action action;
+			oscrabble.controller.Action action;
 			if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
 			{
 				final JRackCell rack;
@@ -1132,7 +1058,7 @@ class Playground
 //					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
 //				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				action = Action.parse(inputWord.toString());
+				action = oscrabble.controller.Action.parse(inputWord.toString());
 
 //				//
 //				// todo Check if jokers are needed and try to position them
@@ -1219,7 +1145,7 @@ class Playground
 			{
 				getPreparedMove();
 			}
-			catch (JokerPlacementException | ParseException | ScrabbleException.ForbiddenPlayException e1)
+			catch (Playground.JokerPlacementException | ParseException | ScrabbleException.ForbiddenPlayException e1)
 			{
 				LOGGER.debug(e1.getMessage());
 			}
@@ -1244,17 +1170,7 @@ class Playground
 		}
 	}
 
-//	/**
-//	 * @return the current player or {@code null} when current not Swing one
-//	 */
-//	private SwingPlayer getCurrentSwingPlayer()
-//	{
-//		if (!(this.currentPlay.player instanceof SwingPlayer))
-//		{
-//			return null;
-//		}
-//		return (SwingPlayer) this.currentPlay.player;
-//	}
+
 
 	/**
 	 * A message and the time it was displayed.

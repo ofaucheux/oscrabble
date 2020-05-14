@@ -378,10 +378,20 @@ public class Game
 //			checkKey(jsonAction.player, clientKey);
 
 			final Action action = Action.parse(jsonAction);
-			final PlayerInformation player = this.players.get(jsonAction.player);
-			if (player == null)
+			final PlayerInformation player;
+			if (jsonAction.player == null)
 			{
-				throw new AssertionError("No player " + jsonAction.player);
+//				assertTestGame(); todo
+				player = getPlayerToPlay();
+			}
+			else
+			{
+				player = this.players.get(jsonAction.player);
+
+				if (player == null)
+				{
+					throw new AssertionError("No player " + jsonAction.player);
+				}
 			}
 			play(player.uuid, action);
 		}
@@ -902,7 +912,7 @@ public class Game
 	 * @throws ScrabbleException.ForbiddenPlayException
 	 * @throws ScrabbleException.NotInTurn
 	 */
-	public void play(final UUID playerID, final Action action) throws ScrabbleException.ForbiddenPlayException, ScrabbleException.NotInTurn
+	public void play(final UUID playerID, final Action action) throws ScrabbleException
 	{
 		final PlayerInformation player = this.players.get(playerID);
 		if (player == null)
@@ -1028,7 +1038,6 @@ public class Game
 				throw new AssertionError("Command not treated: " + action);
 			}
 
-			player.isLastPlayError = false;
 			messages.forEach(message -> dispatchMessage(message));
 
 //				LOGGER.debug("Grid after play move nr #" + action.uuid + ":\n" + this.grid.asASCIIArt());
@@ -1039,25 +1048,13 @@ public class Game
 		catch (final ScrabbleException e)
 		{
 			LOGGER.info("Refuse play: " + action + ". Cause: " + e);
-			actionRejected = true;
-//				player.onDispatchMessage(e.getLocalizedMessage());
-			if (this.configuration.retryAccepted /* TODO: several places for blanks || e.acceptRetry()*/)
-			{
-				this.dispatch(p -> p.onPlayRequired(player.uuid));
-				score = 0;
-			}
-			else
-			{
-//					dispatch(listener -> listener.afterRejectedAction(player, action));
-				player.isLastPlayError = true;
-				done = true;
-			}
+			done = !this.configuration.retryAccepted; /* TODO: several places for blanks || e.acceptRetry()*/
+			throw e;
 		}
 		finally
 		{
 			if (done)
 			{
-
 				drawn = refillRack(player);
 				player.lastAction = action;
 				this.actions.add(action);

@@ -13,7 +13,7 @@ public class PlaygroundTest
 	@Test
 	void displayGrid() throws IOException, InterruptedException
 	{
-		final Playground playground = new Playground();
+		final Playground playground = new Playground(null);
 
 		final InputStream resourceAsStream = PlaygroundTest.class.getResourceAsStream("game_1.json");
 		final GameState state = new ObjectMapper().readValue(resourceAsStream, GameState.class);

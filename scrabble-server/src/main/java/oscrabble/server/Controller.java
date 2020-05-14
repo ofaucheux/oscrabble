@@ -84,13 +84,14 @@ public class Controller
 	 * @param action action to play
 	 * @return ok or not ok.
 	 */
-	@PostMapping(value = "/{game}/play", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> play(@PathVariable UUID game, @RequestBody Action action)
+	@PostMapping(value = "/{game}/playAction", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<GameState> play(@PathVariable UUID game, @RequestBody Action action)
 	{
 		try
 		{
-			getGame(game).play(action);
-			return ResponseEntity.ok().build();
+			final Game g = getGame(game);
+			g.play(action);
+			return new ResponseEntity<>(g.getGameState(), HttpStatus.OK);
 		}
 		catch (ScrabbleException e)
 		{

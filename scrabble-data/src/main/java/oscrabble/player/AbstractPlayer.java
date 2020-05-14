@@ -35,7 +35,7 @@ public abstract class AbstractPlayer
 		final Action action = Action.builder()
 				.player(this.uuid)
 //				.playID(playID)
-				.playID(UUID.randomUUID())
+				.turnId(UUID.randomUUID())
 				.notation(notation)
 				.build();
 		return action;

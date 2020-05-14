@@ -142,11 +142,6 @@ public class SwingPlayer extends AbstractPlayer
 	}
 
 
-	public void onDispatchMessage(final String msg)
-	{
-		playground.showMessage(msg);
-	}
-
 	public void afterPlay()
 	{
 		playground.afterPlay(this, null);

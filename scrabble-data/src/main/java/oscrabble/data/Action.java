@@ -14,9 +14,9 @@ import java.util.UUID;
 public class Action
 {
 	/**
-	 * ID of the play
+	 * ID of the turn the action is for - none for test purposes
 	 */
-	public UUID playID;
+	public UUID turnId;
 
 	/**
 	 * ID of the player

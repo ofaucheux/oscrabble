@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public abstract class Action
 {
-	public UUID id;
+	public UUID turnId;
 	public final String notation;
 
 	private static final Pattern PASS_TURN = Pattern.compile("-");
@@ -25,7 +25,7 @@ public abstract class Action
 	{
 		final String not = jsonAction.notation;
 		final Action action = parse(not);
-		action.id = jsonAction.playID;
+		action.turnId = jsonAction.turnId;
 		return action;
 	}
 

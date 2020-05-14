@@ -13,12 +13,6 @@ import java.util.UUID;
 class PlayerInformation
 {
 	/**
-	 * Was last play an error?
-	 */
-	// TODO: remove
-	public boolean isLastPlayError;
-
-	/**
 	 * Name
 	 */
 	final UUID uuid;

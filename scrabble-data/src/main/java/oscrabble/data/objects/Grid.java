@@ -46,7 +46,7 @@ public class Grid
 
 	/**
 	 * Construct from grid data
-	 * @param data grid data
+	 * @param data grid data - null for test purposes
 	 */
 	public Grid(final oscrabble.data.Grid data)
 	{
