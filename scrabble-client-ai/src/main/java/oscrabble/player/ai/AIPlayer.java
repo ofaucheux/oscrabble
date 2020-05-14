@@ -8,7 +8,6 @@ import oscrabble.data.*;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.AbstractPlayer;
 
-import java.rmi.server.ServerCloneException;
 import java.util.*;
 
 public class AIPlayer extends AbstractPlayer
@@ -42,7 +41,7 @@ public class AIPlayer extends AbstractPlayer
 		configuration.strategy = new Strategy.BestScore();
 		configuration.throttle = 2;
 
-		daemonThread = new Thread(() -> waitAndResponse());
+		daemonThread = new Thread(() -> runDaemonThread());
 		daemonThread.setDaemon(true);
 		daemonThread.setName("AI Player Playing thread");
 	}
@@ -58,7 +57,10 @@ public class AIPlayer extends AbstractPlayer
 		this.daemonThread.start();
 	}
 
-	private void waitAndResponse()
+	/**
+	 * Run the thread
+	 */
+	private void runDaemonThread()
 	{
 		try
 		{
@@ -90,9 +92,11 @@ public class AIPlayer extends AbstractPlayer
 					final Action action = buildAction(moves.get(0));
 					System.out.println("Plays: " + action.notation);
 					server.play(game, action);
-	//				System.out.println(server.getState(game).state);
+					//				System.out.println(server.getState(game).state);
 				}
 			} while (state.state != GameState.State.ENDED);
+
+			LOGGER.info("Daemon thread of " + uuid + " ends.");
 		}
 		catch (final Throwable e)
 		{

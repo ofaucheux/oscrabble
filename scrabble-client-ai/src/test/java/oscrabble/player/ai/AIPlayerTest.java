@@ -32,10 +32,16 @@ class AIPlayerTest
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);
 		final String PLAYER_NAME = "AI Player";
 		final UUID game = server.newGame();
-		final UUID playerID = server.addPlayer(game, PLAYER_NAME);
-		final AIPlayer player = new AIPlayer(bfm, game, playerID, server);
+
+		AIPlayer player = null;
+		for (int i = 0; i < 2; i++)
+		{
+			final UUID playerID = server.addPlayer(game, PLAYER_NAME);
+			player = new AIPlayer(bfm, game, playerID, server);
+			player.startDaemonThread();
+		}
+
 		server.startGame(game);
-		player.startDaemonThread();
 
 		do {
 			Thread.sleep(500);
