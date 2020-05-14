@@ -542,25 +542,32 @@ class Playground
 		void setGrid(oscrabble.data.Grid grid)
 		{
 			this.grid = new Grid(grid);
-			final int numberOfRows = this.grid.getSize();
+			final int numberOfRows = this.grid.getSize() + 2;
 
 			final JPanel p1 = new JPanel();
-			p1.setLayout(new GridLayout(numberOfRows, numberOfRows));
+			final GridBagLayout bagLayout = new GridBagLayout();
+			p1.setLayout(bagLayout);
+			final GridBagConstraints gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.weightx = 1;
+			gbc.weighty = 1;
 
 			// Draw each Cell
 			for (int y = 0; y < numberOfRows; y++)
 			{
+				gbc.gridy = y;
 				for (int x = 0; x < numberOfRows; x++)
 				{
-					final Square square = this.grid.get(x + 1, y + 1);
+					gbc.gridx = x;
+					final Square square = this.grid.get(x, y);
 					if (square.isBorder)
 					{
-						p1.add(new BorderCell(square));
+						p1.add(new BorderCell(square), gbc);
 					}
 					else
 					{
 						final JSquare cell = new JSquare(square);
-						p1.add(cell);
+						p1.add(cell, gbc);
 
 						final Color cellColor;
 						if (cell.square.letterBonus == 2)
@@ -828,7 +835,7 @@ class Playground
 				final Graphics2D g2 = (Graphics2D) g;
 				final Insets insets = getInsets();
 
-				// Wir erben direkt aus JComponent und müssen darum den Background selbst zeichnen
+				// Wir erben direkt aus JComponent und müssen darum den Background selbst zeichnen todo check
 				if (isOpaque() && getBackground() != null)
 				{
 					g2.setPaint(Color.lightGray);
@@ -840,10 +847,18 @@ class Playground
 				final Font font = g2.getFont().deriveFont(JTile.getCharacterSize(this)).deriveFont(Font.BOLD);
 				g2.setFont(font);
 				FontMetrics metrics = g.getFontMetrics(font);
-				final String label = square.getX() == 0 ? Integer.toString(square.getY()) : Character.toString((char) ('A' + square.getY() - 1));
-				int tx = (getWidth() - metrics.stringWidth(label)) / 2;
-				int ty = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
-				g.drawString(label, tx, ty);
+
+				final int x = square.getX();
+				final int y = square.getY();
+				if ((x > 0 && x < Grid.GRID_SIZE_PLUS_2 - 1) || (y > 0 && y < Grid.GRID_SIZE_PLUS_2 - 1))
+				{
+					final String label = x == 0 || x == Grid.GRID_SIZE_PLUS_2 - 1
+							? Integer.toString(y)
+							: Character.toString((char) ('@' + x));
+					int tx = (getWidth() - metrics.stringWidth(label)) / 2;
+					int ty = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
+					g.drawString(label, tx, ty);
+				}
 			}
 		}
 

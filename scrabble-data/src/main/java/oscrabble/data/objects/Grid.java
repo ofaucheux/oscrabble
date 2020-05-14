@@ -56,6 +56,16 @@ public class Grid
 			final Square sq = new Square(dataSq);
 			this.squares[sq.x * GRID_SIZE_PLUS_2 + sq.y] = sq;
 		}
+
+		// fill the borders
+		for (int i = 0; i < this.squares.length; i++)
+		{
+			if (this.squares[i]==null)
+			{
+				this.squares[i] = new Square(i / GRID_SIZE_PLUS_2, i % GRID_SIZE_PLUS_2);
+			}
+		}
+
 	}
 
 	/**
