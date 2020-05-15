@@ -1,5 +1,7 @@
 package oscrabble.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,13 +13,16 @@ import oscrabble.data.Dictionary;
 import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.*;
+import java.net.URLEncoder;
+import java.util.Collection;
 
 public class MicroServiceDictionary implements IDictionary
 {
 	@Autowired
 	public static final RestTemplate REST_TEMPLATE = new RestTemplate();
+	public static final Logger LOGGER = LoggerFactory.getLogger(MicroServiceDictionary.class);
 
 	private final URI uri;
 	private final String language;
@@ -48,7 +53,7 @@ public class MicroServiceDictionary implements IDictionary
 		try
 		{
 			entity = REST_TEMPLATE.getForEntity(
-					this.uri.resolve("/" + this.language + ("/word/") + word),
+					this.uri.resolve("/" + this.language + ("/word/") + URLEncoder.encode(word, "UTF_8")),
 					Object.class
 			);
 		}
@@ -60,6 +65,10 @@ public class MicroServiceDictionary implements IDictionary
 			}
 
 			throw e;
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			throw new Error("Cannot treat word: " + word, e);
 		}
 		return entity.getStatusCode() == HttpStatus.OK;
 	}
