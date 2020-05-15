@@ -31,7 +31,7 @@ dependencies {
 
 
 bootJar {
-    enabled = false
+    enabled = true
 }
 
 jar {
