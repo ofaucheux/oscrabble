@@ -53,7 +53,7 @@ public class MicroServiceDictionary implements IDictionary
 		try
 		{
 			entity = REST_TEMPLATE.getForEntity(
-					this.uri.resolve("/" + this.language + ("/word/") + URLEncoder.encode(word, "UTF_8")),
+					this.uri.resolve("/" + this.language + ("/word/") + URLEncoder.encode(word, "UTF8")),
 					Object.class
 			);
 		}
