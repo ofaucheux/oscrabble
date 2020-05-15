@@ -55,7 +55,7 @@ public class ScoreCalculator
 				int crosswordScore = 0;
 				while (!(cursor = grid.getNeighbour(cursor, crossDirection, -1)).isBorder() && !cursor.isEmpty())
 				{
-					crossword.insert(0, cursor.tile);
+					crossword.insert(0, cursor.tile.c);
 					crosswordScore += cursor.tile.points;
 				}
 
@@ -64,7 +64,7 @@ public class ScoreCalculator
 				cursor = sq;
 				while (!(cursor = grid.getNeighbour(cursor, crossDirection, 1)).isBorder() && !cursor.isEmpty())
 				{
-					crossword.append(cursor.tile);
+					crossword.append(cursor.tile.c);
 					crosswordScore += cursor.tile.points;
 				}
 
