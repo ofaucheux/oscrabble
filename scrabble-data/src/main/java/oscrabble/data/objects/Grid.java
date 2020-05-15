@@ -54,7 +54,7 @@ public class Grid
 		for (final oscrabble.data.Square dataSq : data.squares)
 		{
 			final Square sq = new Square(dataSq);
-			this.squares[sq.x * GRID_SIZE_PLUS_2 + sq.y] = sq;
+			this.squares[sq.y * GRID_SIZE_PLUS_2 + sq.x] = sq;
 		}
 
 		// fill the borders
