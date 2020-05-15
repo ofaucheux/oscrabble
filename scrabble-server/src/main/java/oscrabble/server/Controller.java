@@ -66,10 +66,10 @@ public class Controller
 	/**
 	 * Tiles in the rack, space for a joker.
 	 */
-	@RequestMapping(value = "/{game}/getRack", method = { RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Bag> getRack(final @PathVariable UUID game, final @RequestBody UUID player) throws ScrabbleException
+	@PostMapping(value = "/{game}/getRack", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Bag> getRack(final @PathVariable UUID game, final @RequestBody GetRackRequest request) throws ScrabbleException
 	{
-		return ResponseEntity.ok(getGame(game).getPlayer(player).rack);
+		return ResponseEntity.ok(getGame(game).getPlayer(request.player).rack);
 	}
 
 	@PostMapping(value = "/{game}/addPlayer", produces = MediaType.APPLICATION_JSON_VALUE)
