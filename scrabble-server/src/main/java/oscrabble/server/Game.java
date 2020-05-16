@@ -105,7 +105,6 @@ public class Game
 	 * Delay (in seconds) before changing the state from ENDING to ENDED
 	 */
 	int delayBeforeEnds = 3;
-	private CountDownLatch waitingForPlay;
 
 	/**
 	 * State of the game
@@ -205,7 +204,6 @@ public class Game
 
 		this.grid = new Grid();
 		this.random = new Random();
-		this.waitingForPlay = new CountDownLatch(1);
 
 		setState(GameState.State.BEFORE_START);
 		LOGGER.info("Created game with random seed " + this.random);
@@ -642,56 +640,13 @@ public class Game
 	/**
 	 * Start the game and play it until it ends.
 	 */
-	public void play()
+	public void startGame()
 	{
 		if (this.players.isEmpty())
 		{
 			throw new IllegalStateException(MESSAGES.getString("cannot.start.game.no.player.registered"));
 		}
 
-		prepareGame();
-
-		setState(GameState.State.STARTED);
-		try
-		{
-			while (true)
-			{
-				if (this.state == GameState.State.ENDED)
-				{
-					synchronized (this.changing)
-					{
-						this.changing.wait(this.delayBeforeEnds * 1000L);
-						if (this.state == GameState.State.ENDED)
-						{
-							break;
-						}
-					}
-				}
-
-				final PlayerInformation player = this.toPlay.peekFirst();
-				assert player != null;
-				LOGGER.info("Let's play " + player);
-				this.waitingForPlay = new CountDownLatch(1);
-				dispatch(p -> p.onPlayRequired(player.uuid));
-				while (!this.waitingForPlay.await(500, TimeUnit.MILLISECONDS))
-				{
-					if (this.state != GameState.State.STARTED)
-					{
-						break;
-					}
-				}
-			}
-		}
-		catch (InterruptedException e)
-		{
-			LOGGER.error(e.toString(), e);
-		}
-
-//		dispatch(GameListener::afterGameEnd);
-	}
-
-	private void prepareGame()
-	{
 		fillBag();
 
 		// Sortiert (oder mischt) die Spieler, um eine Spielreihenfolge zu definieren.
@@ -715,7 +670,8 @@ public class Game
 			refillRack(player);
 		}
 
-//		dispatch(GameListener::beforeGameStart);
+		setState(GameState.State.STARTED);
+		LOGGER.info("Game " + this.id + " started");
 	}
 
 
@@ -1085,7 +1041,6 @@ public class Game
 						endGame(null, historyEntry);
 					}
 				}
-				this.waitingForPlay.countDown();
 			}
 		}
 	}

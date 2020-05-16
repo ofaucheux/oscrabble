@@ -57,7 +57,7 @@ public class MicroServiceScrabbleServer
 	 */
 	public GameState getState(final UUID game) throws ScrabbleException.CommunicationException
 	{
-		final ResponseEntity<GameState> re = REST_TEMPLATE.getForEntity(resolve(game, "getState"), GameState.class);
+		final ResponseEntity<GameState> re = REST_TEMPLATE.postForEntity(resolve(game, "getState"), null, GameState.class);
 		if (!re.getStatusCode().is2xxSuccessful())
 		{
 			throw new ScrabbleException.CommunicationException("Cannot get state: " + re.getStatusCode().getReasonPhrase());

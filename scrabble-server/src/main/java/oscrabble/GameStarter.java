@@ -26,7 +26,7 @@ public class GameStarter
 //				game.addPlayer(new SwingPlayer("Emil"));
 //				game.addPlayer(new BruteForceMethod(game.getDictionary()).new Player("R2D2"));
 			}
-			game.play();
+			game.startGame();
 		}
 		catch (final Throwable e)
 		{

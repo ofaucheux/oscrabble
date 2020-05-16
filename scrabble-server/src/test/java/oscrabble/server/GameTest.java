@@ -533,7 +533,7 @@ public class GameTest
 		if (fork)
 		{
 			final AtomicReference<ScrabbleException> exception = new AtomicReference<>();
-			new Thread(() -> this.game.play()).start();
+			new Thread(() -> this.game.startGame()).start();
 			Thread.sleep(300);
 			if (exception.get() != null)
 			{
@@ -542,7 +542,7 @@ public class GameTest
 		}
 		else
 		{
-			this.game.play();
+			this.game.startGame();
 		}
 
 	}

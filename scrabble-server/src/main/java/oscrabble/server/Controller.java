@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import oscrabble.ScrabbleException;
 import oscrabble.data.*;
 
-import java.util.ArrayList;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @RestController
 public class Controller
@@ -31,9 +28,10 @@ public class Controller
 	{
 	}
 
-	@RequestMapping(value = "/{game}/getState", method = { RequestMethod.GET, RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/{game}/getState", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<GameState> getState(final @PathVariable UUID game) throws ScrabbleException
 	{
+		LOGGER.info("Called: getState()");
 		return ResponseEntity.ok(getGame(game).getGameState());
 	}
 
@@ -123,21 +121,6 @@ public class Controller
 	public void startGame(@PathVariable UUID game) throws ScrabbleException, InterruptedException
 	{
 		final Game g = getGame(game);
-		final Runnable c = () -> {
-			try
-			{
-				g.play();
-			}
-			catch (final Throwable e)
-			{
-				LOGGER.error("Error playing game", e);
-			}
-		};
-		final Future<?> future = Executors.newSingleThreadExecutor().submit(c);
-		Thread.sleep(500);
-		if (future.isDone())
-		{
-			throw new ScrabbleException("Game did not start");
-		}
+		g.startGame();
 	}
 }
