@@ -20,7 +20,7 @@ public class AIPlayer extends AbstractPlayer
 	final Thread daemonThread;
 	private final MicroServiceScrabbleServer server;
 
-//		private ComparatorSelector selector;
+	private long throttle = 500;
 
 	/**
 	 * Construct an AI Player.
@@ -66,6 +66,7 @@ public class AIPlayer extends AbstractPlayer
 			GameState state;
 			do
 			{
+				Thread.sleep(this.throttle);
 				state = server.getState(game);
 				if (this.uuid.equals(state.getPlayerOnTurn()))
 				{
@@ -91,7 +92,6 @@ public class AIPlayer extends AbstractPlayer
 					final Action action = buildAction(moves.get(0));
 					System.out.println("Plays: " + action.notation);
 					server.play(game, action);
-					//				System.out.println(server.getState(game).state);
 				}
 			} while (state.state != GameState.State.ENDED);
 
