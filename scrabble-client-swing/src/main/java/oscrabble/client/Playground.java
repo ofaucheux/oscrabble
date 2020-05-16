@@ -212,11 +212,11 @@ class Playground
 
 		panel1.add(historyPanel);
 		// todo: rollback
-//		panel1.add(new JButton(new AbstractAction(MESSAGES.getString("rollback"))
-//		{
-//			@Override
-//			public void actionPerformed(final ActionEvent e)
-//			{
+		final JButton rollbackButton = new JButton(new AbstractAction(MESSAGES.getString("rollback"))
+		{
+			@Override
+			public void actionPerformed(final ActionEvent e)
+			{
 //				try
 //				{
 //					final SwingPlayer first = Playground.this.swingPlayers.getFirst();
@@ -227,9 +227,11 @@ class Playground
 //					LOGGER.error("Cannot play action " + e, ex);
 //					JOptionPane.showMessageDialog(panel1, ex.toString());
 //				}
-//			}
-//		}
-//		));
+			}
+		}
+		);
+		rollbackButton.setEnabled(false);
+		panel1.add(rollbackButton);
 
 		possibleMovePanel = new JPanel();
 		possibleMovePanel.setBorder(new TitledBorder(MESSAGES.getString("possible.moves")));
@@ -245,13 +247,14 @@ class Playground
 		panel1.add(Box.createVerticalGlue());
 
 		// todo: configpanel
+		final JPanel configPanel = new JPanel();
 //		final ConfigurationPanel configPanel = new ConfigurationPanel(
 //				this.game.getConfiguration(),
 //				null,
 //				Collections.singleton("dictionary")
 //		);
-//		panel1.add(configPanel);
-//		configPanel.setBorder(new TitledBorder(MESSAGES.getString("server.configuration")));
+		panel1.add(configPanel);
+		configPanel.setBorder(new TitledBorder(MESSAGES.getString("server.configuration")));
 		eastPanel.add(panel1, BorderLayout.CENTER);
 		this.gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
