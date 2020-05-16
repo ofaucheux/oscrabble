@@ -10,4 +10,5 @@ public class PlayActionResponse
 	public Action action;
 	public boolean success;
 	public String message;
+	public GameState gameState;
 }

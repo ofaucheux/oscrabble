@@ -20,6 +20,9 @@ public class AIPlayer extends AbstractPlayer
 	final Thread daemonThread;
 	private final MicroServiceScrabbleServer server;
 
+	/**
+	 * How long to wait before playing the found word (ms).
+	 */
 	private long throttle = 500;
 
 	/**
@@ -91,7 +94,11 @@ public class AIPlayer extends AbstractPlayer
 					}
 					final Action action = buildAction(moves.get(0));
 					System.out.println("Plays: " + action.notation);
-					server.play(game, action);
+					final PlayActionResponse response = server.play(game, action);
+					if (!response.success)
+					{
+						throw new AssertionError(response.message);
+					}
 				}
 			} while (state.state != GameState.State.ENDED);
 
@@ -102,6 +109,11 @@ public class AIPlayer extends AbstractPlayer
 			LOGGER.error(e.toString(), e);
 			// TODO: inform server and players
 		}
+	}
+
+	public void setThrottle(final long throttle)
+	{
+		this.throttle = throttle;
 	}
 
 	public void onPlayRequired(final AIPlayer player, final Collection<Character> rack) throws ScrabbleException.NotInTurn

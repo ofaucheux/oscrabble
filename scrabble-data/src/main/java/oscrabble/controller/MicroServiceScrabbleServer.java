@@ -122,13 +122,10 @@ public class MicroServiceScrabbleServer
 	/**
 	 * Play an action.
 	 */
-	public void play(final UUID game, final Action buildAction) throws ScrabbleException
+	public PlayActionResponse play(final UUID game, final Action buildAction) throws ScrabbleException
 	{
 		final PlayActionResponse response = REST_TEMPLATE.postForObject(resolve(game, "playAction"), buildAction, PlayActionResponse.class);
-		if (!response.success)
-		{
-			throw new ScrabbleException("Play refused: " + response.message);
-		}
+		return response;
 	}
 
 	/**

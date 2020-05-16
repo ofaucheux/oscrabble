@@ -95,9 +95,10 @@ public class Controller
 	public ResponseEntity<PlayActionResponse> play(@PathVariable UUID game, @RequestBody Action action)
 	{
 		final PlayActionResponse.PlayActionResponseBuilder aBuilder = PlayActionResponse.builder().action(action);
+		Game g = null;
 		try
 		{
-			final Game g = getGame(game);
+			g = getGame(game);
 			g.play(action);
 			aBuilder.success(true).message("success");
 		}
@@ -105,6 +106,7 @@ public class Controller
 		{
 			aBuilder.success(false).message(e.toString());
 		}
+		aBuilder.gameState(g == null ? null : g.getGameState());
 		return new ResponseEntity<>(aBuilder.build(), HttpStatus.OK);
 	}
 

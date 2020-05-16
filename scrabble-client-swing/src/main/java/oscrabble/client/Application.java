@@ -35,6 +35,7 @@ public class Application
 		final UUID anton = this.server.addPlayer(game, "Anton");
 
 		final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
+		ai.setThrottle(5000);
 		ai.startDaemonThread();
 
 		final Client client = new Client(this.server, game, edgar);

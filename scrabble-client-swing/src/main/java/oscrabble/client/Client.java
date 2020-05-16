@@ -7,9 +7,11 @@ import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
+import oscrabble.data.PlayActionResponse;
 import oscrabble.data.Player;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
@@ -66,11 +68,16 @@ public class Client
 		return this.playground.gridFrame.isVisible();
 	}
 
-	private void refreshUI(final GameState state, final Bag rack)  // todo: display for several racks
+	private void refreshUI(final GameState state) throws ScrabbleException.CommunicationException  // todo: display for several racks
 	{
+		final Bag rack = server.getRack(game, player);
+		lastKnownState = state;
 		LOGGER.info("Refresh UI with state " + state.hashCode());
 		this.playground.refreshUI(state);
 		this.rack.setTiles(rack.tiles);
+		this.playground.gridFrame.setCursor(
+				this.player.equals(state.getPlayerOnTurn()) ? Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR) : Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
+		);
 	}
 
 	private void prepareCommands()
@@ -99,36 +106,6 @@ public class Client
 //						true);
 //				return null;
 //			})));
-	}
-
-	/**
-	 * Thread to update the display of the state of the game
-	 */
-	private class GameStateDispatcherThread extends Thread
-	{
-		@Override
-		public void run()
-		{
-			while (true)
-			{
-				try
-				{
-					Thread.sleep(1000);
-					final GameState state = server.getState(game);
-					if (!state.equals(lastKnownState))
-					{
-						final Bag rack = server.getRack(game, player);
-						refreshUI(state, rack);
-						lastKnownState = state;
-					}
-				}
-				catch (InterruptedException | ScrabbleException.CommunicationException e)
-				{
-					LOGGER.error("Error " + e, e);
-					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
-				}
-			}
-		}
 	}
 
 	/**
@@ -172,13 +149,45 @@ public class Client
 						.turnId(UUID.randomUUID()) //TODO: the game should give the id
 						.notation(command)
 						.build();
-				server.play(this.game, action);
-				// TODO: reduce the time to waite
+				final PlayActionResponse response = server.play(this.game, action);
+				refreshUI(response.gameState);
+				if (!response.success)
+				{
+					throw new ScrabbleException("Play refused: " + response.message);
+				}
 			}
 		}
 		catch (ScrabbleException ex)
 		{
 			JOptionPane.showMessageDialog(playground.gridFrame, ex.getMessage());
+		}
+	}
+
+	/**
+	 * Thread to update the display of the state of the game
+	 */
+	private class GameStateDispatcherThread extends Thread
+	{
+		@Override
+		public void run()
+		{
+			while (true)
+			{
+				try
+				{
+					Thread.sleep(1000);
+					final GameState state = server.getState(game);
+					if (!state.equals(lastKnownState))
+					{
+						refreshUI(state);
+					}
+				}
+				catch (InterruptedException | ScrabbleException.CommunicationException e)
+				{
+					LOGGER.error("Error " + e, e);
+					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
+				}
+			}
 		}
 	}
 
