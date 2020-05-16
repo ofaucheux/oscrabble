@@ -31,7 +31,7 @@ public class Controller
 	@PostMapping(value = "/{game}/getState", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<GameState> getState(final @PathVariable UUID game) throws ScrabbleException
 	{
-		LOGGER.info("Called: getState()");
+		LOGGER.trace("Called: getState()");
 		return ResponseEntity.ok(getGame(game).getGameState());
 	}
 
