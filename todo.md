@@ -1,5 +1,5 @@
 # todo
-- play again AI
+- done - play again AI
 - click on the case of the grid
 - select difficulty of AI
 - preshow the play
