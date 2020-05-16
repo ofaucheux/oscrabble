@@ -44,29 +44,7 @@ public class Grid
 		}
 	}
 
-	/**
-	 * Construct from grid data
-	 * @param data grid data - null for test purposes
-	 */
-	public Grid(final oscrabble.data.Grid data)
-	{
-		this(false);
-		for (final oscrabble.data.Square dataSq : data.squares)
-		{
-			final Square sq = new Square(dataSq);
-			this.squares[sq.y * GRID_SIZE_PLUS_2 + sq.x] = sq;
-		}
-
-		// fill the borders
-		for (int i = 0; i < this.squares.length; i++)
-		{
-			if (this.squares[i]==null)
-			{
-				this.squares[i] = new Square(i / GRID_SIZE_PLUS_2, i % GRID_SIZE_PLUS_2);
-			}
-		}
-
-	}
+	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\w)(\\d+)");
 
 	/**
 	 * Create a grid from a data object.
@@ -225,9 +203,30 @@ public class Grid
 		}
 		return words;
 	}
+	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
+	/**
+	 * Construct from grid data
+	 * @param data grid data - null for test purposes
+	 */
+	public Grid(final oscrabble.data.Grid data)
+	{
+		this(false);
+		for (final oscrabble.data.Square dataSq : data.squares)
+		{
+			final Square sq = new Square(dataSq);
+			this.squares[sq.x * GRID_SIZE_PLUS_2 + sq.y] = sq;
+		}
 
-	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\w)(\\d+)");
-	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
+		// fill the borders
+		for (int i = 0; i < this.squares.length; i++)
+		{
+			if (this.squares[i]==null)
+			{
+				this.squares[i] = new Square(i / GRID_SIZE_PLUS_2, i % GRID_SIZE_PLUS_2);
+			}
+		}
+
+	}
 
 	public static Coordinate getCoordinate(final String notation) throws IllegalCoordinate
 	{
@@ -237,14 +236,14 @@ public class Grid
 		if ((m = HORIZONTAL_COORDINATE_PATTERN.matcher(notation)).matches()) // horizontal ist zuerst x, heißt: Buchstabe.
 		{
 			direction = Direction.HORIZONTAL;
-			groupX = 1;
-			groupY = 2;
+			groupX = 2;
+			groupY = 1;
 		}
 		else if ((m = VERTICAL_COORDINATE_PATTERN.matcher(notation)).matches())
 		{
 			direction = Direction.VERTICAL;
-			groupX = 2;
-			groupY = 1;
+			groupX = 1;
+			groupY = 2;
 		}
 		else
 		{
@@ -358,9 +357,9 @@ public class Grid
 			String sx = Character.toString((char) ('A' + x-1));
 			switch (direction)
 			{
-				case HORIZONTAL:
- 					return sx + (y);
 				case VERTICAL:
+ 					return sx + (y);
+				case HORIZONTAL:
 					return y + sx;
 				default:
 					throw new AssertionError();
