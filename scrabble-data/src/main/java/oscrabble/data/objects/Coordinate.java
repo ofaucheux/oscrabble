@@ -85,4 +85,12 @@ public class Coordinate
 	{
 		return this.x == other.x && this.y == other.y;
 	}
+
+	/**
+	 * @return the square this coordinate points on
+	 */
+	public Square getSquare()
+	{
+		return new Square(this.x, this.y);
+	}
 }

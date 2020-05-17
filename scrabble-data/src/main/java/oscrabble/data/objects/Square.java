@@ -2,6 +2,7 @@ package oscrabble.data.objects;
 
 import oscrabble.data.Tile;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -162,6 +163,22 @@ public class Square
 //	{
 //		return this.tile != null && Character.isLowerCase(this.tile);
 //	}
+
+	@Override
+	public boolean equals(final Object o)
+	{
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		final Square square = (Square) o;
+		return this.x == square.x &&
+				this.y == square.y;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(this.x, this.y, this.isBorder, this.letterBonus, this.wordBonus, this.action, this.tile);
+	}
 
 	/**
 	 *

@@ -1,6 +1,6 @@
 # todo
 - done - play again AI
-- click on the case of the grid
+- done - click on the case of the grid
 - select difficulty of AI
 - preshow the play
 - clignotement

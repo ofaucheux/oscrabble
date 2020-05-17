@@ -3,6 +3,7 @@ package oscrabble.controller;
 import oscrabble.ScrabbleException;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
+import oscrabble.data.objects.Square;
 
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -109,6 +110,19 @@ public abstract class Action
 
 			this.startSquare = Coordinate.parse(m.group(1));
 			this.word = m.group(2);
+		}
+
+		/**
+		 * @return the start square
+		 */
+		public Square getStartSquare()
+		{
+			return this.startSquare.getSquare();
+		}
+
+		public Grid.Direction getDirection()
+		{
+			return this.startSquare.direction;
 		}
 	}
 }

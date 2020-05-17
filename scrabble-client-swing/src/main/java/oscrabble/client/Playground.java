@@ -27,6 +27,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.*;
@@ -122,6 +123,11 @@ class Playground
 	 * The client this playground is for
 	 */
 	private final Client client;
+
+	/**
+	 * Action defined in the command prompt
+	 */
+	private Action action;
 
 	Playground(final Client client)
 	{
@@ -472,7 +478,7 @@ class Playground
 
 	public void refreshUI(final GameState state)
 	{
-		this.jGrid.setGrid(state.getGrid());
+		this.jGrid.setGrid(state.getGrid(), this);
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 	}
 
@@ -494,7 +500,7 @@ class Playground
 		String newPrompt = null;
 		try
 		{
-			final String currentPrompt = this.commandPrompt.getText().trim();
+			final String currentPrompt = this.getCommand();
 			if (currentPrompt.isEmpty())
 			{
 				newPrompt = click.square.getNotation(Grid.Direction.HORIZONTAL) + " ";
@@ -650,11 +656,6 @@ class Playground
 		private Playground playground;
 
 		/**
-		 * Vorbereiteter Spielzug
-		 */
-		private PlayTiles preparedPlayTiles;
-
-		/**
 		 * Set to let the new stones flash
 		 */
 		private boolean hideNewStones;
@@ -679,7 +680,12 @@ class Playground
 			this.add(this.background);
 		}
 
-		void setGrid(oscrabble.data.Grid grid)
+		/**
+		 *
+		 * @param grid grid description coming from the server
+		 * @param playground playground this grid will belong to
+		 */
+		void setGrid(oscrabble.data.Grid grid, final Playground playground)
 		{
 			this.grid = new Grid(grid);
 			final int numberOfRows = this.grid.getSize() + 2;
@@ -707,6 +713,7 @@ class Playground
 					else
 					{
 						final JSquare cell = new JSquare(square);
+						cell.playground = playground;
 						p1.add(cell, gbc);
 
 						final Color cellColor;
@@ -815,10 +822,16 @@ class Playground
 			dictionaryFrame.toFront();
 		}
 
+		/**
+		 * A cell of the scrabble field.
+		 */
 		class JSquare extends JPanel
 		{
 			private final AbstractAction showDefinitionAction;
 			private final Square square;
+
+			/** Playground associated to this square */
+			private Playground playground;
 
 			JSquare(final Square square)
 			{
@@ -895,7 +908,6 @@ class Playground
 						JGrid.this.playground.setStartCell(JSquare.this);
 					}
 				});
-
 			}
 
 			@Override
@@ -906,14 +918,6 @@ class Playground
 				final Graphics2D g2 = (Graphics2D) g;
 				final Insets insets = getInsets();
 
-				// Wir erben direkt aus JComponent und müssen darum den Background selbst zeichnen todo: check
-//				if (isOpaque() && getBackground() != null)
-//				{
-//					g2.setPaint(getBackground());
-//					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
-//				}
-
-
 				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);
 				if (specialBorder != null)
 				{
@@ -923,33 +927,38 @@ class Playground
 				}
 
 				// Markiert die Start Zelle des Wortes todo
-//				if (JGrid.this.preparedPlayTiles != null && JGrid.this.preparedPlayTiles.startSquare == this.square)
-//				{
-//					g.setColor(Color.BLACK);
-//					final Polygon p = new Polygon();
-//					final int h = getHeight();
-//					final int POLYGONE_SIZE = h / 3;
-//					p.addPoint(-POLYGONE_SIZE / 2, 0);
-//					p.addPoint(0, POLYGONE_SIZE / 2);
-//					p.addPoint(POLYGONE_SIZE / 2, 0);
-//
-//					final AffineTransform saved = ((Graphics2D) g).getTransform();
-//					switch (JGrid.this.preparedPlayTiles.getDirection())
-//					{
-//						case Grid.Direction.VERTICAL:
-//							g2.translate(h / 2f, 6f);
-//							break;
-//						case Grid.Direction.HORIZONTAL:
-//							g2.rotate(-Math.PI / 2);
-//							g2.translate(-h / 2f, 6f);
-//							break;
-//						default:
-//							throw new IllegalStateException("Unexpected value: " + JGrid.this.preparedPlayTiles.getDirection());
-//					}
-//					g.fillPolygon(p);
-//					((Graphics2D) g).setTransform(saved);
-//
-//				}
+				if (this.playground != null)
+				{
+					PlayTiles action;
+					if (this.playground.action instanceof PlayTiles
+					&& (action = ((PlayTiles) this.playground.action)).startSquare.getSquare().equals(this.square))
+					{
+
+						g.setColor(Color.BLACK);
+						final Polygon p = new Polygon();
+						final int h = getHeight();
+						final int POLYGONE_SIZE = h / 3;
+						p.addPoint(-POLYGONE_SIZE / 2, 0);
+						p.addPoint(0, POLYGONE_SIZE / 2);
+						p.addPoint(POLYGONE_SIZE / 2, 0);
+
+						final AffineTransform saved = ((Graphics2D) g).getTransform();
+						switch (action.getDirection())
+						{
+							case VERTICAL:
+								g2.translate(h / 2f, 6f);
+								break;
+							case HORIZONTAL:
+								g2.rotate(-Math.PI / 2);
+								g2.translate(-h / 2f, 6f);
+								break;
+							default:
+								throw new IllegalStateException("Unexpected value: " + action.getDirection());
+						}
+						g.fillPolygon(p);
+						((Graphics2D) g).setTransform(saved);
+					}
+				}
 			}
 
 		}
@@ -1040,7 +1049,7 @@ class Playground
 				return;
 			}
 
-			Playground.this.client.executeCommand(commandPrompt.getText());
+			Playground.this.client.executeCommand(getCommand());
 			commandPrompt.setText("");
 		}
 
@@ -1053,9 +1062,8 @@ class Playground
 //				throw new IllegalStateException("Player is not current one");
 //			}
 
-			String command = Playground.this.commandPrompt.getText();
+			String command = Playground.this.getCommand();
 			final StringBuilder sb = new StringBuilder();
-
 
 			boolean joker = false;
 			for (final char c : command.toCharArray())
@@ -1071,9 +1079,10 @@ class Playground
 				}
 			}
 
+			Playground.this.action = null;
+
 			final Pattern playCommandPattern = Pattern.compile("(?:play\\s+)?(.*)", Pattern.CASE_INSENSITIVE);
 			Matcher matcher;
-			oscrabble.controller.Action action;
 			if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
 			{
 				final JRackCell rack;
@@ -1087,8 +1096,14 @@ class Playground
 //					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
 //				}
 				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				action = oscrabble.controller.Action.parse(inputWord.toString());
-
+				if (inputWord.toString().trim().isEmpty())
+				{
+					action = null;
+				}
+				else
+				{
+					Playground.this.action = oscrabble.controller.Action.parse(inputWord.toString());
+				}
 //				//
 //				// todo Check if jokers are needed and try to position them
 //				//
