@@ -48,7 +48,7 @@ class Playground
 	private static final Pattern PATTERN_PASS_COMMAND = Pattern.compile("-\\s*");
 	static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
-	public static final ResourceBundle MESSAGES = SwingPlayer.MESSAGES;
+	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 	public static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
@@ -108,11 +108,11 @@ class Playground
 	 * Currently played play.
 	 */
 	private oscrabble.data.Action currentPlay;
-
-	/**
-	 * Registered Swing players
-	 */
-	private final LinkedList<SwingPlayer> swingPlayers = new LinkedList<>();
+//
+//	/**
+//	 * Registered Swing players
+//	 */
+//	private final LinkedList<SwingPlayer> swingPlayers = new LinkedList<>();
 
 	/**
 	 * The frame containing the grid (and other things)
@@ -128,6 +128,96 @@ class Playground
 	 * Action defined in the command prompt
 	 */
 	private Action action;
+	/**
+	 * Register a player.
+	 *
+	 * @param swingPlayer player to register
+	 */
+//	public void addPlayer(final SwingPlayer swingPlayer)
+//	{
+//		this.swingPlayers.add(swingPlayer);
+//	}
+
+//	public void onPlayRequired(final SwingPlayer caller)
+//	{
+////		if (!isFirstRegistered(caller))
+////		{
+////			return;
+////		}
+//
+////		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
+////		{
+////			final IPlayerInfo playerInfo = entry.getKey();
+////			final JScoreboard.ScorePanelLine line = entry.getValue();
+////			line.currentPlaying.setVisible(this.currentPlay != null && playerInfo.getName().equals(this.currentPlay.player.getName()));
+////		}
+//
+//		final Cursor cursor;
+//		if (true /* todo this.currentPlay.player instanceof SwingPlayer
+//				&& this.swingPlayers.contains(this.currentPlay.player)) */)
+//		{
+//			// ((SwingPlayer) this.currentPlay.player).updateRack();
+//			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+//		}
+//		else
+//		{
+//			cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+//		}
+//
+//		for (final Frame frame : Frame.getFrames())
+//		{
+//			frame.setCursor(cursor);
+//		}
+//	}
+//
+//	/**
+//	 * Players which UI has been created.
+//	 */
+//	private final Set<SwingPlayer> playersWithUI = new HashSet<>();
+
+//	/**
+//	 * Inform that the ui of a player has been created.
+//	 * @param player player
+//	 */
+//	public synchronized void afterUiCreated(final SwingPlayer player)
+//	{
+//		this.playersWithUI.add(player);
+//		final int numberSwingPlayers = getNumberSwingPlayers();
+//		if (this.playersWithUI.size() == numberSwingPlayers)
+//		{
+//			final int gap = 150;
+//			final int basePosX = this.gridFrame.getX() + this.gridFrame.getWidth();
+//			final int basePosY = this.gridFrame.getY() + (this.gridFrame.getHeight() / 2) - ( (gap + this.swingPlayers.get(0).rackFrame.getHeight()) * (numberSwingPlayers - 1) / 2);
+//
+//			for (int i = 0; i < numberSwingPlayers; i++)
+//			{
+//				final JDialog rackFrame = this.swingPlayers.get(i).rackFrame;
+//				rackFrame.setLocation(
+//						basePosX,
+//						basePosY + gap * i
+//				);
+//			}
+//		}
+//	}
+//
+//	/**
+//	 * @return the number of Swing Players registered for this playground.
+//	 */
+//	int getNumberSwingPlayers()
+//	{
+//		return this.swingPlayers.size();
+//	}
+
+	private DisplayedMessage lastMessage;
+
+	private void resetPossibleMovesPanel()
+	{
+		possibleMovePanel.removeAll();
+		possibleMovePanel.invalidate();
+		possibleMovePanel.repaint();
+		showPossibilitiesButton.setText(LABEL_DISPLAY);
+		possibleMovePanel.add(showPossibilitiesButton, BorderLayout.SOUTH);
+	}
 
 	Playground(final Client client)
 	{
@@ -146,7 +236,7 @@ class Playground
 		telnetFrame.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		this.gridFrame = new JFrame();
-		this.gridFrame.addWindowListener(new WindowAdapter()
+		final WindowAdapter frameAdapter = new WindowAdapter()
 		{
 			@Override
 			public void windowClosing(final WindowEvent e)
@@ -160,7 +250,19 @@ class Playground
 					System.exit(0);
 				}
 			}
-		});
+
+			@Override
+			public void windowGainedFocus(final WindowEvent e)
+			{
+				// TODO
+//				for (final SwingPlayer p : swingPlayers)
+//				{
+//					p.rackFrame.toFront();
+//				}
+			}
+		};
+		this.gridFrame.addWindowListener(frameAdapter);
+		this.gridFrame.addWindowFocusListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
 
@@ -295,83 +397,38 @@ class Playground
 
 	}
 
-	private void resetPossibleMovesPanel()
-	{
-		possibleMovePanel.removeAll();
-		possibleMovePanel.invalidate();
-		possibleMovePanel.repaint();
-		showPossibilitiesButton.setText(LABEL_DISPLAY);
-		possibleMovePanel.add(showPossibilitiesButton, BorderLayout.SOUTH);
-	}
+//	protected synchronized void refreshUI(final SwingPlayer caller)
+//	{
+//		if (!isFirstRegistered(caller))
+//		{
+//			return;
+//		}
+//
+//		if (this.flashFuture != null)
+//		{
+//			this.flashFuture.cancel(true);
+//		}
+//
+//		this.jGrid.repaint();
+//		// TODO?
+////		this.jScoreboard.refresh();
+//
+////		TODO
+////		final Iterable<GameState> history = this.server.getState(game)
+////		this.historyList.setListData(IterableUtils.toList(history).toArray(new HistoryEntry[0]));
+//	}
 
-	/**
-	 * Execute action after play.
-	 *
-	 * @param caller the caller of the function
-	 * @param play   the occurred play
-	 */
-	public void afterPlay(final SwingPlayer caller, final Action play)
-	{
-		if (caller != this.swingPlayers.getFirst())
-		{
-			return;
-		}
-
-//		this.jGrid.lastAction = action;
-//		refreshUI();
-
-		this.flashFuture = this.executor.schedule(
-				() -> {
-					for (int i = 0; i < 3; i++)
-					{
-						Thread.sleep(5 * 100);
-						this.jGrid.hideNewStones = !this.jGrid.hideNewStones;
-						this.jGrid.repaint();
-					}
-					this.jGrid.hideNewStones = false;
-					this.jGrid.repaint();
-					this.flashFuture = null;
-					return null;
-				},
-				0,
-				TimeUnit.SECONDS);
-
-	}
-
-	protected synchronized void refreshUI(final SwingPlayer caller)
-	{
-		if (!isFirstRegistered(caller))
-		{
-			return;
-		}
-
-		if (this.flashFuture != null)
-		{
-			this.flashFuture.cancel(true);
-		}
-
-		this.jGrid.repaint();
-		// TODO?
-//		this.jScoreboard.refresh();
-
-//		TODO
-//		final Iterable<GameState> history = this.server.getState(game)
-//		this.historyList.setListData(IterableUtils.toList(history).toArray(new HistoryEntry[0]));
-	}
-
-	/**
-	 * @param caller caller of the function
-	 * @return {@code true} if the parameter is null or represents the first registered client.
-	 */
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	private boolean isFirstRegistered(final SwingPlayer caller)
-	{
-		return caller == null || caller == this.swingPlayers.getFirst();
-	}
+//	/**
+//	 * @return {@code true} if the parameter is null or represents the first registered client.
+//	 */
+//	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+//	private boolean isFirstRegistered(final SwingPlayer caller)
+//	{
+//		return caller == null || caller == this.swingPlayers.getFirst();
+//	}
 
 	/**
 	 * Set the game.
-	 *
 	 */
 	public void setGame()
 	{
@@ -395,86 +452,32 @@ class Playground
 	}
 
 	/**
-	 * Register a player.
+	 * Execute action after play.
 	 *
-	 * @param swingPlayer player to register
+	 * @param play   the occurred play
 	 */
-	public void addPlayer(final SwingPlayer swingPlayer)
+	public void afterPlay(final Action play)
 	{
-		this.swingPlayers.add(swingPlayer);
+//		this.jGrid.lastAction = action;
+//		refreshUI();
+
+		this.flashFuture = this.executor.schedule(
+				() -> {
+					for (int i = 0; i < 3; i++)
+					{
+						Thread.sleep(5 * 100);
+						this.jGrid.hideNewStones = !this.jGrid.hideNewStones;
+						this.jGrid.repaint();
+					}
+					this.jGrid.hideNewStones = false;
+					this.jGrid.repaint();
+					this.flashFuture = null;
+					return null;
+				},
+				0,
+				TimeUnit.SECONDS);
+
 	}
-
-	public void onPlayRequired(final SwingPlayer caller)
-	{
-		if (!isFirstRegistered(caller))
-		{
-			return;
-		}
-
-//		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
-//		{
-//			final IPlayerInfo playerInfo = entry.getKey();
-//			final JScoreboard.ScorePanelLine line = entry.getValue();
-//			line.currentPlaying.setVisible(this.currentPlay != null && playerInfo.getName().equals(this.currentPlay.player.getName()));
-//		}
-
-		final Cursor cursor;
-		if (true /* todo this.currentPlay.player instanceof SwingPlayer
-				&& this.swingPlayers.contains(this.currentPlay.player)) */)
-		{
-			// ((SwingPlayer) this.currentPlay.player).updateRack();
-			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-		}
-		else
-		{
-			cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-		}
-
-		for (final Frame frame : Frame.getFrames())
-		{
-			frame.setCursor(cursor);
-		}
-	}
-
-	/**
-	 * Players which UI has been created.
-	 */
-	private final Set<SwingPlayer> playersWithUI = new HashSet<>();
-
-	/**
-	 * Inform that the ui of a player has been created.
-	 * @param player player
-	 */
-	public synchronized void afterUiCreated(final SwingPlayer player)
-	{
-		this.playersWithUI.add(player);
-		final int numberSwingPlayers = getNumberSwingPlayers();
-		if (this.playersWithUI.size() == numberSwingPlayers)
-		{
-			final int gap = 150;
-			final int basePosX = this.gridFrame.getX() + this.gridFrame.getWidth();
-			final int basePosY = this.gridFrame.getY() + (this.gridFrame.getHeight() / 2) - ( (gap + this.swingPlayers.get(0).rackFrame.getHeight()) * (numberSwingPlayers - 1) / 2);
-
-			for (int i = 0; i < numberSwingPlayers; i++)
-			{
-				final JDialog rackFrame = this.swingPlayers.get(i).rackFrame;
-				rackFrame.setLocation(
-						basePosX,
-						basePosY + gap * i
-				);
-			}
-		}
-	}
-
-	/**
-	 * @return the number of Swing Players registered for this playground.
-	 */
-	int getNumberSwingPlayers()
-	{
-		return this.swingPlayers.size();
-	}
-
-	private DisplayedMessage lastMessage;
 
 
 	public void refreshUI(final GameState state)

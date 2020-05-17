@@ -6,6 +6,8 @@ import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
 import java.net.URI;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.UUID;
 
 public class Application
@@ -13,6 +15,11 @@ public class Application
 
 	private final MicroServiceDictionary dictionary;
 	private final MicroServiceScrabbleServer server;
+
+	/**
+	 * Resource Bundle
+	 */
+	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
 
 	public Application(final MicroServiceDictionary dictionary, final MicroServiceScrabbleServer server)
 	{
