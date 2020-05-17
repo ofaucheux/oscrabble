@@ -492,6 +492,122 @@ class Playground
 		this.commandPrompt.setText("");
 	}
 
+	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.ForbiddenPlayException
+	{
+		// TODO
+//			final SwingPlayer player = getCurrentSwingPlayer();
+//			if (player == null)
+//			{
+//				throw new IllegalStateException("Player is not current one");
+//			}
+
+		String command = Playground.this.getCommand();
+		final StringBuilder sb = new StringBuilder();
+
+		boolean joker = false;
+		for (final char c : command.toCharArray())
+		{
+			if (c == '*')
+			{
+				joker = true;
+			}
+			else
+			{
+				sb.append(joker ? Character.toLowerCase(c) : c);
+				joker = false;
+			}
+		}
+
+		Playground.this.action = null;
+
+		final Pattern playCommandPattern = Pattern.compile("(?:play\\s+)?(.*)", Pattern.CASE_INSENSITIVE);
+		Matcher matcher;
+		if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
+		{
+			final JRackCell rack;
+//				try
+//				{
+//					rack = Playground.this.game.getRack(player, player.getPlayerKey());
+//				}
+//				catch (ScrabbleException e)
+//				{
+//					LOGGER.error(e.toString(), e);
+//					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
+//				}
+			final StringBuilder inputWord = new StringBuilder(matcher.group(1));
+			if (inputWord.toString().trim().isEmpty())
+			{
+				action = null;
+			}
+			else
+			{
+				this.action = oscrabble.controller.Action.parse(inputWord.toString());
+			}
+//				//
+//				// todo Check if jokers are needed and try to position them
+//				//
+//				if (action instanceof PlayTiles)
+//				{
+//					final PlayTiles playTiles = (PlayTiles) action;
+//					LOGGER.debug("Word before positioning jokers: " + playTiles.word);
+//					int remainingJokers = rack.countJoker();
+//					final HashSetValuedHashMap<Character, Integer> requiredLetters = new HashSetValuedHashMap<>();
+//					int i = inputWord.indexOf(" ") + 1;
+//					for (final Map.Entry<Grid.Square, Character> square : playTiles.getSquares().entrySet())
+//					{
+//						if (square.getKey().isEmpty())
+//						{
+//							if (Character.isLowerCase(inputWord.charAt(i)))
+//							{
+//								remainingJokers--;
+//							}
+//							else
+//							{
+//								requiredLetters.put(square.getValue(), i);
+//							}
+//						}
+//						i++;
+//					}
+//
+//					for (final Character letter : requiredLetters.keys())
+//					{
+//						final int inRack = rack.countLetter(letter);
+//						final int required = requiredLetters.get(letter).size();
+//						final int missing = required - inRack;
+//						if (missing > 0)
+//						{
+//							if (remainingJokers < missing)
+//							{
+//								throw new JokerPlacementException(MESSAGES.getString("no.enough.jokers"), null);
+//							}
+//
+//							if (missing == required)
+//							{
+//								for (final Integer pos : requiredLetters.get(letter))
+//								{
+//									inputWord.replace(pos, pos + 1, Character.toString(Character.toLowerCase(letter)));
+//								}
+//								remainingJokers -= missing;
+//							}
+//							else
+//							{
+//								throw new JokerPlacementException(
+//										MESSAGES.getString("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
+//										null);
+//							}
+//						}
+//					}
+//				}
+			action = Action.parse(inputWord.toString());
+			LOGGER.debug("Word after having positioned white tiles: " + inputWord);
+		}
+		else
+		{
+			action = null;
+		}
+		return action;
+	}
+
 	/**
 	 * Set a cell as the start of the future tipped word.
 	 */
@@ -537,7 +653,6 @@ class Playground
 		{
 			this.commandPrompt.setText(newPrompt);
 		}
-
 	}
 
 	/**
@@ -1034,6 +1149,21 @@ class Playground
 //		return (SwingPlayer) this.currentPlay.player;
 //	}
 
+	/**
+	 * Execute the command contained in the command prompt
+	 */
+	void executeCommand()
+	{
+		if (client == null)
+		{
+			JOptionPane.showMessageDialog(Playground.this.gridFrame, "This playground has no client");
+			return;
+		}
+
+		Playground.this.client.executeCommand(getCommand());
+		commandPrompt.setText("");
+	}
+
 	private class CommandPromptAction extends AbstractAction implements DocumentListener
 	{
 
@@ -1043,132 +1173,8 @@ class Playground
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			if (client == null)
-			{
-				JOptionPane.showMessageDialog(Playground.this.gridFrame, "This playground has no client");
-				return;
-			}
-
-			Playground.this.client.executeCommand(getCommand());
-			commandPrompt.setText("");
+			executeCommand();
 		}
-
-		private oscrabble.controller.Action getPreparedMove() throws Playground.JokerPlacementException, ParseException, ScrabbleException.ForbiddenPlayException
-		{
-			// TODO
-//			final SwingPlayer player = getCurrentSwingPlayer();
-//			if (player == null)
-//			{
-//				throw new IllegalStateException("Player is not current one");
-//			}
-
-			String command = Playground.this.getCommand();
-			final StringBuilder sb = new StringBuilder();
-
-			boolean joker = false;
-			for (final char c : command.toCharArray())
-			{
-				if (c == '*')
-				{
-					joker = true;
-				}
-				else
-				{
-					sb.append(joker ? Character.toLowerCase(c) : c);
-					joker = false;
-				}
-			}
-
-			Playground.this.action = null;
-
-			final Pattern playCommandPattern = Pattern.compile("(?:play\\s+)?(.*)", Pattern.CASE_INSENSITIVE);
-			Matcher matcher;
-			if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
-			{
-				final JRackCell rack;
-//				try
-//				{
-//					rack = Playground.this.game.getRack(player, player.getPlayerKey());
-//				}
-//				catch (ScrabbleException e)
-//				{
-//					LOGGER.error(e.toString(), e);
-//					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
-//				}
-				final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-				if (inputWord.toString().trim().isEmpty())
-				{
-					action = null;
-				}
-				else
-				{
-					Playground.this.action = oscrabble.controller.Action.parse(inputWord.toString());
-				}
-//				//
-//				// todo Check if jokers are needed and try to position them
-//				//
-//				if (action instanceof PlayTiles)
-//				{
-//					final PlayTiles playTiles = (PlayTiles) action;
-//					LOGGER.debug("Word before positioning jokers: " + playTiles.word);
-//					int remainingJokers = rack.countJoker();
-//					final HashSetValuedHashMap<Character, Integer> requiredLetters = new HashSetValuedHashMap<>();
-//					int i = inputWord.indexOf(" ") + 1;
-//					for (final Map.Entry<Grid.Square, Character> square : playTiles.getSquares().entrySet())
-//					{
-//						if (square.getKey().isEmpty())
-//						{
-//							if (Character.isLowerCase(inputWord.charAt(i)))
-//							{
-//								remainingJokers--;
-//							}
-//							else
-//							{
-//								requiredLetters.put(square.getValue(), i);
-//							}
-//						}
-//						i++;
-//					}
-//
-//					for (final Character letter : requiredLetters.keys())
-//					{
-//						final int inRack = rack.countLetter(letter);
-//						final int required = requiredLetters.get(letter).size();
-//						final int missing = required - inRack;
-//						if (missing > 0)
-//						{
-//							if (remainingJokers < missing)
-//							{
-//								throw new JokerPlacementException(MESSAGES.getString("no.enough.jokers"), null);
-//							}
-//
-//							if (missing == required)
-//							{
-//								for (final Integer pos : requiredLetters.get(letter))
-//								{
-//									inputWord.replace(pos, pos + 1, Character.toString(Character.toLowerCase(letter)));
-//								}
-//								remainingJokers -= missing;
-//							}
-//							else
-//							{
-//								throw new JokerPlacementException(
-//										MESSAGES.getString("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
-//										null);
-//							}
-//						}
-//					}
-//				}
-				action = Action.parse(inputWord.toString());
-				LOGGER.debug("Word after having positioned white tiles: " + inputWord);
-			}
-			else
-			{
-				action = null;
-			}
-			return action;
-		}
-
 
 		@Override
 		public void insertUpdate(final DocumentEvent e)
@@ -1189,7 +1195,7 @@ class Playground
 			{
 				getPreparedMove();
 			}
-			catch (Playground.JokerPlacementException | ParseException | ScrabbleException.ForbiddenPlayException e1)
+			catch (final ScrabbleException.ForbiddenPlayException e1)
 			{
 				LOGGER.debug(e1.getMessage());
 			}
@@ -1213,7 +1219,6 @@ class Playground
 			}
 		}
 	}
-
 
 
 	/**
