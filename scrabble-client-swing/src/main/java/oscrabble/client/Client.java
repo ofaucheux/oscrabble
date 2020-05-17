@@ -12,6 +12,8 @@ import oscrabble.data.Player;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
@@ -56,6 +58,15 @@ public class Client
 		);
 		rackFrame.setVisible(true);
 		rackFrame.pack();
+
+		this.playground.gridFrame.addWindowFocusListener(new WindowAdapter()
+		{
+			@Override
+			public void windowGainedFocus(final WindowEvent e)
+			{
+				rackFrame.toFront();
+			}
+		});
 
 		final GameStateDispatcherThread th = new GameStateDispatcherThread();
 		th.setName("State DTh");

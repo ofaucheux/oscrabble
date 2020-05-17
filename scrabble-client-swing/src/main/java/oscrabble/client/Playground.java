@@ -250,19 +250,8 @@ class Playground
 					System.exit(0);
 				}
 			}
-
-			@Override
-			public void windowGainedFocus(final WindowEvent e)
-			{
-				// TODO
-//				for (final SwingPlayer p : swingPlayers)
-//				{
-//					p.rackFrame.toFront();
-//				}
-			}
 		};
 		this.gridFrame.addWindowListener(frameAdapter);
-		this.gridFrame.addWindowFocusListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
 
