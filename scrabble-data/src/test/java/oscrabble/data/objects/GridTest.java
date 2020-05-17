@@ -16,11 +16,11 @@ class GridTest
 	public void notation()
 	{
 		final Grid g = new Grid(null);
-		assertEquals("A1", Grid.Coordinate.getNotation(g.get(1, 1), Grid.Direction.HORIZONTAL));
+		assertEquals("A1", Coordinate.getNotation(g.get(1, 1), Grid.Direction.HORIZONTAL));
 
-		assertEquals("H8", Grid.Coordinate.getNotation(g.getCentralSquare(), Grid.Direction.HORIZONTAL));
+		assertEquals("H8", Coordinate.getNotation(g.getCentralSquare(), Grid.Direction.HORIZONTAL));
 
-		final Grid.Coordinate b4 = Grid.getCoordinate("B4");
+		final Coordinate b4 = Coordinate.parse("B4");
 		assertEquals(2, b4.x);
 		assertEquals(4, b4.y);
 	}

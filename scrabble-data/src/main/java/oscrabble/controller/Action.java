@@ -1,6 +1,7 @@
 package oscrabble.controller;
 
 import oscrabble.ScrabbleException;
+import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 
 import java.util.UUID;
@@ -87,7 +88,7 @@ public abstract class Action
 	public static class PlayTiles extends Action
 	{
 
-		public final Grid.Coordinate startSquare;
+		public final Coordinate startSquare;
 
 		/**
 		 * The word created by this move, incl. already set tiles and where blanks are represented by their value letters.
@@ -106,7 +107,7 @@ public abstract class Action
 				throw new AssertionError();
 			}
 
-			this.startSquare = Grid.getCoordinate(m.group(1));
+			this.startSquare = Coordinate.parse(m.group(1));
 			this.word = m.group(2);
 		}
 	}

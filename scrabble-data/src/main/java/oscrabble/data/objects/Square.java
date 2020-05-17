@@ -47,7 +47,7 @@ public class Square
 	 */
 	public Square(final oscrabble.data.Square dataSq)
 	{
-		final Grid.Coordinate c = Grid.getCoordinate(dataSq.coordinate);
+		final Coordinate c = Coordinate.parse(dataSq.coordinate);
 		this.x = c.x;
 		this.y = c.y;
 		this.tile = dataSq.tile;
@@ -66,7 +66,7 @@ public class Square
 	 */
 	public static Square fromData(final oscrabble.data.Square data)
 	{
-		final Grid.Coordinate c = Grid.getCoordinate(data.coordinate);
+		final Coordinate c = Coordinate.parse(data.coordinate);
 		if ((c.x < 1 || c.y < 1))
 		{
 			throw new AssertionError();
@@ -128,7 +128,7 @@ public class Square
 
 	public String getNotation(final Grid.Direction direction)
 	{
-		return Grid.Coordinate.getNotation(this, direction);
+		return Coordinate.getNotation(this, direction);
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class Square
 	 */
 	public String getCoordinate()
 	{
-		return Grid.Coordinate.getNotation(this, Grid.Direction.HORIZONTAL);
+		return Coordinate.getNotation(this, Grid.Direction.HORIZONTAL);
 	}
 
 	/**

@@ -6,11 +6,8 @@ import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.data.Tile;
-import oscrabble.exception.IllegalCoordinate;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Grid
 {
@@ -44,8 +41,6 @@ public class Grid
 		}
 	}
 
-	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\w)(\\d+)");
-
 	/**
 	 * Create a grid from a data object.
 	 *
@@ -58,7 +53,7 @@ public class Grid
 		g.fillGrid(false);
 		for (final oscrabble.data.Square sq : data.squares)
 		{
-			final Coordinate coordinate = getCoordinate(sq.coordinate);
+			final Coordinate coordinate = Coordinate.parse(sq.coordinate);
 			g.squares[coordinate.x * GRID_SIZE_PLUS_2 + coordinate.y] = oscrabble.data.objects.Square.fromData(sq);
 		}
 		return g;
@@ -90,7 +85,7 @@ public class Grid
 
 	public oscrabble.data.objects.Square get(final String coordinate)
 	{
-		final Coordinate c = getCoordinate(coordinate);
+		final Coordinate c = Coordinate.parse(coordinate);
 		return get(c);
 	}
 
@@ -122,7 +117,7 @@ public class Grid
 
 	public boolean isEmpty(final String coordinate)
 	{
-		final Coordinate triple = getCoordinate(coordinate);
+		final Coordinate triple = Coordinate.parse(coordinate);
 		return this.get(triple).tile == null;
 	}
 
@@ -203,7 +198,7 @@ public class Grid
 		}
 		return words;
 	}
-	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
+
 	/**
 	 * Construct from grid data
 	 * @param data grid data - null for test purposes
@@ -226,36 +221,6 @@ public class Grid
 			}
 		}
 
-	}
-
-	//todo: rename in "parse" and move in Coordinate
-	public static Coordinate getCoordinate(final String notation) throws IllegalCoordinate
-	{
-		final Direction direction;
-		final int groupX, groupY;
-		Matcher m;
-		if ((m = HORIZONTAL_COORDINATE_PATTERN.matcher(notation)).matches()) // horizontal ist zuerst x, heißt: Buchstabe.
-		{
-			direction = Direction.HORIZONTAL;
-			groupX = 2;
-			groupY = 1;
-		}
-		else if ((m = VERTICAL_COORDINATE_PATTERN.matcher(notation)).matches())
-		{
-			direction = Direction.VERTICAL;
-			groupX = 1;
-			groupY = 2;
-		}
-		else
-		{
-			throw new IllegalCoordinate(notation);
-		}
-
-		final Coordinate c = new Coordinate();
-		c.direction = direction;
-		c.x = m.group(groupX).charAt(0) - 'A' + 1;
-		c.y = Integer.parseInt(m.group(groupY));
-		return c;
 	}
 
 	public oscrabble.data.objects.Square getCentralSquare()
@@ -329,52 +294,6 @@ public class Grid
 		}
 	}
 
-	public static class Coordinate
-	{
-		public Direction direction;
-		public int x, y;
-
-		public String getNotation()
-		{
-			return getNotation(this.x, this.y, this.direction);
-		}
-
-		// tODO: move
-		public static String getNotation(final oscrabble.data.objects.Square square, final Direction direction)
-		{
-			return getNotation(square.x, square.y, direction);
-		}
-
-		/**
-		 * The coordinates are 0-based.
-		 *
-		 * @param x
-		 * @param y
-		 * @param direction
-		 * @return
-		 */
-		private static String getNotation(final int x, final int y, final Direction direction)
-		{
-			String sx = Character.toString((char) ('A' + x-1));
-			switch (direction)
-			{
-				case VERTICAL:
- 					return sx + (y);
-				case HORIZONTAL:
-					return y + sx;
-				default:
-					throw new AssertionError();
-			}
-		}
-
-		/**
-		 * @return if both objects represent the same cells, perhaps with different directions.
-		 */
-		public boolean sameCell(final Coordinate other)
-		{
-			return this.x == other.x && this.y == other.y;
-		}
-	}
 }
 
 

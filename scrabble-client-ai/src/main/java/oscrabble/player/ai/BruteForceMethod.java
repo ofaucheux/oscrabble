@@ -6,6 +6,7 @@ import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.data.IDictionary;
+import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
@@ -336,7 +337,7 @@ public class BruteForceMethod
 			startSquare = grid.getPrevious(startSquare, ctx.direction);
 		}
 		ctx.legalPlayTiles.add(
-				Grid.Coordinate.getNotation(startSquare, ctx.direction) + " " + word
+				Coordinate.getNotation(startSquare, ctx.direction) + " " + word
 		);
 	}
 

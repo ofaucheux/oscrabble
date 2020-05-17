@@ -9,6 +9,7 @@ import oscrabble.controller.Action.PlayTiles;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.GameState;
 import oscrabble.data.HistoryEntry;
+import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 import oscrabble.exception.IllegalCoordinate;
@@ -504,9 +505,9 @@ class Playground
 				final Matcher m;
 				if ((m = pattern.matcher(currentPrompt)).matches())
 				{
-					final Grid.Coordinate currentCoordinate = Grid.getCoordinate(m.group(1));
+					final Coordinate currentCoordinate = Coordinate.parse(m.group(1));
 					final String word = m.group(3);
-					final Grid.Coordinate clickedCoordinate = Grid.getCoordinate(click.square.getCoordinate());
+					final Coordinate clickedCoordinate = Coordinate.parse(click.square.getCoordinate());
 					clickedCoordinate.direction =
 							clickedCoordinate.sameCell(currentCoordinate)
 									? currentCoordinate.direction.other()
