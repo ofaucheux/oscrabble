@@ -11,6 +11,7 @@ import oscrabble.data.GameState;
 import oscrabble.data.HistoryEntry;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
+import oscrabble.exception.IllegalCoordinate;
 import oscrabble.player.AbstractPlayer;
 
 import javax.swing.*;
@@ -485,6 +486,141 @@ class Playground
 	}
 
 	/**
+	 * Set a cell as the start of the future tipped word.
+	 */
+	private void setStartCell(final JGrid.JSquare click)
+	{
+		String newPrompt = null;
+		try
+		{
+			final String currentPrompt = this.commandPrompt.getText().trim();
+			if (currentPrompt.isEmpty())
+			{
+				newPrompt = click.square.getNotation(Grid.Direction.HORIZONTAL) + " ";
+			}
+			else
+			{
+				final Pattern pattern = Pattern.compile("(\\S*)(\\s+(\\S*))?");
+				final Matcher m;
+				if ((m = pattern.matcher(currentPrompt)).matches())
+				{
+					final Grid.Coordinate currentCoordinate = Grid.getCoordinate(m.group(1));
+					final String word = m.group(3);
+					final Grid.Coordinate clickedCoordinate = Grid.getCoordinate(click.square.getCoordinate());
+					clickedCoordinate.direction =
+							clickedCoordinate.sameCell(currentCoordinate)
+									? currentCoordinate.direction.other()
+									: currentCoordinate.direction;
+
+					newPrompt = clickedCoordinate.getNotation() + " ";
+					if (word != null && !word.trim().isEmpty())
+					{
+						newPrompt += word;
+					}
+				}
+			}
+
+		}
+		catch (final IllegalCoordinate e)
+		{
+			// OK: noch kein Prompt vorhanden, oder nicht parsable.
+		}
+
+		if (newPrompt != null)
+		{
+			this.commandPrompt.setText(newPrompt);
+		}
+
+	}
+
+	/**
+	 * Play the move: inform the server about it and clear the client input field.
+	 *
+	 * @param playTiles move to play
+	 */
+	private void play(final AbstractPlayer playerID, final PlayTiles playTiles) throws ScrabbleException
+	{
+		// TODO
+//		final SwingPlayer player = getCurrentSwingPlayer();
+//		assert player != null;
+		this.server.play(this.game, playerID.buildAction(playTiles.notation));
+	}
+
+	/**
+	 * Filter, das alles Eingetragene Uppercase schreibt
+	 */
+	private final static DocumentFilter UPPER_CASE_DOCUMENT_FILTER = new DocumentFilter()
+	{
+		public void insertString(DocumentFilter.FilterBypass fb, int offset,
+								 String text, AttributeSet attr) throws BadLocationException
+		{
+
+			fb.insertString(offset, toUpperCase(text), attr);
+		}
+
+		public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
+							String text, AttributeSet attrs) throws BadLocationException
+		{
+
+			fb.replace(offset, length, toUpperCase(text), attrs);
+		}
+
+		/**
+		 * Entfernt die Umlaute und liefert alles Uppercase.
+		 * TODO: für Frz. sinnvoll, für Deutsch aber sicherlich nicht..
+		 */
+		private String toUpperCase(String text)
+		{
+			text = Normalizer.normalize(text, Normalizer.Form.NFD);
+			text = text.replaceAll("[^\\p{ASCII}]", "");
+			text = text.replaceAll("\\p{M}", "");
+			return text.toUpperCase();
+		}
+	};
+
+	/**
+	 * Problem while placing joker.
+	 */
+	private static class JokerPlacementException extends Throwable
+	{
+		JokerPlacementException(final String message, final ScrabbleException e)
+		{
+			super(message, e);
+		}
+	}
+
+	/**
+	 * Eine Frame, die wie eine Telnet-Console sich immer erweiterndes Text anzeigt.
+	 */
+	private static class TelnetFrame
+	{
+
+		private final JLabel label;
+		private final JFrame frame;
+
+		TelnetFrame(final String title)
+		{
+			this.frame = new JFrame(title);
+			this.label = new JLabel("<html>");
+			this.label.setBorder(new BevelBorder(BevelBorder.LOWERED));
+			this.frame.add(new JScrollPane(this.label, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+		}
+
+		private void appendConsoleText(final String color, String text, final boolean escapeHtml)
+		{
+			this.label.setText(this.label.getText() + "\n<br><font color='" + color + "'>"
+					+ (escapeHtml ? StringEscapeUtils.escapeHtml4(text) : text)
+					+ "</font>");
+			this.frame.setVisible(true);
+		}
+
+	}
+
+	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
+	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
+
+	/**
 	 * Darstellung der Spielfläche
 	 */
 	static class JGrid extends JPanel
@@ -755,7 +891,7 @@ class Playground
 					@Override
 					public void mouseClicked(final MouseEvent e)
 					{
-						//							JGrid.this.playground.setStartCell(JSquare.this); todo
+						JGrid.this.playground.setStartCell(JSquare.this);
 					}
 				});
 
@@ -874,132 +1010,6 @@ class Playground
 			this.playground = client;
 		}
 	}
-
-	/**
-	 * Play the move: inform the server about it and clear the client input field.
-	 *
-	 * @param playTiles move to play
-	 */
-	private void play(final AbstractPlayer playerID, final PlayTiles playTiles) throws ScrabbleException
-	{
-		// TODO
-//		final SwingPlayer player = getCurrentSwingPlayer();
-//		assert player != null;
-		this.server.play(this.game, playerID.buildAction(playTiles.notation));
-	}
-
-	/**
-	 * Filter, das alles Eingetragene Uppercase schreibt
-	 */
-	private final static DocumentFilter UPPER_CASE_DOCUMENT_FILTER = new DocumentFilter()
-	{
-		public void insertString(DocumentFilter.FilterBypass fb, int offset,
-								 String text, AttributeSet attr) throws BadLocationException
-		{
-
-			fb.insertString(offset, toUpperCase(text), attr);
-		}
-
-		public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
-							String text, AttributeSet attrs) throws BadLocationException
-		{
-
-			fb.replace(offset, length, toUpperCase(text), attrs);
-		}
-
-		/**
-		 * Entfernt die Umlaute und liefert alles Uppercase.
-		 * TODO: für Frz. sinnvoll, für Deutsch aber sicherlich nicht..
-		 */
-		private String toUpperCase(String text)
-		{
-			text = Normalizer.normalize(text, Normalizer.Form.NFD);
-			text = text.replaceAll("[^\\p{ASCII}]", "");
-			text = text.replaceAll("\\p{M}", "");
-			return text.toUpperCase();
-		}
-	};
-
-	/**
-	 * Problem while placing joker.
-	 */
-	private static class JokerPlacementException extends Throwable
-	{
-		JokerPlacementException(final String message, final ScrabbleException e)
-		{
-			super(message, e);
-		}
-	}
-
-	/**
-	 * Eine Frame, die wie eine Telnet-Console sich immer erweiterndes Text anzeigt.
-	 */
-	private static class TelnetFrame
-	{
-
-		private final JLabel label;
-		private final JFrame frame;
-
-		TelnetFrame(final String title)
-		{
-			this.frame = new JFrame(title);
-			this.label = new JLabel("<html>");
-			this.label.setBorder(new BevelBorder(BevelBorder.LOWERED));
-			this.frame.add(new JScrollPane(this.label, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
-		}
-
-		private void appendConsoleText(final String color, String text, final boolean escapeHtml)
-		{
-			this.label.setText(this.label.getText() + "\n<br><font color='" + color + "'>"
-					+ (escapeHtml ? StringEscapeUtils.escapeHtml4(text) : text)
-					+ "</font>");
-			this.frame.setVisible(true);
-		}
-
-	}
-
-	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
-	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
-
-	/**
-	 * Set a cell as the start of the future tipped word. todo
-	 *
-//	 * @param cell Cell
-	 */
-//	private void setStartCell(final JGrid.JSquare cell)
-//	{
-//		PlayTiles playTiles = null;
-//		try
-//		{
-//			final String currentPrompt = this.commandPrompt.getText();
-//			final oscrabble.controller.Action action = Action.parse(currentPrompt);
-//			if (action instanceof PlayTiles)
-//			{
-//				playTiles = (PlayTiles) action;
-//				if (playTiles.startSquare.getNotation().equals(cell.square.getCoordinate()))
-//				{
-//					playTiles = playTiles.getInvertedDirectionCopy();
-//				}
-//				else
-//				{
-//					playTiles = playTiles.getTranslatedCopy(cell.square);
-//				}
-//			}
-//		}
-//		catch (ParseException | ScrabbleException.ForbiddenPlayException e)
-//		{
-//			// OK: noch kein Prompt vorhanden, oder nicht parsable.
-//		}
-//
-//		if (playTiles == null)
-//		{
-//			playTiles = new PlayTiles(cell.square, Grid.Direction.HORIZONTAL, "");
-//		}
-//
-//		this.commandPrompt.setText(playTiles.getNotation() + (playTiles.word.isEmpty() ? " " : ""));
-//
-//	}
 
 
 //	/**

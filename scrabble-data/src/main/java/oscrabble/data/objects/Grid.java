@@ -228,6 +228,7 @@ public class Grid
 
 	}
 
+	//todo: rename in "parse" and move in Coordinate
 	public static Coordinate getCoordinate(final String notation) throws IllegalCoordinate
 	{
 		final Direction direction;
@@ -364,6 +365,14 @@ public class Grid
 				default:
 					throw new AssertionError();
 			}
+		}
+
+		/**
+		 * @return if both objects represent the same cells, perhaps with different directions.
+		 */
+		public boolean sameCell(final Coordinate other)
+		{
+			return this.x == other.x && this.y == other.y;
 		}
 	}
 }
