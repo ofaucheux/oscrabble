@@ -861,12 +861,20 @@ class Playground
 
 		private void highlightWord(final PlayTiles action)
 		{
+			this.specialBorders.clear();
+
 			final ArrayList<JGrid.JSquare> squares = new ArrayList<>();
 			boolean isHorizontal = action.getDirection() == Grid.Direction.HORIZONTAL;
 			int x = action.startSquare.x;
 			int y = action.startSquare.y;
 			for (int i=0; i < action.word.length(); i++)
 			{
+				if (x > 15 || y > 15)
+				{
+					// word run outside of the grid.
+					return;
+				}
+
 				squares.add(this.jSquares[x][y]);
 				if (isHorizontal)
 				{
@@ -880,7 +888,6 @@ class Playground
 
 			final int INSET = 4;
 			final Color preparedMoveColor = Color.RED;
-			this.specialBorders.clear();
 
 			for (int i = 0; i < squares.size(); i++)
 			{
