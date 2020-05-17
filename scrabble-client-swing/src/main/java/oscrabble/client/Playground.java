@@ -157,6 +157,7 @@ class Playground
 					// TODO: schickt "ende" dem Server
 //					Playground.this.game.setState(IGame.State.ENDED);
 					Playground.this.gridFrame.dispose();
+					System.exit(0);
 				}
 			}
 		});
