@@ -29,7 +29,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.text.Normalizer;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -740,9 +739,10 @@ class Playground
 	 */
 	static class JGrid extends JPanel
 	{
-		private final HashMap<Square, MatteBorder> specialBorders = new HashMap<>();
+		final JSquare[][] jSquares;
 
 		private Grid grid;
+		private final HashMap<JSquare, MatteBorder> specialBorders = new HashMap<>();
 
 		/**
 		 *
@@ -784,6 +784,7 @@ class Playground
 			this.background = new JPanel(new BorderLayout());
 			this.preparedMoveStones = new LinkedHashMap<>();
 			final int size = 15 * CELL_SIZE;  // TODO: use a constant
+			this.jSquares = new JSquare[17][17];
 			this.setPreferredSize(new Dimension(size, size));
 			this.add(this.background);
 		}
@@ -821,6 +822,7 @@ class Playground
 					else
 					{
 						final JSquare cell = new JSquare(square);
+						this.jSquares[x][y] = cell;
 						cell.playground = playground;
 						p1.add(cell, gbc);
 
@@ -857,53 +859,44 @@ class Playground
 			this.background.add(p1);
 		}
 
-//	todo
-//		/**
-//		 * Zeigt den vorbereiteten Spielzug auf dem Grid
-//		 *
-//		 * @param playTiles der Zug zu zeigen. {@code null} für gar keinen Zug.
-//		 */
-//		void highlightMove(final PlayTiles playTiles)
-//		{
-//			this.preparedPlayTiles = playTiles;
-//			this.preparedMoveStones.clear();
-//			if (playTiles != null)
-//			{
-//				final ArrayList<Grid.Square> squares = new ArrayList<>(this.preparedMoveStones.keySet());
-//				this.preparedMoveStones.putAll(playTiles.getStones(this.grid, this.sli));
-//				highlightWord(squares);
-//			}
-//		}
-
-		private void highlightWord(final ArrayList<Square> squares)
+		private void highlightWord(final PlayTiles action)
 		{
+			final ArrayList<JGrid.JSquare> squares = new ArrayList<>();
+			boolean isHorizontal = action.getDirection() == Grid.Direction.HORIZONTAL;
+			int x = action.startSquare.x;
+			int y = action.startSquare.y;
+			for (int i=0; i < action.word.length(); i++)
+			{
+				squares.add(this.jSquares[x][y]);
+				if (isHorizontal)
+				{
+					x++;
+				}
+				else
+				{
+					y++;
+				}
+			}
+
 			final int INSET = 4;
 			final Color preparedMoveColor = Color.RED;
 			this.specialBorders.clear();
 
-			if (!squares.isEmpty())
+			for (int i = 0; i < squares.size(); i++)
 			{
-				boolean isHorizontal = squares.size() == 1
-						|| squares.get(1).getX() == squares.get(0).getX() + 1;
+				final int top = (isHorizontal || i == 0) ? INSET : 0;
+				final int left = (!isHorizontal || i == 0) ? INSET : 0;
+				final int bottom = (isHorizontal || i == squares.size() - 1) ? INSET : 0;
+				final int right = (!isHorizontal || i == squares.size() - 1) ? INSET : 0;
 
-				for (int i = 0; i < squares.size(); i++)
-				{
+				final MatteBorder border = new MatteBorder(
+						top, left, bottom, right, preparedMoveColor
+				);
 
-					final int top = (isHorizontal || i == 0) ? INSET : 0;
-					final int left = (!isHorizontal || i == 0) ? INSET : 0;
-					final int bottom = (isHorizontal || i == squares.size() - 1) ? INSET : 0;
-					final int right = (!isHorizontal || i == squares.size() - 1) ? INSET : 0;
-
-					final MatteBorder border = new MatteBorder(
-							top, left, bottom, right, preparedMoveColor
-					);
-
-					this.specialBorders.put(
-							squares.get(i),
-							border
-					);
-
-				}
+				this.specialBorders.put(
+						squares.get(i),
+						border
+				);
 			}
 
 			repaint();
@@ -1024,9 +1017,8 @@ class Playground
 				super.paintComponent(g);
 
 				final Graphics2D g2 = (Graphics2D) g;
-				final Insets insets = getInsets();
 
-				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this.square);
+				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this);
 				if (specialBorder != null)
 				{
 					specialBorder.paintBorder(
@@ -1186,7 +1178,11 @@ class Playground
 		{
 			try
 			{
-				getPreparedMove();
+				final Action action = getPreparedMove();
+				if (action instanceof PlayTiles)
+				{
+					Playground.this.jGrid.highlightWord((PlayTiles) action);
+				}
 			}
 			catch (final ScrabbleException.ForbiddenPlayException e1)
 			{
