@@ -8,7 +8,6 @@ import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.GameState;
-import oscrabble.data.HistoryEntry;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
@@ -101,7 +100,7 @@ class Playground
 	/**
 	 * Listing of the history of the game
 	 */
-	private JList<HistoryEntry> historyList;
+	private JList<Action> historyList;
 
 	/**
 	 * Currently played play.
@@ -268,7 +267,7 @@ class Playground
 			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
 			{
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setText(((HistoryEntry) value).move);
+				setText(((Action) value).notation);
 				return this;
 			}
 		});

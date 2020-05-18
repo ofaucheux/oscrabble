@@ -17,6 +17,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled // todo: change
 public class BruteForceMethodTest
 {
 

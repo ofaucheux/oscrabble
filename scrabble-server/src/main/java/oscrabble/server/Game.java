@@ -1,6 +1,5 @@
 package oscrabble.server;
 
-import org.apache.commons.collections4.BagUtils;
 import org.apache.commons.collections4.bag.HashBag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -94,7 +92,7 @@ public class Game
 	/**
 	 * History of the game, a line played move (even if it was an error).
 	 */
-	private final List<HistoryEntry> history = Collections.synchronizedList(new LinkedList<>());
+	private final List<Action> history = Collections.synchronizedList(new LinkedList<>());
 
 	/**
 	 * File to save and read the game configuration
@@ -269,7 +267,16 @@ public class Game
 			}
 		}
 
-		this.history.addAll(state.playedActions);
+		state.playedActions.forEach(a -> {
+			try
+			{
+				this.history.add(Action.parse(a));
+			}
+			catch (ScrabbleException.ForbiddenPlayException e)
+			{
+				throw new AssertionError("History entry not parsable");
+			}
+		});
 
 		this.grid = new Grid(state.grid);
 		this.bag.addAll(state.bag.tiles);
@@ -448,7 +455,7 @@ public class Game
 			players.add(player.toData());
 		}
 
-		final ArrayList<HistoryEntry> playedActions = new ArrayList<>();
+		final ArrayList<oscrabble.data.Action> playedActions = new ArrayList<>();
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
 
 
@@ -549,7 +556,7 @@ public class Game
 	 *
 	 * @param firstEndingPlayer player which has first emptied its rack, or {@code null} if nobody has cleared it.
 	 */
-	private synchronized void endGame(final PlayerInformation firstEndingPlayer, final HistoryEntry historyEntry)
+	private synchronized void endGame(final PlayerInformation firstEndingPlayer)
 	{
 		LOGGER.info("Games ends. Player which have clear its rack: " + (firstEndingPlayer == null ? null : firstEndingPlayer.uuid));
 		final StringBuffer message = new StringBuffer();
@@ -611,11 +618,6 @@ public class Game
 	public List<PlayerInformation> getPlayers()
 	{
 		return new ArrayList<>(this.players.values());
-	}
-
-	public List<HistoryEntry> getHistory()
-	{
-		return Collections.unmodifiableList(this.history);
 	}
 
 	/**
@@ -1016,18 +1018,14 @@ public class Game
 				player.lastAction = action;
 				this.actions.add(action);
 				dispatch(toInform -> toInform.afterPlay(action));
-				final HistoryEntry historyEntry = new HistoryEntry();
-				historyEntry.player = player.id;
-				historyEntry.move = action.notation;
-				historyEntry.score = score;
-				this.history.add(historyEntry);
+				this.history.add(action);
 				this.toPlay.pop();
 				this.toPlay.add(player);
 				this.states.add(getGameState());
 
 				if (player.rack.tiles.isEmpty())
 				{
-					endGame(player, historyEntry);
+					endGame(player);
 				}
 				else if (action instanceof Action.SkipTurn)
 				{
@@ -1038,7 +1036,7 @@ public class Game
 					});
 					if (!canPlay.get())
 					{
-						endGame(null, historyEntry);
+						endGame(null);
 					}
 				}
 			}

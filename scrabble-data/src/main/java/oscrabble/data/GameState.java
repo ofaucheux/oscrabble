@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -28,7 +27,7 @@ public class GameState
 	 */
 	public UUID playerOnTurn;
 
-	public List<HistoryEntry> playedActions;
+	public List<Action> playedActions;
 
 	public Grid grid;
 	public Bag bag;
