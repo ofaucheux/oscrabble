@@ -7,6 +7,6 @@ public class IllegalCoordinate extends Error
 {
 	public IllegalCoordinate(final String coordinate)
 	{
-		super("Cannot parse coordinate: " + coordinate);
+		super("Cannot parse coordinate: >" + coordinate + "<");
 	}
 }
