@@ -1,6 +1,5 @@
 package oscrabble.client;
 
-import org.apache.commons.collections4.IterableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -8,13 +7,13 @@ import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
 import oscrabble.data.PlayActionResponse;
-import oscrabble.data.Player;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.UUID;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 
 public class Client
@@ -29,6 +28,9 @@ public class Client
 	private final JRack rack;
 
 	private GameState lastKnownState = null; // TODO: use it in server.play() too
+
+	/** last played turn */
+	private UUID lastPlayedTurn;
 
 	public Client(final MicroServiceScrabbleServer server, final UUID game, final UUID player)
 	{
@@ -84,6 +86,15 @@ public class Client
 		final Bag rack = server.getRack(game, player);
 		lastKnownState = state;
 		LOGGER.info("Refresh UI with state " + state.hashCode());
+		if (!state.playedActions.isEmpty())
+		{
+			final UUID lastPlayedTurn = state.playedActions.get(state.playedActions.size() - 1).getTurnId();
+			if (Client.this.lastPlayedTurn != lastPlayedTurn)
+			{
+				Client.this.lastPlayedTurn = lastPlayedTurn;
+				playground.jGrid.scheduleLastWordBlink(lastPlayedTurn);
+			}
+		}
 		this.playground.refreshUI(state);
 		this.rack.setTiles(rack.tiles);
 		this.playground.gridFrame.setCursor(

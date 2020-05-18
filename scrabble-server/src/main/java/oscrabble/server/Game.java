@@ -456,6 +456,14 @@ public class Game
 		}
 
 		final ArrayList<oscrabble.data.Action> playedActions = new ArrayList<>();
+		this.history.forEach( h -> {
+			playedActions.add(
+					oscrabble.data.Action.builder()
+					.notation(h.notation)
+					.turnId(h.turnId)
+					.build()
+			);
+		});
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
 
 		final oscrabble.data.Grid grid = new oscrabble.data.Grid();

@@ -3,6 +3,7 @@ package oscrabble.client;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
@@ -10,23 +11,17 @@ import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.GameState;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
-import oscrabble.data.objects.Square;
 import oscrabble.exception.IllegalCoordinate;
 import oscrabble.player.AbstractPlayer;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
@@ -41,7 +36,7 @@ import java.util.regex.Pattern;
  */
 class Playground
 {
-	private final static int CELL_SIZE = 40;
+	final static int CELL_SIZE = 40;
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
 	private static final Pattern PATTERN_PASS_COMMAND = Pattern.compile("-\\s*");
 	static final Color SCRABBLE_GREEN = Color.green.darker().darker();
@@ -63,7 +58,7 @@ class Playground
 	/**
 	 * Grid
 	 */
-	private final JGrid jGrid;
+	final JGrid jGrid;
 
 	/**
 	 * Command prompt
@@ -120,12 +115,13 @@ class Playground
 	/**
 	 * The client this playground is for
 	 */
-	private final Client client;
+	@Nullable
+	final Client client;
 
 	/**
 	 * Action defined in the command prompt
 	 */
-	private Action action;
+	Action action;
 	/**
 	 * Register a player.
 	 *
@@ -438,35 +434,6 @@ class Playground
 //		});
 	}
 
-	/**
-	 * Execute action after play.
-	 *
-	 * @param play   the occurred play
-	 */
-	public void afterPlay(final Action play)
-	{
-//		this.jGrid.lastAction = action;
-//		refreshUI();
-
-		this.flashFuture = this.executor.schedule(
-				() -> {
-					for (int i = 0; i < 3; i++)
-					{
-						Thread.sleep(5 * 100);
-						this.jGrid.hideNewStones = !this.jGrid.hideNewStones;
-						this.jGrid.repaint();
-					}
-					this.jGrid.hideNewStones = false;
-					this.jGrid.repaint();
-					this.flashFuture = null;
-					return null;
-				},
-				0,
-				TimeUnit.SECONDS);
-
-	}
-
-
 	public void refreshUI(final GameState state)
 	{
 		this.jGrid.setGrid(state.getGrid(), this);
@@ -602,7 +569,7 @@ class Playground
 	/**
 	 * Set a cell as the start of the future tipped word.
 	 */
-	private void setStartCell(final JGrid.JSquare click)
+	void setStartCell(final JGrid.JSquare click)
 	{
 		String newPrompt = null;
 		try
@@ -732,414 +699,6 @@ class Playground
 
 	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
 	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
-
-	/**
-	 * Darstellung der Spielfläche
-	 */
-	static class JGrid extends JPanel
-	{
-		final JSquare[][] jSquares;
-
-		private Grid grid;
-		private final HashMap<JSquare, MatteBorder> specialBorders = new HashMap<>();
-
-		/**
-		 *
-		 */
-//		private final Grid game;
-
-		private final Map<Square, Character> preparedMoveStones;
-
-		/**
-		 * Frame für die Anzeige der Definition von Wärtern
-		 */
-		private final DictionaryComponent dictionaryComponent;
-
-		final JComponent background;
-
-		/**
-		 * Client mit dem diese Grid verknüpft ist
-		 */
-		private Playground playground;
-
-		/**
-		 * Set to let the new stones flash
-		 */
-		private boolean hideNewStones;
-
-		/**
-		 * Last played action
-		 */
-		private UUID lastAction;
-
-		/**
-		 * Spielfeld des Scrabbles
-		 */
-		JGrid()
-		{
-			this.dictionaryComponent = new DictionaryComponent();
-
-			this.setLayout(new BorderLayout());
-			this.background = new JPanel(new BorderLayout());
-			this.preparedMoveStones = new LinkedHashMap<>();
-			final int size = 15 * CELL_SIZE;  // TODO: use a constant
-			this.jSquares = new JSquare[17][17];
-			this.setPreferredSize(new Dimension(size, size));
-			this.add(this.background);
-		}
-
-		/**
-		 *
-		 * @param grid grid description coming from the server
-		 * @param playground playground this grid will belong to
-		 */
-		void setGrid(oscrabble.data.Grid grid, final Playground playground)
-		{
-			this.grid = new Grid(grid);
-			final int numberOfRows = this.grid.getSize() + 2;
-
-			final JPanel p1 = new JPanel();
-			final GridBagLayout bagLayout = new GridBagLayout();
-			p1.setLayout(bagLayout);
-			final GridBagConstraints gbc = new GridBagConstraints();
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.weightx = 1;
-			gbc.weighty = 1;
-
-			// Draw each Cell
-			for (int y = 0; y < numberOfRows; y++)
-			{
-				gbc.gridy = y;
-				for (int x = 0; x < numberOfRows; x++)
-				{
-					gbc.gridx = x;
-					final Square square = this.grid.get(x, y);
-					if (square.isBorder)
-					{
-						p1.add(new BorderCell(square), gbc);
-					}
-					else
-					{
-						final JSquare cell = new JSquare(square);
-						this.jSquares[x][y] = cell;
-						cell.playground = playground;
-						p1.add(cell, gbc);
-
-						final Color cellColor;
-						if (cell.square.letterBonus == 2)
-						{
-							cellColor = Color.decode("0x00BFFF");
-						}
-						else if (cell.square.letterBonus == 3)
-						{
-							cellColor = Color.blue;
-						}
-						else if (cell.square.wordBonus == 2)
-						{
-							cellColor = Color.decode("#F6CEF5").darker();
-						}
-						else if (cell.square.wordBonus == 3)
-						{
-							cellColor = Color.red;
-						}
-						else
-						{
-							cellColor = SCRABBLE_GREEN;
-						}
-
-						cell.setBackground(cellColor);
-						cell.setOpaque(true);
-						cell.setBorder(new LineBorder(Color.BLACK, 1));
-					}
-				}
-			}
-
-			this.background.removeAll();
-			this.background.add(p1);
-		}
-
-		private void highlightWord(final PlayTiles action)
-		{
-			this.specialBorders.clear();
-
-			final ArrayList<JGrid.JSquare> squares = new ArrayList<>();
-			boolean isHorizontal = action.getDirection() == Grid.Direction.HORIZONTAL;
-			int x = action.startSquare.x;
-			int y = action.startSquare.y;
-			for (int i=0; i < action.word.length(); i++)
-			{
-				if (x > 15 || y > 15)
-				{
-					// word runs outside of the grid.
-					return;
-				}
-
-				squares.add(this.jSquares[x][y]);
-				if (isHorizontal)
-				{
-					x++;
-				}
-				else
-				{
-					y++;
-				}
-			}
-
-			final int INSET = 4;
-			final Color preparedMoveColor = Color.RED;
-
-			for (int i = 0; i < squares.size(); i++)
-			{
-				final int top = (isHorizontal || i == 0) ? INSET : 0;
-				final int left = (!isHorizontal || i == 0) ? INSET : 0;
-				final int bottom = (isHorizontal || i == squares.size() - 1) ? INSET : 0;
-				final int right = (!isHorizontal || i == squares.size() - 1) ? INSET : 0;
-
-				final MatteBorder border = new MatteBorder(
-						top, left, bottom, right, preparedMoveColor
-				);
-
-				this.specialBorders.put(
-						squares.get(i),
-						border
-				);
-			}
-
-			repaint();
-		}
-
-		/**
-		 * Holt und zeigt die Definitionen eines Wortes
-		 *
-		 * @param word Wort
-		 */
-		private void showDefinition(final String word)
-		{
-			Window dictionaryFrame = SwingUtilities.getWindowAncestor(this.dictionaryComponent);
-			if (dictionaryFrame == null)
-			{
-				dictionaryFrame = new JFrame(MESSAGES.getString("description"));
-				dictionaryFrame.add(this.dictionaryComponent);
-				dictionaryFrame.setSize(600, 600);
-			}
-
-
-			this.dictionaryComponent.showDescription(word);
-			dictionaryFrame.setVisible(true);
-			dictionaryFrame.toFront();
-		}
-
-		/**
-		 * Component für die Anzeige der Nummer und Buchstaben der Zeilen und Spalten des Grids.
-		 */
-		private static class BorderCell extends JComponent
-		{
-			private final Square square;
-
-			BorderCell(final Square square)
-			{
-				this.square = square;
-			}
-
-			@Override
-			protected void paintComponent(final Graphics g)
-			{
-				super.paintComponent(g);
-
-				final Graphics2D g2 = (Graphics2D) g;
-				final Insets insets = getInsets();
-
-				// Wir erben direkt aus JComponent und müssen darum den Background selbst zeichnen todo check
-				if (isOpaque() && getBackground() != null)
-				{
-					g2.setPaint(Color.lightGray);
-					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
-				}
-
-				// Draw the label
-				g2.setColor(Color.BLACK);
-				final Font font = g2.getFont().deriveFont(JTile.getCharacterSize(this)).deriveFont(Font.BOLD);
-				g2.setFont(font);
-				FontMetrics metrics = g2.getFontMetrics(font);
-
-				final int x = this.square.getX();
-				final int y = this.square.getY();
-				if ((x > 0 && x < Grid.GRID_SIZE_PLUS_2 - 1) || (y > 0 && y < Grid.GRID_SIZE_PLUS_2 - 1))
-				{
-					final String label = x == 0 || x == Grid.GRID_SIZE_PLUS_2 - 1
-							? Integer.toString(y)
-							: Character.toString((char) ('@' + x));
-					int tx = (getWidth() - metrics.stringWidth(label)) / 2;
-					int ty = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
-					g2.drawString(label, tx, ty);
-				}
-			}
-		}
-
-		/**
-		 * A cell of the scrabble field.
-		 */
-		class JSquare extends JPanel
-		{
-			private final AbstractAction showDefinitionAction;
-			private final Square square;
-
-			/** Playground associated to this square */
-			private Playground playground;
-
-			JSquare(final Square square)
-			{
-				this.square = square;
-				this.setLayout(new BorderLayout());
-				this.setPreferredSize(JTile.CELL_DIMENSION);
-
-				if (this.square.tile != null)
-				{
-					final JTile tile = new JTile(this.square.tile);
-					add(tile);
-					tile.addMouseListener(new MouseAdapter()
-					{
-						@Override
-						public void mouseClicked(final MouseEvent e)
-						{
-							JSquare.this.processMouseEvent(e);
-						}
-					});
-					//noinspection StatementWithEmptyBody
-//					if (JGrid.this.hideNewStones && this.square.action == JGrid.this.lastAction)
-//					{
-//						// don't draw todo: to implement in jtile
-//					}
-//					else
-//					{
-//						tile.paintComponent(g2);
-//					}
-				}
-//				else if ((c = preparedMoveStones.get(this.square)) != null)
-//				{
-//					 TODO
-//					JTile.drawTile(g2, this, /* TODO tiles.get(c) */ null, Color.blue);
-//				}
-
-
-				final JPopupMenu popup = new JPopupMenu();
-				this.showDefinitionAction = new AbstractAction()
-				{
-					@Override
-					public void actionPerformed(final ActionEvent e)
-					{
-						JGrid.this.grid.getWords(square.getCoordinate()).forEach(
-								word -> showDefinition(word)
-						);
-					}
-				};
-				final JMenuItem menuItem = popup.add(this.showDefinitionAction);
-				popup.addPopupMenuListener(new PopupMenuListener()
-				{
-					@Override
-					public void popupMenuWillBecomeVisible(final PopupMenuEvent e)
-					{
-						final Set<String> words = JGrid.this.grid.getWords(square.getCoordinate());
-						if (words.isEmpty())
-						{
-							popup.remove(menuItem);
-						}
-						else
-						{
-							popup.add(menuItem);
-							JSquare.this.showDefinitionAction.putValue(javax.swing.Action.NAME, (words.size() > 1 ? MESSAGES.getString("show.definitions") : MESSAGES.getString("show.definition")));
-						}
-					}
-
-					@Override
-					public void popupMenuWillBecomeInvisible(final PopupMenuEvent e)
-					{
-					}
-
-					@Override
-					public void popupMenuCanceled(final PopupMenuEvent e)
-					{
-					}
-				});
-				setComponentPopupMenu(popup);
-
-				this.addMouseListener(new MouseAdapter()
-				{
-					@Override
-					public void mouseClicked(final MouseEvent e)
-					{
-						JGrid.this.playground.setStartCell(JSquare.this);
-					}
-				});
-			}
-
-
-			@Override
-			protected void paintComponent(final Graphics g)
-			{
-				super.paintComponent(g);
-
-				final Graphics2D g2 = (Graphics2D) g;
-
-				final MatteBorder specialBorder = JGrid.this.specialBorders.get(this);
-				if (specialBorder != null)
-				{
-					specialBorder.paintBorder(
-							this, g, 0, 0, getWidth(), getHeight()
-					);
-				}
-			}
-
-			@Override
-			public void paint(final Graphics g)
-			{
-				super.paint(g);
-				final Graphics2D g2 = (Graphics2D) g;
-				// Markiert die Start Zelle des Wortes todo
-				if (this.playground != null)
-				{
-					PlayTiles action;
-					if (this.playground.action instanceof PlayTiles
-							&& (action = ((PlayTiles) this.playground.action)).startSquare.getSquare().equals(this.square))
-					{
-
-						g2.setColor(Color.BLACK);
-						final Polygon p = new Polygon();
-						final int h = getHeight();
-						final int POLYGONE_SIZE = h / 3;
-						p.addPoint(-POLYGONE_SIZE / 2, 0);
-						p.addPoint(0, POLYGONE_SIZE / 2);
-						p.addPoint(POLYGONE_SIZE / 2, 0);
-
-						final AffineTransform saved = ((Graphics2D) g).getTransform();
-						switch (action.getDirection())
-						{
-							case VERTICAL:
-								g2.translate(h / 2f, 6f);
-								break;
-							case HORIZONTAL:
-								g2.rotate(-Math.PI / 2);
-								g2.translate(-h / 2f, 6f);
-								break;
-							default:
-								throw new IllegalStateException("Unexpected value: " + action.getDirection());
-						}
-						g2.fillPolygon(p);
-						((Graphics2D) g).setTransform(saved);
-					}
-				}
-			}
-		}
-
-		void setPlayground(final Playground client)
-		{
-			if (this.playground != null)
-			{
-				throw new AssertionError("The client is already set");
-			}
-			this.playground = client;
-		}
-	}
 
 
 //	/**

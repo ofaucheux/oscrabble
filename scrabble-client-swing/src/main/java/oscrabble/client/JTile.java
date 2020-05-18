@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.UUID;
 
 /**
  * Darstellung eines Spielstein.
@@ -16,6 +17,13 @@ class JTile extends JComponent
 
 	final static int CELL_SIZE = 40;
 	final static Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);
+
+	/** Grid this tile belongs to */
+	JGrid grid;
+
+	/** Turn the tile has been played, if any */
+	private UUID turn;
+
 	private final boolean isJoker;
 	private final char letter;
 	private final int value;
@@ -38,6 +46,7 @@ class JTile extends JComponent
 	public JTile(final Tile tile)
 	{
 		this(tile.c, tile.points, tile.isJoker);
+		this.turn = tile.turn;
 	}
 
 	/**
@@ -59,7 +68,6 @@ class JTile extends JComponent
 						 final boolean isJoker,
 						 final Color foregroundColor)
 	{
-
 		g2.setPaint(STONE_BACKGROUND_COLOR);
 		final Insets insets = component.getInsets();
 		//noinspection SuspiciousNameCombination
@@ -105,6 +113,11 @@ class JTile extends JComponent
 	protected void paintComponent(final Graphics g)
 	{
 		super.paintComponent(g);
+		if (this.grid != null && this.grid.turnToHide != null && this.grid.turnToHide.equals(this.turn))
+		{
+			return;
+		}
+
 		drawTile((Graphics2D) g, this, this.letter, this.value, this.isJoker, Color.black);
 	}
 
