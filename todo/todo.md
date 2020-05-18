@@ -3,9 +3,14 @@
 - ✔ click on the case of the grid
 - ✔ quit the client application
 - ✔ focus on the rack pane
+- Problem by error message
 - select difficulty of AI
 - ✔ preshow the play
 - ✔ clignotement
 - dictionary: show definition
 - history
 - highlight history selection
+- End of game
+- focus on jrack > focus on main grid
+- Field "Player" of played action is empty
+- forbid play after end
