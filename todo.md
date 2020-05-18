@@ -1,7 +1,6 @@
 # todo
 - done - play again AI
 - done - click on the case of the grid
-- todo - problem if tile already on cell
 - done - quit the client application
 - done - focus on the rack pane
 - select difficulty of AI

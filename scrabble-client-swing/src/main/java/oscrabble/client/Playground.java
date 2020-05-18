@@ -871,7 +871,7 @@ class Playground
 			{
 				if (x > 15 || y > 15)
 				{
-					// word run outside of the grid.
+					// word runs outside of the grid.
 					return;
 				}
 
@@ -931,6 +931,53 @@ class Playground
 		}
 
 		/**
+		 * Component für die Anzeige der Nummer und Buchstaben der Zeilen und Spalten des Grids.
+		 */
+		private static class BorderCell extends JComponent
+		{
+			private final Square square;
+
+			BorderCell(final Square square)
+			{
+				this.square = square;
+			}
+
+			@Override
+			protected void paintComponent(final Graphics g)
+			{
+				super.paintComponent(g);
+
+				final Graphics2D g2 = (Graphics2D) g;
+				final Insets insets = getInsets();
+
+				// Wir erben direkt aus JComponent und müssen darum den Background selbst zeichnen todo check
+				if (isOpaque() && getBackground() != null)
+				{
+					g2.setPaint(Color.lightGray);
+					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
+				}
+
+				// Draw the label
+				g2.setColor(Color.BLACK);
+				final Font font = g2.getFont().deriveFont(JTile.getCharacterSize(this)).deriveFont(Font.BOLD);
+				g2.setFont(font);
+				FontMetrics metrics = g2.getFontMetrics(font);
+
+				final int x = this.square.getX();
+				final int y = this.square.getY();
+				if ((x > 0 && x < Grid.GRID_SIZE_PLUS_2 - 1) || (y > 0 && y < Grid.GRID_SIZE_PLUS_2 - 1))
+				{
+					final String label = x == 0 || x == Grid.GRID_SIZE_PLUS_2 - 1
+							? Integer.toString(y)
+							: Character.toString((char) ('@' + x));
+					int tx = (getWidth() - metrics.stringWidth(label)) / 2;
+					int ty = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
+					g2.drawString(label, tx, ty);
+				}
+			}
+		}
+
+		/**
 		 * A cell of the scrabble field.
 		 */
 		class JSquare extends JPanel
@@ -949,7 +996,16 @@ class Playground
 
 				if (this.square.tile != null)
 				{
-					add(new JTile(this.square.tile));
+					final JTile tile = new JTile(this.square.tile);
+					add(tile);
+					tile.addMouseListener(new MouseAdapter()
+					{
+						@Override
+						public void mouseClicked(final MouseEvent e)
+						{
+							JSquare.this.processMouseEvent(e);
+						}
+					});
 					//noinspection StatementWithEmptyBody
 //					if (JGrid.this.hideNewStones && this.square.action == JGrid.this.lastAction)
 //					{
@@ -1018,6 +1074,7 @@ class Playground
 				});
 			}
 
+
 			@Override
 			protected void paintComponent(final Graphics g)
 			{
@@ -1032,16 +1089,22 @@ class Playground
 							this, g, 0, 0, getWidth(), getHeight()
 					);
 				}
+			}
 
+			@Override
+			public void paint(final Graphics g)
+			{
+				super.paint(g);
+				final Graphics2D g2 = (Graphics2D) g;
 				// Markiert die Start Zelle des Wortes todo
 				if (this.playground != null)
 				{
 					PlayTiles action;
 					if (this.playground.action instanceof PlayTiles
-					&& (action = ((PlayTiles) this.playground.action)).startSquare.getSquare().equals(this.square))
+							&& (action = ((PlayTiles) this.playground.action)).startSquare.getSquare().equals(this.square))
 					{
 
-						g.setColor(Color.BLACK);
+						g2.setColor(Color.BLACK);
 						final Polygon p = new Polygon();
 						final int h = getHeight();
 						final int POLYGONE_SIZE = h / 3;
@@ -1062,58 +1125,9 @@ class Playground
 							default:
 								throw new IllegalStateException("Unexpected value: " + action.getDirection());
 						}
-						g.fillPolygon(p);
+						g2.fillPolygon(p);
 						((Graphics2D) g).setTransform(saved);
 					}
-				}
-			}
-
-		}
-
-		/**
-		 * Component für die Anzeige der Nummer und Buchstaben der Zeilen und Spalten des Grids.
-		 */
-		private static class BorderCell extends JComponent
-		{
-
-			private final Square square;
-
-			BorderCell(final Square square)
-			{
-				this.square = square;
-			}
-
-			@Override
-			protected void paintComponent(final Graphics g)
-			{
-				super.paintComponent(g);
-
-				final Graphics2D g2 = (Graphics2D) g;
-				final Insets insets = getInsets();
-
-				// Wir erben direkt aus JComponent und müssen darum den Background selbst zeichnen todo check
-				if (isOpaque() && getBackground() != null)
-				{
-					g2.setPaint(Color.lightGray);
-					g2.fillRect(insets.right, insets.top, getWidth() - insets.left, getHeight() - insets.bottom);
-				}
-
-				// Draw the label
-				g2.setColor(Color.BLACK);
-				final Font font = g2.getFont().deriveFont(JTile.getCharacterSize(this)).deriveFont(Font.BOLD);
-				g2.setFont(font);
-				FontMetrics metrics = g.getFontMetrics(font);
-
-				final int x = square.getX();
-				final int y = square.getY();
-				if ((x > 0 && x < Grid.GRID_SIZE_PLUS_2 - 1) || (y > 0 && y < Grid.GRID_SIZE_PLUS_2 - 1))
-				{
-					final String label = x == 0 || x == Grid.GRID_SIZE_PLUS_2 - 1
-							? Integer.toString(y)
-							: Character.toString((char) ('@' + x));
-					int tx = (getWidth() - metrics.stringWidth(label)) / 2;
-					int ty = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
-					g.drawString(label, tx, ty);
 				}
 			}
 		}

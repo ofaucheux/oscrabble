@@ -27,7 +27,7 @@ class JTile extends JComponent
 		this.isJoker = isJoker;
 		setPreferredSize(CELL_DIMENSION);
 		setTransferHandler(new TransferHandler("name"));
-		addMouseListener(new DragMouseAdapter());
+//		addMouseListener(new DragMouseAdapter());
 	}
 //
 //	public JTile(final Square square)
