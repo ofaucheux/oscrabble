@@ -209,15 +209,6 @@ class Playground
 
 	private DisplayedMessage lastMessage;
 
-	private void resetPossibleMovesPanel()
-	{
-		possibleMovePanel.removeAll();
-		possibleMovePanel.invalidate();
-		possibleMovePanel.repaint();
-		showPossibilitiesButton.setText(LABEL_DISPLAY);
-		possibleMovePanel.add(showPossibilitiesButton, BorderLayout.SOUTH);
-	}
-
 	Playground(final Client client)
 	{
 		this.client = client;
@@ -231,8 +222,8 @@ class Playground
 		final AbstractDocument document = (AbstractDocument) this.commandPrompt.getDocument();
 		document.addDocumentListener(promptListener);
 		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
-		telnetFrame = new TelnetFrame("Help");
-		telnetFrame.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		this.telnetFrame = new TelnetFrame("Help");
+		this.telnetFrame.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		this.gridFrame = new JFrame();
 		final WindowAdapter frameAdapter = new WindowAdapter()
@@ -332,17 +323,17 @@ class Playground
 		rollbackButton.setEnabled(false);
 		panel1.add(rollbackButton);
 
-		possibleMovePanel = new JPanel();
-		possibleMovePanel.setBorder(new TitledBorder(MESSAGES.getString("possible.moves")));
-		possibleMovePanel.setSize(new Dimension(200, 300));
-		possibleMovePanel.setLayout(new BorderLayout());
+		this.possibleMovePanel = new JPanel();
+		this.possibleMovePanel.setBorder(new TitledBorder(MESSAGES.getString("possible.moves")));
+		this.possibleMovePanel.setSize(new Dimension(200, 300));
+		this.possibleMovePanel.setLayout(new BorderLayout());
 		// todo: AI Empfehlungen
 //		final BruteForceMethod bruteForceMethod = new BruteForceMethod(	this.game.getDictionary());
 //		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(this, bruteForceMethod));
 //		showPossibilitiesButton.setFocusable(false);
 //		resetPossibleMovesPanel();
 
-		panel1.add(possibleMovePanel);
+		panel1.add(this.possibleMovePanel);
 		panel1.add(Box.createVerticalGlue());
 
 		// todo: configpanel
@@ -383,6 +374,15 @@ class Playground
 			}
 		});
 
+	}
+
+	private void resetPossibleMovesPanel()
+	{
+		this.possibleMovePanel.removeAll();
+		this.possibleMovePanel.invalidate();
+		this.possibleMovePanel.repaint();
+		this.showPossibilitiesButton.setText(LABEL_DISPLAY);
+		this.possibleMovePanel.add(this.showPossibilitiesButton, BorderLayout.SOUTH);
 	}
 
 //	protected synchronized void refreshUI(final SwingPlayer caller)
@@ -529,7 +529,7 @@ class Playground
 			final StringBuilder inputWord = new StringBuilder(matcher.group(1));
 			if (inputWord.toString().trim().isEmpty())
 			{
-				action = null;
+				this.action = null;
 			}
 			else
 			{
@@ -590,14 +590,14 @@ class Playground
 //						}
 //					}
 //				}
-			action = Action.parse(inputWord.toString());
+			this.action = Action.parse(inputWord.toString());
 			LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 		}
 		else
 		{
-			action = null;
+			this.action = null;
 		}
-		return action;
+		return this.action;
 	}
 
 	/**
@@ -1160,14 +1160,14 @@ class Playground
 	 */
 	void executeCommand()
 	{
-		if (client == null)
+		if (this.client == null)
 		{
 			JOptionPane.showMessageDialog(Playground.this.gridFrame, "This playground has no client");
 			return;
 		}
 
 		Playground.this.client.executeCommand(getCommand());
-		commandPrompt.setText("");
+		this.commandPrompt.setText("");
 	}
 
 	private class CommandPromptAction extends AbstractAction implements DocumentListener
