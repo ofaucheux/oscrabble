@@ -23,7 +23,7 @@ public class AIPlayer extends AbstractPlayer
 	/**
 	 * How long to wait before playing the found word (ms).
 	 */
-	private long throttle = 500;
+	private long throttle = 0;
 
 	/**
 	 * Construct an AI Player.
