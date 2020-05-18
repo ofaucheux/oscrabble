@@ -14,3 +14,6 @@
 - focus on jrack > focus on main grid
 - Field "Player" of played action is empty
 - forbid play after end
+- AI cannot play anymore
+- order of player on the score board
+- End, wenn a player has no tiles anymore
