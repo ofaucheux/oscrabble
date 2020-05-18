@@ -5,7 +5,7 @@
 - ✔ focus on the rack pane
 - select difficulty of AI
 - ✔ preshow the play
-- clignotement
+- ✔ clignotement
 - dictionary: show definition
 - history
 - highlight history selection
