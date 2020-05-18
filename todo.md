@@ -1,10 +1,10 @@
 # todo
-- done - play again AI
-- done - click on the case of the grid
-- done - quit the client application
-- done - focus on the rack pane
+- ✔ play again AI
+- ✔ click on the case of the grid
+- ✔ quit the client application
+- ✔ focus on the rack pane
 - select difficulty of AI
-- done - preshow the play
+- ✔ preshow the play
 - clignotement
 - dictionary: show definition
 - history

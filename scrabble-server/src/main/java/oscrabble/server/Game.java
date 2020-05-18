@@ -458,10 +458,8 @@ public class Game
 		final ArrayList<oscrabble.data.Action> playedActions = new ArrayList<>();
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
 
-
 		final oscrabble.data.Grid grid = new oscrabble.data.Grid();
 		grid.squares = new ArrayList<>();
-		final Map<Character, ScrabbleRules.Letter> lettersDefinition = this.dictionary.getScrabbleRules().getLetters();
 		this.grid.getAllSquares().forEach(s ->
 				{
 					if (s.isBorder)
@@ -469,13 +467,12 @@ public class Game
 						return;
 					}
 
-					final Tile tile = s.tile;
 					final oscrabble.data.Square square = oscrabble.data.Square.builder()
 							.settingPlay(s.action)
 							.wordBonus(s.wordBonus)
 							.letterBonus(s.letterBonus)
 							.coordinate(s.getCoordinate())
-							.tile(tile)
+							.tile(s.tile)
 							.build();
 					grid.squares.add(square);
 				}

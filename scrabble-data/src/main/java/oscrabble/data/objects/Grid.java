@@ -154,6 +154,8 @@ public class Grid
 								isJoker || rules == null
 										? 0
 										: rules.getLetters().get(uppercase).points)
+						.position(sq.getCoordinate())
+						.turn(playTiles.turnId)
 						.build();
 			}
 			else if (Character.toUpperCase(sq.tile.c) != uppercase)
