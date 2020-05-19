@@ -10,7 +10,7 @@
 - dictionary: show definition
 - ✔ history
 - highlight history selection
-- End of game
+- End of game: message, points
 - focus on jrack > focus on main grid
 - Field "Player" of played action is empty
 - forbid play after end
@@ -18,3 +18,4 @@
 - order of player on the score board
 - ✔ End, wenn a player has no tiles anymore
 - ✔ show prepared tiles
+- accept retry on error
