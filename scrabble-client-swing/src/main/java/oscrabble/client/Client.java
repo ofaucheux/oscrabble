@@ -13,7 +13,6 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.UUID;
-import java.util.concurrent.*;
 import java.util.regex.Matcher;
 
 public class Client
@@ -193,16 +192,18 @@ public class Client
 		@Override
 		public void run()
 		{
-			while (true)
+			boolean endReached = false;
+			while (!endReached)
 			{
 				try
 				{
-					Thread.sleep(1000);
-					final GameState state = server.getState(game);
-					if (!state.equals(lastKnownState))
+					final GameState state = Client.this.server.getState(Client.this.game);
+					if (!state.equals(Client.this.lastKnownState))
 					{
 						refreshUI(state);
 					}
+					endReached = state.state == GameState.State.ENDED;
+					Thread.sleep(1000);
 				}
 				catch (InterruptedException | ScrabbleException.CommunicationException e)
 				{
@@ -210,6 +211,7 @@ public class Client
 					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
 				}
 			}
+			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, "End of game reached!");
 		}
 	}
 
