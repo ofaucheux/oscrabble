@@ -94,7 +94,7 @@ class Playground
 	/**
 	 * Listing of the history of the game
 	 */
-	private JList<Action> historyList;
+	private JList<oscrabble.data.Action> historyList;
 
 	/**
 	 * Currently played play.
@@ -263,8 +263,9 @@ class Playground
 			@Override
 			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
 			{
-				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setText(((Action) value).notation);
+				final oscrabble.data.Action action = (oscrabble.data.Action) value;
+				super.getListCellRendererComponent(list, action, index, isSelected, cellHasFocus);
+				setText(action.notation);
 				return this;
 			}
 		});
@@ -418,6 +419,7 @@ class Playground
 	{
 		this.jGrid.setGrid(state.getGrid(), this);
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
+		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
 	}
 
 	public String getCommand()
