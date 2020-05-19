@@ -8,7 +8,7 @@
 - ✔ preshow the play
 - ✔ clignotement
 - dictionary: show definition
-- history
+- ✔ history
 - highlight history selection
 - End of game
 - focus on jrack > focus on main grid
