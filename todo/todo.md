@@ -3,7 +3,7 @@
 - ✔ click on the case of the grid
 - ✔ quit the client application
 - ✔ focus on the rack pane
-- Problem by error message
+- ✔ Problem by error message
 - select difficulty of AI
 - ✔ preshow the play
 - ✔ clignotement
@@ -16,4 +16,4 @@
 - forbid play after end
 - AI cannot play anymore
 - order of player on the score board
-- End, wenn a player has no tiles anymore
+- ✔ End, wenn a player has no tiles anymore
