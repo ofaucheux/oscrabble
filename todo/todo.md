@@ -17,3 +17,4 @@
 - AI cannot play anymore
 - order of player on the score board
 - ✔ End, wenn a player has no tiles anymore
+- ✔ show prepared tiles

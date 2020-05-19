@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import lombok.SneakyThrows;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
@@ -14,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -26,10 +28,21 @@ class JGrid extends JPanel
 	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 	private final HashMap<JSquare, MatteBorder> specialBorders = new HashMap<>();
 
-	/**
-	 *
-	 */
-//		private final Grid game;
+	private List<JSquare> getAllSquares()
+	{
+		final ArrayList<JSquare> l = new ArrayList<>();
+		for (final JSquare[] line : this.jSquares)
+		{
+			for (final JSquare jSquare : line)
+			{
+				if (jSquare != null)
+				{
+					l.add(jSquare);
+				}
+			}
+		}
+		return l;
+	}
 
 	/**
 	 * Frame für die Anzeige der Definition von Wärtern
@@ -163,9 +176,13 @@ class JGrid extends JPanel
 	void highlightWord(final oscrabble.controller.Action.PlayTiles action)
 	{
 		this.specialBorders.clear();
+		this.getAllSquares().forEach( sq -> sq.preparedTile = null);
 
 		final ArrayList<JSquare> squares = new ArrayList<>();
 		boolean isHorizontal = action.getDirection() == Grid.Direction.HORIZONTAL;
+		final int INSET = 4;
+		final Color preparedMoveColor = Color.RED;
+
 		int x = action.startSquare.x;
 		int y = action.startSquare.y;
 		for (int i=0; i < action.word.length(); i++)
@@ -187,9 +204,7 @@ class JGrid extends JPanel
 			}
 		}
 
-		final int INSET = 4;
-		final Color preparedMoveColor = Color.RED;
-
+		// todo: merge with upper loop?
 		for (int i = 0; i < squares.size(); i++)
 		{
 			final int top = (isHorizontal || i == 0) ? INSET : 0;
@@ -201,8 +216,11 @@ class JGrid extends JPanel
 					top, left, bottom, right, preparedMoveColor
 			);
 
+			final JSquare jSquare = squares.get(i);
+			jSquare.preparedTile = action.word.charAt(i);
+
 			this.specialBorders.put(
-					squares.get(i),
+					jSquare,
 					border
 			);
 		}
@@ -294,6 +312,7 @@ class JGrid extends JPanel
 	{
 		final Square square;
 		private final AbstractAction showDefinitionAction;
+		private Character preparedTile;
 		/** Playground associated to this square */
 		private Playground playground;
 
@@ -384,13 +403,19 @@ class JGrid extends JPanel
 			});
 		}
 
-
+		@SneakyThrows
 		@Override
 		protected void paintComponent(final Graphics g)
 		{
-			super.paintComponent(g);
-
 			final Graphics2D g2 = (Graphics2D) g;
+			if (this.preparedTile != null)
+			{
+				JTile.drawTile(g2, this, this.preparedTile, 1, false, Color.black);
+			}
+			else
+			{
+				super.paintComponent(g);
+			}
 
 			final MatteBorder specialBorder = JGrid.this.specialBorders.get(this);
 			if (specialBorder != null)
