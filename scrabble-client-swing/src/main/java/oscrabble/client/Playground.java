@@ -26,7 +26,6 @@ import java.text.Normalizer;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -351,24 +350,7 @@ class Playground
 		SwingUtilities.invokeLater(() -> {
 			this.gridFrame.requestFocus();
 			this.commandPrompt.requestFocusInWindow();
-			this.commandPrompt.grabFocus();
 		});
-
-		KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultFocusManager()
-		{
-			@Override
-			public boolean dispatchKeyEvent(final KeyEvent e)
-			{
-				// Snap the focus for the command prompt field
-				if (!(e.getSource() instanceof JTextComponent))
-				{
-					Playground.this.commandPrompt.requestFocus();
-					e.setSource(Playground.this.commandPrompt);
-				}
-				return super.dispatchKeyEvent(e);
-			}
-		});
-
 	}
 
 	private void resetPossibleMovesPanel()
@@ -737,6 +719,7 @@ class Playground
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
+			LOGGER.info(e.toString());
 			executeCommand();
 		}
 
