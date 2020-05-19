@@ -64,7 +64,7 @@ public class MicroServiceScrabbleServer
 		}
 		final GameState gameState = re.getBody();
 		//noinspection ConstantConditions
-		LOGGER.info(gameState.toString());
+		LOGGER.trace("Get state returns: " + gameState.toString());
 		return gameState;
 	}
 
