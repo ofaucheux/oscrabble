@@ -52,6 +52,7 @@ public class Client
 		gridFrame.setVisible(true);
 		final JFrame rackFrame = new JFrame();
 		rackFrame.add(this.rack);
+		rackFrame.setAutoRequestFocus(false);
 		rackFrame.setVisible(true);
 		rackFrame.setLocation(
 				gridFrame.getX() + gridFrame.getWidth(),

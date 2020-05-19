@@ -209,6 +209,7 @@ class Playground
 		this.jGrid = new JGrid();
 		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard(this);
+		this.jScoreboard.setFocusable(false);
 		this.commandPrompt = new JTextField();
 		final CommandPromptAction promptListener = new CommandPromptAction();
 		this.commandPrompt.addActionListener(promptListener);
@@ -256,6 +257,7 @@ class Playground
 		final JPanel historyPanel = new JPanel(new BorderLayout());
 		historyPanel.setBorder(new TitledBorder(MESSAGES.getString("moves")));
 		this.historyList = new JList<>();
+		this.historyList.setFocusable(false);
 		this.historyList.setCellRenderer(new DefaultListCellRenderer()
 		{
 			@Override
@@ -346,11 +348,7 @@ class Playground
 		this.gridFrame.setResizable(false);
 		this.gridFrame.setVisible(true);
 
-
-		SwingUtilities.invokeLater(() -> {
-			this.gridFrame.requestFocus();
-			this.commandPrompt.requestFocusInWindow();
-		});
+		this.commandPrompt.requestFocus();
 	}
 
 	private void resetPossibleMovesPanel()
@@ -746,7 +744,7 @@ class Playground
 					Playground.this.jGrid.highlightWord((PlayTiles) action);
 				}
 			}
-			catch (final ScrabbleException.ForbiddenPlayException e1)
+			catch (final ScrabbleException e1)
 			{
 				LOGGER.debug(e1.getMessage());
 			}
