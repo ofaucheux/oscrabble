@@ -311,7 +311,6 @@ class JGrid extends JPanel
 	class JSquare extends JPanel
 	{
 		final Square square;
-		private final AbstractAction showDefinitionAction;
 		private Character preparedTile;
 		/** Playground associated to this square */
 		private Playground playground;
@@ -327,33 +326,9 @@ class JGrid extends JPanel
 				final JTile tile = new JTile(this.square.tile);
 				add(tile);
 				tile.grid = JGrid.this;
-				tile.addMouseListener(new MouseAdapter()
-				{
-					@Override
-					public void mouseClicked(final MouseEvent e)
-					{
-						JSquare.this.processMouseEvent(e);
-					}
-				});
-				//noinspection StatementWithEmptyBody
-//					if (JGrid.this.hideNewStones && this.square.action == JGrid.this.lastAction)
-//					{
-//						// don't draw todo: to implement in jtile
-//					}
-//					else
-//					{
-//						tile.paintComponent(g2);
-//					}
 			}
-//				else if ((c = preparedMoveStones.get(this.square)) != null)
-//				{
-//					 TODO
-//					JTile.drawTile(g2, this, /* TODO tiles.get(c) */ null, Color.blue);
-//				}
 
-
-			final JPopupMenu popup = new JPopupMenu();
-			this.showDefinitionAction = new AbstractAction()
+			final AbstractAction showDefinitionAction = new AbstractAction("Show definitions") // todo: translate
 			{
 				@Override
 				public void actionPerformed(final ActionEvent e)
@@ -363,34 +338,8 @@ class JGrid extends JPanel
 					);
 				}
 			};
-			final JMenuItem menuItem = popup.add(this.showDefinitionAction);
-			popup.addPopupMenuListener(new PopupMenuListener()
-			{
-				@Override
-				public void popupMenuWillBecomeVisible(final PopupMenuEvent e)
-				{
-					final Set<String> words = JGrid.this.grid.getWords(square.getCoordinate());
-					if (words.isEmpty())
-					{
-						popup.remove(menuItem);
-					}
-					else
-					{
-						popup.add(menuItem);
-						JSquare.this.showDefinitionAction.putValue(Action.NAME, (words.size() > 1 ? Playground.MESSAGES.getString("show.definitions") : Playground.MESSAGES.getString("show.definition")));
-					}
-				}
-
-				@Override
-				public void popupMenuWillBecomeInvisible(final PopupMenuEvent e)
-				{
-				}
-
-				@Override
-				public void popupMenuCanceled(final PopupMenuEvent e)
-				{
-				}
-			});
+			final JPopupMenu popup = new JPopupMenu();
+			popup.add(showDefinitionAction);
 			setComponentPopupMenu(popup);
 
 			this.addMouseListener(new MouseAdapter()
@@ -398,7 +347,10 @@ class JGrid extends JPanel
 				@Override
 				public void mouseClicked(final MouseEvent e)
 				{
-					JGrid.this.playground.setStartCell(JSquare.this);
+					if (e.getButton() == MouseEvent.BUTTON1)
+					{
+						JGrid.this.playground.setStartCell(JSquare.this);
+					}
 				}
 			});
 		}

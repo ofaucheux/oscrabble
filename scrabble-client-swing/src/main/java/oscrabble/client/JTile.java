@@ -36,6 +36,7 @@ class JTile extends JComponent
 		setPreferredSize(CELL_DIMENSION);
 		setTransferHandler(new TransferHandler("name"));
 //		addMouseListener(new DragMouseAdapter());
+		setInheritsPopupMenu(true);
 	}
 //
 //	public JTile(final Square square)
