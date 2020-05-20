@@ -1,11 +1,15 @@
 package oscrabble.dictionary;
 
+import org.apache.commons.collections4.IterableUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import oscrabble.data.DictionaryEntry;
 import oscrabble.data.ScrabbleRules;
 
 import java.util.Collection;
@@ -14,6 +18,8 @@ import java.util.Collection;
 @org.springframework.stereotype.Controller
 public class Controller
 {
+
+	public static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
 	/**
 	 * Testet if a word is accepted as scrabble word.
@@ -38,6 +44,36 @@ public class Controller
 		else
 		{
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	/**
+	 * @param language language
+	 * @return list of the admissible words (all uppercase)
+	 */
+	@GetMapping("/{language}/getEntry/{word}")
+	public ResponseEntity<oscrabble.data.DictionaryEntry> getEntry(
+			@PathVariable("language") final String language,
+			@PathVariable("word") final String word
+	)
+	{
+		try
+		{
+			final WordMetainformationProvider mip = Dictionary.getDictionary(getLanguage(language)).getMetainformationProvider();
+			final DictionaryEntry entry = DictionaryEntry.builder()
+					.word(word)
+					.definitions(IterableUtils.toList(mip.getDefinitions(word)))
+					.build();
+			return ResponseEntity.ok(entry);
+		}
+		catch (final UnknownLanguage unknownLanguage)
+		{
+			return ResponseEntity.badRequest().build();
+		}
+		catch (final Throwable e)
+		{
+			LOGGER.error("Cannot get definitions of " + word, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 
@@ -88,7 +124,6 @@ public class Controller
 		}
 		return l;
 	}
-
 
 	/**
 	 * Error indicating an unknown language.

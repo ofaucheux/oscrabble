@@ -22,7 +22,7 @@ public class UnMotDotNet implements WordMetainformationProvider
 		try
 		{
 			word = word.toLowerCase(Locale.FRANCE);
-			word = word.replaceAll("[éèê]", "e");
+			word = word.replaceAll("[éèê]", "e");  // todo: auch a. u usw?
 
 			final ArrayList<String> definitions = new ArrayList<>(4);
 

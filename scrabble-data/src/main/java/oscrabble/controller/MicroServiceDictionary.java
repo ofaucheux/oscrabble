@@ -12,6 +12,7 @@ import oscrabble.ScrabbleError;
 import oscrabble.data.Dictionary;
 import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;
+import oscrabble.data.DictionaryEntry;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -41,9 +42,15 @@ public class MicroServiceDictionary implements IDictionary
 	@Override
 	public Collection<String> getAdmissibleWords()
 	{
-		//noinspection ConstantConditions
 		final Dictionary d = REST_TEMPLATE.getForObject(this.uri.resolve(this.language + "/getAdmissibleWords"), Dictionary.class);
 		return d.words;
+	}
+
+	@SuppressWarnings("unused")
+	public DictionaryEntry getEntry(final String word)
+	{
+		final DictionaryEntry entry = REST_TEMPLATE.getForObject(this.uri.resolve(this.language + "/getEntry/" + word), DictionaryEntry.class);
+		return entry;
 	}
 
 	@Override
