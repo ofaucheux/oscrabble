@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import oscrabble.ScrabbleException;
 import oscrabble.data.*;
 import oscrabble.data.Action;
@@ -27,17 +28,18 @@ public class MicroServiceScrabbleServer
 	private static final RestTemplate REST_TEMPLATE = new RestTemplate();
 	public static final Logger LOGGER = LoggerFactory.getLogger(MicroServiceScrabbleServer.class);
 
-	/**
-	 * uri of the server
-	 */
-	private final URI uri;
+	private final UriComponentsBuilder uriComponentsBuilder;
 
 	/**
-	 * @param uri uri of the server
+	 * @param host Servername
+	 * @param port port
 	 */
-	public MicroServiceScrabbleServer(final URI uri)
+	public MicroServiceScrabbleServer(final String host, final int port)
 	{
-		this.uri = uri;
+		this.uriComponentsBuilder = UriComponentsBuilder.newInstance()
+				.scheme("http")
+				.host(host)
+				.port(port);
 	}
 
 
@@ -144,11 +146,13 @@ public class MicroServiceScrabbleServer
 	 * @param method
 	 * @return the uri.
 	 */
-	private URI resolve(final UUID game, final String method)
+	private synchronized URI resolve(final UUID game, final String method)
 	{
-		return this.uri.resolve(
-				(game == null ? "" : ("/" + game))
-						+ "/" + method);
+		return this.uriComponentsBuilder
+				.replacePath(game == null ? null : game.toString())
+				.pathSegment(method)
+				.build()
+				.toUri();
 	}
 
 	/**
