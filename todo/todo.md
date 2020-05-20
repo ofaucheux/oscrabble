@@ -7,7 +7,7 @@
 - select difficulty of AI
 - ✔ preshow the play
 - ✔ clignotement
-- dictionary: show definition
+- ✔ dictionary: show definition
 - ✔ history
 - highlight history selection
 - End of game: message, points
