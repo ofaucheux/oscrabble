@@ -13,7 +13,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.net.URI;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
@@ -74,6 +73,14 @@ public class Client
 			public void windowGainedFocus(final WindowEvent e)
 			{
 				rackFrame.toFront();
+			}
+		});
+		rackFrame.addWindowFocusListener(new WindowAdapter()
+		{
+			@Override
+			public void windowGainedFocus(final WindowEvent e)
+			{
+				Client.this.playground.gridFrame.toFront();
 			}
 		});
 

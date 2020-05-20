@@ -45,7 +45,7 @@ public class MicroServiceDictionary implements IDictionary
 				.pathSegment(pathSegments)
 				.build()
 				.toUri();
-		LOGGER.info("Build URI: " + uri);
+		LOGGER.trace("Build URI: " + uri);
 		return uri;
 	}
 

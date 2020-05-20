@@ -11,7 +11,7 @@
 - ✔ history
 - highlight history selection
 - End of game: message, points
-- focus on jrack > focus on main grid
+- ✔ focus on jrack > focus on main grid
 - Field "Player" of played action is empty
 - forbid play after end
 - AI cannot play anymore

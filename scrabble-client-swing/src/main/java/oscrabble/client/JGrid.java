@@ -159,10 +159,10 @@ class JGrid extends JPanel
 					{
 						this.turnToHide = null;
 						this.playground.gridFrame.repaint();
-						Thread.sleep(500);
+						Thread.sleep(300);
 						this.turnToHide = turnToHide;
 						this.playground.gridFrame.repaint();
-						Thread.sleep(500);
+						Thread.sleep(300);
 					}
 					this.turnToHide = null;
 					this.playground.gridFrame.repaint();
