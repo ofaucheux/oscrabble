@@ -8,15 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import oscrabble.ScrabbleError;
 import oscrabble.data.Dictionary;
+import oscrabble.data.DictionaryEntry;
 import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;
-import oscrabble.data.DictionaryEntry;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.util.Collection;
 
 public class MicroServiceDictionary implements IDictionary
@@ -25,32 +24,43 @@ public class MicroServiceDictionary implements IDictionary
 	public static final RestTemplate REST_TEMPLATE = new RestTemplate();
 	public static final Logger LOGGER = LoggerFactory.getLogger(MicroServiceDictionary.class);
 
-	private final URI uri;
 	private final String language;
+	private final UriComponentsBuilder uriComponentsBuilder;
 
 	/**
 	 * Cache for letter information
 	 */
 	private ScrabbleRules scrabbleRules;
 
-	public MicroServiceDictionary(final URI uri, final String language)
+	public MicroServiceDictionary(final String host, final int port, final String language)
 	{
-		this.uri = uri;
+		this.uriComponentsBuilder = UriComponentsBuilder.newInstance().scheme("http").host(host).port(port);
 		this.language = language;
+	}
+
+	private synchronized URI buildUri(final String... pathSegments)
+	{
+		final URI uri = this.uriComponentsBuilder
+				.replacePath(this.language)
+				.pathSegment(pathSegments)
+				.build()
+				.toUri();
+		LOGGER.info("Build URI: " + uri);
+		return uri;
 	}
 
 	@Override
 	public Collection<String> getAdmissibleWords()
 	{
-		final Dictionary d = REST_TEMPLATE.getForObject(this.uri.resolve(this.language + "/getAdmissibleWords"), Dictionary.class);
+		final Dictionary d = REST_TEMPLATE.getForObject(buildUri("getAdmissibleWords"), Dictionary.class);
 		return d.words;
 	}
 
 	@SuppressWarnings("unused")
 	public DictionaryEntry getEntry(final String word)
 	{
-		final DictionaryEntry entry = REST_TEMPLATE.getForObject(this.uri.resolve("/" + this.language + "/getEntry/" + word), DictionaryEntry.class);
-		return entry;
+		final URI uri = buildUri("getEntry", word);
+		return REST_TEMPLATE.getForObject(uri, DictionaryEntry.class);
 	}
 
 	@Override
@@ -60,7 +70,7 @@ public class MicroServiceDictionary implements IDictionary
 		try
 		{
 			entity = REST_TEMPLATE.getForEntity(
-					this.uri.resolve("/" + this.language + ("/word/") + URLEncoder.encode(word, "UTF8")),
+					buildUri("word", word),
 					Object.class
 			);
 		}
@@ -73,10 +83,6 @@ public class MicroServiceDictionary implements IDictionary
 
 			throw e;
 		}
-		catch (UnsupportedEncodingException e)
-		{
-			throw new Error("Cannot treat word: " + word, e);
-		}
 		return entity.getStatusCode() == HttpStatus.OK;
 	}
 
@@ -87,8 +93,7 @@ public class MicroServiceDictionary implements IDictionary
 		{
 			if (this.scrabbleRules == null)
 			{
-				final URI uri = this.uri.resolve('/' + this.language + "/getScrabbleRules");
-				this.scrabbleRules = REST_TEMPLATE.getForObject(uri, ScrabbleRules.class);
+				this.scrabbleRules = REST_TEMPLATE.getForObject(buildUri("getScrabbleRules"), ScrabbleRules.class);
 			}
 			return this.scrabbleRules;
 		}

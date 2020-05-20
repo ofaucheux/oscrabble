@@ -29,7 +29,7 @@ public class Application
 
 	public static void main(String[] unused) throws InterruptedException
 	{
-		final  MicroServiceDictionary dictionary = new MicroServiceDictionary(URI.create("http://localhost:8080/"), "FRENCH");
+		final  MicroServiceDictionary dictionary = new MicroServiceDictionary("localhost", 8080, "FRENCH");
 		final  MicroServiceScrabbleServer server = new MicroServiceScrabbleServer(URI.create("http://localhost:" + MicroServiceScrabbleServer.DEFAULT_PORT));
 		final Application application = new Application(dictionary, server);
 		application.play();
@@ -47,7 +47,7 @@ public class Application
 
 		final Client client = new Client(this.server, game, edgar);
 		client.displayAll();
-		server.startGame(game);
+		this.server.startGame(game);
 
 		do
 		{

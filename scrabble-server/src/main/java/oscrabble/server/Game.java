@@ -40,7 +40,7 @@ public class Game
 	/**
 	 * Used dictionary TODO: not static
 	 */
-	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
+	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary("localhost", 8080, "FRENCH");
 
 	/**
 	 * ID of the game
@@ -147,10 +147,7 @@ public class Game
 		this.configuration.loadProperties(properties);
 		try
 		{
-			this.dictionary = new MicroServiceDictionary(
-					URI.create("http://localhost:8080/"),
-					this.configuration.language
-			);
+			this.dictionary = new MicroServiceDictionary("localhost", 8080, this.configuration.language);
 			this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 		}
 		catch (IllegalArgumentException e)

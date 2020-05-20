@@ -31,7 +31,7 @@ public class GameTest
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
-	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
+	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary("localhost", 8080, "FRENCH");
 
 	private Game game;
 	private Grid grid;
@@ -44,10 +44,7 @@ public class GameTest
 	{
 //		application = new Application();
 //		application.start();
-		DICTIONARY = new MicroServiceDictionary(
-				URI.create("http://localhost:8080/"),
-				"FRENCH" // todo: in dico client jar
-		);
+		DICTIONARY = new MicroServiceDictionary("localhost", 8080, "FRENCH");
 
 		Thread.setDefaultUncaughtExceptionHandler((t,e) -> LOGGER.error(e.toString(), e));
 	}
