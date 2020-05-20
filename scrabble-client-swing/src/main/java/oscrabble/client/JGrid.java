@@ -47,7 +47,8 @@ class JGrid extends JPanel
 	/**
 	 * Frame für die Anzeige der Definition von Wärtern
 	 */
-	private final DictionaryComponent dictionaryComponent;
+	private DictionaryComponent dictionaryComponent;
+
 	/**
 	 * Set to let the new stones flash
 	 */
@@ -69,8 +70,6 @@ class JGrid extends JPanel
 	 */
 	JGrid()
 	{
-		this.dictionaryComponent = new DictionaryComponent();
-
 		this.setLayout(new BorderLayout());
 		this.background = new JPanel(new BorderLayout());
 		final int size = 15 * Playground.CELL_SIZE;  // TODO: use a constant
@@ -256,6 +255,11 @@ class JGrid extends JPanel
 			throw new AssertionError("The client is already set");
 		}
 		this.playground = client;
+	}
+
+	public void setDictionaryComponent(final DictionaryComponent dictionaryComponent)
+	{
+		this.dictionaryComponent = dictionaryComponent;
 	}
 
 	/**

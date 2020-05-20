@@ -207,6 +207,7 @@ class Playground
 	{
 		this.client = client;
 		this.jGrid = new JGrid();
+		this.jGrid.setDictionaryComponent(new DictionaryComponent(client.getDictionary()));
 		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard(this);
 		this.jScoreboard.setFocusable(false);

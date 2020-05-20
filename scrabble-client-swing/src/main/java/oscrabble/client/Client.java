@@ -3,6 +3,7 @@ package oscrabble.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
@@ -12,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.URI;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
@@ -27,6 +29,11 @@ public class Client
 	private final JRack rack;
 
 	private GameState lastKnownState = null; // TODO: use it in server.play() too
+
+	/**
+	 * Used dictionary TODO: not static
+	 */
+	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary(URI.create("http://localhost:8080"), "FRENCH");
 
 	/** last played turn */
 	private UUID lastPlayedTurn;
@@ -183,6 +190,11 @@ public class Client
 		{
 			JOptionPane.showMessageDialog(playground.gridFrame, ex.getMessage());
 		}
+	}
+
+	public MicroServiceDictionary getDictionary()
+	{
+		return DICTIONARY;
 	}
 
 	/**

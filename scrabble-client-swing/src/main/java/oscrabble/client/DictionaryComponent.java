@@ -1,13 +1,12 @@
 package oscrabble.client;
 
-import oscrabble.client.dictionary.DictionaryException;
-import oscrabble.client.dictionary.DictionaryService;
+import oscrabble.controller.MicroServiceDictionary;
+import oscrabble.data.DictionaryEntry;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,13 +21,16 @@ public class DictionaryComponent extends JTabbedPane
 	 */
 	private final Set<String> found = new HashSet<>();
 
-	private DictionaryService dico;
+	private final MicroServiceDictionary dictionary;
 
 	/**
 	 * Erstellt ein {@link DictionaryComponent}-
+	 * @param dictionary
 	 */
-	public DictionaryComponent()
+	public DictionaryComponent(final MicroServiceDictionary dictionary)
 	{
+		this.dictionary = dictionary;
+
 		// add a word
 		insertTab("+", null,null, "Search a word...", 0);
 		addMouseListener(new MouseAdapter()
@@ -60,6 +62,11 @@ public class DictionaryComponent extends JTabbedPane
 	 */
 	public void showDescription(final String word)
 	{
+		if (this.dictionary == null)
+		{
+			return;
+		}
+
 		// tests if definition already displayed
 		final int tabCount = this.getTabCount();
 		for (int i = 0; i < tabCount; i++)
@@ -78,34 +85,19 @@ public class DictionaryComponent extends JTabbedPane
 			}
 		}
 
-		Iterable<String> descriptions;
-		if (this.dico != null)
-		{
-			try
-			{
-				descriptions = this.dico.getDefinitions(word);
-				this.found.add(word);
-			}
-			catch (DictionaryException e)
-			{
-				descriptions = null;
-			}
-		}
-		else
-		{
-			descriptions = Collections.singleton("No word meta info provider");
-		}
+		final DictionaryEntry entry = this.dictionary.getEntry(word);
+		this.found.add(word);
 
 		final JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-		if (descriptions == null)
+		if (entry.definitions.isEmpty())
 		{
 			panel.add(new JLabel(word + ": no definition found"));
 		}
 		else
 		{
-			descriptions.forEach(description -> panel.add(new JLabel(String.valueOf(description))));
+			entry.definitions.forEach(definition -> panel.add(new JLabel(String.valueOf(definition))));
 		}
 
 		final JScrollPane sp = new JScrollPane(panel);
