@@ -49,7 +49,7 @@ public class MicroServiceDictionary implements IDictionary
 	@SuppressWarnings("unused")
 	public DictionaryEntry getEntry(final String word)
 	{
-		final DictionaryEntry entry = REST_TEMPLATE.getForObject(this.uri.resolve(this.language + "/getEntry/" + word), DictionaryEntry.class);
+		final DictionaryEntry entry = REST_TEMPLATE.getForObject(this.uri.resolve("/" + this.language + "/getEntry/" + word), DictionaryEntry.class);
 		return entry;
 	}
 
