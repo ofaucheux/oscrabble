@@ -39,13 +39,13 @@ public class AIPlayer extends AbstractPlayer
 		this.uuid = playerId;
 		this.server = server;
 //			super(new Configuration(), name);
-		configuration = new BruteForceMethod.Configuration();
-		configuration.strategy = new Strategy.BestScore();
-		configuration.throttle = 2;
+		this.configuration = new BruteForceMethod.Configuration();
+		this.configuration.strategy = new Strategy.BestScore();
+		this.configuration.throttle = 2;
 
-		daemonThread = new Thread(() -> runDaemonThread());
-		daemonThread.setDaemon(true);
-		daemonThread.setName("AI Player Playing thread");
+		this.daemonThread = new Thread(() -> runDaemonThread());
+		this.daemonThread.setDaemon(true);
+		this.daemonThread.setName("AI Player Playing thread");
 	}
 
 	/**
@@ -70,11 +70,11 @@ public class AIPlayer extends AbstractPlayer
 			do
 			{
 				Thread.sleep(this.throttle);
-				state = server.getState(game);
+				state = this.server.getState(this.game);
 				if (state.state == GameState.State.STARTED && this.uuid.equals(state.getPlayerOnTurn()))
 				{
 					this.bruteForceMethod.grid = Grid.fromData(state.getGrid());
-					final ArrayList<Tile>  rack = server.getRack(game, this.uuid).tiles;
+					final ArrayList<Tile>  rack = this.server.getRack(this.game, this.uuid).tiles;
 					final Player player0 = state.getPlayers().get(0);
 					if (rack.isEmpty())
 					{
@@ -94,7 +94,7 @@ public class AIPlayer extends AbstractPlayer
 					}
 					final Action action = buildAction(moves.get(0));
 					System.out.println("Plays: " + action.notation);
-					final PlayActionResponse response = server.play(game, action);
+					final PlayActionResponse response = this.server.play(this.game, action);
 					if (!response.success)
 					{
 						throw new AssertionError(response.message);
@@ -102,7 +102,7 @@ public class AIPlayer extends AbstractPlayer
 				}
 			} while (state.state != GameState.State.ENDED);
 
-			LOGGER.info("Daemon thread of " + uuid + " ends.");
+			LOGGER.info("Daemon thread of " + this.uuid + " ends.");
 		}
 		catch (final Throwable e)
 		{
