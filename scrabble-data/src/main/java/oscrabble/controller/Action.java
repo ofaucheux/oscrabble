@@ -25,14 +25,14 @@ public abstract class Action
 		this.notation = notation;
 	}
 
-	static public Action parse(oscrabble.data.Action jsonAction) throws ScrabbleException.ForbiddenPlayException
+	static public Action parse(oscrabble.data.Action jsonAction) throws ScrabbleException.NotParsableException
 	{
 		final Action action = parse(jsonAction.player, jsonAction.notation);
 		action.turnId = jsonAction.turnId;
 		return action;
 	}
 
-	public static Action parse(final UUID player, final String notation) throws ScrabbleException.ForbiddenPlayException
+	public static Action parse(final UUID player, final String notation) throws ScrabbleException.NotParsableException
 	{
 		final Action action;
 		if (PASS_TURN.matcher(notation).matches())
@@ -49,7 +49,7 @@ public abstract class Action
 		}
 		else
 		{
-			throw new ScrabbleException.ForbiddenPlayException("Illegal move notation: \"" + notation + "\"");
+			throw new ScrabbleException.NotParsableException("Illegal move notation: \"" + notation + "\"");
 		}
 
 		return action;
@@ -100,7 +100,7 @@ public abstract class Action
 		/**
 		 * Die Blanks (mindesten neugespielt) werden durch klein-buchstaben dargestellt.
 		 */
-		private PlayTiles(final UUID player, String notation) throws ScrabbleException.ForbiddenPlayException
+		private PlayTiles(final UUID player, String notation)
 		{
 			super(player, notation);
 			final Matcher m = PLAY_TILES.matcher(notation);

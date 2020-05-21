@@ -10,7 +10,7 @@
 - ✔ clignotement
 - ✔ dictionary: show definition
 - ✔ history
--   highlight history selection
+- ✔ highlight history selection
 -   End of game: message, points
 - ✔ focus on jrack > focus on main grid
 - ✔ Field "Player" of played action is empty

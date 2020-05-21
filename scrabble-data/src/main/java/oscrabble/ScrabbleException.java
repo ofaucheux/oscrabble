@@ -1,5 +1,9 @@
 package oscrabble;
 
+/**
+ * Exceptions for the game.
+ * TODO: i18n
+ */
 public class ScrabbleException extends Exception
 {
 
@@ -77,4 +81,16 @@ public class ScrabbleException extends Exception
 			super(message);
 		}
 	}
+
+	/**
+	 * Thrown if a notation is not parsable.
+	 */
+	public static class NotParsableException extends ScrabbleException
+	{
+		public NotParsableException(final String notation)
+		{
+			super("Notation \"" + notation + "\" is not parsable");
+		}
+	}
+
 }

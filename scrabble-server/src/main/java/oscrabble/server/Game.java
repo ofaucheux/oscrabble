@@ -264,7 +264,7 @@ public class Game
 			{
 				this.history.add(Action.parse(a));
 			}
-			catch (ScrabbleException.ForbiddenPlayException e)
+			catch (ScrabbleException.NotParsableException e)
 			{
 				throw new AssertionError("History entry not parsable");
 			}

@@ -280,24 +280,28 @@ class Playground
 
 		// highlight the selected item in the list
 		// TODO
-//		this.historyList.addListSelectionListener(event -> {
-//			if (event.getValueIsAdjusting())
-//			{
-//				return;
-//			}
-//			for (int index = event.getFirstIndex() ; index <= event.getLastIndex(); index++)
-//			{
-//				if (this.historyList.isSelectedIndex(index))
-//				{
-//					final HistoryEntry selected = this.historyList.getModel().getElementAt(index);
-//					if (selected.isPlayTileAction())
-//					{
-//						final PlayTiles playTiles = selected.getPlayTiles();
-//						this.jGrid.highlightWord(new ArrayList<>(playTiles.getSquares().keySet()));
-//					}
-//				}
-//			}
-//		});
+		this.historyList.addListSelectionListener(event -> {
+			if (event.getValueIsAdjusting())
+			{
+				return;
+			}
+			final int index = this.historyList.getSelectedIndex();
+			if (index == -1)
+			{
+				this.jGrid.highlightWord(null);
+			}
+			try
+			{
+				final Action action = Action.parse(this.historyList.getModel().getElementAt(index));
+				this.jGrid.highlightWord(
+						action instanceof PlayTiles ? ((PlayTiles) action) : null
+				);
+			}
+			catch (ScrabbleException.NotParsableException e)
+			{
+				throw new Error(e);
+			}
+		});
 
 		panel1.add(historyPanel);
 		// todo: rollback
@@ -434,7 +438,7 @@ class Playground
 		this.commandPrompt.setText("");
 	}
 
-	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.ForbiddenPlayException
+	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException
 	{
 		// TODO
 //			final SwingPlayer player = getCurrentSwingPlayer();
@@ -744,7 +748,7 @@ class Playground
 				final Action action = getPreparedMove();
 				if (action instanceof PlayTiles)
 				{
-					Playground.this.jGrid.highlightWord((PlayTiles) action);
+					Playground.this.jGrid.highlightPreparedAction((PlayTiles) action);
 				}
 			}
 			catch (final ScrabbleException e1)

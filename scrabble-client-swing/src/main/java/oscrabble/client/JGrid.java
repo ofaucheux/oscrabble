@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import oscrabble.controller.Action;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
@@ -13,7 +14,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -169,37 +169,54 @@ class JGrid extends JPanel
 				TimeUnit.SECONDS);
 	}
 
-	void highlightWord(final oscrabble.controller.Action.PlayTiles action)
+	void highlightPreparedAction(final oscrabble.controller.Action.PlayTiles action)
+	{
+		highlightWord(action);
+
+		final ArrayList<JSquare> squares = getSquares(action);
+		if (squares == null) return;
+
+		this.preparedTiles.clear();
+		int i = 0;
+		for (final JSquare jSquare : squares)
+		{
+			final char preparedChar = action.word.charAt(i);
+			this.preparedTiles.put(jSquare, preparedChar);
+			if (jSquare.square.tile != null && preparedChar != jSquare.square.tile.c)
+			{
+				this.preparedTiles.clear();
+				highlightWord(null);
+				break;
+			}
+			i++;
+		}
+
+		repaint();
+	}
+
+	/**
+	 * Highlight the squares of an action.
+	 * @param action remove the highlighting if {@code null}
+	 * @return
+	 */
+	void highlightWord(final Action.PlayTiles action)
 	{
 		this.specialBorders.clear();
-		this.preparedTiles.clear();
+		if (action == null)
+		{
+			return;
+		}
 
-		final ArrayList<JSquare> squares = new ArrayList<>();
-		boolean isHorizontal = action.getDirection() == Grid.Direction.HORIZONTAL;
 		final int INSET = 4;
 		final Color preparedMoveColor = Color.RED;
 
-		int x = action.startSquare.x;
-		int y = action.startSquare.y;
-		for (int i=0; i < action.word.length(); i++)
+		final ArrayList<JSquare> squares = getSquares(action);
+		if (squares == null)
 		{
-			if (x > 15 || y > 15)
-			{
-				// word runs outside of the grid.
-				return;
-			}
-
-			squares.add(this.jSquares[x][y]);
-			if (isHorizontal)
-			{
-				x++;
-			}
-			else
-			{
-				y++;
-			}
+			return;
 		}
 
+		boolean isHorizontal = action.getDirection() == Grid.Direction.HORIZONTAL;
 		for (int i = 0; i < squares.size(); i++)
 		{
 			final int top = (isHorizontal || i == 0) ? INSET : 0;
@@ -212,14 +229,6 @@ class JGrid extends JPanel
 			);
 
 			final JSquare jSquare = squares.get(i);
-			final char preparedChar = action.word.charAt(i);
-			this.preparedTiles.put(jSquare, preparedChar);
-			if (jSquare.square.tile != null && preparedChar != jSquare.square.tile.c)
-			{
-				this.preparedTiles.clear();
-				this.specialBorders.clear();
-				break;
-			}
 
 			this.specialBorders.put(
 					jSquare,
@@ -228,6 +237,38 @@ class JGrid extends JPanel
 		}
 
 		repaint();
+	}
+
+	/**
+	 * @param action
+	 * @return the squares the action describes
+	 */
+	private ArrayList<JSquare> getSquares(final Action.PlayTiles action)
+	{
+		boolean isHorizontal = action.getDirection() == Grid.Direction.HORIZONTAL;
+
+		final ArrayList<JSquare> squares = new ArrayList<>();
+		int x = action.startSquare.x;
+		int y = action.startSquare.y;
+		for (int i=0; i < action.word.length(); i++)
+		{
+			if (x > 15 || y > 15)
+			{
+				// word runs outside of the grid.
+				return null;
+			}
+
+			squares.add(this.jSquares[x][y]);
+			if (isHorizontal)
+			{
+				x++;
+			}
+			else
+			{
+				y++;
+			}
+		}
+		return squares;
 	}
 
 	/**

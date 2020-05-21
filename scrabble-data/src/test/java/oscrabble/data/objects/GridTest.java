@@ -51,7 +51,7 @@ class GridTest
 	}
 
 	@Test
-	public void getWords() throws ScrabbleException.ForbiddenPlayException
+	public void getWords() throws ScrabbleException.NotParsableException
 	{
 		final Grid g = new Grid();
 		g.play(null, "G3 RHuME");

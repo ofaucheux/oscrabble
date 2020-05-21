@@ -132,7 +132,7 @@ public class Grid
 	}
 
 
-	public void play(final ScrabbleRules rules, final String move) throws ScrabbleException.ForbiddenPlayException
+	public void play(final ScrabbleRules rules, final String move) throws ScrabbleException.NotParsableException
 	{
 		play(rules, null, (Action.PlayTiles) Action.parse(null, move));
 	}
