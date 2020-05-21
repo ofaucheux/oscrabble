@@ -1,6 +1,5 @@
 package oscrabble.client;
 
-import lombok.SneakyThrows;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
@@ -29,23 +28,14 @@ class JGrid extends JPanel
 	final JSquare[][] jSquares;
 	final JComponent background;
 	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-	private final HashMap<JSquare, MatteBorder> specialBorders = new HashMap<>();
 
-	private List<JSquare> getAllSquares()
-	{
-		final ArrayList<JSquare> l = new ArrayList<>();
-		for (final JSquare[] line : this.jSquares)
-		{
-			for (final JSquare jSquare : line)
-			{
-				if (jSquare != null)
-				{
-					l.add(jSquare);
-				}
-			}
-		}
-		return l;
-	}
+
+	/**
+	 * char the player intend to play on this square
+	 */
+	private final HashMap<JSquare, Character> preparedTiles = new HashMap<>();
+
+	private final HashMap<JSquare, MatteBorder> specialBorders = new HashMap<>();
 
 	/**
 	 * Frame für die Anzeige der Definition von Wärtern
@@ -182,7 +172,7 @@ class JGrid extends JPanel
 	void highlightWord(final oscrabble.controller.Action.PlayTiles action)
 	{
 		this.specialBorders.clear();
-		this.getAllSquares().forEach( sq -> sq.preparedTile = null);
+		this.preparedTiles.clear();
 
 		final ArrayList<JSquare> squares = new ArrayList<>();
 		boolean isHorizontal = action.getDirection() == Grid.Direction.HORIZONTAL;
@@ -222,7 +212,14 @@ class JGrid extends JPanel
 			);
 
 			final JSquare jSquare = squares.get(i);
-			jSquare.preparedTile = action.word.charAt(i);
+			final char preparedChar = action.word.charAt(i);
+			this.preparedTiles.put(jSquare, preparedChar);
+			if (jSquare.square.tile != null && preparedChar != jSquare.square.tile.c)
+			{
+				this.preparedTiles.clear();
+				this.specialBorders.clear();
+				break;
+			}
 
 			this.specialBorders.put(
 					jSquare,
@@ -321,7 +318,7 @@ class JGrid extends JPanel
 	class JSquare extends JPanel
 	{
 		final Square square;
-		private Character preparedTile;
+
 		/** Playground associated to this square */
 		private Playground playground;
 
@@ -404,9 +401,10 @@ class JGrid extends JPanel
 				}
 			}
 
-			if (this.preparedTile != null)
+			final Character preparedTile = JGrid.this.preparedTiles.get(this);
+			if (preparedTile != null)
 			{
-				JTile.drawTile(g2, this, this.preparedTile, 1, false, Color.black);
+				JTile.drawTile(g2, this, preparedTile, 1, false, Color.black);
 			}
 
 			final MatteBorder specialBorder = JGrid.this.specialBorders.get(this);

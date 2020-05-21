@@ -4,7 +4,7 @@
 - ✔ quit the client application
 - ✔ focus on the rack pane
 - ✔ Problem by error message
--   Highlight only the possible tiles
+- ✔ Highlight only the possible tiles
 - select difficulty of AI
 - ✔ preshow the play
 - ✔ clignotement
