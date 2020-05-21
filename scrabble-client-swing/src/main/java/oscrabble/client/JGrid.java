@@ -8,7 +8,6 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -36,11 +35,6 @@ class JGrid extends JPanel
 	private final HashMap<JSquare, Character> preparedTiles = new HashMap<>();
 
 	private final HashMap<JSquare, MatteBorder> specialBorders = new HashMap<>();
-
-	/**
-	 * Frame für die Anzeige der Definition von Wärtern
-	 */
-	private DictionaryComponent dictionaryComponent;
 
 	/**
 	 * Set to let the new stones flash
@@ -109,7 +103,6 @@ class JGrid extends JPanel
 				{
 					final JSquare cell = new JSquare(square);
 					this.jSquares[x][y] = cell;
-					cell.playground = playground;
 					p1.add(cell, gbc);
 
 					final Color cellColor;
@@ -271,27 +264,6 @@ class JGrid extends JPanel
 		return squares;
 	}
 
-	/**
-	 * Holt und zeigt die Definitionen eines Wortes
-	 *
-	 * @param word Wort
-	 */
-	private void showDefinition(final String word)
-	{
-		Window dictionaryFrame = SwingUtilities.getWindowAncestor(this.dictionaryComponent);
-		if (dictionaryFrame == null)
-		{
-			dictionaryFrame = new JFrame(Playground.MESSAGES.getString("description"));
-			dictionaryFrame.add(this.dictionaryComponent);
-			dictionaryFrame.setSize(600, 600);
-		}
-
-
-		this.dictionaryComponent.showDescription(word);
-		dictionaryFrame.setVisible(true);
-		dictionaryFrame.toFront();
-	}
-
 	void setPlayground(final Playground client)
 	{
 		if (this.playground != null)
@@ -299,11 +271,6 @@ class JGrid extends JPanel
 			throw new AssertionError("The client is already set");
 		}
 		this.playground = client;
-	}
-
-	public void setDictionaryComponent(final DictionaryComponent dictionaryComponent)
-	{
-		this.dictionaryComponent = dictionaryComponent;
 	}
 
 	/**
@@ -360,9 +327,6 @@ class JGrid extends JPanel
 	{
 		final Square square;
 
-		/** Playground associated to this square */
-		private Playground playground;
-
 		JSquare(final Square square)
 		{
 			this.square = square;
@@ -376,16 +340,10 @@ class JGrid extends JPanel
 				tile.grid = JGrid.this;
 			}
 
-			final AbstractAction showDefinitionAction = new AbstractAction("Show definitions") // todo: translate
-			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
-					JGrid.this.grid.getWords(square.getCoordinate()).forEach(
-							word -> showDefinition(word)
-					);
-				}
-			};
+			final AbstractAction showDefinitionAction = new DisplayDefinitionAction(
+					JGrid.this.playground == null ? null : JGrid.this.playground.client.getDictionary(),
+					() -> JGrid.this.grid.getWords(square.getCoordinate())
+			);
 			final JPopupMenu popup = new JPopupMenu();
 			popup.add(showDefinitionAction);
 			setComponentPopupMenu(popup);
@@ -409,11 +367,11 @@ class JGrid extends JPanel
 			super.paint(g);
 			final Graphics2D g2 = (Graphics2D) g;
 			// Markiert die Start Zelle des Wortes todo
-			if (this.playground != null)
+			if (JGrid.this.playground != null)
 			{
 				oscrabble.controller.Action.PlayTiles action;
-				if (this.playground.action instanceof oscrabble.controller.Action.PlayTiles
-						&& (action = ((oscrabble.controller.Action.PlayTiles) this.playground.action)).startSquare.getSquare().equals(this.square))
+				if (JGrid.this.playground.action instanceof oscrabble.controller.Action.PlayTiles
+						&& (action = ((oscrabble.controller.Action.PlayTiles) JGrid.this.playground.action)).startSquare.getSquare().equals(this.square))
 				{
 
 					g2.setColor(Color.BLACK);

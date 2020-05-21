@@ -208,7 +208,6 @@ class Playground
 	{
 		this.client = client;
 		this.jGrid = new JGrid();
-		this.jGrid.setDictionaryComponent(new DictionaryComponent(client.getDictionary()));
 		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard(this);
 		this.jScoreboard.setFocusable(false);
@@ -277,30 +276,22 @@ class Playground
 					SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE));
 				}
 		);
+		final JPopupMenu popup = new JPopupMenu();
+		popup.add(
+				new DisplayDefinitionAction(client.getDictionary(), ()-> {
+					PlayTiles action = getSelectedHistoryAction();
+					return action == null ? null : Collections.singleton(action.word);
+				})
+		);
+		this.historyList.setComponentPopupMenu(popup);
 
-		// highlight the selected item in the list
-		// TODO
 		this.historyList.addListSelectionListener(event -> {
 			if (event.getValueIsAdjusting())
 			{
 				return;
 			}
-			final int index = this.historyList.getSelectedIndex();
-			if (index == -1)
-			{
-				this.jGrid.highlightWord(null);
-			}
-			try
-			{
-				final Action action = Action.parse(this.historyList.getModel().getElementAt(index));
-				this.jGrid.highlightWord(
-						action instanceof PlayTiles ? ((PlayTiles) action) : null
-				);
-			}
-			catch (ScrabbleException.NotParsableException e)
-			{
-				throw new Error(e);
-			}
+			final PlayTiles action = getSelectedHistoryAction();
+			this.jGrid.highlightWord(action);
 		});
 
 		panel1.add(historyPanel);
@@ -356,6 +347,29 @@ class Playground
 		this.gridFrame.setVisible(true);
 
 		this.commandPrompt.requestFocus();
+	}
+
+	/**
+	 * @return selected action in the history list. {@code null} if nothing is selected or if the selected
+	 * item is not a {@link PlayTiles}.
+	 */
+	private PlayTiles getSelectedHistoryAction()
+	{
+		final Action action;
+		final int index = this.historyList.getSelectedIndex();
+		if (index == -1)
+		{
+			return null;
+		}
+		try
+		{
+			action = Action.parse(this.historyList.getModel().getElementAt(index));
+		}
+		catch (ScrabbleException.NotParsableException e)
+		{
+			throw new Error(e);
+		}
+		return action instanceof PlayTiles ? ((PlayTiles) action) : null;
 	}
 
 	private void resetPossibleMovesPanel()
