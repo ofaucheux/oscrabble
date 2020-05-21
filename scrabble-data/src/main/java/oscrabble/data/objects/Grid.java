@@ -134,10 +134,10 @@ public class Grid
 
 	public void play(final ScrabbleRules rules, final String move) throws ScrabbleException.ForbiddenPlayException
 	{
-		play(rules, (Action.PlayTiles) Action.parse(move));
+		play(rules, null, (Action.PlayTiles) Action.parse(null, move));
 	}
 
-	public void play(final ScrabbleRules rules, final Action.PlayTiles playTiles)
+	public void play(final ScrabbleRules rules, final UUID player, final Action.PlayTiles playTiles)
 	{
 		oscrabble.data.objects.Square sq = get(playTiles.startSquare);
 		for (int i = 0; i < playTiles.word.length(); i++)

@@ -121,6 +121,7 @@ class Playground
 	 * Action defined in the command prompt
 	 */
 	Action action;
+
 	/**
 	 * Register a player.
 	 *
@@ -482,7 +483,7 @@ class Playground
 			}
 			else
 			{
-				this.action = oscrabble.controller.Action.parse(inputWord.toString());
+				this.action = oscrabble.controller.Action.parse(this.client.player, inputWord.toString());
 			}
 //				//
 //				// todo Check if jokers are needed and try to position them
@@ -539,7 +540,7 @@ class Playground
 //						}
 //					}
 //				}
-			this.action = Action.parse(inputWord.toString());
+			this.action = Action.parse(this.client.player, inputWord.toString());
 			LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 		}
 		else

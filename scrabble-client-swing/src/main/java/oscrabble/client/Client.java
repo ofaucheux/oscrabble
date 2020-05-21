@@ -22,7 +22,7 @@ public class Client
 
 	private final MicroServiceScrabbleServer server;
 	private final UUID game;
-	private final UUID player;
+	final UUID player;
 
 	private final Playground playground;
 	private final JRack rack;

@@ -58,11 +58,6 @@ public class Game
 	final LinkedHashMap<UUID, PlayerInformation> players = new LinkedHashMap<>();
 
 	/**
-	 * Plays
-	 */
-	final LinkedList<Action> actions = new LinkedList<>();
-
-	/**
 	 * Synchronize: to by synchronized by calls which change the state of the game
 	 */
 	final Object changing = new Object();
@@ -395,7 +390,7 @@ public class Game
 					throw new AssertionError("No player " + jsonAction.player);
 				}
 			}
-			play(player.uuid, action);
+			play(action);
 		}
 	}
 
@@ -456,9 +451,10 @@ public class Game
 		this.history.forEach( h -> {
 			playedActions.add(
 					oscrabble.data.Action.builder()
-					.notation(h.notation)
-					.turnId(h.turnId)
-					.build()
+							.notation(h.notation)
+							.turnId(h.turnId)
+							.player(h.player)
+							.build()
 			);
 		});
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
@@ -861,24 +857,23 @@ public class Game
 
 	public int getRoundNr()
 	{
-		return this.actions.size();
+		return this.history.size();
 	}
 
 	/**
 	 * Play an action
 	 *
 	 * @param action
-	 * @param playerID
 	 * @return score
 	 * @throws ScrabbleException.ForbiddenPlayException
 	 * @throws ScrabbleException.NotInTurn
 	 */
-	public void play(final UUID playerID, final Action action) throws ScrabbleException
+	public void play(final Action action) throws ScrabbleException
 	{
-		final PlayerInformation player = this.players.get(playerID);
+		final PlayerInformation player = this.players.get(action.player);
 		if (player == null)
 		{
-			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + playerID);
+			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + action.player);
 		}
 
 		if (this.toPlay.peekFirst() != player)
@@ -951,7 +946,7 @@ public class Game
 					}
 				}
 
-				this.grid.play(this.scrabbleRules, playTiles);
+				this.grid.play(this.scrabbleRules, action.player, playTiles);
 
 				player.rack.tiles.clear();
 				player.rack.tiles.addAll(remaining);
@@ -1018,7 +1013,6 @@ public class Game
 			{
 				drawn = refillRack(player);
 				player.lastAction = action;
-				this.actions.add(action);
 				dispatch(toInform -> toInform.afterPlay(action));
 				this.history.add(action);
 				this.toPlay.pop();
