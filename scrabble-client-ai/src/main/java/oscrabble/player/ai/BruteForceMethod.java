@@ -390,13 +390,6 @@ public class BruteForceMethod
 		return crossChecks.get(crossSquare);
 	}
 
-	public Set<String> getLegalMoves(final String rack)
-	{
-		final ArrayList<Character> list = new ArrayList<>(rack.length());
-		rack.chars().forEach(c -> list.add((char) c));
-		return getLegalMoves(list);
-	}
-
 	static class Configuration
 	{
 //		@Parameter(label = "#strategy")

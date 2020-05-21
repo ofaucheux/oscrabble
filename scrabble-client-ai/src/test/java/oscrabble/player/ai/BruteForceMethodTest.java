@@ -69,7 +69,7 @@ public class BruteForceMethodTest
 		final Random random = new Random();
 		final UUID game = server.newGame();
 		this.instance.grid = server.getGrid(game);
-		final List<String> legalMoves = new ArrayList<>(this.instance.getLegalMoves("ENFANIT"));
+		final List<String> legalMoves = new ArrayList<>(getLegalMoves(this.instance, "ENFANIT"));
 
 		assertTrue(legalMoves.contains("F8 ENFANT"));
 
@@ -84,6 +84,13 @@ public class BruteForceMethodTest
 //		}
 	}
 
+	public Set<String> getLegalMoves(final BruteForceMethod bfm, final String rack)
+	{
+		final ArrayList<Character> list = new ArrayList<>(rack.length());
+		rack.chars().forEach(c -> list.add((char) c));
+		return bfm.getLegalMoves(list);
+	}
+
 	@Test
 	void testBlank() throws  ScrabbleException
 	{
@@ -91,7 +98,7 @@ public class BruteForceMethodTest
 
 		this.instance.grid = new Grid();
 		this.instance.grid.play(null, "2J ELEPHANT");
-		final Set<String> playTiles = this.instance.getLegalMoves("ASME TH");
+		final Set<String> playTiles = getLegalMoves(this.instance, "ASME TH");
 		assertTrue(playTiles.contains("J5 PHASME"));
 		assertTrue(playTiles.contains("J5 PhASME"));
 	}
