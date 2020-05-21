@@ -203,7 +203,6 @@ class JGrid extends JPanel
 			}
 		}
 
-		// todo: merge with upper loop?
 		for (int i = 0; i < squares.size(); i++)
 		{
 			final int top = (isHorizontal || i == 0) ? INSET : 0;
