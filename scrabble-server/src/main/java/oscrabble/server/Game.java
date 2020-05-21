@@ -652,6 +652,12 @@ public class Game
 		{
 			Collections.shuffle(this.toPlay);
 		}
+		for (final PlayerInformation pi : this.toPlay)
+		{
+			// reinsert in the order of playing
+			this.players.remove(pi.uuid);
+			this.players.put(pi.uuid, pi);
+		}
 
 		// Fill racks
 		for (final PlayerInformation player : this.toPlay)
