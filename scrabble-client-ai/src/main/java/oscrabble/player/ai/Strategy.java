@@ -1,13 +1,15 @@
 package oscrabble.player.ai;
 
 
-import java.util.Collections;
-import java.util.List;
+import oscrabble.ScrabbleException;
+import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.data.Score;
+
+import java.util.*;
 
 /**
  * Playing strategy for a player
  */
-@SuppressWarnings("unused")
 public abstract class Strategy
 {
 	private final String label;
@@ -30,21 +32,36 @@ public abstract class Strategy
 		return this.label;
 	}
 
+	/**
+	 * Strategy: best scores first
+	 */
 	public static class BestScore extends Strategy
 	{
-//		final IGame game;
+		private final MicroServiceScrabbleServer server;
+		private final UUID game;
 
-		public BestScore()
+		public BestScore(final MicroServiceScrabbleServer server, final UUID game)
 		{
 			super("BEST SCORE");
-//			this.game = game;
+			this.server = server;
+			this.game = game;
 		}
 
 		@Override
 		void sort(final List<String> moves)
 		{
-			Collections.shuffle(moves);
-//			game.getScores(moves); TODO
+			try
+			{
+				final ArrayList<Score> scores = new ArrayList<>(this.server.getScores(this.game, moves));
+				Collections.shuffle(scores);
+				scores.sort((a, b) -> b.getScore() - a.getScore());
+				moves.clear();
+				scores.forEach(sc -> moves.add(sc.getNotation()));
+			}
+			catch (ScrabbleException.CommunicationException e)
+			{
+				throw new Error(e);
+			}
 		}
 	}
 }

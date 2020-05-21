@@ -82,7 +82,7 @@ public class MicroServiceScrabbleServer
 				resolve(game, "getScores"),
 				notations.toArray(new String[notations.size()]),
 				Score[].class);
-		if (re.getStatusCode().is2xxSuccessful())
+		if (!re.getStatusCode().is2xxSuccessful())
 		{
 			throw new ScrabbleException.CommunicationException("Cannot get scores of " + notations);
 		}

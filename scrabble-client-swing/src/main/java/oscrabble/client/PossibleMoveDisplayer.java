@@ -1,4 +1,3 @@
-// TODO
 //package oscrabble.client;
 //
 //import oscrabble.data.objects.Grid;
@@ -32,12 +31,12 @@
 //	/**
 //	 * List of legal moves
 //	 */
-//	private ArrayList<Grid.MoveMetaInformation> legalMoves;
+//	private ArrayList<String> legalMoves;
 //
 //	/**
 //	 * Swing list of sorted possible moves
 //	 */
-//	private final JList<Grid.MoveMetaInformation> moveList;
+//	private final JList<String> moveList;
 //
 //	PossibleMoveDisplayer(final Playground playground, final BruteForceMethod bruteForceMethod)
 //	{
@@ -52,7 +51,7 @@
 //			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
 //			{
 //				final Component label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-//				if (value instanceof Grid.MoveMetaInformation)
+//				if (value instanceof String)
 //				{
 //					final Grid.MoveMetaInformation mmi = (Grid.MoveMetaInformation) value;
 //					this.setText(mmi.getPlayTiles().toString() + "  " + mmi.getScore() + " pts");
@@ -114,13 +113,6 @@
 //			{
 //				Playground.resetPossibleMovesPanel();
 //				Playground.showPossibilitiesButton.setText(Playground.LABEL_DISPLAY);
-//				return;
-//			}
-//
-//			final SwingPlayer player = playground.getCurrentSwingPlayer();
-//			if (player == null)
-//			{
-//				playground.showMessage(Playground.MESSAGES.getString("player.not.at.turn"));
 //				return;
 //			}
 //

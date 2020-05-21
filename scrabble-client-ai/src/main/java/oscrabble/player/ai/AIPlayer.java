@@ -2,7 +2,6 @@ package oscrabble.player.ai;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.*;
 import oscrabble.data.objects.Grid;
@@ -40,7 +39,7 @@ public class AIPlayer extends AbstractPlayer
 		this.server = server;
 //			super(new Configuration(), name);
 		this.configuration = new BruteForceMethod.Configuration();
-		this.configuration.strategy = new Strategy.BestScore();
+		this.configuration.strategy = new Strategy.BestScore(server, game);
 		this.configuration.throttle = 2;
 
 		this.daemonThread = new Thread(() -> runDaemonThread());
@@ -85,8 +84,8 @@ public class AIPlayer extends AbstractPlayer
 					final ArrayList<Character> letters = new ArrayList<>();
 					rack.forEach(t -> letters.add(t.c));
 
-					final ArrayList<String> moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(letters));
-					moves.sort((o1, o2) -> o2.length() - o1.length());
+					List<String> moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(letters));
+					this.configuration.strategy.sort(moves);
 					if (moves.isEmpty())
 					{
 						System.out.println("No move anymore, Rack: " + rack);

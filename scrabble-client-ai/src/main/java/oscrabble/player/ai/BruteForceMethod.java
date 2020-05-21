@@ -393,7 +393,7 @@ public class BruteForceMethod
 	static class Configuration
 	{
 //		@Parameter(label = "#strategy")
-		Strategy strategy = new Strategy.BestScore();
+		Strategy strategy = new Strategy.BestScore(null, null);
 
 //		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
 		int throttle = 2;

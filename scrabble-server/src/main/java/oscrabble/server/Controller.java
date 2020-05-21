@@ -40,7 +40,15 @@ public class Controller
 	public ResponseEntity<List<Score>> getScores(final @PathVariable UUID game, @RequestBody List<String> notations) throws ScrabbleException
 	{
 		LOGGER.trace("Called: getScores() with " + notations.size() + " actions");
-		return ResponseEntity.ok(getGame(game).getScores(notations));
+		try
+		{
+			return ResponseEntity.ok(getGame(game).getScores(notations));
+		}
+		catch (ScrabbleException e)
+		{
+			LOGGER.error("Error by call of getScores() with actions: " + notations);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
 	/**
