@@ -7,12 +7,10 @@ import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
-import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.GameState;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.exception.IllegalCoordinate;
-import oscrabble.player.AbstractPlayer;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -43,16 +41,6 @@ class Playground
 	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 	public static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
-	/**
-	 * Server
-	 */
-	private MicroServiceScrabbleServer server;
-
-	/**
-	 * Game ID
-	 */
-	private UUID game;
-
 
 	/**
 	 * Grid
@@ -82,29 +70,9 @@ class Playground
 	private final JButton showPossibilitiesButton = null;  //TODO
 
 	/**
-	 * Thread executor
-	 */
-	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
-
-	/**
-	 * Future to let the last played stone flash
-	 */
-	private ScheduledFuture<Object> flashFuture;
-
-	/**
 	 * Listing of the history of the game
 	 */
-	private JList<oscrabble.data.Action> historyList;
-
-	/**
-	 * Currently played play.
-	 */
-	private oscrabble.data.Action currentPlay;
-//
-//	/**
-//	 * Registered Swing players
-//	 */
-//	private final LinkedList<SwingPlayer> swingPlayers = new LinkedList<>();
+	private final JList<oscrabble.data.Action> historyList;
 
 	/**
 	 * The frame containing the grid (and other things)
@@ -121,88 +89,6 @@ class Playground
 	 * Action defined in the command prompt
 	 */
 	Action action;
-
-	/**
-	 * Register a player.
-	 *
-	 * @param swingPlayer player to register
-	 */
-//	public void addPlayer(final SwingPlayer swingPlayer)
-//	{
-//		this.swingPlayers.add(swingPlayer);
-//	}
-
-//	public void onPlayRequired(final SwingPlayer caller)
-//	{
-////		if (!isFirstRegistered(caller))
-////		{
-////			return;
-////		}
-//
-////		for (final Map.Entry<IPlayerInfo, JScoreboard.ScorePanelLine> entry : this.jScoreboard.scoreLabels.entrySet())
-////		{
-////			final IPlayerInfo playerInfo = entry.getKey();
-////			final JScoreboard.ScorePanelLine line = entry.getValue();
-////			line.currentPlaying.setVisible(this.currentPlay != null && playerInfo.getName().equals(this.currentPlay.player.getName()));
-////		}
-//
-//		final Cursor cursor;
-//		if (true /* todo this.currentPlay.player instanceof SwingPlayer
-//				&& this.swingPlayers.contains(this.currentPlay.player)) */)
-//		{
-//			// ((SwingPlayer) this.currentPlay.player).updateRack();
-//			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-//		}
-//		else
-//		{
-//			cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-//		}
-//
-//		for (final Frame frame : Frame.getFrames())
-//		{
-//			frame.setCursor(cursor);
-//		}
-//	}
-//
-//	/**
-//	 * Players which UI has been created.
-//	 */
-//	private final Set<SwingPlayer> playersWithUI = new HashSet<>();
-
-//	/**
-//	 * Inform that the ui of a player has been created.
-//	 * @param player player
-//	 */
-//	public synchronized void afterUiCreated(final SwingPlayer player)
-//	{
-//		this.playersWithUI.add(player);
-//		final int numberSwingPlayers = getNumberSwingPlayers();
-//		if (this.playersWithUI.size() == numberSwingPlayers)
-//		{
-//			final int gap = 150;
-//			final int basePosX = this.gridFrame.getX() + this.gridFrame.getWidth();
-//			final int basePosY = this.gridFrame.getY() + (this.gridFrame.getHeight() / 2) - ( (gap + this.swingPlayers.get(0).rackFrame.getHeight()) * (numberSwingPlayers - 1) / 2);
-//
-//			for (int i = 0; i < numberSwingPlayers; i++)
-//			{
-//				final JDialog rackFrame = this.swingPlayers.get(i).rackFrame;
-//				rackFrame.setLocation(
-//						basePosX,
-//						basePosY + gap * i
-//				);
-//			}
-//		}
-//	}
-//
-//	/**
-//	 * @return the number of Swing Players registered for this playground.
-//	 */
-//	int getNumberSwingPlayers()
-//	{
-//		return this.swingPlayers.size();
-//	}
-
-	private DisplayedMessage lastMessage;
 
 	Playground(final Client client)
 	{
@@ -276,14 +162,18 @@ class Playground
 					SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(Integer.MAX_VALUE));
 				}
 		);
-		final JPopupMenu popup = new JPopupMenu();
-		DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
-			PlayTiles action = getSelectedHistoryAction();
-			return action == null ? null : Collections.singleton(action.word);
-		});
-		dda.setRelativeComponentPosition(this.gridFrame);
-		popup.add(dda);
-		this.historyList.setComponentPopupMenu(popup);
+
+		if (client!=null)
+		{
+			final JPopupMenu popup = new JPopupMenu();
+			DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
+				PlayTiles action = getSelectedHistoryAction();
+				return action == null ? null : Collections.singleton(action.word);
+			});
+			dda.setRelativeComponentPosition(this.gridFrame);
+			popup.add(dda);
+			this.historyList.setComponentPopupMenu(popup);
+		}
 
 		this.historyList.addListSelectionListener(event -> {
 			if (event.getValueIsAdjusting())
@@ -381,60 +271,6 @@ class Playground
 		this.possibleMovePanel.add(this.showPossibilitiesButton, BorderLayout.SOUTH);
 	}
 
-//	protected synchronized void refreshUI(final SwingPlayer caller)
-//	{
-//		if (!isFirstRegistered(caller))
-//		{
-//			return;
-//		}
-//
-//		if (this.flashFuture != null)
-//		{
-//			this.flashFuture.cancel(true);
-//		}
-//
-//		this.jGrid.repaint();
-//		// TODO?
-////		this.jScoreboard.refresh();
-//
-////		TODO
-////		final Iterable<GameState> history = this.server.getState(game)
-////		this.historyList.setListData(IterableUtils.toList(history).toArray(new HistoryEntry[0]));
-//	}
-
-//	/**
-//	 * @return {@code true} if the parameter is null or represents the first registered client.
-//	 */
-//	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-//	private boolean isFirstRegistered(final SwingPlayer caller)
-//	{
-//		return caller == null || caller == this.swingPlayers.getFirst();
-//	}
-
-	/**
-	 * Set the game.
-	 */
-	public void setGame()
-	{
-		// TODO: gerade dies ist wichtig.
-//		this.game.addListener(new Game.GameListener()
-//		{
-//			private final CircularFifoQueue<Game.ScrabbleEvent> dummyQueue = new CircularFifoQueue<>(1);
-//
-//			@Override
-//			public Queue<Game.ScrabbleEvent> getIncomingEventQueue()
-//			{
-//				return this.dummyQueue;
-//			}
-//
-//			@Override
-//			public void afterGameEnd()
-//			{
-//				Playground.this.executor.shutdown();
-//			}
-//		});
-	}
-
 	public void refreshUI(final GameState state)
 	{
 		this.jGrid.setGrid(state.getGrid(), this);
@@ -445,11 +281,6 @@ class Playground
 	public String getCommand()
 	{
 		return this.commandPrompt.getText();
-	}
-
-	public void clearPrompt()
-	{
-		this.commandPrompt.setText("");
 	}
 
 	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException
@@ -484,16 +315,6 @@ class Playground
 		Matcher matcher;
 		if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
 		{
-			final JRackCell rack;
-//				try
-//				{
-//					rack = Playground.this.game.getRack(player, player.getPlayerKey());
-//				}
-//				catch (ScrabbleException e)
-//				{
-//					LOGGER.error(e.toString(), e);
-//					throw new JokerPlacementException(MESSAGES.getString("error.placing.joker"), e);
-//				}
 			final StringBuilder inputWord = new StringBuilder(matcher.group(1));
 			if (inputWord.toString().trim().isEmpty())
 			{
@@ -616,19 +437,6 @@ class Playground
 	}
 
 	/**
-	 * Play the move: inform the server about it and clear the client input field.
-	 *
-	 * @param playTiles move to play
-	 */
-	private void play(final AbstractPlayer playerID, final PlayTiles playTiles) throws ScrabbleException
-	{
-		// TODO
-//		final SwingPlayer player = getCurrentSwingPlayer();
-//		assert player != null;
-		this.server.play(this.game, playerID.buildAction(playTiles.notation));
-	}
-
-	/**
 	 * Filter, das alles Eingetragene Uppercase schreibt
 	 */
 	private final static DocumentFilter UPPER_CASE_DOCUMENT_FILTER = new DocumentFilter()
@@ -701,19 +509,6 @@ class Playground
 
 	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
 	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
-
-
-//	/**
-//	 * @return the current player or {@code null} when current not Swing one
-//	 */
-//	private SwingPlayer getCurrentSwingPlayer()
-//	{
-//		if (!(this.currentPlay.player instanceof SwingPlayer))
-//		{
-//			return null;
-//		}
-//		return (SwingPlayer) this.currentPlay.player;
-//	}
 
 	/**
 	 * Execute the command contained in the command prompt
