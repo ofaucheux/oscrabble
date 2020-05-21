@@ -277,12 +277,12 @@ class Playground
 				}
 		);
 		final JPopupMenu popup = new JPopupMenu();
-		popup.add(
-				new DisplayDefinitionAction(client.getDictionary(), ()-> {
-					PlayTiles action = getSelectedHistoryAction();
-					return action == null ? null : Collections.singleton(action.word);
-				})
-		);
+		DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
+			PlayTiles action = getSelectedHistoryAction();
+			return action == null ? null : Collections.singleton(action.word);
+		});
+		dda.setRelativeComponentPosition(this.gridFrame);
+		popup.add(dda);
 		this.historyList.setComponentPopupMenu(popup);
 
 		this.historyList.addListSelectionListener(event -> {

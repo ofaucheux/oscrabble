@@ -18,11 +18,21 @@ public class DisplayDefinitionAction extends AbstractAction
 	private final MicroServiceDictionary dictionary;
 	private final Supplier<Collection<String>> wordsSupplier;
 
+	/**
+	 * Component to position the window on.
+	 */
+	private Component relativeComponentPosition;
+
 	public DisplayDefinitionAction(final MicroServiceDictionary dictionary, final Supplier<Collection<String>> wordsSupplier)
 	{
 		super("Show definitions");  // todo: i18n
 		this.dictionary = dictionary;
 		this.wordsSupplier = wordsSupplier;
+	}
+
+	public void setRelativeComponentPosition(final Component component)
+	{
+		this.relativeComponentPosition = component;
 	}
 
 	@Override
@@ -32,7 +42,11 @@ public class DisplayDefinitionAction extends AbstractAction
 		{
 			component = new DictionaryComponent(this.dictionary);
 		}
-		this.wordsSupplier.get().forEach(word -> showDefinition(word));
+		final Collection<String> words = this.wordsSupplier.get();
+		if (words != null)
+		{
+			words.forEach(word -> showDefinition(word));
+		}
 	}
 
 	private void showDefinition(final String word)
@@ -42,7 +56,13 @@ public class DisplayDefinitionAction extends AbstractAction
 		{
 			dictionaryFrame = new JFrame(Playground.MESSAGES.getString("description"));
 			dictionaryFrame.add(component);
-			dictionaryFrame.setSize(600, 600);
+			dictionaryFrame.setSize(600, 200);
+			if (this.relativeComponentPosition != null)
+			{
+				final Point pt = this.relativeComponentPosition.getLocation();
+				pt.translate(this.relativeComponentPosition.getWidth() + 10, 10);
+				dictionaryFrame.setLocation(pt);
+			}
 		}
 
 
