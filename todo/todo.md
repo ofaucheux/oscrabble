@@ -19,5 +19,5 @@
 -   order of player on the score board
 - ✔ End, wenn a player has no tiles anymore
 - ✔ show prepared tiles
--   accept retry on error
+- ✔ accept retry on error
 - ✔ logs

@@ -209,7 +209,7 @@ class Playground
 		this.client = client;
 		this.jGrid = new JGrid();
 		this.jGrid.setPlayground(this);
-		this.jScoreboard = new JScoreboard(this);
+		this.jScoreboard = new JScoreboard();
 		this.jScoreboard.setFocusable(false);
 		this.commandPrompt = new JTextField();
 		final CommandPromptAction promptListener = new CommandPromptAction();
@@ -250,7 +250,7 @@ class Playground
 
 		final JPanel eastPanel = new JPanel(new BorderLayout());
 		final JPanel panel1 = new JPanel();
-		panel1.setPreferredSize(new Dimension(200, 200));
+		panel1.setPreferredSize(this.jScoreboard.getPreferredSize());
 		panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
 		panel1.add(this.jScoreboard);
 		panel1.add(Box.createVerticalGlue());
