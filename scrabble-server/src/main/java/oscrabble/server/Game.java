@@ -611,9 +611,8 @@ public class Game
 	 * Refill the rack of a player.
 	 *
 	 * @param player Player to refill the rack
-	 * @return list of drawn tiles.
 	 */
-	private Set<Tile> refillRack(final PlayerInformation player)
+	private void refillRack(final PlayerInformation player)
 	{
 		final Set<Tile> drawn = new HashSet<>();
 		while (!this.bag.isEmpty() && player.rack.tiles.size() < RACK_SIZE)
@@ -623,7 +622,6 @@ public class Game
 			player.rack.tiles.add(poll);
 		}
 		LOGGER.trace("Remaining stones in the bag: " + this.bag.size());
-		return drawn;
 	}
 
 	/**
@@ -881,11 +879,9 @@ public class Game
 
 		LOGGER.info(player.uuid + " plays " + action.notation);
 
-		int score = 0;  // TODO: should not be there. History should not use score anymore
-		boolean actionRejected = false;
-		ScoreCalculator.MoveMetaInformation moveMI = null;
+		int score = 0;
+		final ScoreCalculator.MoveMetaInformation moveMI;
 		boolean done = false;
-		final Set<Tile> drawn;
 		try
 		{
 			final ArrayList<String> messages = new ArrayList<>(5);
@@ -979,7 +975,6 @@ public class Game
 //					this.bag.add(c); TODO: consider tiles, not chars
 				}
 				Collections.shuffle(this.bag, this.random);
-				moveMI = null;
 				LOGGER.info(player.uuid + " exchanges " + exchange.toExchange.length + " stones");
 			}
 			else if (action instanceof Action.SkipTurn)
@@ -994,8 +989,6 @@ public class Game
 
 			messages.forEach(message -> dispatchMessage(message));
 
-//				LOGGER.debug("Grid after play move nr #" + action.uuid + ":\n" + this.grid.asASCIIArt());
-			actionRejected = false;
 			player.score += score;
 			done = true;
 		}
@@ -1009,7 +1002,7 @@ public class Game
 		{
 			if (done)
 			{
-				drawn = refillRack(player);
+				refillRack(player);
 				player.lastAction = action;
 				dispatch(toInform -> toInform.afterPlay(action));
 				this.history.add(action);
@@ -1083,6 +1076,11 @@ public class Game
 	public boolean isRetryAccepted()
 	{
 		return this.configuration.retryAccepted;
+	}
+
+	public void getScores(final List<oscrabble.data.Action> actions)
+	{
+
 	}
 
 	/**
