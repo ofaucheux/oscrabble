@@ -189,7 +189,13 @@ public class Client
 				refreshUI(response.gameState);
 				if (!response.success)
 				{
-					throw new ScrabbleException("Play refused: " + response.message);
+					// todo: i18n
+					final StringBuilder sb = new StringBuilder("<html>Play refused: ").append(response.message);
+					if (response.retryAccepted)
+					{
+						sb.append("<br>Retry accepted.");
+					}
+					throw new ScrabbleException(sb.toString());
 				}
 			}
 		}

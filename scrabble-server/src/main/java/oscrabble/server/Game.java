@@ -71,7 +71,6 @@ public class Game
 	final LinkedList<PlayerInformation> toPlay = new LinkedList<>();
 	private final ScrabbleRules scrabbleRules;
 
-
 	private Grid grid;
 	private LinkedList<Tile> bag = new LinkedList<>();
 
@@ -209,6 +208,7 @@ public class Game
 	public Game(final IDictionary dictionary, final long randomSeed)
 	{
 		this.id = UUID.randomUUID();
+
 		// TODO: random weg, prüfen ob der Constructor sinnvoll ist - ist für Tests
 		this.random = new Random(randomSeed);
 		this.dictionary = dictionary;
@@ -218,6 +218,8 @@ public class Game
 		this.state = GameState.State.BEFORE_START;
 		this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 		this.scrabbleRules = dictionary.getScrabbleRules();
+
+		this.configuration.retryAccepted = true;
 	}
 
 	/**
@@ -239,6 +241,9 @@ public class Game
 	{
 		this.id = state.gameId;
 		this.state = state.state;
+
+		// Todo: configuration of the game
+
 		for (final Player sp : state.players)
 		{
 			final PlayerInformation pi = new PlayerInformation(sp);
@@ -366,30 +371,14 @@ public class Game
 	 * @return the score
 	 * @throws oscrabble.ScrabbleException
 	 */
-	public synchronized void play(/*final UUID clientKey, */ final oscrabble.data.Action jsonAction) throws oscrabble.ScrabbleException
+	public synchronized void play(final oscrabble.data.Action jsonAction) throws oscrabble.ScrabbleException
 	{
 		synchronized (this.changing)
 		{
-
-			// TODO
-//			checkKey(jsonAction.player, clientKey);
-
 			final Action action = Action.parse(jsonAction);
-			final PlayerInformation player;
 			if (jsonAction.player == null)
-			{
-//				assertTestGame(); todo
-				player = getPlayerToPlay();
-			}
-			else
-			{
-				player = this.players.get(jsonAction.player);
+				throw new AssertionError("Player is null");
 
-				if (player == null)
-				{
-					throw new AssertionError("No player " + jsonAction.player);
-				}
-			}
 			play(action);
 		}
 	}
@@ -805,7 +794,7 @@ public class Game
 //		dispatch(player -> player.afterGameEnd());
 	}
 
-	public oscrabble.configuration.Configuration getConfiguration()
+	public Configuration getConfiguration()
 	{
 		return this.configuration;
 	}
@@ -875,6 +864,9 @@ public class Game
 		{
 			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + action.player);
 		}
+
+		// TODO
+//			checkKey(jsonAction.player, clientKey);
 
 		if (this.toPlay.peekFirst() != player)
 		{
@@ -1080,6 +1072,11 @@ public class Game
 			sq = this.grid.getNext(sq, move.startSquare.direction);
 		}
 		return false;
+	}
+
+	public boolean isRetryAccepted()
+	{
+		return this.configuration.retryAccepted;
 	}
 
 	/**

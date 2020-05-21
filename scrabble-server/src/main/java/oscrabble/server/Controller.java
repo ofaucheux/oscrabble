@@ -96,9 +96,12 @@ public class Controller
 	{
 		final PlayActionResponse.PlayActionResponseBuilder aBuilder = PlayActionResponse.builder().action(action);
 		Game g = null;
+		boolean retryAccepted = false;
+
 		try
 		{
 			g = getGame(game);
+			retryAccepted = g.isRetryAccepted();
 			g.play(action);
 			aBuilder.success(true).message("success");
 		}
@@ -106,7 +109,8 @@ public class Controller
 		{
 			aBuilder.success(false).message(e.toString());
 		}
-		aBuilder.gameState(g == null ? null : g.getGameState());
+		aBuilder.gameState(g == null ? null : g.getGameState())
+				.retryAccepted(retryAccepted);
 		return new ResponseEntity<>(aBuilder.build(), HttpStatus.OK);
 	}
 
@@ -120,7 +124,7 @@ public class Controller
 
 
 	@RequestMapping(value = "/{game}/start", method = { RequestMethod.GET, RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
-	public void startGame(@PathVariable UUID game) throws ScrabbleException, InterruptedException
+	public void startGame(@PathVariable UUID game) throws ScrabbleException
 	{
 		final Game g = getGame(game);
 		g.startGame();

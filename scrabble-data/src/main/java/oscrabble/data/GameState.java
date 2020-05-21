@@ -8,6 +8,7 @@ import java.util.UUID;
 
 @Data
 @Builder
+// todo: configuration of the game
 public class GameState
 {
 	/**
