@@ -62,8 +62,6 @@ public class Game
 	 */
 	final Object changing = new Object();
 
-	private final ScoreCalculator scoreCalculator;
-
 	private final ArrayList<GameState> states = new ArrayList<>();
 	/**
 	 * List of the users, the first to play at head
@@ -142,7 +140,6 @@ public class Game
 		try
 		{
 			this.dictionary = new MicroServiceDictionary("localhost", 8080, this.configuration.language);
-			this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -216,7 +213,6 @@ public class Game
 		this.propertyFile = null;
 		this.configuration = new Configuration();
 		this.state = GameState.State.BEFORE_START;
-		this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 		this.scrabbleRules = dictionary.getScrabbleRules();
 
 		this.configuration.retryAccepted = true;
@@ -283,7 +279,6 @@ public class Game
 		this.dictionary = DICTIONARY;
 		this.configuration = new Configuration();
 		this.propertyFile = null;
-		this.scoreCalculator = new ScoreCalculator(this.dictionary.getScrabbleRules());
 		this.scrabbleRules = this.dictionary.getScrabbleRules();
 	}
 
@@ -891,7 +886,7 @@ public class Game
 				final Action.PlayTiles playTiles = (Action.PlayTiles) action;
 
 				// check possibility
-				moveMI = this.scoreCalculator.getMetaInformation(this.grid, playTiles);
+				moveMI = ScoreCalculator.getMetaInformation(this.grid, this.scrabbleRules, playTiles);
 				final HashBag<Tile> remaining = new HashBag<>(player.rack.tiles);
 
 				final List<Character> requiredLetters = moveMI.requiredLetter;

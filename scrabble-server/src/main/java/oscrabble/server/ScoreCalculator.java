@@ -15,15 +15,9 @@ public class ScoreCalculator
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(ScoreCalculator.class);
 
-	private final ScrabbleRules rules;
-
-	public ScoreCalculator(final ScrabbleRules rules)
-	{
-		this.rules = rules;
-	}
-
-	public MoveMetaInformation getMetaInformation(
+	static public MoveMetaInformation getMetaInformation(
 			final Grid grid,
+			final ScrabbleRules rules,
 			final Action.PlayTiles action
 	) throws ScrabbleException
 	{
@@ -41,10 +35,9 @@ public class ScoreCalculator
 
 			if (sq.isEmpty())
 			{
-				mmi.filledSquares.add(sq);
 				mmi.requiredLetter.add(isBlank ? ' ' : c);
 
-				mmi.score += getPoints(c) * sq.letterBonus;
+				mmi.score += getPoints(c, rules) * sq.letterBonus;
 				wordFactor *= sq.wordBonus;
 
 				// Berechnet die Querwörter und ihre Scores
@@ -70,7 +63,7 @@ public class ScoreCalculator
 
 				if (crossword.length() > 1)
 				{
-					crosswordScore += getPoints(c) * sq.letterBonus;
+					crosswordScore += getPoints(c, rules) * sq.letterBonus;
 					crosswordScores += crosswordScore * sq.wordBonus;
 					mmi.crosswords.add(crossword.toString());
 				}
@@ -99,6 +92,12 @@ public class ScoreCalculator
 		return mmi;
 	}
 
+	private static int getPoints(final Character c, final ScrabbleRules rules)
+	{
+		return Character.isLowerCase(c)
+				? 0
+				: rules.letters.get(c).points;
+	}
 
 	public static class MoveMetaInformation
 	{
@@ -110,13 +109,10 @@ public class ScoreCalculator
 		//		final Action.PlayTiles playTiles;
 		public boolean isScrabble;
 
-		/**
-		 * Square the move will fill and which are not filled for the move
-		 */
-		private final ArrayList<Square> filledSquares = new ArrayList<>();
-
 		int score;
-		private int requiredBlanks;
+
+		int requiredBlanks;
+
 		// todo: not public
 		public final List<Character> requiredLetter = new ArrayList<>();
 
@@ -130,18 +126,6 @@ public class ScoreCalculator
 			return this.score;
 		}
 
-		public Iterable<Square> getFilledSquares()
-		{
-			return this.filledSquares;
-		}
-	}
-
-	private int getPoints(final Character c)
-	{
-		final int i = Character.isLowerCase(c)
-				? 0
-				: this.rules.letters.get(c).points;
-		return i;
 	}
 
 }
