@@ -15,7 +15,6 @@ import oscrabble.data.objects.Square;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -1073,9 +1072,27 @@ public class Game
 		return this.configuration.retryAccepted;
 	}
 
-	public void getScores(final List<oscrabble.data.Action> actions)
+	/**
+	 * Calculate the scores of a list of actions.
+	 * @param notations the actions
+	 * @return list of scores.
+	 * @throws ScrabbleException
+	 */
+	public ArrayList<Score> getScores(final List<String> notations) throws ScrabbleException
 	{
+		final ArrayList<Score> scores = new ArrayList<>(notations.size());
+		for (final String notation: notations)
+		{
+			final Action action = Action.parse(null, notation);
 
+			final ScoreCalculator.MoveMetaInformation mi = ScoreCalculator.getMetaInformation(this.grid, this.scrabbleRules, ((Action.PlayTiles) action));
+			final Score score = Score.builder()
+					.notation(notation)
+					.score(mi.score)
+					.build();
+			scores.add(score);
+		}
+		return scores;
 	}
 
 	/**

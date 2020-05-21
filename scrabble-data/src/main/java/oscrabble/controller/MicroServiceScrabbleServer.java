@@ -13,9 +13,7 @@ import oscrabble.data.Action;
 import oscrabble.data.objects.Grid;
 
 import java.net.URI;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class MicroServiceScrabbleServer
 {
@@ -68,6 +66,28 @@ public class MicroServiceScrabbleServer
 		//noinspection ConstantConditions
 		LOGGER.trace("Get state returns: " + gameState.toString());
 		return gameState;
+	}
+
+	/**
+	 * Compute the score of actions. No check against dictionary occurs.
+	 * @param game
+	 * @param notations
+	 * @return
+	 * @throws ScrabbleException.CommunicationException
+	 */
+	public Collection<Score> getScores(final UUID game, final Collection<String> notations) throws ScrabbleException.CommunicationException
+	{
+		//noinspection ToArrayCallWithZeroLengthArrayArgument
+		final ResponseEntity<Score[]> re = REST_TEMPLATE.postForEntity(
+				resolve(game, "getScores"),
+				notations.toArray(new String[notations.size()]),
+				Score[].class);
+		if (re.getStatusCode().is2xxSuccessful())
+		{
+			throw new ScrabbleException.CommunicationException("Cannot get scores of " + notations);
+		}
+		//noinspection ConstantConditions
+		return Arrays.asList(re.getBody());
 	}
 
 	/**

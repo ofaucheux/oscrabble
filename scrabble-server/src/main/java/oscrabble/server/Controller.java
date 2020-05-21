@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import oscrabble.ScrabbleException;
 import oscrabble.data.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -35,6 +36,12 @@ public class Controller
 		return ResponseEntity.ok(getGame(game).getGameState());
 	}
 
+	@PostMapping(value = "/{game}/getScores", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<Score>> getScores(final @PathVariable UUID game, @RequestBody List<String> notations) throws ScrabbleException
+	{
+		LOGGER.trace("Called: getScores() with " + notations.size() + " actions");
+		return ResponseEntity.ok(getGame(game).getScores(notations));
+	}
 
 	/**
 	 * Get an already known game.

@@ -1,5 +1,6 @@
 package oscrabble.controller;
 
+import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
@@ -32,7 +33,7 @@ public abstract class Action
 		return action;
 	}
 
-	public static Action parse(final UUID player, final String notation) throws ScrabbleException.NotParsableException
+	public static Action parse(final @Nullable UUID player, final String notation) throws ScrabbleException.NotParsableException
 	{
 		final Action action;
 		if (PASS_TURN.matcher(notation).matches())
