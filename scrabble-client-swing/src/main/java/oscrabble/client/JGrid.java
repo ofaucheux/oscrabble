@@ -7,16 +7,19 @@ import oscrabble.data.objects.Square;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Darstellung der Spielfläche
@@ -53,13 +56,17 @@ class JGrid extends JPanel
 	 * Set to let the new stones flash
 	 */
 	boolean hideNewStones;
+
 	/** Turn number of the tiles to hide (for blinking) */
 	UUID turnToHide;
+
 	private Grid grid;
+
 	/**
 	 * Client mit dem diese Grid verknüpft ist
 	 */
 	private Playground playground;
+
 	/**
 	 * Last played action
 	 */
@@ -358,29 +365,6 @@ class JGrid extends JPanel
 			});
 		}
 
-		@SneakyThrows
-		@Override
-		protected void paintComponent(final Graphics g)
-		{
-			final Graphics2D g2 = (Graphics2D) g;
-			if (this.preparedTile != null)
-			{
-				JTile.drawTile(g2, this, this.preparedTile, 1, false, Color.black);
-			}
-			else
-			{
-				super.paintComponent(g);
-			}
-
-			final MatteBorder specialBorder = JGrid.this.specialBorders.get(this);
-			if (specialBorder != null)
-			{
-				specialBorder.paintBorder(
-						this, g, 0, 0, getWidth(), getHeight()
-				);
-			}
-		}
-
 		@Override
 		public void paint(final Graphics g)
 		{
@@ -418,6 +402,19 @@ class JGrid extends JPanel
 					g2.fillPolygon(p);
 					((Graphics2D) g).setTransform(saved);
 				}
+			}
+
+			if (this.preparedTile != null)
+			{
+				JTile.drawTile(g2, this, this.preparedTile, 1, false, Color.black);
+			}
+
+			final MatteBorder specialBorder = JGrid.this.specialBorders.get(this);
+			if (specialBorder != null)
+			{
+				specialBorder.paintBorder(
+						this, g, 0, 0, getWidth(), getHeight()
+				);
 			}
 		}
 	}
