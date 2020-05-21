@@ -720,7 +720,6 @@ class Playground
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			LOGGER.info(e.toString());
 			executeCommand();
 		}
 

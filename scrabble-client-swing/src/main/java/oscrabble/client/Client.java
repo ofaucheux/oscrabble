@@ -99,7 +99,7 @@ public class Client
 	{
 		final Bag rack = server.getRack(game, player);
 		lastKnownState = state;
-		LOGGER.info("Refresh UI with state " + state.hashCode());
+		LOGGER.debug("Refresh UI with state " + state.hashCode());
 		if (!state.playedActions.isEmpty())
 		{
 			final UUID lastPlayedTurn = state.playedActions.get(state.playedActions.size() - 1).getTurnId();

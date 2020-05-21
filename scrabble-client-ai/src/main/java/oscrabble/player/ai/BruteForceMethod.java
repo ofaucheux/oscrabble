@@ -145,7 +145,7 @@ public class BruteForceMethod
 			}
 		}
 
-		LOGGER.info("" + ctx.legalPlayTiles.size() + " legal moves calculated");
+		LOGGER.debug("" + ctx.legalPlayTiles.size() + " legal moves calculated");
 		return ctx.legalPlayTiles;
 	}
 
