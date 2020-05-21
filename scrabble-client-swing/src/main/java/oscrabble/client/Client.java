@@ -95,18 +95,18 @@ public class Client
 		return this.playground.gridFrame.isVisible();
 	}
 
-	private void refreshUI(final GameState state) throws ScrabbleException.CommunicationException  // todo: display for several racks
+	private void refreshUI(final GameState state)   // todo: display for several racks
 	{
-		final Bag rack = server.getRack(game, player);
-		lastKnownState = state;
-		LOGGER.debug("Refresh UI with state " + state.hashCode());
+		LOGGER.info("Refresh ui called with turn id " + state.turnId);
+		final Bag rack = this.server.getRack(this.game, this.player);
+		this.lastKnownState = state;
 		if (!state.playedActions.isEmpty())
 		{
 			final UUID lastPlayedTurn = state.playedActions.get(state.playedActions.size() - 1).getTurnId();
 			if (Client.this.lastPlayedTurn != lastPlayedTurn)
 			{
 				Client.this.lastPlayedTurn = lastPlayedTurn;
-				playground.jGrid.scheduleLastWordBlink(lastPlayedTurn);
+				this.playground.jGrid.scheduleLastWordBlink(lastPlayedTurn);
 			}
 		}
 		this.playground.refreshUI(state);
@@ -185,7 +185,7 @@ public class Client
 						.turnId(UUID.randomUUID()) //TODO: the game should give the id
 						.notation(command)
 						.build();
-				final PlayActionResponse response = server.play(this.game, action);
+				final PlayActionResponse response = this.server.play(this.game, action);
 				refreshUI(response.gameState);
 				if (!response.success)
 				{
@@ -238,6 +238,7 @@ public class Client
 				}
 			}
 			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, "End of game reached!");
+			LOGGER.debug("Thread ends");
 		}
 	}
 

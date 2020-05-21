@@ -739,7 +739,7 @@ class Playground
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			executeCommand();
+			SwingUtilities.invokeLater(() -> executeCommand());
 		}
 
 		@Override

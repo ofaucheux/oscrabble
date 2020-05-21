@@ -136,6 +136,7 @@ class JGrid extends JPanel
 
 		this.background.removeAll();
 		this.background.add(p1);
+		this.background.revalidate();
 	}
 
 	/**

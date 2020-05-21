@@ -20,3 +20,4 @@
 - ✔ End, wenn a player has no tiles anymore
 - ✔ show prepared tiles
 -   accept retry on error
+- ✔ logs

@@ -1,17 +1,19 @@
 package oscrabble.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
-import java.net.URI;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
 public class Application
 {
+	public static final Logger LOGGER = LoggerFactory.getLogger(Thread.class);
 
 	private final MicroServiceDictionary dictionary;
 	private final MicroServiceScrabbleServer server;
@@ -29,6 +31,14 @@ public class Application
 
 	public static void main(String[] unused) throws InterruptedException
 	{
+
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			public void uncaughtException(Thread t, Throwable e)
+			{
+				LOGGER.error("Uncaught exception", e);
+			}
+		});
+
 		final  MicroServiceDictionary dictionary = new MicroServiceDictionary("localhost", 8080, "FRENCH");
 		final  MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
 		final Application application = new Application(dictionary, server);
