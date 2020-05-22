@@ -25,7 +25,7 @@ class AIPlayerTest
 	void onPlayRequired() throws InterruptedException
 	{
 
-		final MicroServiceDictionary DICTIONARY = new MicroServiceDictionary("localhost", 8080, "FRENCH");
+		final MicroServiceDictionary DICTIONARY = MicroServiceDictionary.getDefaultFrench();
 		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
 
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);

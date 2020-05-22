@@ -32,7 +32,7 @@ public class Client
 	/**
 	 * Used dictionary TODO: not static
 	 */
-	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary("localhost", 8080, "FRENCH");
+	public static MicroServiceDictionary DICTIONARY =  MicroServiceDictionary.getDefaultFrench();
 
 	/** last played turn */
 	private UUID lastPlayedTurn;

@@ -38,6 +38,14 @@ public class MicroServiceDictionary implements IDictionary
 		this.language = language;
 	}
 
+	/**
+	 * @return the French dictionary service on localhost with default port
+	 */
+	public static MicroServiceDictionary getDefaultFrench()
+	{
+		return new MicroServiceDictionary("localhost", 8080, "FRENCH");
+	}
+
 	private synchronized URI buildUri(final String... pathSegments)
 	{
 		final URI uri = this.uriComponentsBuilder

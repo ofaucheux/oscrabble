@@ -39,7 +39,7 @@ public class Game
 	/**
 	 * Used dictionary TODO: not static
 	 */
-	public static MicroServiceDictionary DICTIONARY = new MicroServiceDictionary("localhost", 8080, "FRENCH");
+	public static MicroServiceDictionary DICTIONARY =  MicroServiceDictionary.getDefaultFrench();
 
 	/**
 	 * ID of the game
