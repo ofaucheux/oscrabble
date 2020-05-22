@@ -26,7 +26,7 @@ class AIPlayerTest
 	{
 
 		final MicroServiceDictionary DICTIONARY = MicroServiceDictionary.getDefaultFrench();
-		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
+		final MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
 
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);
 		final String PLAYER_NAME = "AI Player";

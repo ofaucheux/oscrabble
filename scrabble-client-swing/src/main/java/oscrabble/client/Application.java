@@ -40,7 +40,7 @@ public class Application
 		});
 
 		final  MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
-		final  MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
+		final  MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
 		final Application application = new Application(dictionary, server);
 		application.play();
 	}

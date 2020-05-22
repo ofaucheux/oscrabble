@@ -24,7 +24,7 @@ public class BruteForceMethodTest
 	private BruteForceMethod instance;
 
 	private final static MicroServiceDictionary DICTIONARY =  MicroServiceDictionary.getDefaultFrench();
-	private final static MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
+	private final static MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
 
 	private ArrayBlockingQueue<String> playQueue;
 	private AbstractPlayer player;

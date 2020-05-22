@@ -40,6 +40,14 @@ public class MicroServiceScrabbleServer
 				.port(port);
 	}
 
+	/**
+	 * @return server on localhost with default port
+	 */
+	public static MicroServiceScrabbleServer getLocal()
+	{
+		return new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
+	}
+
 
 	/**
 	 * Create a game
