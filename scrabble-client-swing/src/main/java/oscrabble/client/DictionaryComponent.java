@@ -21,7 +21,7 @@ public class DictionaryComponent extends JTabbedPane
 	 */
 	private final Set<String> found = new HashSet<>();
 
-	private final MicroServiceDictionary dictionary;
+	private MicroServiceDictionary dictionary;
 
 	/**
 	 * Erstellt ein {@link DictionaryComponent}-
@@ -105,4 +105,8 @@ public class DictionaryComponent extends JTabbedPane
 		setSelectedComponent(sp);
 	}
 
+	public void setDictionary(final MicroServiceDictionary dictionary)
+	{
+		this.dictionary = dictionary;
+	}
 }
