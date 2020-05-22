@@ -21,7 +21,7 @@ public class DictionaryComponent extends JTabbedPane
 	 */
 	private final Set<String> found = new HashSet<>();
 
-	private MicroServiceDictionary dictionary;
+	private final MicroServiceDictionary dictionary;
 
 	/**
 	 * Erstellt ein {@link DictionaryComponent}-
@@ -103,10 +103,5 @@ public class DictionaryComponent extends JTabbedPane
 		final JScrollPane sp = new JScrollPane(panel);
 		addTab(word, sp);
 		setSelectedComponent(sp);
-	}
-
-	public void setDictionary(final MicroServiceDictionary dictionary)
-	{
-		this.dictionary = dictionary;
 	}
 }
