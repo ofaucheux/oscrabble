@@ -14,8 +14,6 @@ import oscrabble.player.ai.Strategy;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.*;
 
@@ -41,10 +39,27 @@ public class PossibleMoveDisplayer
 	/** the game */
 	private UUID game;
 
+	private final Set<AttributeChangeListener> attributeChangeListeners = new HashSet<>();
+
 	public PossibleMoveDisplayer(final MicroServiceDictionary dictionary)
 	{
 		this.bfm = new BruteForceMethod(dictionary);
-		this.orderStrategies = Arrays.asList(new Strategy.BestScore(null, null));
+
+		final Strategy.BestScore bestScore = new Strategy.BestScore(null, null);
+		this.attributeChangeListeners.add((fieldName, newValue) -> {
+			switch (fieldName)
+			{
+				case "game":
+					bestScore.setGame((UUID) newValue);
+					break;
+				case "server":
+					bestScore.setServer(((MicroServiceScrabbleServer) newValue));
+					break;
+			}
+		});
+		this.orderStrategies = Arrays.asList(bestScore);
+		this.selectedOrderStrategy = this.orderStrategies.get(0);
+
 		this.mainPanel = new JPanel();
 		this.mainPanel.setBorder(new TitledBorder(Application.MESSAGES.getString("possible.moves")));
 		this.mainPanel.setSize(new Dimension(200, 300));
@@ -78,7 +93,12 @@ public class PossibleMoveDisplayer
 	void setServer(final MicroServiceScrabbleServer server)
 	{
 		this.server = server;
-		setFieldForMethods("server", server);
+		invokeListeners("server", server);
+	}
+
+	private void invokeListeners(final String fieldName, final Object newValue)
+	{
+		this.attributeChangeListeners.forEach(l -> l.onChange(fieldName, newValue));
 	}
 
 	/**
@@ -89,33 +109,7 @@ public class PossibleMoveDisplayer
 	public void setGame(final UUID game)
 	{
 		this.game = game;
-		setFieldForMethods("game", game);
-	}
-
-	public void setFieldForMethods(String fieldName, final Object object)
-	{
-		if (object == null)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		fieldName = fieldName.replaceFirst("(.)", "" + Character.toUpperCase(fieldName.charAt(0)));
-		for (final Strategy os : this.orderStrategies)
-		{
-			try
-			{
-				final Method meth = os.getClass().getMethod("set" + fieldName, object.getClass());
-				meth.invoke(os, object);
-			}
-			catch (NoSuchMethodException e)
-			{
-				// is ok.
-			}
-			catch (IllegalAccessException | InvocationTargetException e)
-			{
-				throw new Error(e);
-			}
-		}
+		invokeListeners("game", game);
 	}
 
 	public synchronized void updateList(final GameState state, final List<Character> characters)
@@ -147,5 +141,10 @@ public class PossibleMoveDisplayer
 		{
 			LOGGER.error("Cannot update list", e);
 		}
+	}
+
+	private interface AttributeChangeListener
+	{
+		void onChange(String fieldName, Object newValue);
 	}
 }
