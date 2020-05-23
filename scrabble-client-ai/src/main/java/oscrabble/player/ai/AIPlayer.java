@@ -72,7 +72,7 @@ public class AIPlayer extends AbstractPlayer
 				state = this.server.getState(this.game);
 				if (state.state == GameState.State.STARTED && this.uuid.equals(state.getPlayerOnTurn()))
 				{
-					this.bruteForceMethod.grid = Grid.fromData(state.getGrid());
+					this.bruteForceMethod.setGrid(Grid.fromData(state.getGrid()));
 					final ArrayList<Tile>  rack = this.server.getRack(this.game, this.uuid).tiles;
 					final Player player0 = state.getPlayers().get(0);
 					if (rack.isEmpty())
@@ -84,8 +84,9 @@ public class AIPlayer extends AbstractPlayer
 					final ArrayList<Character> letters = new ArrayList<>();
 					rack.forEach(t -> letters.add(t.c));
 
-					List<String> moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(letters));
-					this.configuration.strategy.sort(moves);
+					List<String> moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(
+							letters,
+							this.configuration.strategy));
 					if (moves.isEmpty())
 					{
 						System.out.println("No move anymore, Rack: " + rack);

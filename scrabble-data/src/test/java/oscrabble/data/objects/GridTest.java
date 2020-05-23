@@ -2,6 +2,7 @@ package oscrabble.data.objects;
 
 import org.junit.jupiter.api.Test;
 import oscrabble.ScrabbleException;
+import oscrabble.data.fixtures.PrecompiledGameStates;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -63,5 +64,11 @@ class GridTest
 
 		assertTrue(g.getWords("B3").isEmpty());
 		assertTrue(g.getWords("A1").isEmpty());
+	}
+
+	@Test
+	void getFixtures()
+	{
+		PrecompiledGameStates.game1();
 	}
 }

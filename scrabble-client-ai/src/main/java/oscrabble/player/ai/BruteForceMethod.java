@@ -5,6 +5,7 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
@@ -20,7 +21,7 @@ public class BruteForceMethod
 	CompressedDAWGSet automaton;
 	
 	/** The grid, to update after each round */
-	Grid grid;
+	private Grid grid;
 
 	public BruteForceMethod(final IDictionary dictionary)
 	{
@@ -65,6 +66,10 @@ public class BruteForceMethod
 		}
 	}
 
+	public void setGrid(final Grid grid)
+	{
+		this.grid = grid;
+	}
 
 	Set<Square> getAnchors()
 	{
@@ -91,13 +96,31 @@ public class BruteForceMethod
 		return anchors;
 	}
 
+
+	/**
+	 * Get all authorized moves.
+	 *
+	 * @param rack Rack
+	 * @param strategy the ordering algorithm
+	 * @return all the moves
+	 */
+	public List<String> getLegalMoves(final Collection<Character> rack, final @Nullable Strategy strategy)
+	{
+		final ArrayList<String> moves = new ArrayList<>(getLegalMoves(rack));
+		if (strategy != null)
+		{
+			strategy.sort(moves);
+		}
+		return moves;
+	}
+
 	/**
 	 * Get all authorized moves.
 	 *
 	 * @param rack Rack
 	 * @return all the moves
 	 */
-	public Set<String> getLegalMoves(final Collection<Character> rack)
+	private Set<String> getLegalMoves(final Collection<Character> rack)
 	{
 		if (this.grid.isEmpty())
 		{

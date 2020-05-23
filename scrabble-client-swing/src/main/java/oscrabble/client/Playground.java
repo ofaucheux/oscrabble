@@ -47,7 +47,6 @@ class Playground
 	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 	public static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
-
 	/**
 	 * Grid
 	 */
@@ -68,7 +67,7 @@ class Playground
 	/**
 	 * Panel for the display of possible moves and corresponding buttons
 	 */
-	private final JPanel possibleMovePanel;
+	final PossibleMoveDisplay possibleMoveDisplay;
 
 	/**
 	 * Button to display / hide the possible moves
@@ -132,7 +131,6 @@ class Playground
 		this.gridFrame.addWindowListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
-
 
 		final JPanel mainPanel_01 = new JPanel();
 		mainPanel_01.setLayout(new BoxLayout(mainPanel_01, BoxLayout.PAGE_AXIS));
@@ -213,17 +211,10 @@ class Playground
 		rollbackButton.setEnabled(false);
 		panel1.add(rollbackButton);
 
-		this.possibleMovePanel = new JPanel();
-		this.possibleMovePanel.setBorder(new TitledBorder(MESSAGES.getString("possible.moves")));
-		this.possibleMovePanel.setSize(new Dimension(200, 300));
-		this.possibleMovePanel.setLayout(new BorderLayout());
+		this.possibleMoveDisplay = new PossibleMoveDisplay(this.client == null ? null : this.client.getDictionary());
 		// todo: AI Empfehlungen
-//		final BruteForceMethod bruteForceMethod = new BruteForceMethod(	this.game.getDictionary());
-//		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(this, bruteForceMethod));
-//		showPossibilitiesButton.setFocusable(false);
-//		resetPossibleMovesPanel();
 
-		panel1.add(this.possibleMovePanel);
+		panel1.add(this.possibleMoveDisplay.mainPanel);
 		panel1.add(Box.createVerticalGlue());
 
 		// todo: configpanel
@@ -266,15 +257,6 @@ class Playground
 			throw new Error(e);
 		}
 		return action instanceof PlayTiles ? ((PlayTiles) action) : null;
-	}
-
-	private void resetPossibleMovesPanel()
-	{
-		this.possibleMovePanel.removeAll();
-		this.possibleMovePanel.invalidate();
-		this.possibleMovePanel.repaint();
-		this.showPossibilitiesButton.setText(LABEL_DISPLAY);
-		this.possibleMovePanel.add(this.showPossibilitiesButton, BorderLayout.SOUTH);
 	}
 
 	public void refreshUI(final GameState state)

@@ -60,6 +60,16 @@ public class MicroServiceScrabbleServer
 	}
 
 	/**
+	 * Let the server loads the fixture games and return them.
+	 * @return
+	 */
+	public List<GameState> loadFixtures()
+	{
+		final GameState[] games = REST_TEMPLATE.postForObject(resolve(null, "loadFixtures"), null, GameState[].class);
+		return Arrays.asList(games);
+	}
+
+	/**
 	 * @return state of the game
 	 * @throws ScrabbleException.CommunicationException
 	 */
@@ -77,7 +87,9 @@ public class MicroServiceScrabbleServer
 	}
 
 	/**
-	 * Compute the score of actions. No check against dictionary occurs.
+	 * Compute the score of actions. No check against dictionary occurs. The order of the result is the same as the one of the
+	 * parameter.
+	 *
 	 * @param game
 	 * @param notations
 	 * @return

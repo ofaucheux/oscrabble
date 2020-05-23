@@ -10,7 +10,6 @@ import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.AbstractPlayer;
 
-import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
@@ -88,7 +87,7 @@ public class BruteForceMethodTest
 	{
 		final ArrayList<Character> list = new ArrayList<>(rack.length());
 		rack.chars().forEach(c -> list.add((char) c));
-		return bfm.getLegalMoves(list);
+		return bfm.getLegalMoves(list, this.configuration.strategy);
 	}
 
 	@Test

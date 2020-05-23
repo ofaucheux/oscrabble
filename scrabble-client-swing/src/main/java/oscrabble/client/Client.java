@@ -24,7 +24,7 @@ public class Client
 	private final UUID game;
 	final UUID player;
 
-	private final Playground playground;
+	final Playground playground;
 	private final JRack rack;
 
 	private GameState lastKnownState = null; // TODO: use it in server.play() too
@@ -114,6 +114,7 @@ public class Client
 		this.playground.gridFrame.setCursor(
 				this.player.equals(state.getPlayerOnTurn()) ? Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR) : Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
 		);
+		this.playground.possibleMoveDisplay.updateList(server, state, rack.tiles);
 	}
 
 	private void prepareCommands()

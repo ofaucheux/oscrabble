@@ -1,13 +1,16 @@
 package oscrabble.server;
 
 import org.apache.commons.collections4.bag.HashBag;
+import org.apache.commons.collections4.map.LinkedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.configuration.PropertyUtils;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.*;
+import oscrabble.data.fixtures.PrecompiledGameStates;
 import oscrabble.data.objects.Grid;
 import oscrabble.controller.Action;
 import oscrabble.data.objects.Square;
@@ -25,6 +28,12 @@ import java.util.regex.Pattern;
 
 public class Game
 {
+	/**
+	 * This value always leads to the last created game.
+	 */
+	public static final UUID UUID_ZERO = new UUID(0, 0);
+	private static final LinkedMap<UUID, Game> GAMES = new LinkedMap<>();
+
 	/**
 	 * Resource Bundle
 	 */
@@ -108,93 +117,6 @@ public class Game
 
 	private String assertFirstLetters;
 
-	public Game(final File propertyFile) throws ConfigurationException
-	{
-		this.id = UUID.randomUUID();
-		if (propertyFile == null)
-		{
-			throw new IllegalArgumentException("Property file cannot be null");
-		}
-
-		if (!propertyFile.exists())
-		{
-			throw new AssertionError("Property file does not exist");
-		}
-
-		this.propertyFile = propertyFile;
-		final Properties properties = new Properties();
-		try (FileReader reader = new FileReader(propertyFile))
-		{
-			properties.load(reader);
-		}
-		catch (final IOException ex)
-		{
-			final ConfigurationException configurationException = new ConfigurationException("Cannot read the configuration file: " + ex.toString(), ex);
-			LOGGER.error("Error", configurationException);
-//			TODO throw configurationException;
-		}
-
-		this.configuration = new Configuration();
-		this.configuration.loadProperties(properties);
-		try
-		{
-			this.dictionary = new MicroServiceDictionary("localhost", 8080, this.configuration.language);
-		}
-		catch (IllegalArgumentException e)
-		{
-			throw new ConfigurationException("Not known language: " + this.configuration.language);
-		}
-//		TODO
-//		this.configuration.addChangeListener(evt -> saveConfiguration());
-
-		//
-		// Players
-		//
-
-		final Pattern keyPart = Pattern.compile("([^.]*)");
-		final Set<String> playerNames = new HashSet<>();
-		PropertyUtils.getSubProperties(properties, "player").stringPropertyNames().forEach(k ->
-		{
-			Matcher m = keyPart.matcher(k);
-			if (m.find())
-			{
-				playerNames.add(m.group(1));
-			}
-		});
-
-		for (final String name : playerNames)
-		{
-			final Properties playerProps = PropertyUtils.getSubProperties(properties, PLAYER_PREFIX + name);
-			final String methodName = playerProps.getProperty(KEY_METHOD);
-//			final BruteForceMethod.Player bfPlayer;
-//			switch (PlayerType.valueOf(methodName.toUpperCase()))
-//			{
-//				// TODO: sowewhere else
-//				case BRUTE_FORCE:
-//					bfPlayer = new BruteForceMethod(this.dictionary).new Player(name);
-//					bfPlayer.loadConfiguration(playerProps);
-//					this.addPlayer(bfPlayer);
-//					break;
-//				default:
-//					throw new ConfigurationException("Unknown method: " + methodName);
-//			}
-
-			// TODO?
-//			final oscrabble.configuration.Configuration playerConfig = player.getConfiguration();
-//			if (playerConfig != null)
-//			{
-//				playerConfig.addChangeListener(evt -> saveConfiguration());
-//			}
-		}
-
-		this.grid = new Grid();
-		this.random = new Random();
-
-		setState(GameState.State.BEFORE_START);
-		LOGGER.info("Created game with random seed " + this.random);
-		this.scrabbleRules = this.dictionary.getScrabbleRules();
-	}
-
 	/**
 	 * Constructor for test purposes a game without player.
 	 *
@@ -215,17 +137,7 @@ public class Game
 		this.scrabbleRules = dictionary.getScrabbleRules();
 
 		this.configuration.retryAccepted = true;
-	}
-
-	/**
-	 * Constructor for test purposes.
-	 *
-	 * @param dictionary dictionary
-	 * @see #Game(IDictionary, long)
-	 */
-	public Game(final IDictionary dictionary)
-	{
-		this(dictionary, new Random().nextLong());
+		register(this);
 	}
 
 	/**
@@ -279,6 +191,60 @@ public class Game
 		this.configuration = new Configuration();
 		this.propertyFile = null;
 		this.scrabbleRules = this.dictionary.getScrabbleRules();
+
+		register(this);
+	}
+
+	/**
+	 * Load the test games
+	 * @return the games
+	 */
+	public static List<GameState> loadFixtures()
+	{
+		final ArrayList<GameState> games = new ArrayList<>();
+		games.add(new Game(PrecompiledGameStates.game1()).getGameState());
+		return games;
+	}
+
+	/**
+	 * Constructor for test purposes.
+	 *
+	 * @param dictionary dictionary
+	 * @see #Game(IDictionary, long)
+	 */
+	public Game(final IDictionary dictionary)
+	{
+		this(dictionary, new Random().nextLong());
+	}
+
+	/**
+	 *
+	 * @param uuid
+	 * @return the game
+	 * @throws ScrabbleException if not found
+	 */
+	public static @NonNull  Game getGame(UUID uuid) throws ScrabbleException
+	{
+		if (uuid.equals(UUID_ZERO))
+		{
+			if (GAMES.isEmpty())
+			{
+				throw new ScrabbleException("No game created");
+			}
+			uuid = GAMES.lastKey();
+		}
+
+		final Game game = GAMES.get(uuid);
+		if (game == null)
+		{
+			throw new ScrabbleException("No game with id " + uuid);
+		}
+		return game;
+	}
+
+	private void register(final Game game)
+	{
+		GAMES.put(game.id, game);
 	}
 
 //	/**
@@ -1164,7 +1130,7 @@ public class Game
 	/**
 	 * Configuration parameters of a game. The list of players is not part of the configuration.
 	 */
-	private static class Configuration extends oscrabble.configuration.Configuration
+	static class Configuration extends oscrabble.configuration.Configuration
 	{
 		@Parameter(label = "Dictionary", description = "#dictionary.of.the.game")
 		String language = "FRENCH";

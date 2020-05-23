@@ -49,11 +49,13 @@ public class Application
 	{
 		final UUID game = this.server.newGame();
 		final UUID edgar = this.server.addPlayer(game, "Edgar");
-		final UUID anton = this.server.addPlayer(game, "Anton");
-
-		final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
-		ai.setThrottle(5000);
-		ai.startDaemonThread();
+		for (int i = 0; i < 4; i++)
+		{
+			final UUID anton = this.server.addPlayer(game, "Anton_" + (i+1));
+			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
+			ai.setThrottle(1000);
+			ai.startDaemonThread();
+		}
 
 		final Client client = new Client(this.server, game, edgar);
 		client.displayAll();

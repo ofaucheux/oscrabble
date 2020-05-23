@@ -322,13 +322,13 @@ public class GameTest
 		this.startGame(true);
 		assertEquals(0, this.game.getRoundNr());
 
-		this.game.play(this.gustav, Action.parse(null, "H3 APPETQE"));
+		this.game.play(Action.parse(null, "H3 APPETQE"));
 		Thread.sleep(100);
 		assertEquals(this.game.getPlayer(this.gustav).score, 0);
 		assertEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(0, this.game.getRoundNr());
 
-		this.game.play(this.gustav, Action.parse(null, "8H APTES"));
+		this.game.play(Action.parse(null, "8H APTES"));
 		this.game.awaitEndOfPlay(1);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(16, this.game.getPlayer(this.gustav).score);
@@ -344,7 +344,7 @@ public class GameTest
 
 		final int roundNr = this.game.getRoundNr();
 		final Bag startRack = this.game.getPlayer(this.gustav).rack;
-		this.game.play(this.gustav, Action.parse(null, "8H APTES"));
+		this.game.play(Action.parse(null, "8H APTES"));
 		this.game.awaitEndOfPlay(1);
 		assertEquals(16, this.game.getPlayer(this.gustav).score);
 		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -373,7 +373,7 @@ public class GameTest
 		};
 		this.game.listeners.add(listener);
 		this.startGame(true);
-		this.game.play(this.gustav, Action.parse(null, "H3 APPETEE"));
+		this.game.play(Action.parse(null, "H3 APPETEE"));
 		this.game.awaitEndOfPlay(1);
 
 		assertTrue(playRejected.get());
@@ -389,7 +389,7 @@ public class GameTest
 		startGame(true);
 		try
 		{
-			this.game.play(this.gustav, Action.parse(null, "H8 A"));
+			this.game.play(Action.parse(null, "H8 A"));
 			fail();
 		}
 		catch (ScrabbleException.ForbiddenPlayException e)
@@ -407,7 +407,7 @@ public class GameTest
 		startGame(true);
 		try
 		{
-			this.game.play(this.gustav, Action.parse(null, "G7 AS"));
+			this.game.play(Action.parse(null, "G7 AS"));
 			this.game.awaitEndOfPlay(1);
 			fail();
 		}
@@ -424,10 +424,10 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.game.assertFirstLetters("ASWEEDVIGIE");
 		startGame(true);
-		this.game.play(this.gustav, Action.parse(null, "H8 AS"));
+		this.game.play(Action.parse(null, "H8 AS"));
 		try
 		{
-			this.game.play(this.john, Action.parse(null, "A3 VIGIE"));
+			this.game.play(Action.parse(null, "A3 VIGIE"));
 			fail();
 		}
 		catch (ScrabbleException e)
@@ -446,11 +446,11 @@ public class GameTest
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
-		this.game.play(etienne, Action.parse(null, "H8 As"));
+		this.game.play(Action.parse(null, "H8 As"));
 		this.game.awaitEndOfPlay(1);
 		assertEquals(2, this.game.getPlayer(etienne).score);
 
-		this.game.play(etienne, Action.parse(null, "8I SI"));
+		this.game.play(Action.parse(null, "8I SI"));
 		this.game.awaitEndOfPlay(2);
 		assertEquals(4, this.game.getPlayer(etienne).score);
 
@@ -477,10 +477,10 @@ public class GameTest
 
 			startGame(true);
 			int move = 1;
-			this.game.play(anton, Action.parse(null, "D8 PLaCE"));
+			this.game.play(Action.parse(null, "D8 PLaCE"));
 			this.game.awaitEndOfPlay(move++);
 			assertEquals(22, this.game.getPlayer(anton).score);
-			this.game.play(anton, Action.parse(null, RANDOM.nextBoolean() ? "4F NIERa" : "4F NIERA"));
+			this.game.play(Action.parse(null, RANDOM.nextBoolean() ? "4F NIERa" : "4F NIERA"));
 			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getPlayer(anton).score);
 			this.game.quitGame();
@@ -493,10 +493,10 @@ public class GameTest
 			this.game.assertFirstLetters(" CELMNPAISSE");
 			startGame(true);
 			int move = 1;
-			this.game.play(anton, Action.parse(null, "D8 aMPLE"));
+			this.game.play(Action.parse(null, "D8 aMPLE"));
 			this.game.awaitEndOfPlay(move++);
 			assertEquals(14, this.game.getPlayer(anton).score);
-			this.game.play(anton, Action.parse(null, "7D CAISSE"));
+			this.game.play(Action.parse(null, "7D CAISSE"));
 			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getPlayer(anton).score);
 			this.game.quitGame();

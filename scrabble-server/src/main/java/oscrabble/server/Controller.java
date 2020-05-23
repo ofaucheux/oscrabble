@@ -18,12 +18,6 @@ import java.util.UUID;
 public class Controller
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
-	private static final LinkedMap<UUID, Game> GAMES = new LinkedMap<>();
-
-	/**
-	 * This value always leads to the last created game.
-	 */
-	public static final UUID UUID_ZERO = new UUID(0, 0);
 
 	public Controller()
 	{
@@ -36,6 +30,22 @@ public class Controller
 		return ResponseEntity.ok(getGame(game).getGameState());
 	}
 
+	/**
+	 * Get an already known game.
+	 * @param uuid id
+	 * @return the game with this id
+	 * @throws ScrabbleException if no seach game.
+	 */
+	private static Game getGame(UUID uuid) throws ScrabbleException
+	{
+		final Game game = Game.getGame(uuid);
+		if (game == null)
+		{
+			throw new ScrabbleException("No game with id " + uuid);
+		}
+		return game;
+	}
+
 	@PostMapping(value = "/{game}/getScores", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Score>> getScores(final @PathVariable UUID game, @RequestBody List<String> notations) throws ScrabbleException
 	{
@@ -46,34 +56,9 @@ public class Controller
 		}
 		catch (ScrabbleException e)
 		{
-			LOGGER.error("Error by call of getScores() with actions: " + notations);
+			LOGGER.error("Error by call of getScores() with actions: " + notations, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
-	}
-
-	/**
-	 * Get an already known game.
-	 * @param uuid id
-	 * @return the game with this id
-	 * @throws ScrabbleException if no seach game.
-	 */
-	private static Game getGame(UUID uuid) throws ScrabbleException
-	{
-		if (uuid.equals(UUID_ZERO))
-		{
-			if (GAMES.isEmpty())
-			{
-				throw new ScrabbleException("No game created");
-			}
-			uuid = GAMES.lastKey();
-		}
-
-		final Game game = GAMES.get(uuid);
-		if (game == null)
-		{
-			throw new ScrabbleException("No game with id " + uuid);
-		}
-		return game;
 	}
 
 	/**
@@ -133,10 +118,14 @@ public class Controller
 	public GameState newGame()
 	{
 		final Game game = new Game(Game.DICTIONARY);
-		GAMES.put(game.id, game);
 		return game.getGameState();
 	}
 
+	@RequestMapping(value = "/loadFixtures", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<GameState> loadFixtures()
+	{
+		return Game.loadFixtures();
+	}
 
 	@RequestMapping(value = "/{game}/start", method = { RequestMethod.GET, RequestMethod.POST }, produces = MediaType.APPLICATION_JSON_VALUE)
 	public void startGame(@PathVariable UUID game) throws ScrabbleException
