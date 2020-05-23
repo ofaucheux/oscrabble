@@ -38,7 +38,7 @@ public abstract class Strategy
 	public static class BestScore extends Strategy
 	{
 		private final MicroServiceScrabbleServer server;
-		private final UUID game;
+		private UUID game;
 
 		public BestScore(final MicroServiceScrabbleServer server, final UUID game)
 		{
@@ -63,6 +63,12 @@ public abstract class Strategy
 				throw new Error(e);
 			}
 		}
+
+		public void setGame(final UUID game)
+		{
+			this.game = game;
+		}
+
 	}
 }
 

@@ -16,11 +16,14 @@ class PossibleMoveDisplayerTest
 	@Test
 	public void test()
 	{
-		final PossibleMoveDisplayer pmd = new PossibleMoveDisplayer(MicroServiceDictionary.getDefaultFrench());
 		final MicroServiceScrabbleServer scrabbleServer = MicroServiceScrabbleServer.getLocal();
-
 		final GameState game = scrabbleServer.loadFixtures().iterator().next();
-		pmd.updateList(scrabbleServer, game, Arrays.asList('c', 'A', 'R'));
+
+		final PossibleMoveDisplayer pmd = new PossibleMoveDisplayer(MicroServiceDictionary.getDefaultFrench());
+		pmd.setServer(scrabbleServer);
+		pmd.setGame(game.getGameId());
+
+		pmd.updateList(game, Arrays.asList('c', 'A', 'R'));
 		JOptionPane.showMessageDialog(null, pmd.mainPanel);
 		while (pmd.mainPanel.isVisible())
 		{

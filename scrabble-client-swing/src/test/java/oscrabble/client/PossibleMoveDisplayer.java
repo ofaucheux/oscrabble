@@ -14,6 +14,8 @@ import oscrabble.player.ai.Strategy;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.*;
 
@@ -26,15 +28,27 @@ public class PossibleMoveDisplayer
 	//	private final JButton showPossibilitiesButton;
 	private final JList<Object> moveList;
 	private final ButtonGroup orderButGroup;
-	private Strategy strategy;
+
+	/** Available order strategies */
+	private List<Strategy> orderStrategies;
+
+	/** Selected order strategy */
+	private Strategy selectedOrderStrategy;
+
+	/** The server to calculate the scores */
+	private MicroServiceScrabbleServer server;
+
+	/** the game */
+	private UUID game;
 
 	public PossibleMoveDisplayer(final MicroServiceDictionary dictionary)
 	{
+		this.bfm = new BruteForceMethod(dictionary);
+		this.orderStrategies = Arrays.asList(new Strategy.BestScore(null, null));
 		this.mainPanel = new JPanel();
 		this.mainPanel.setBorder(new TitledBorder(Application.MESSAGES.getString("possible.moves")));
 		this.mainPanel.setSize(new Dimension(200, 300));
 		this.mainPanel.setLayout(new BorderLayout());
-		bfm = new BruteForceMethod(dictionary);
 //		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(this, bruteForceMethod));
 //		showPossibilitiesButton.setFocusable(false);
 
@@ -54,22 +68,73 @@ public class PossibleMoveDisplayer
 				return label;
 			}
 		});
-		this.mainPanel.add(moveList);
+		this.mainPanel.add(this.moveList);
 	}
 
-
-	public synchronized void updateList(final MicroServiceScrabbleServer server, final GameState state, final List<Character> characters)
+	/**
+	 * Set the server this displayer is for. This information is transferred to the undercomponents too.
+	 * @param server
+	 */
+	void setServer(final MicroServiceScrabbleServer server)
 	{
+		this.server = server;
+		setFieldForMethods("server", server);
+	}
+
+	/**
+	 * Set the game this displayer is for. This information is transfered to the undercomponents too.
+	 *
+	 * @param game
+	 */
+	public void setGame(final UUID game)
+	{
+		this.game = game;
+		setFieldForMethods("game", game);
+	}
+
+	public void setFieldForMethods(String fieldName, final Object object)
+	{
+		if (object == null)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		fieldName = fieldName.replaceFirst("(.)", "" + Character.toUpperCase(fieldName.charAt(0)));
+		for (final Strategy os : this.orderStrategies)
+		{
+			try
+			{
+				final Method meth = os.getClass().getMethod("set" + fieldName, object.getClass());
+				meth.invoke(os, object);
+			}
+			catch (NoSuchMethodException e)
+			{
+				// is ok.
+			}
+			catch (IllegalAccessException | InvocationTargetException e)
+			{
+				throw new Error(e);
+			}
+		}
+	}
+
+	public synchronized void updateList(final GameState state, final List<Character> characters)
+	{
+		if (!state.gameId.equals(this.game))
+		{
+			throw new IllegalArgumentException("GameId is " + state.gameId + ", expected was " + this.game);
+		}
+
 		try
 		{
 			if (true /*this.showPossibilitiesButton.isSelected()*/)
 			{
 				// todo: show the values
-				bfm.setGrid(Grid.fromData(state.grid));
+				this.bfm.setGrid(Grid.fromData(state.grid));
 
-				final List<String> legalMoves = this.bfm.getLegalMoves(characters, this.strategy);
+				final List<String> legalMoves = this.bfm.getLegalMoves(characters, this.selectedOrderStrategy);
 
-				final Collection<Score> scores = server.getScores(state.getGameId(), legalMoves);
+				final Collection<Score> scores = this.server.getScores(state.getGameId(), legalMoves);
 				this.moveList.setListData(new Vector<>(scores));
 			}
 			else
