@@ -3,6 +3,7 @@ package oscrabble.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.GameState;
@@ -16,6 +17,7 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class PossibleMoveDisplayer
 {
@@ -94,6 +96,31 @@ public class PossibleMoveDisplayer
 			}
 		});
 		this.mainPanel.add(new JScrollPane(this.moveList));
+	}
+
+	/**
+	 * Add a function to execute after the selection has changed.
+	 * @param listSelectionListener
+	 */
+	void addSelectionListener(final Consumer<Action> listSelectionListener)
+	{
+		this.moveList.addListSelectionListener(l -> {
+					final Score score = (Score) this.moveList.getSelectedValue();
+					if (score == null)
+					{
+						return;
+					}
+					try
+					{
+						final Action action = Action.parse(null, score.getNotation());
+						listSelectionListener.accept(action);
+					}
+					catch (ScrabbleException.NotParsableException e)
+					{
+						throw new AssertionError("Assertion error", e);
+					}
+				}
+		);
 	}
 
 	/**

@@ -142,6 +142,7 @@ class Playground
 		this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
 		this.pmd.setServer(this.client.server);
 		this.pmd.setGame(this.client.game);
+		this.pmd.addSelectionListener(l -> { jGrid.highlightPreparedAction((PlayTiles) l);});
 		panel1.add(this.pmd.mainPanel);
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
