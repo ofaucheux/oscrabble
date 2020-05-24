@@ -14,7 +14,7 @@ public abstract class Strategy
 {
 	private final String label;
 
-	Strategy(final String label)
+	protected Strategy(final String label)
 	{
 		this.label = label;
 	}
@@ -24,7 +24,7 @@ public abstract class Strategy
 	 *
 	 * @param moves moves
 	 */
-	abstract void sort(final List<String> moves);
+	public abstract void sort(final List<String> moves);
 
 	@Override
 	public String toString()
@@ -48,7 +48,7 @@ public abstract class Strategy
 		}
 
 		@Override
-		void sort(final List<String> moves)
+		public void sort(final List<String> moves)
 		{
 			try
 			{

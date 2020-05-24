@@ -20,15 +20,20 @@ import java.util.*;
 public class PossibleMoveDisplayer
 {
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(PossibleMoveDisplayer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(PossibleMoveDisplayer.class);
+
+	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy("Hide")
+	{
+		@Override
+		public void sort(final List<String> moves)
+		{
+			throw new AssertionError("Should not be called");
+		}
+	};
+
 	protected final JPanel mainPanel;
 	private final BruteForceMethod bfm;
-	//	private final JButton showPossibilitiesButton;
 	private final JList<Object> moveList;
-	private final ButtonGroup orderButGroup;
-
-	/** Available order strategies */
-	private List<Strategy> orderStrategies;
 
 	/** Selected order strategy */
 	private Strategy selectedOrderStrategy;
@@ -40,6 +45,10 @@ public class PossibleMoveDisplayer
 	private UUID game;
 
 	private final Set<AttributeChangeListener> attributeChangeListeners = new HashSet<>();
+
+	private List<Character> rack;
+
+	private GameState state;
 
 	public PossibleMoveDisplayer(final MicroServiceDictionary dictionary)
 	{
@@ -57,17 +66,23 @@ public class PossibleMoveDisplayer
 					break;
 			}
 		});
-		this.orderStrategies = Arrays.asList(bestScore);
-		this.selectedOrderStrategy = this.orderStrategies.get(0);
+		/** Available order strategies */
+		final List<Strategy> orderStrategies = Arrays.asList(DO_NOT_DISPLAY_STRATEGIE, bestScore);
+		this.selectedOrderStrategy = orderStrategies.get(0);
 
 		this.mainPanel = new JPanel();
 		this.mainPanel.setBorder(new TitledBorder(Application.MESSAGES.getString("possible.moves")));
-		this.mainPanel.setSize(new Dimension(200, 300));
+		this.mainPanel.setSize(new Dimension(200, 500));
 		this.mainPanel.setLayout(new BorderLayout());
-//		showPossibilitiesButton = new JButton(new PossibleMoveDisplayer(this, bruteForceMethod));
-//		showPossibilitiesButton.setFocusable(false);
 
-		this.orderButGroup = new ButtonGroup();
+		final JComboBox<Strategy> strategiesCb = new JComboBox<>();
+		orderStrategies.forEach(os -> strategiesCb.addItem(os));
+		strategiesCb.addActionListener(a -> {
+			this.selectedOrderStrategy = ((Strategy) strategiesCb.getSelectedItem());
+			refresh();
+		});
+		this.mainPanel.add(strategiesCb, BorderLayout.NORTH);
+
 		this.moveList = new JList<>();
 		this.moveList.setCellRenderer(new DefaultListCellRenderer()
 		{
@@ -83,7 +98,7 @@ public class PossibleMoveDisplayer
 				return label;
 			}
 		});
-		this.mainPanel.add(this.moveList);
+		this.mainPanel.add(new JScrollPane(this.moveList));
 	}
 
 	/**
@@ -112,30 +127,31 @@ public class PossibleMoveDisplayer
 		invokeListeners("game", game);
 	}
 
-	public synchronized void updateList(final GameState state, final List<Character> characters)
+	public synchronized void setData(final GameState state, final List<Character> rack)
 	{
-		if (!state.gameId.equals(this.game))
+		this.state = state;
+		this.rack = rack;
+	}
+
+	public synchronized void refresh()
+	{
+		if (this.selectedOrderStrategy == DO_NOT_DISPLAY_STRATEGIE)
 		{
-			throw new IllegalArgumentException("GameId is " + state.gameId + ", expected was " + this.game);
+			this.moveList.setListData(new Object[0]);
+			return;
+		}
+
+		if (!this.state.gameId.equals(this.game))
+		{
+			throw new IllegalArgumentException("GameId is " + this.state.gameId + ", expected was " + this.game);
 		}
 
 		try
 		{
-			if (true /*this.showPossibilitiesButton.isSelected()*/)
-			{
-				// todo: show the values
-				this.bfm.setGrid(Grid.fromData(state.grid));
-
-				final List<String> legalMoves = this.bfm.getLegalMoves(characters, this.selectedOrderStrategy);
-
-				final Collection<Score> scores = this.server.getScores(state.getGameId(), legalMoves);
-				this.moveList.setListData(new Vector<>(scores));
-			}
-			else
-			{
-				// todo: hide the values
-			}
-//			this.mainPanel.setSize(this.mainPanel.getPreferredSize());
+			this.bfm.setGrid(Grid.fromData(this.state.grid));
+			final List<String> legalMoves = this.bfm.getLegalMoves(this.rack, this.selectedOrderStrategy);
+			final Collection<Score> scores = this.server.getScores(this.state.getGameId(), legalMoves);
+			this.moveList.setListData(new Vector<>(scores));
 		}
 		catch (ScrabbleException.CommunicationException e)
 		{

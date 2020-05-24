@@ -23,7 +23,8 @@ class PossibleMoveDisplayerTest
 		pmd.setServer(scrabbleServer);
 		pmd.setGame(game.getGameId());
 
-		pmd.updateList(game, Arrays.asList('c', 'A', 'R'));
+		pmd.setData(game, Arrays.asList('c', 'A', 'R'));
+		pmd.refresh();
 		JOptionPane.showMessageDialog(null, pmd.mainPanel);
 		while (pmd.mainPanel.isVisible())
 		{
