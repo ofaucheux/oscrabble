@@ -65,11 +65,6 @@ class Playground
 	private final TelnetFrame telnetFrame;
 
 	/**
-	 * Panel for the display of possible moves and corresponding buttons
-	 */
-	final PossibleMoveDisplay possibleMoveDisplay;
-
-	/**
 	 * Button to display / hide the possible moves
 	 */
 	private final JButton showPossibilitiesButton = null;  //TODO
@@ -145,6 +140,9 @@ class Playground
 		panel1.add(this.jScoreboard);
 		panel1.add(Box.createVerticalGlue());
 
+		final PossibleMoveDisplayer pmd = new PossibleMoveDisplayer(this.client.getDictionary());
+		panel1.add(pmd.mainPanel);
+
 		final JPanel historyPanel = new JPanel(new BorderLayout());
 		historyPanel.setBorder(new TitledBorder(MESSAGES.getString("moves")));
 		this.historyList = new JList<>();
@@ -210,12 +208,6 @@ class Playground
 		);
 		rollbackButton.setEnabled(false);
 		panel1.add(rollbackButton);
-
-		this.possibleMoveDisplay = new PossibleMoveDisplay(this.client == null ? null : this.client.getDictionary());
-		// todo: AI Empfehlungen
-
-		panel1.add(this.possibleMoveDisplay.mainPanel);
-		panel1.add(Box.createVerticalGlue());
 
 		// todo: configpanel
 		final JPanel configPanel = new JPanel();

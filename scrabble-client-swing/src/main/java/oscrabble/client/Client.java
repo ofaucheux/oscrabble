@@ -114,7 +114,6 @@ public class Client
 		this.playground.gridFrame.setCursor(
 				this.player.equals(state.getPlayerOnTurn()) ? Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR) : Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
 		);
-		this.playground.possibleMoveDisplay.updateList(server, state, rack.tiles);
 	}
 
 	private void prepareCommands()
