@@ -65,11 +65,6 @@ class Playground
 	private final TelnetFrame telnetFrame;
 
 	/**
-	 * Button to display / hide the possible moves
-	 */
-	private final JButton showPossibilitiesButton = null;  //TODO
-
-	/**
 	 * Listing of the history of the game
 	 */
 	private final JList<oscrabble.data.Action> historyList;
