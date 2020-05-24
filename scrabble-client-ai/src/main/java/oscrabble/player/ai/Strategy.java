@@ -74,5 +74,23 @@ public abstract class Strategy
 			this.server = server;
 		}
 	}
+
+	public static class BestSize extends Strategy
+	{
+
+		public static final Comparator<String> LENGTH_COMPARATOR = (o1, o2) -> o1.length() - o2.length();
+
+		public BestSize()
+		{
+			super("Best size"); // todo i18n
+		}
+
+		@Override
+		public void sort(final List<String> moves)
+		{
+			Collections.shuffle(moves);
+			moves.sort(LENGTH_COMPARATOR.reversed());
+		}
+	}
 }
 

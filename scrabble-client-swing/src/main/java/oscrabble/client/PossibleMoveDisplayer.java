@@ -63,8 +63,12 @@ public class PossibleMoveDisplayer
 					break;
 			}
 		});
-		/** Available order strategies */
-		final List<Strategy> orderStrategies = Arrays.asList(DO_NOT_DISPLAY_STRATEGIE, bestScore);
+
+		final List<Strategy> orderStrategies = Arrays.asList(
+				DO_NOT_DISPLAY_STRATEGIE,
+				bestScore,
+				new Strategy.BestSize()
+		);
 		this.selectedOrderStrategy = orderStrategies.get(0);
 
 		this.mainPanel = new JPanel();
