@@ -482,9 +482,6 @@ class Playground
 
 	}
 
-	static final String LABEL_DISPLAY = MESSAGES.getString("show.possibilities");
-	static final String LABEL_HIDE = MESSAGES.getString("hide.possibilities");
-
 	/**
 	 * Execute the command contained in the command prompt
 	 */
