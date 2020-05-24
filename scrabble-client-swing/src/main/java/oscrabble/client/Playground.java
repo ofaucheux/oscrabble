@@ -120,6 +120,8 @@ class Playground
 				}
 			}
 		};
+		this.gridFrame.setFocusTraversalPolicyProvider(true);
+		this.gridFrame.setFocusTraversalPolicy(new SingleComponentFocusTransversalPolicy(this.commandPrompt));
 		this.gridFrame.addWindowListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
