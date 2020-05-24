@@ -127,6 +127,11 @@ public class PossibleMoveDisplayer
 		);
 	}
 
+	public JList<Object> getMoveList()
+	{
+		return this.moveList;
+	}
+
 	/**
 	 * Set the server this displayer is for. This information is transferred to the undercomponents too.
 	 * @param server
@@ -188,6 +193,12 @@ public class PossibleMoveDisplayer
 	public void setFont(final Font font)
 	{
 		this.moveList.setFont(font);
+	}
+
+	public String getSelectedAction()
+	{
+		final Score selected = (Score) this.moveList.getSelectedValue();
+		return selected.getNotation();
 	}
 
 	private interface AttributeChangeListener

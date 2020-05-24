@@ -22,9 +22,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.text.Normalizer;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -141,8 +139,19 @@ class Playground
 		this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
 		this.pmd.setServer(this.client.server);
 		this.pmd.setGame(this.client.game);
-		this.pmd.addSelectionListener(l -> { jGrid.highlightPreparedAction((PlayTiles) l);});
+		this.pmd.addSelectionListener(l -> { this.jGrid.highlightPreparedAction((PlayTiles) l);});
 		this.pmd.setFont(FONT);
+		this.pmd.getMoveList().addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(final MouseEvent e)
+			{
+				if (e.getClickCount() == 2)
+				{
+					client.executeCommand(Playground.this.pmd.getSelectedAction());
+				}
+			}
+		});
 		panel1.add(this.pmd.mainPanel);
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
@@ -499,7 +508,7 @@ class Playground
 			return;
 		}
 
-		Playground.this.client.executeCommand(getCommand());
+		this.client.executeCommand(getCommand());
 		this.commandPrompt.setText("");
 	}
 
