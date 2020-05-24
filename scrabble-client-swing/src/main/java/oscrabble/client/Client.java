@@ -20,8 +20,8 @@ public class Client
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-	private final MicroServiceScrabbleServer server;
-	private final UUID game;
+	final MicroServiceScrabbleServer server;
+	final UUID game;
 	final UUID player;
 
 	final Playground playground;
@@ -109,7 +109,7 @@ public class Client
 				this.playground.jGrid.scheduleLastWordBlink(lastPlayedTurn);
 			}
 		}
-		this.playground.refreshUI(state);
+		this.playground.refreshUI(state, rack.getChars());
 		this.rack.setTiles(rack.tiles);
 		this.playground.gridFrame.setCursor(
 				this.player.equals(state.getPlayerOnTurn()) ? Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR) : Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)

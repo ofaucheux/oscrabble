@@ -28,6 +28,7 @@ import java.awt.event.WindowEvent;
 import java.text.Normalizer;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Function;
@@ -84,6 +85,7 @@ class Playground
 	 * Action defined in the command prompt
 	 */
 	Action action;
+	private final PossibleMoveDisplayer pmd;
 
 	Playground(final Client client)
 	{
@@ -135,8 +137,10 @@ class Playground
 		panel1.add(this.jScoreboard);
 		panel1.add(Box.createVerticalGlue());
 
-		final PossibleMoveDisplayer pmd = new PossibleMoveDisplayer(this.client.getDictionary());
-		panel1.add(pmd.mainPanel);
+		this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
+		this.pmd.setServer(this.client.server);
+		this.pmd.setGame(this.client.game);
+		panel1.add(this.pmd.mainPanel);
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
 		historyPanel.setBorder(new TitledBorder(MESSAGES.getString("moves")));
@@ -160,17 +164,14 @@ class Playground
 				}
 		);
 
-		if (client!=null)
-		{
-			final JPopupMenu popup = new JPopupMenu();
-			DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
-				PlayTiles action = getSelectedHistoryAction();
-				return action == null ? null : Collections.singleton(action.word);
-			});
-			dda.setRelativeComponentPosition(this.gridFrame);
-			popup.add(dda);
-			this.historyList.setComponentPopupMenu(popup);
-		}
+		final JPopupMenu popup = new JPopupMenu();
+		DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
+			PlayTiles action = getSelectedHistoryAction();
+			return action == null ? null : Collections.singleton(action.word);
+		});
+		dda.setRelativeComponentPosition(this.gridFrame);
+		popup.add(dda);
+		this.historyList.setComponentPopupMenu(popup);
 
 		this.historyList.addListSelectionListener(event -> {
 			if (event.getValueIsAdjusting())
@@ -246,11 +247,12 @@ class Playground
 		return action instanceof PlayTiles ? ((PlayTiles) action) : null;
 	}
 
-	public void refreshUI(final GameState state)
+	public void refreshUI(final GameState state, final List<Character> rack)
 	{
 		this.jGrid.setGrid(state.getGrid(), this);
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
+		this.pmd.setData(state, rack);
 	}
 
 	public String getCommand()

@@ -16,7 +16,7 @@ public class PlaygroundTest
 
 		final InputStream resourceAsStream = PlaygroundTest.class.getResourceAsStream("game_1.json");
 		final GameState state = new ObjectMapper().readValue(resourceAsStream, GameState.class);
-		playground.refreshUI(state);
+		playground.refreshUI(state, rack);
 
 		playground.gridFrame.setVisible(true);
 		while (playground.gridFrame.isVisible())
