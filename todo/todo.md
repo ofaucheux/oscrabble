@@ -16,8 +16,9 @@
 - ✔ Field "Player" of played action is empty
 -   forbid play after end
 -   AI cannot play anymore
--   order of player on the score board
+- ✔ order of player on the score board
 - ✔ End, wenn a player has no tiles anymore
 - ✔ show prepared tiles
 - ✔ accept retry on error
 - ✔ logs
+- ✔ Advisor

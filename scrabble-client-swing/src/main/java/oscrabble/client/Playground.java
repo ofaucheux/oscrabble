@@ -82,6 +82,7 @@ class Playground
 	 * Action defined in the command prompt
 	 */
 	Action action;
+
 	private final PossibleMoveDisplayer pmd;
 
 	Playground(final Client client)
@@ -152,6 +153,7 @@ class Playground
 				}
 			}
 		});
+		this.client.listeners.add(() -> this.pmd.reset());
 		panel1.add(this.pmd.mainPanel);
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());

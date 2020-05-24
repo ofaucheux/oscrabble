@@ -37,8 +37,6 @@ public class PossibleMoveDisplayer
 	private final BruteForceMethod bfm;
 	private final JList<Object> moveList;
 	private final Set<AttributeChangeListener> attributeChangeListeners = new HashSet<>();
-	/** Selected order strategy */
-	private Strategy selectedOrderStrategy;
 	/** The server to calculate the scores */
 	private MicroServiceScrabbleServer server;
 	/** the game */
@@ -46,6 +44,7 @@ public class PossibleMoveDisplayer
 	private List<Character> rack;
 
 	private GameState state;
+	private final JComboBox<Strategy> strategiesCb;
 
 	public PossibleMoveDisplayer(final MicroServiceDictionary dictionary)
 	{
@@ -69,20 +68,16 @@ public class PossibleMoveDisplayer
 				bestScore,
 				new Strategy.BestSize()
 		);
-		this.selectedOrderStrategy = orderStrategies.get(0);
 
 		this.mainPanel = new JPanel();
 		this.mainPanel.setBorder(new TitledBorder(Application.MESSAGES.getString("possible.moves")));
 		this.mainPanel.setSize(new Dimension(200, 500));
 		this.mainPanel.setLayout(new BorderLayout());
 
-		final JComboBox<Strategy> strategiesCb = new JComboBox<>();
-		orderStrategies.forEach(os -> strategiesCb.addItem(os));
-		strategiesCb.addActionListener(a -> {
-			this.selectedOrderStrategy = ((Strategy) strategiesCb.getSelectedItem());
-			refresh();
-		});
-		this.mainPanel.add(strategiesCb, BorderLayout.NORTH);
+		this.strategiesCb = new JComboBox<>();
+		orderStrategies.forEach(os -> this.strategiesCb.addItem(os));
+		this.strategiesCb.addActionListener(a -> refresh());
+		this.mainPanel.add(this.strategiesCb, BorderLayout.NORTH);
 
 		this.moveList = new JList<>();
 		this.moveList.setCellRenderer(new DefaultListCellRenderer()
@@ -133,7 +128,7 @@ public class PossibleMoveDisplayer
 	}
 
 	/**
-	 * Set the server this displayer is for. This information is transferred to the undercomponents too.
+	 * Set the server this displayer is for. This information is transferred to the subcomponents too.
 	 * @param server
 	 */
 	void setServer(final MicroServiceScrabbleServer server)
@@ -148,7 +143,7 @@ public class PossibleMoveDisplayer
 	}
 
 	/**
-	 * Set the game this displayer is for. This information is transfered to the undercomponents too.
+	 * Set the game this displayer is for. This information is transferred to the undercomponents too.
 	 *
 	 * @param game
 	 */
@@ -166,7 +161,9 @@ public class PossibleMoveDisplayer
 
 	public synchronized void refresh()
 	{
-		if (this.selectedOrderStrategy == DO_NOT_DISPLAY_STRATEGIE)
+		Strategy selectedOrderStrategy = ((Strategy) this.strategiesCb.getSelectedItem());
+
+		if (selectedOrderStrategy == DO_NOT_DISPLAY_STRATEGIE)
 		{
 			this.moveList.setListData(new Object[0]);
 			return;
@@ -180,7 +177,7 @@ public class PossibleMoveDisplayer
 		try
 		{
 			this.bfm.setGrid(Grid.fromData(this.state.grid));
-			final List<String> legalMoves = this.bfm.getLegalMoves(this.rack, this.selectedOrderStrategy);
+			final List<String> legalMoves = this.bfm.getLegalMoves(this.rack, selectedOrderStrategy);
 			final Collection<Score> scores = this.server.getScores(this.state.getGameId(), legalMoves);
 			this.moveList.setListData(new Vector<>(scores));
 		}
@@ -199,6 +196,12 @@ public class PossibleMoveDisplayer
 	{
 		final Score selected = (Score) this.moveList.getSelectedValue();
 		return selected.getNotation();
+	}
+
+	public void reset()
+	{
+		this.strategiesCb.setSelectedIndex(0);
+		refresh();
 	}
 
 	private interface AttributeChangeListener

@@ -13,6 +13,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
@@ -23,6 +25,7 @@ public class Client
 	final MicroServiceScrabbleServer server;
 	final UUID game;
 	final UUID player;
+	final Set<Listener> listeners = new HashSet<>();
 
 	final Playground playground;
 	private final JRack rack;
@@ -179,24 +182,22 @@ public class Client
 //						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, SkipTurn.SINGLETON);
 //					}
 //					else
+			final oscrabble.data.Action action = oscrabble.data.Action.builder()
+					.player(this.player)
+					.turnId(UUID.randomUUID()) //TODO: the game should give the id
+					.notation(command)
+					.build();
+			final PlayActionResponse response = this.server.play(this.game, action);
+			refreshUI(response.gameState);
+			if (!response.success)
 			{
-				final oscrabble.data.Action action = oscrabble.data.Action.builder()
-						.player(this.player)
-						.turnId(UUID.randomUUID()) //TODO: the game should give the id
-						.notation(command)
-						.build();
-				final PlayActionResponse response = this.server.play(this.game, action);
-				refreshUI(response.gameState);
-				if (!response.success)
+				// todo: i18n
+				final StringBuilder sb = new StringBuilder("<html>Play refused: ").append(response.message);
+				if (response.retryAccepted)
 				{
-					// todo: i18n
-					final StringBuilder sb = new StringBuilder("<html>Play refused: ").append(response.message);
-					if (response.retryAccepted)
-					{
-						sb.append("<br>Retry accepted.");
-					}
-					throw new ScrabbleException(sb.toString());
+					sb.append("<br>Retry accepted.");
 				}
+				throw new ScrabbleException(sb.toString());
 			}
 		}
 		catch (ScrabbleException ex)
@@ -210,36 +211,9 @@ public class Client
 		return DICTIONARY;
 	}
 
-	/**
-	 * Thread to update the display of the state of the game
-	 */
-	private class GameStateDispatcherThread extends Thread
+	interface Listener
 	{
-		@Override
-		public void run()
-		{
-			boolean endReached = false;
-			while (!endReached)
-			{
-				try
-				{
-					final GameState state = Client.this.server.getState(Client.this.game);
-					if (!state.equals(Client.this.lastKnownState))
-					{
-						refreshUI(state);
-					}
-					endReached = state.state == GameState.State.ENDED;
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException | ScrabbleException.CommunicationException e)
-				{
-					LOGGER.error("Error " + e, e);
-					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
-				}
-			}
-			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, "End of game reached!");
-			LOGGER.debug("Thread ends");
-		}
+		void onNewTurn();
 	}
 
 //	/**
@@ -273,5 +247,36 @@ public class Client
 //
 //	}
 
-
+	/**
+	 * Thread to update the display of the state of the game
+	 */
+	private class GameStateDispatcherThread extends Thread
+	{
+		@Override
+		public void run()
+		{
+			boolean endReached = false;
+			while (!endReached)
+			{
+				try
+				{
+					final GameState state = Client.this.server.getState(Client.this.game);
+					if (!state.equals(Client.this.lastKnownState))
+					{
+						refreshUI(state);
+						listeners.forEach(l -> l.onNewTurn());
+					}
+					endReached = state.state == GameState.State.ENDED;
+					Thread.sleep(1000);
+				}
+				catch (InterruptedException | ScrabbleException.CommunicationException e)
+				{
+					LOGGER.error("Error " + e, e);
+					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
+				}
+			}
+			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, "End of game reached!");
+			LOGGER.debug("Thread ends");
+		}
+	}
 }
