@@ -24,6 +24,9 @@ import java.util.concurrent.TimeUnit;
  */
 class JGrid extends JPanel
 {
+	private static final int CELL_SIZE = 40;
+	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
+
 	final JSquare[][] jSquares;
 	final JComponent background;
 	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
@@ -63,7 +66,7 @@ class JGrid extends JPanel
 	{
 		this.setLayout(new BorderLayout());
 		this.background = new JPanel(new BorderLayout());
-		final int size = 15 * Playground.CELL_SIZE;  // TODO: use a constant
+		final int size = 15 * CELL_SIZE;  // TODO: use a constant
 		this.jSquares = new JSquare[17][17];
 		this.setPreferredSize(new Dimension(size, size));
 		this.add(this.background);
@@ -124,7 +127,7 @@ class JGrid extends JPanel
 					}
 					else
 					{
-						cellColor = Playground.SCRABBLE_GREEN;
+						cellColor = SCRABBLE_GREEN;
 					}
 
 					cell.setBackground(cellColor);

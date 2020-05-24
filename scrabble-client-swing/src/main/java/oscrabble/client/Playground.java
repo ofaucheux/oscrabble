@@ -40,13 +40,12 @@ import java.util.regex.Pattern;
  */
 class Playground
 {
-	final static int CELL_SIZE = 40;
+	public static final ResourceBundle MESSAGES = Application.MESSAGES;
+
+	private static final  Font FONT = new Font("Monospaced", Font.PLAIN, 12).deriveFont(Font.BOLD);
 	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
 	private static final Pattern PATTERN_PASS_COMMAND = Pattern.compile("-\\s*");
-	static final Color SCRABBLE_GREEN = Color.green.darker().darker();
-
-	public static final ResourceBundle MESSAGES = Application.MESSAGES;
-	public static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
 	 * Grid
@@ -143,11 +142,13 @@ class Playground
 		this.pmd.setServer(this.client.server);
 		this.pmd.setGame(this.client.game);
 		this.pmd.addSelectionListener(l -> { jGrid.highlightPreparedAction((PlayTiles) l);});
+		this.pmd.setFont(FONT);
 		panel1.add(this.pmd.mainPanel);
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
 		historyPanel.setBorder(new TitledBorder(MESSAGES.getString("moves")));
 		this.historyList = new JList<>();
+		this.historyList.setFont(FONT);
 		this.historyList.setFocusable(false);
 		this.historyList.setCellRenderer(new DefaultListCellRenderer()
 		{

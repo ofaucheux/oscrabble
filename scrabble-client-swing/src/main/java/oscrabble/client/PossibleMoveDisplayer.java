@@ -185,6 +185,11 @@ public class PossibleMoveDisplayer
 		}
 	}
 
+	public void setFont(final Font font)
+	{
+		this.moveList.setFont(font);
+	}
+
 	private interface AttributeChangeListener
 	{
 		void onChange(String fieldName, Object newValue);
