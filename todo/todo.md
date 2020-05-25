@@ -22,3 +22,4 @@
 - ✔ accept retry on error
 - ✔ logs
 - ✔ Advisor
+-   Wait ok for players for next turn
