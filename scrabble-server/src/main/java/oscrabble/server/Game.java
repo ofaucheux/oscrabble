@@ -7,24 +7,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
-import oscrabble.configuration.PropertyUtils;
+import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.*;
 import oscrabble.data.fixtures.PrecompiledGameStates;
 import oscrabble.data.objects.Grid;
-import oscrabble.controller.Action;
 import oscrabble.data.objects.Square;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Game
 {
@@ -42,8 +37,6 @@ public class Game
 	public static final File DEFAULT_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".scrabble.properties");
 	private final static Logger LOGGER = LoggerFactory.getLogger(Game.class);
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
-	private static final String PLAYER_PREFIX = "player.";
-	private static final String KEY_METHOD = "method";
 
 	/**
 	 * Used dictionary TODO: not static
@@ -77,8 +70,8 @@ public class Game
 	final LinkedList<PlayerInformation> toPlay = new LinkedList<>();
 	private final ScrabbleRules scrabbleRules;
 
-	private Grid grid;
-	private LinkedList<Tile> bag = new LinkedList<>();
+	private final Grid grid;
+	private final LinkedList<Tile> bag = new LinkedList<>();
 
 	private final Random random;
 
@@ -98,11 +91,6 @@ public class Game
 	 * File to save and read the game configuration
 	 */
 	private final File propertyFile;
-
-	/**
-	 * Delay (in seconds) before changing the state from ENDING to ENDED
-	 */
-	int delayBeforeEnds = 3;
 
 	/**
 	 * State of the game
@@ -288,15 +276,6 @@ public class Game
 //	}
 
 	/**
-	 * Add a listener.
-	 * @param listener listener to add
-	 */
-	public void addListener(final GameListener listener)
-	{
-		this.listeners.add(listener);
-	}
-
-	/**
 	 * Add player
 	 * @param jsonPlayer player
 	 * @return the player
@@ -397,15 +376,13 @@ public class Game
 		}
 
 		final ArrayList<oscrabble.data.Action> playedActions = new ArrayList<>();
-		this.history.forEach( h -> {
-			playedActions.add(
-					oscrabble.data.Action.builder()
-							.notation(h.notation)
-							.turnId(h.turnId)
-							.player(h.player)
-							.build()
-			);
-		});
+		this.history.forEach( h -> playedActions.add(
+				oscrabble.data.Action.builder()
+						.notation(h.notation)
+						.turnId(h.turnId)
+						.player(h.player)
+						.build()
+		));
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
 
 		final oscrabble.data.Grid grid = new oscrabble.data.Grid();
@@ -562,11 +539,6 @@ public class Game
 		return this.players.get(id);
 	}
 
-	public List<PlayerInformation> getPlayers()
-	{
-		return new ArrayList<>(this.players.values());
-	}
-
 	/**
 	 * Refill the rack of a player.
 	 *
@@ -706,28 +678,12 @@ public class Game
 		}
 	}
 
-	public IDictionary getDictionary()
-	{
-		return this.dictionary;
-	}
-
 	public synchronized Grid getGrid()
 	{
 		return this.grid;
 	}
 
-
-	public synchronized int getScore(final PlayerInformation player)
-	{
-		return player.score;
-	}
-
-	public synchronized int getScore(final UUID playerID)
-	{
-		return getScore(this.players.get(playerID));
-	}
-
-// TOdo?
+	// TOdo?
 //	public void editParameters(final UUID caller, final Iplayer player)
 //	{
 //		if (player instanceof player)
@@ -763,7 +719,7 @@ public class Game
 		return this.configuration;
 	}
 
-	private void checkSecret(final PlayerInformation player, final String secret) throws ScrabbleException.InvalidSecretException
+	private void checkSecret(final PlayerInformation player, final String secret)
 	{
 		// TODO
 //		if (secret == null || !secret.equals(player.secret))
@@ -1008,16 +964,6 @@ public class Game
 		awaitEndOfPlay(roundNr, 30, TimeUnit.SECONDS);
 	}
 
-	public String getRack(final PlayerInformation player)
-	{
-		final StringBuffer sb = new StringBuffer();
-		for (final Tile character : player.rack.tiles)
-		{
-			sb.append(character.c);
-		}
-		return sb.toString();
-	}
-
 	private boolean containsCentralField(final Action.PlayTiles move)
 	{
 		final Square centralSquare = this.grid.getCentralSquare();
@@ -1060,72 +1006,6 @@ public class Game
 		}
 		return scores;
 	}
-
-	/**
-	 * Player types
-	 */
-	public enum PlayerType
-	{
-		SWING,
-		BRUTE_FORCE
-	}
-
-//	public interface ScrabbleEvent extends Consumer<GameListener>
-//	{
-//		void accept(final GameListener player);
-//	}
-
-//	/**
-//	 * A listener
-//	 */
-//	public interface GameListener
-//	{
-//		/**
-//		 * Sent to all players to indicate who now has to play.
-//		 *
-//		 * @param play the play the concerned player has to play
-//		 */
-//		default void onPlayRequired(final Play play)
-//		{
-//		}
-//
-//		default void onDispatchMessage(String msg)
-//		{
-//		}
-//
-//		default void afterRollback()
-//		{
-//		}
-//
-//		/**
-//		 * @param played ended play
-//		 */
-////		default void afterPlay(final Play played) { }
-////
-////		default void beforeGameStart() { }
-////
-////		default void afterGameEnd() { }
-//
-//		Queue<ScrabbleEvent> getIncomingEventQueue();
-//
-//		/**
-//		 * Called after the state of the game have changed
-//		 */
-//		default void onGameStateChanged()
-//		{
-//		}
-//
-//		/**
-//		 * Called after a player has (definitively) play an non admissible play
-//		 *
-//		 * @param player player having played the non admissible play
-//		 * @param action the action which lead to the problem
-//		 */
-//		default void afterRejectedAction(final Player player, final Action action)
-//		{
-//		}
-//
-//	}
 
 	/**
 	 * Configuration parameters of a game. The list of players is not part of the configuration.
