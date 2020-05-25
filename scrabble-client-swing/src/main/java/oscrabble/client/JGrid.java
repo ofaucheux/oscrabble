@@ -1,5 +1,7 @@
 package oscrabble.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.controller.Action;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
@@ -14,10 +16,7 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Darstellung der Spielfläche
@@ -26,6 +25,7 @@ class JGrid extends JPanel
 {
 	private static final int CELL_SIZE = 40;
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
+	public static final Logger LOGGER = LoggerFactory.getLogger(JGrid.class);
 
 	final JSquare[][] jSquares;
 	final JComponent background;
@@ -144,11 +144,12 @@ class JGrid extends JPanel
 
 	/**
 	 * Start scheduler to let the last word blinks for some seconds.
+	 * @return
 	 */
-	void scheduleLastWordBlink(final UUID turnToHide)
+	ScheduledFuture<Void> scheduleLastWordBlink(final UUID turnToHide)
 	{
-		this.executor.schedule(
-				(Callable<Void>) () -> {
+		final ScheduledFuture<Void> future = this.executor.schedule(
+				() -> {
 					for (int i = 0; i < 3; i++)
 					{
 						this.turnToHide = null;
@@ -164,6 +165,8 @@ class JGrid extends JPanel
 				},
 				0,
 				TimeUnit.SECONDS);
+
+		return future;
 	}
 
 	void highlightPreparedAction(final oscrabble.controller.Action.PlayTiles action)

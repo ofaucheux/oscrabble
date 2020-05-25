@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class GetRackRequest
+public class PlayerSignature
 {
 	public UUID player;
 }

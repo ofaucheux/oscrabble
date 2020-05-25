@@ -65,11 +65,16 @@ public class AIPlayer extends AbstractPlayer
 	{
 		try
 		{
-			GameState state;
+			GameState state = null;
 			do
 			{
 				Thread.sleep(this.throttle);
-				state = this.server.getState(this.game);
+				final GameState newState = this.server.getState(this.game);
+				if (!newState.equals(state))
+				{
+					this.server.acknowledgeState(this.game, this.uuid, newState);
+				}
+				state = newState;
 				if (state.state == GameState.State.STARTED && this.uuid.equals(state.getPlayerOnTurn()))
 				{
 					this.bruteForceMethod.setGrid(Grid.fromData(state.getGrid()));

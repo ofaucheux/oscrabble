@@ -1,5 +1,6 @@
 package oscrabble.server;
 
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.map.LinkedMap;
 import org.slf4j.Logger;
@@ -104,6 +105,11 @@ public class Game
 
 
 	private String assertFirstLetters;
+
+	/**
+	 * Players we wait after the acknowledges.
+	 */
+	private final Set<UUID> acknowledgesToWaitAfter = new HashSet<>();
 
 	/**
 	 * Constructor for test purposes a game without player.
@@ -323,6 +329,20 @@ public class Game
 	}
 
 	/**
+	 * To be called by a player to acknowledge the state of the server.
+	 *
+	 * @param player
+	 * @param state
+	 */
+	@SuppressWarnings("unused")
+	void acknowledge(final UUID player, final GameState.State state)
+	{
+		// TODO: check the state
+		this.acknowledgesToWaitAfter.remove(player);
+		LOGGER.trace("Player " + player + " has acknowledged");
+	}
+
+	/**
 	 * Search a tile with a certain character, remove it and give it
 	 *
 	 * @param bag
@@ -534,9 +554,14 @@ public class Game
 	 * @param id
 	 * @return
 	 */
-	PlayerInformation getPlayer(final UUID id)
+	PlayerInformation getPlayer(final UUID id) throws ScrabbleException
 	{
-		return this.players.get(id);
+		final PlayerInformation pi = this.players.get(id);
+		if (pi == null)
+		{
+			throw new ScrabbleException("Unknown player: " + id);
+		}
+		return pi;
 	}
 
 	/**
@@ -777,6 +802,7 @@ public class Game
 	 * @throws ScrabbleException.ForbiddenPlayException
 	 * @throws ScrabbleException.NotInTurn
 	 */
+	@SneakyThrows
 	public void play(final Action action) throws ScrabbleException
 	{
 		final PlayerInformation player = this.players.get(action.player);
@@ -791,6 +817,11 @@ public class Game
 		if (this.toPlay.peekFirst() != player)
 		{
 			throw new ScrabbleException.NotInTurn(player.name);
+		}
+
+		while (!this.acknowledgesToWaitAfter.isEmpty())
+		{
+			Thread.sleep(100);
 		}
 
 		LOGGER.info(player.uuid + " plays " + action.notation);
@@ -942,6 +973,8 @@ public class Game
 						endGame(null);
 					}
 				}
+
+				this.acknowledgesToWaitAfter.addAll(this.players.keySet());
 			}
 		}
 	}

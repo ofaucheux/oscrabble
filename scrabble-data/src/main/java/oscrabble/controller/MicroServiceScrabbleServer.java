@@ -86,6 +86,18 @@ public class MicroServiceScrabbleServer
 		return gameState;
 	}
 
+
+	/**
+	 * @return state of the game
+	 * @throws ScrabbleException.CommunicationException
+	 */
+	public Void acknowledgeState(final UUID game, final UUID player, final GameState state) throws ScrabbleException.CommunicationException
+	{
+		final PlayerSignature signature = PlayerSignature.builder().player(player).build();
+		REST_TEMPLATE.postForEntity(resolve(game, "acknowledgeState"), signature, Void.class);
+		return null;
+	}
+
 	/**
 	 * Compute the score of actions. No check against dictionary occurs. The order of the result is the same as the one of the
 	 * parameter.
@@ -119,7 +131,7 @@ public class MicroServiceScrabbleServer
 	 */
 	public Bag getRack(final UUID game, final UUID player /* todo: secret */)
 	{
-		final GetRackRequest request = GetRackRequest.builder().player(player).build();
+		final PlayerSignature request = PlayerSignature.builder().player(player).build();
 		final Bag bag = REST_TEMPLATE.postForObject(resolve(game, "getRack"), request, Bag.class);
 		return bag;
 	}

@@ -1,6 +1,5 @@
 package oscrabble.server;
 
-import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,9 +64,9 @@ public class Controller
 	 * Tiles in the rack, space for a joker.
 	 */
 	@PostMapping(value = "/{game}/getRack", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Bag> getRack(final @PathVariable UUID game, final @RequestBody GetRackRequest request) throws ScrabbleException
+	public ResponseEntity<Bag> getRack(final @PathVariable UUID game, final @RequestBody PlayerSignature signature) throws ScrabbleException
 	{
-		return ResponseEntity.ok(getGame(game).getPlayer(request.player).rack);
+		return ResponseEntity.ok(getGame(game).getPlayer(signature.player).rack);
 	}
 
 	@PostMapping(value = "/{game}/addPlayer", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -112,6 +111,12 @@ public class Controller
 		aBuilder.gameState(g == null ? null : g.getGameState())
 				.retryAccepted(retryAccepted);
 		return new ResponseEntity<>(aBuilder.build(), HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/{game}/acknowledgeState", method = {RequestMethod.POST})
+	public void acknowledge(@PathVariable UUID game, @RequestBody final PlayerSignature signature) throws ScrabbleException
+	{
+		getGame(game).acknowledge(signature.player, null);
 	}
 
 	@RequestMapping(value = "/newGame", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)

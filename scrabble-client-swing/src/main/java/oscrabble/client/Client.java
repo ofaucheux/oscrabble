@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -16,7 +17,7 @@ import java.awt.event.WindowEvent;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Matcher;
+import java.util.concurrent.ScheduledFuture;
 
 public class Client
 {
@@ -98,22 +99,24 @@ public class Client
 		return this.playground.gridFrame.isVisible();
 	}
 
+	@SneakyThrows
 	private void refreshUI(final GameState state)   // todo: display for several racks
 	{
 		LOGGER.info("Refresh ui called with turn id " + state.turnId);
 		final Bag rack = this.server.getRack(this.game, this.player);
 		this.lastKnownState = state;
+		this.playground.refreshUI(state, rack.getChars());
+		this.rack.setTiles(rack.tiles);
 		if (!state.playedActions.isEmpty())
 		{
 			final UUID lastPlayedTurn = state.playedActions.get(state.playedActions.size() - 1).getTurnId();
 			if (Client.this.lastPlayedTurn != lastPlayedTurn)
 			{
 				Client.this.lastPlayedTurn = lastPlayedTurn;
-				this.playground.jGrid.scheduleLastWordBlink(lastPlayedTurn);
+				final ScheduledFuture<Void> blinkAction = this.playground.jGrid.scheduleLastWordBlink(lastPlayedTurn);
+				blinkAction.get();
 			}
 		}
-		this.playground.refreshUI(state, rack.getChars());
-		this.rack.setTiles(rack.tiles);
 		this.playground.gridFrame.setCursor(
 				this.player.equals(state.getPlayerOnTurn()) ? Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR) : Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
 		);
@@ -171,7 +174,7 @@ public class Client
 //				final SwingPlayer swingPlayer = getCurrentSwingPlayer();
 //				if (swingPlayer != null && swingPlayer == Playground.this.currentPlay.player)
 //				{
-			final Matcher m;
+//			final Matcher m;
 			// Todo
 //					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
 //					{
@@ -188,7 +191,7 @@ public class Client
 					.notation(command)
 					.build();
 			final PlayActionResponse response = this.server.play(this.game, action);
-			refreshUI(response.gameState);
+			treatNewState(response.gameState);
 			if (!response.success)
 			{
 				// todo: i18n
@@ -202,7 +205,7 @@ public class Client
 		}
 		catch (ScrabbleException ex)
 		{
-			JOptionPane.showMessageDialog(playground.gridFrame, ex.getMessage());
+			JOptionPane.showMessageDialog(this.playground.gridFrame, ex.getMessage());
 		}
 	}
 
@@ -247,6 +250,13 @@ public class Client
 //
 //	}
 
+	void treatNewState(final GameState state) throws ScrabbleException.CommunicationException
+	{
+		refreshUI(state);
+		this.listeners.forEach(l -> l.onNewTurn());
+		this.server.acknowledgeState(this.game, this.player, state);
+	}
+
 	/**
 	 * Thread to update the display of the state of the game
 	 */
@@ -263,8 +273,7 @@ public class Client
 					final GameState state = Client.this.server.getState(Client.this.game);
 					if (!state.equals(Client.this.lastKnownState))
 					{
-						refreshUI(state);
-						listeners.forEach(l -> l.onNewTurn());
+						treatNewState(state);
 					}
 					endReached = state.state == GameState.State.ENDED;
 					Thread.sleep(1000);

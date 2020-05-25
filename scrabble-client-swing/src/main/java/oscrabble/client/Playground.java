@@ -510,8 +510,11 @@ class Playground
 			return;
 		}
 
-		this.client.executeCommand(getCommand());
-		this.commandPrompt.setText("");
+		SwingUtilities.invokeLater(()->
+		{
+			this.client.executeCommand(getCommand());
+			this.commandPrompt.setText("");
+		});
 	}
 
 	private class CommandPromptAction extends AbstractAction implements DocumentListener
