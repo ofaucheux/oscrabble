@@ -22,4 +22,5 @@
 - ✔ accept retry on error
 - ✔ logs
 - ✔ Advisor
+-   Errors by scoring
 - ✔ Wait acknowledges of all players before next turn

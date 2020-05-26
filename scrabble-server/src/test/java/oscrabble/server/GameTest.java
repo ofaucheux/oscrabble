@@ -11,8 +11,11 @@ import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
+import oscrabble.data.IDictionary;
 import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
+import oscrabble.dictionary.Language;
+import oscrabble.dictionary.ScrabbleDictionary;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,7 +34,9 @@ public class GameTest
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
-	public static MicroServiceDictionary DICTIONARY = MicroServiceDictionary.getDefaultFrench();
+	public static IDictionary DICTIONARY =
+//			MicroServiceDictionary.getDefaultFrench();
+			new ScrabbleDictionary(Language.FRENCH);
 
 	private Game game;
 	private Grid grid;
@@ -44,7 +49,6 @@ public class GameTest
 	{
 //		application = new Application();
 //		application.start();
-		DICTIONARY =  MicroServiceDictionary.getDefaultFrench();
 
 		Thread.setDefaultUncaughtExceptionHandler((t,e) -> LOGGER.error(e.toString(), e));
 	}
@@ -424,10 +428,10 @@ public class GameTest
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.game.assertFirstLetters("ASWEEDVIGIE");
 		startGame(true);
-		this.game.play(Action.parse(null, "H8 AS"));
+		this.game.play("H8 AS");
 		try
 		{
-			this.game.play(Action.parse(null, "A3 VIGIE"));
+			this.game.play("A3 VIGIE");
 			fail();
 		}
 		catch (ScrabbleException e)
@@ -435,6 +439,7 @@ public class GameTest
 			// ok
 		}
 	}
+
 
 	@Test
 	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException
@@ -446,11 +451,11 @@ public class GameTest
 		startGame(true);
 		final Grid grid = this.game.getGrid();
 
-		this.game.play(Action.parse(null, "H8 As"));
+		this.game.play(Action.parse(etienne, "H8 As"));
 		this.game.awaitEndOfPlay(1);
 		assertEquals(2, this.game.getPlayer(etienne).score);
 
-		this.game.play(Action.parse(null, "8I SI"));
+		this.game.play(Action.parse(etienne, "8I SI"));
 		this.game.awaitEndOfPlay(2);
 		assertEquals(4, this.game.getPlayer(etienne).score);
 

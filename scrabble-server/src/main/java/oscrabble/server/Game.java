@@ -311,6 +311,21 @@ public class Game
 //	}
 
 	/**
+	 * Plays an action without player
+	 * @param action
+	 * @throws ScrabbleException
+	 */
+	void play(final String action) throws ScrabbleException
+	{
+		final ScoreCalculator.MoveMetaInformation mi = ScoreCalculator.getMetaInformation(
+				this.grid,
+				this.scrabbleRules,
+				((Action.PlayTiles) Action.parse(null, action))
+		);
+		play(mi);
+	}
+
+	/**
 	 * Play an action.
 	 * @param jsonAction action to play.
 	 * @return the score
@@ -854,51 +869,15 @@ public class Game
 						}
 					}
 				}
-
-				// first word in the middle
-				if (this.grid.isEmpty() && !containsCentralField(playTiles))
-				{
-					throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("the.first.word.must.be.on.the.center.square"));
-				}
-
-				// check touch
-				if (this.grid.isEmpty())
-				{
-					if (playTiles.word.length() < 2)
-					{
-						throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("first.word.must.have.at.least.two.letters"));
-					}
-				}
-				else if (moveMI.crosswords.isEmpty() && requiredLetters.size() == playTiles.word.length())
-				{
-					throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("new.word.must.touch.another.one"));
-				}
-
-				// check dictionary
-				final Set<String> toTest = new LinkedHashSet<>();
-				toTest.add(playTiles.word);
-				toTest.addAll(moveMI.crosswords);
-				for (final String crossword : toTest)
-				{
-					if (!this.dictionary.isAdmissible(crossword.toUpperCase()))
-					{
-						final String details = MessageFormat.format(MESSAGES.getString("word.0.is.not.allowed"), crossword);
-						throw new ScrabbleException.ForbiddenPlayException(details);
-					}
-				}
-
-				this.grid.play(this.scrabbleRules, action.player, playTiles);
-
+				play(moveMI);
 				player.rack.tiles.clear();
 				player.rack.tiles.addAll(remaining);
-
-				score = moveMI.getScore();
 				if (moveMI.isScrabble)
 				{
 					messages.add(SCRABBLE_MESSAGE);
 				}
+
 				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player.uuid, playTiles.notation, score));
-				LOGGER.info("Grid is now: " + this.grid);
 			}
 			else if (action instanceof Action.Exchange)
 			{
@@ -977,6 +956,44 @@ public class Game
 				this.acknowledgesToWaitAfter.addAll(this.players.keySet());
 			}
 		}
+	}
+
+	void play(final ScoreCalculator.MoveMetaInformation moveMI) throws ScrabbleException.ForbiddenPlayException
+	{
+		if (this.grid.isEmpty() && !containsCentralField(moveMI.action))
+		{
+			throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("the.first.word.must.be.on.the.center.square"));
+		}
+
+		// check touch
+		if (this.grid.isEmpty())
+		{
+			if (moveMI.action.word.length() < 2)
+			{
+				throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("first.word.must.have.at.least.two.letters"));
+			}
+		}
+		else if (moveMI.crosswords.isEmpty() && moveMI.requiredLetter.size() == moveMI.action.word.length())
+		{
+			throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("new.word.must.touch.another.one"));
+		}
+
+		// check dictionary
+		final Set<String> toTest = new LinkedHashSet<>();
+		toTest.add(moveMI.action.word);
+		toTest.addAll(moveMI.crosswords);
+		for (final String crossword : toTest)
+		{
+			if (!this.dictionary.isAdmissible(crossword.toUpperCase()))
+			{
+				final String details = MessageFormat.format(MESSAGES.getString("word.0.is.not.allowed"), crossword);
+				throw new ScrabbleException.ForbiddenPlayException(details);
+			}
+		}
+
+		this.grid.play(this.scrabbleRules, moveMI.action);
+
+		LOGGER.info("Grid is now: " + this.grid);
 	}
 
 	/**

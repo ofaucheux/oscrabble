@@ -35,25 +35,16 @@ class Dictionary
 	});
 
 	private final Pattern stripAccentPattern;
+	private final Language language;
 
 	public String md5;
 	private WordMetainformationProvider metainformationProvider;
 
-	public static Dictionary getDictionary(final Language language)
+	protected Dictionary(final Language language)
 	{
-		Dictionary dictionary = LOADED_DICTIONARIES.get(language);
-		if (dictionary ==null)
-		{
-			dictionary = new Dictionary(language.directoryName);
-			LOADED_DICTIONARIES.put(language, dictionary);
-		}
-		return dictionary;
-	}
-
-	private Dictionary(final String name)
-	{
+		this.language = language;
+		this.name = language.directoryName;
 		LOGGER.info("Create dictionary " + name);
-		this.name = name;
 
 		Properties properties;
 		try
@@ -166,6 +157,17 @@ class Dictionary
 		}
 	}
 
+	public static Dictionary getDictionary(final Language language)
+	{
+		Dictionary dictionary = LOADED_DICTIONARIES.get(language);
+		if (dictionary ==null)
+		{
+			dictionary = new Dictionary(language);
+			LOADED_DICTIONARIES.put(language, dictionary);
+		}
+		return dictionary;
+	}
+
 	public WordMetainformationProvider getMetainformationProvider()
 	{
 		return this.metainformationProvider;
@@ -228,14 +230,14 @@ class Dictionary
 		return stripAccents(word.toUpperCase());
 	}
 
-	public Set<String> getMutations()
+	public Set<String> getAdmissibleWords()
 	{
 		return Collections.unmodifiableSet(this.words.keySet());
 	}
 
 	public boolean containUpperCaseWord(final String word)
 	{
-		final boolean contains = this.getMutations().contains(word);
+		final boolean contains = this.getAdmissibleWords().contains(word);
 		LOGGER.trace("is contained " + word + ": " + contains);
 		return contains;
 	}
