@@ -38,8 +38,12 @@ class DictionaryTest
 		assertTrue(this.french.containUpperCaseWord("PIECE"));
 		assertTrue(this.french.containUpperCaseWord("LIVREE"));
 		assertTrue(this.french.containUpperCaseWord("MIMEES"));
+		assertTrue(this.french.containUpperCaseWord("MIX"));
+		assertTrue(this.french.containUpperCaseWord("WHIP"));
+		assertTrue(this.french.containUpperCaseWord("WHIPS"));
+		assertTrue(this.french.containUpperCaseWord("RIF"));
+
 		assertFalse(this.french.containUpperCaseWord("livrée"));
-		assertTrue(this.french.containUpperCaseWord("YETI"));
 	}
 
 	public static Dictionary getTestDictionary()

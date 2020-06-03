@@ -37,7 +37,7 @@ class Dictionary
 	private final Pattern stripAccentPattern;
 	private final Language language;
 
-	public String md5;
+	public final String md5;
 	private WordMetainformationProvider metainformationProvider;
 
 	protected Dictionary(final Language language)
@@ -123,7 +123,13 @@ class Dictionary
 						final ListIterator<String> it = admissibleWords.listIterator();
 						while (it.hasNext())
 						{
-							it.set(toUpperCase(it.next()));
+							final String word = it.next();
+							final String uc = toUpperCase(word);
+							it.set(uc);
+							if (!this.words.containsKey(uc))
+							{
+								this.words.computeIfAbsent(uc, s -> new UpperCaseWord(uc)).mutations.add(word);
+							}
 						}
 					}
 
@@ -140,7 +146,6 @@ class Dictionary
 					);
 				}
 
-				this.md5 = DigestUtils.md5Hex(this.words.toString());
 			}
 
 		}
@@ -155,6 +160,7 @@ class Dictionary
 			this.metainformationProvider = new UnMotDotNet();
 //			((Wikitionary) this.metainformationProvider).setHtmlWidth(200);
 		}
+		this.md5 = DigestUtils.md5Hex(this.words.toString());
 	}
 
 	public static Dictionary getDictionary(final Language language)
