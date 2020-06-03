@@ -1,6 +1,7 @@
 package oscrabble.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.util.Pair;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
@@ -8,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
-import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
@@ -18,10 +18,7 @@ import oscrabble.dictionary.Language;
 import oscrabble.dictionary.ScrabbleDictionary;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.Queue;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,7 +31,7 @@ public class GameTest
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
-	public static IDictionary DICTIONARY =
+	public static IDictionary FRENCH =
 //			MicroServiceDictionary.getDefaultFrench();
 			new ScrabbleDictionary(Language.FRENCH);
 
@@ -56,7 +53,7 @@ public class GameTest
 	@BeforeEach
 	public void initialize() throws ScrabbleException
 	{
-		this.game = new Game(DICTIONARY, -3300078916872261882L);
+		this.game = new Game(FRENCH, -3300078916872261882L);
 		this.game.randomPlayerOrder = false;
 
 		this.grid = this.game.getGrid();
@@ -444,7 +441,7 @@ public class GameTest
 	@Test
 	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException
 	{
-		this.game = new Game(DICTIONARY, 2346975568742590367L);
+		this.game = new Game(FRENCH, 2346975568742590367L);
 		this.game.assertFirstLetters("FTINOA ");
 
 		final UUID etienne = addPlayer("Etienne");
@@ -476,7 +473,7 @@ public class GameTest
 //
 		{
 			// Joker on normal case
-			this.game = new Game(DICTIONARY);
+			this.game = new Game(FRENCH);
 			final UUID anton = addPlayer("anton");
 			this.game.assertFirstLetters(" CELMNPIERA");
 
@@ -493,7 +490,7 @@ public class GameTest
 
 		{
 			// Joker on blue case
-			this.game = new Game(DICTIONARY, -6804219371477742897L);
+			this.game = new Game(FRENCH, -6804219371477742897L);
 			final UUID anton = addPlayer("Anton");
 			this.game.assertFirstLetters(" CELMNPAISSE");
 			startGame(true);
@@ -505,6 +502,50 @@ public class GameTest
 			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getPlayer(anton).score);
 			this.game.quitGame();
+		}
+	}
+
+	@Test
+	void testScoreCompleteGame() throws ScrabbleException
+	{
+		final Game game = new Game(FRENCH);
+		game.setTestModus(true);
+		final Player testplayer = Player.builder().id(UUID.randomUUID()).name("Testplayer").build();
+		game.addPlayer(testplayer);
+		game.startGame();
+
+		final ArrayList<Pair<String, Integer>> plays = new ArrayList<>();
+		plays.add(new Pair<>("H4 FATUM", 36));
+		plays.add(new Pair<>("5E lOUANGEA", 82));
+		plays.add(new Pair<>("4L VEXA", 44));
+		plays.add(new Pair<>("8G AMBIANTE", 62));
+		plays.add(new Pair<>("I8 BUILDING", 64));
+		plays.add(new Pair<>("O3 FAITES", 63));
+		plays.add(new Pair<>("O1 DEFAITES", 36));
+		plays.add(new Pair<>("N2 MIX", 37));
+		plays.add(new Pair<>("13G WHIP", 28));
+		plays.add(new Pair<>("K8 AJOURS", 45));
+		plays.add(new Pair<>("6A LYCEE", 37));
+		plays.add(new Pair<>("N8 ELUSSENT", 70));
+		plays.add(new Pair<>("15C HOLDING", 39));
+		plays.add(new Pair<>("A4 VOLER", 36));
+		plays.add(new Pair<>("15L BOTE", 27));
+		plays.add(new Pair<>("M2 ARETE", 35));
+		plays.add(new Pair<>("D6 ENQuIMES", 96));
+		plays.add(new Pair<>("A1 SURVOLEREZ", 66));
+		plays.add(new Pair<>("3A RACKET", 34));
+		plays.add(new Pair<>("1G PARLOIR", 86));
+
+		for (final Pair<String, Integer> play : plays)
+		{
+
+			final oscrabble.data.Action action = oscrabble.data.Action.builder()
+					.player(null)
+					.notation(play.getKey())
+					.build();
+			game.play(action);
+			final Action last = game.history.get(game.history.size() - 1);
+			assertEquals("Wrong score for \"" + play.getKey() + "\" false", play.getValue(), last.score);
 		}
 	}
 

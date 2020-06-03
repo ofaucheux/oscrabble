@@ -12,13 +12,15 @@ import java.util.regex.Pattern;
 
 public abstract class Action
 {
+	private static final Pattern PASS_TURN = Pattern.compile("-");
+	private static final Pattern EXCHANGE = Pattern.compile("-\\s+(\\S+)");
+	private static final Pattern PLAY_TILES = Pattern.compile("(\\S*)\\s+(\\S*)");
+
 	public UUID turnId;
 	public final String notation;
 	public final UUID player;
 
-	private static final Pattern PASS_TURN = Pattern.compile("-");
-	private static final Pattern EXCHANGE = Pattern.compile("-\\s+(\\S+)");
-	private static final Pattern PLAY_TILES = Pattern.compile("(\\S*)\\s+(\\S*)");
+	public Integer score;
 
 	protected Action(final UUID player, final String notation)
 	{

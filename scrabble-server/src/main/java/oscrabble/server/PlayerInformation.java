@@ -33,6 +33,7 @@ class PlayerInformation
 	Bag rack = Bag.builder().tiles(new ArrayList<>()).build();
 
 	int score;
+
 	/**
 	 * Last played action.
 	 */

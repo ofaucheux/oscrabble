@@ -2,6 +2,7 @@ package oscrabble.data;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.lang.Nullable;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -27,6 +28,12 @@ public class Action
 	 * Die Standardnotation des Spielschritt z.B. {@code B4 WAGEN}. Blanks werden als Kleinbuchstaben dargestellt.
 	 */
 	public String notation;
+
+	/**
+	 * Score of this action, to be filled by the server.
+	 */
+	@Nullable
+	public Integer score;
 
 	@Override
 	public boolean equals(final Object o)

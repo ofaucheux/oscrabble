@@ -86,7 +86,7 @@ public class Game
 	/**
 	 * History of the game, a line played move (even if it was an error).
 	 */
-	private final List<Action> history = Collections.synchronizedList(new LinkedList<>());
+	final List<Action> history = Collections.synchronizedList(new LinkedList<>());
 
 	/**
 	 * File to save and read the game configuration
@@ -110,6 +110,9 @@ public class Game
 	 * Players we wait after the acknowledges.
 	 */
 	private final Set<UUID> acknowledgesToWaitAfter = new HashSet<>();
+
+
+	private boolean testModus;
 
 	/**
 	 * Constructor for test purposes a game without player.
@@ -336,7 +339,7 @@ public class Game
 		synchronized (this.changing)
 		{
 			final Action action = Action.parse(jsonAction);
-			if (jsonAction.player == null)
+			if (jsonAction.player == null && !this.testModus)
 				throw new AssertionError("Player is null");
 
 			play(action);
@@ -821,7 +824,7 @@ public class Game
 	public void play(final Action action) throws ScrabbleException
 	{
 		final PlayerInformation player = this.players.get(action.player);
-		if (player == null)
+		if (player == null && !this.testModus)
 		{
 			throw new ScrabbleException.ForbiddenPlayException("Unknown player: " + action.player);
 		}
@@ -829,7 +832,7 @@ public class Game
 		// TODO
 //			checkKey(jsonAction.player, clientKey);
 
-		if (this.toPlay.peekFirst() != player)
+		if (player != null && this.toPlay.peekFirst() != player)
 		{
 			throw new ScrabbleException.NotInTurn(player.name);
 		}
@@ -839,9 +842,8 @@ public class Game
 			Thread.sleep(100);
 		}
 
-		LOGGER.info(player.uuid + " plays " + action.notation);
+		LOGGER.info(player == null ? "" : player.uuid + " plays " + action.notation);
 
-		int score = 0;
 		final ScoreCalculator.MoveMetaInformation moveMI;
 		boolean done = false;
 		try
@@ -854,33 +856,46 @@ public class Game
 
 				// check possibility
 				moveMI = ScoreCalculator.getMetaInformation(this.grid, this.scrabbleRules, playTiles);
-				final HashBag<Tile> remaining = new HashBag<>(player.rack.tiles);
-
-				final List<Character> requiredLetters = moveMI.requiredLetter;
-				for (final Character c : requiredLetters)
+				HashBag<Tile> remaining = null;
+				if (player != null)
 				{
-					final Tile tile = pickUp(remaining, c);
-					if (tile == null)
+					remaining = new HashBag<>(player.rack.tiles);
+
+					final List<Character> requiredLetters = moveMI.requiredLetter;
+					for (final Character c : requiredLetters)
 					{
-						if (pickUp(remaining,' ') == null)
+						final Tile tile = pickUp(remaining, c);
+						if (tile == null)
 						{
-							throw new ScrabbleException.ForbiddenPlayException
-									(MessageFormat.format(MESSAGES.getString("html.rack.with.0.br.has.not.the.required.stones.1"), player.rack, requiredLetters));
+							if (pickUp(remaining,' ') == null)
+							{
+								throw new ScrabbleException.ForbiddenPlayException
+										(MessageFormat.format(MESSAGES.getString("html.rack.with.0.br.has.not.the.required.stones.1"), player.rack, requiredLetters));
+							}
 						}
 					}
 				}
+
 				play(moveMI);
-				player.rack.tiles.clear();
-				player.rack.tiles.addAll(remaining);
+				if (player != null)
+				{
+					player.rack.tiles.clear();
+					player.rack.tiles.addAll(remaining);
+				}
+
 				if (moveMI.isScrabble)
 				{
 					messages.add(SCRABBLE_MESSAGE);
 				}
 
-				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player.uuid, playTiles.notation, score));
+				action.score = moveMI.score;
+				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player == null ? null : player.uuid, playTiles.notation, action.score));
 			}
 			else if (action instanceof Action.Exchange)
 			{
+				if (player == null)
+					throw new IllegalStateException("Player requiered");
+
 				if (this.bag.size() < this.dictionary.getScrabbleRules().requiredTilesInBagForExchange)
 				{
 					throw new ScrabbleException.ForbiddenPlayException(MESSAGES.getString("not.enough.tiles.in.bag.for.exchange"));
@@ -905,6 +920,9 @@ public class Game
 			}
 			else if (action instanceof Action.SkipTurn)
 			{
+				if (player == null)
+					throw new IllegalStateException("Player requiered");
+
 				LOGGER.info(player.uuid + " skips its turn");
 				this.dispatchMessage(MessageFormat.format(MESSAGES.getString("0.skips.its.turn"), player.uuid));
 			}
@@ -915,7 +933,10 @@ public class Game
 
 			messages.forEach(message -> dispatchMessage(message));
 
-			player.score += score;
+			if (player != null)
+			{
+				player.score += action.score;
+			}
 			done = true;
 		}
 		catch (final ScrabbleException e)
@@ -928,28 +949,31 @@ public class Game
 		{
 			if (done)
 			{
-				refillRack(player);
-				player.lastAction = action;
-				dispatch(toInform -> toInform.afterPlay(action));
 				this.history.add(action);
-				this.toPlay.pop();
-				this.toPlay.add(player);
-				this.states.add(getGameState());
+				if (player != null)
+				{
+					refillRack(player);
+					player.lastAction = action;
+					dispatch(toInform -> toInform.afterPlay(action));
+					this.toPlay.pop();
+					this.toPlay.add(player);
+					this.states.add(getGameState());
 
-				if (player.rack.tiles.isEmpty())
-				{
-					endGame(player);
-				}
-				else if (action instanceof Action.SkipTurn)
-				{
-					// Quit if nobody can play
-					final AtomicBoolean canPlay = new AtomicBoolean(false);
-					this.players.forEach((p, mi) -> {
-						if (mi.lastAction instanceof Action.SkipTurn) canPlay.set(true);
-					});
-					if (!canPlay.get())
+					if (player.rack.tiles.isEmpty())
 					{
-						endGame(null);
+						endGame(player);
+					}
+					else if (action instanceof Action.SkipTurn)
+					{
+						// Quit if nobody can play
+						final AtomicBoolean canPlay = new AtomicBoolean(false);
+						this.players.forEach((p, mi) -> {
+							if (mi.lastAction instanceof Action.SkipTurn) canPlay.set(true);
+						});
+						if (!canPlay.get())
+						{
+							endGame(null);
+						}
 					}
 				}
 
@@ -1055,6 +1079,11 @@ public class Game
 			scores.add(score);
 		}
 		return scores;
+	}
+
+	public void setTestModus(final boolean testModus)
+	{
+		this.testModus = testModus;
 	}
 
 	/**
