@@ -9,6 +9,7 @@ import oscrabble.player.AbstractPlayer;
 
 import java.util.*;
 
+@SuppressWarnings("BusyWait")
 public class AIPlayer extends AbstractPlayer
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(AIPlayer.class);
@@ -79,7 +80,6 @@ public class AIPlayer extends AbstractPlayer
 				{
 					this.bruteForceMethod.setGrid(Grid.fromData(state.getGrid()));
 					final ArrayList<Tile>  rack = this.server.getRack(this.game, this.uuid).tiles;
-					final Player player0 = state.getPlayers().get(0);
 					if (rack.isEmpty())
 					{
 						System.out.println("Rack is empty");
