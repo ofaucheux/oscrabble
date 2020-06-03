@@ -1,6 +1,5 @@
 package oscrabble.client;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -13,7 +12,6 @@ import oscrabble.data.objects.Grid;
 import oscrabble.exception.IllegalCoordinate;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -25,11 +23,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.Normalizer;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,8 +36,6 @@ class Playground
 	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 
 	private static final  Font FONT = new Font("Monospaced", Font.PLAIN, 12).deriveFont(Font.BOLD);
-	private static final Pattern PATTERN_EXCHANGE_COMMAND = Pattern.compile("-\\s*(.*)");
-	private static final Pattern PATTERN_PASS_COMMAND = Pattern.compile("-\\s*");
 	private static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
@@ -59,8 +52,6 @@ class Playground
 	 * Score board
 	 */
 	private final JScoreboard jScoreboard;
-
-	private final TelnetFrame telnetFrame;
 
 	/**
 	 * Listing of the history of the game
@@ -99,8 +90,6 @@ class Playground
 		final AbstractDocument document = (AbstractDocument) this.commandPrompt.getDocument();
 		document.addDocumentListener(promptListener);
 		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
-		this.telnetFrame = new TelnetFrame("Help");
-		this.telnetFrame.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		this.gridFrame = new JFrame();
 		final WindowAdapter frameAdapter = new WindowAdapter()
@@ -140,7 +129,7 @@ class Playground
 		this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
 		this.pmd.setServer(this.client.server);
 		this.pmd.setGame(this.client.game);
-		this.pmd.addSelectionListener(l -> { this.jGrid.highlightPreparedAction((PlayTiles) l);});
+		this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l));
 		this.pmd.setFont(FONT);
 		this.pmd.getMoveList().addMouseListener(new MouseAdapter()
 		{
@@ -220,7 +209,7 @@ class Playground
 		rollbackButton.setEnabled(false);
 		panel1.add(rollbackButton);
 
-		// todo: configpanel
+		// todo: config panel
 		final JPanel configPanel = new JPanel();
 //		final ConfigurationPanel configPanel = new ConfigurationPanel(
 //				this.game.getConfiguration(),
@@ -277,6 +266,9 @@ class Playground
 
 	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException
 	{
+
+		assert this.client != null;
+
 		// TODO
 //			final SwingPlayer player = getCurrentSwingPlayer();
 //			if (player == null)
@@ -461,45 +453,6 @@ class Playground
 	};
 
 	/**
-	 * Problem while placing joker.
-	 */
-	private static class JokerPlacementException extends Throwable
-	{
-		JokerPlacementException(final String message, final ScrabbleException e)
-		{
-			super(message, e);
-		}
-	}
-
-	/**
-	 * Eine Frame, die wie eine Telnet-Console sich immer erweiterndes Text anzeigt.
-	 */
-	private static class TelnetFrame
-	{
-
-		private final JLabel label;
-		private final JFrame frame;
-
-		TelnetFrame(final String title)
-		{
-			this.frame = new JFrame(title);
-			this.label = new JLabel("<html>");
-			this.label.setBorder(new BevelBorder(BevelBorder.LOWERED));
-			this.frame.add(new JScrollPane(this.label, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
-		}
-
-		private void appendConsoleText(final String color, String text, final boolean escapeHtml)
-		{
-			this.label.setText(this.label.getText() + "\n<br><font color='" + color + "'>"
-					+ (escapeHtml ? StringEscapeUtils.escapeHtml4(text) : text)
-					+ "</font>");
-			this.frame.setVisible(true);
-		}
-
-	}
-
-	/**
 	 * Execute the command contained in the command prompt
 	 */
 	void executeCommand()
@@ -519,9 +472,6 @@ class Playground
 
 	private class CommandPromptAction extends AbstractAction implements DocumentListener
 	{
-
-		static final String KEYWORD_HELP = "?";
-		private Map<String, Command> commands = new LinkedHashMap<>();
 
 		@Override
 		public void actionPerformed(final ActionEvent e)
@@ -560,20 +510,5 @@ class Playground
 			Playground.this.jGrid.repaint();
 		}
 
-		/**
-		 * Ein Befehl und seine Antwort
-		 */
-		private class Command
-		{
-			final String description;
-			final Function<String[], Void> action;
-
-			private Command(final String description,
-							final Function<String[], Void> action)
-			{
-				this.description = description;
-				this.action = action;
-			}
-		}
 	}
 }

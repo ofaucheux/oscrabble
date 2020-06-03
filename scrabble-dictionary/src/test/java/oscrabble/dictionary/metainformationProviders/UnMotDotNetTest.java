@@ -1,7 +1,9 @@
-package oscrabble.dictionary;
+package oscrabble.dictionary.metainformationProviders;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import oscrabble.dictionary.DictionaryException;
+import oscrabble.dictionary.metainformationProviders.UnMotDotNet;
 
 import javax.swing.*;
 import java.util.ArrayList;

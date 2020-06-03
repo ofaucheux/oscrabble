@@ -6,6 +6,7 @@ import oscrabble.data.GameState;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 
 public class PlaygroundTest
 {
@@ -16,7 +17,7 @@ public class PlaygroundTest
 
 		final InputStream resourceAsStream = PlaygroundTest.class.getResourceAsStream("game_1.json");
 		final GameState state = new ObjectMapper().readValue(resourceAsStream, GameState.class);
-		playground.refreshUI(state, rack);
+		playground.refreshUI(state, Collections.emptyList());
 
 		playground.gridFrame.setVisible(true);
 		while (playground.gridFrame.isVisible())

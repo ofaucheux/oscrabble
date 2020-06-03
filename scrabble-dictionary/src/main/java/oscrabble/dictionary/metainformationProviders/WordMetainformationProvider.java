@@ -1,4 +1,6 @@
-package oscrabble.dictionary;
+package oscrabble.dictionary.metainformationProviders;
+
+import oscrabble.dictionary.DictionaryException;
 
 public interface WordMetainformationProvider
 {

@@ -15,6 +15,7 @@ import oscrabble.data.objects.Grid;
 import java.net.URI;
 import java.util.*;
 
+@SuppressWarnings("BusyWait")
 public class MicroServiceScrabbleServer
 {
 	/**
@@ -56,6 +57,7 @@ public class MicroServiceScrabbleServer
 	public UUID newGame()
 	{
 		final GameState state = REST_TEMPLATE.postForObject(resolve(null, "newGame"), null, GameState.class);
+		assert state != null;
 		return state.gameId;
 	}
 
@@ -66,6 +68,7 @@ public class MicroServiceScrabbleServer
 	public List<GameState> loadFixtures()
 	{
 		final GameState[] games = REST_TEMPLATE.postForObject(resolve(null, "loadFixtures"), null, GameState[].class);
+		assert games != null;
 		return Arrays.asList(games);
 	}
 
@@ -88,14 +91,12 @@ public class MicroServiceScrabbleServer
 
 
 	/**
-	 * @return state of the game
 	 * @throws ScrabbleException.CommunicationException
 	 */
-	public Void acknowledgeState(final UUID game, final UUID player, final GameState state) throws ScrabbleException.CommunicationException
+	public void acknowledgeState(final UUID game, final UUID player, final GameState state) throws ScrabbleException.CommunicationException
 	{
 		final PlayerSignature signature = PlayerSignature.builder().player(player).build();
 		REST_TEMPLATE.postForEntity(resolve(game, "acknowledgeState"), signature, Void.class);
-		return null;
 	}
 
 	/**

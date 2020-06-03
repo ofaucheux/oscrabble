@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
+@SuppressWarnings("BusyWait")
 public class Application
 {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Thread.class);
@@ -32,12 +33,7 @@ public class Application
 	public static void main(String[] unused) throws InterruptedException
 	{
 
-		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-			public void uncaughtException(Thread t, Throwable e)
-			{
-				LOGGER.error("Uncaught exception", e);
-			}
-		});
+		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error("Uncaught exception", e));
 
 		final  MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
 		final  MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();

@@ -7,6 +7,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.dictionary.metainformationProviders.UnMotDotNet;
+import oscrabble.dictionary.metainformationProviders.WordMetainformationProvider;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -35,28 +37,26 @@ class Dictionary
 	});
 
 	private final Pattern stripAccentPattern;
-	private final Language language;
 
 	public final String md5;
 	private WordMetainformationProvider metainformationProvider;
 
 	protected Dictionary(final Language language)
 	{
-		this.language = language;
 		this.name = language.directoryName;
-		LOGGER.info("Create dictionary " + name);
+		LOGGER.info("Create dictionary " + this.name);
 
 		Properties properties;
 		try
 		{
-			final String namePrefix = name + "/";
+			final String namePrefix = this.name + "/";
 
 			properties = new Properties();
-			try (InputStream is = Dictionary.class.getResourceAsStream(namePrefix + name + ".properties"))
+			try (InputStream is = Dictionary.class.getResourceAsStream(namePrefix + this.name + ".properties"))
 			{
 				if (is == null)
 				{
-					throw new AssertionError("Dictionary not found: " + name);
+					throw new AssertionError("Dictionary not found: " + this.name);
 				}
 				properties.load(is);
 			}
@@ -229,7 +229,7 @@ class Dictionary
 	}
 
 	/**
-	 * @return Das Wort ohne Azenkt und großgeschrieben
+	 * @return Das Wort ohne Akzent und großgeschrieben
 	 */
 	String toUpperCase(final String word)
 	{
@@ -253,19 +253,13 @@ class Dictionary
 		return this.name;
 	}
 
-	public void markAsIllegal(final String word)
-	{
-		// TODO
-	}
-
 
 	/**
 	 * @param word Ein Wort, großgeschrieben, z.B. {@code CHANTE}
 	 * @return die Wörter, die dazu geführt haben, z.B. {@code chante, chanté}.
 	 */
-	public Collection<Mutation> getMutations(final String word) throws DictionaryException
+	public Collection<Mutation> getMutations(final String word)
 	{
-		final WordMetainformationProvider mip = getMetainformationProvider();
 		final Set<Mutation> mutations = new HashSet<>();
 		for (final String mutation : this.words.get(word).mutations)
 		{

@@ -5,12 +5,10 @@ import oscrabble.data.Tile;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.UUID;
 
 /**
- * Darstellung eines Spielstein.
+ * Darstellung eines Spielsteins.
  */
 class JTile extends JComponent
 {
@@ -127,14 +125,4 @@ class JTile extends JComponent
 		return cell.getWidth() * 18 / 32f;
 	}
 
-	private static class DragMouseAdapter extends MouseAdapter
-	{
-
-		public void mousePressed(MouseEvent e) {
-
-			JComponent c = (JComponent) e.getSource();
-			TransferHandler handler = c.getTransferHandler();
-			handler.exportAsDrag(c, e, TransferHandler.COPY);
-		}
-	}
 }

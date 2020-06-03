@@ -116,14 +116,6 @@ public abstract class Action
 			this.word = m.group(2);
 		}
 
-		/**
-		 * @return the start square
-		 */
-		public Square getStartSquare()
-		{
-			return this.startSquare.getSquare();
-		}
-
 		public Grid.Direction getDirection()
 		{
 			return this.startSquare.direction;

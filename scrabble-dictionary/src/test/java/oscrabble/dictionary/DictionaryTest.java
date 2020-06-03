@@ -46,8 +46,4 @@ class DictionaryTest
 		assertFalse(this.french.containUpperCaseWord("livrée"));
 	}
 
-	public static Dictionary getTestDictionary()
-	{
-		return Dictionary.getDictionary(Language.TEST);
-	}
 }

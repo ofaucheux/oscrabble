@@ -61,6 +61,7 @@ public class MicroServiceDictionary implements IDictionary
 	public Collection<String> getAdmissibleWords()
 	{
 		final Dictionary d = REST_TEMPLATE.getForObject(buildUri("getAdmissibleWords"), Dictionary.class);
+		assert d != null;
 		return d.words;
 	}
 

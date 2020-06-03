@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import oscrabble.data.DictionaryEntry;
 import oscrabble.data.ScrabbleRules;
+import oscrabble.dictionary.metainformationProviders.WordMetainformationProvider;
 
 import java.util.Collection;
 
