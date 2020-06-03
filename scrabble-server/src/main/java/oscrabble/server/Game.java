@@ -310,7 +310,7 @@ public class Game
 	 * @return the score
 	 * @throws oscrabble.ScrabbleException
 	 */
-	public synchronized void play(final oscrabble.data.Action jsonAction) throws oscrabble.ScrabbleException
+	public synchronized void play(final oscrabble.data.Action jsonAction) throws oscrabble.ScrabbleException, InterruptedException
 	{
 		synchronized (this.changing)
 		{
@@ -765,8 +765,7 @@ public class Game
 	 * @param action
 	 * @return score
 	 */
-	@SneakyThrows
-	public void play(final Action action)
+	public void play(final Action action) throws ScrabbleException, InterruptedException
 	{
 		final PlayerInformation player = this.players.get(action.player);
 		if (player == null && !this.testModus)
@@ -784,7 +783,6 @@ public class Game
 
 		if (this.waitAcknowledges)
 		{
-
 			while (!this.acknowledgesToWaitAfter.isEmpty())
 			{
 				//noinspection BusyWait

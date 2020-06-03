@@ -1,6 +1,5 @@
 package oscrabble.server;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,20 +32,15 @@ public class Controller
 	 * Get an already known game.
 	 * @param uuid id
 	 * @return the game with this id
-	 * @throws ScrabbleException if no seach game.
+	 * @throws ScrabbleException if no search game.
 	 */
 	private static Game getGame(UUID uuid) throws ScrabbleException
 	{
-		final Game game = Game.getGame(uuid);
-		if (game == null)
-		{
-			throw new ScrabbleException("No game with id " + uuid);
-		}
-		return game;
+		return Game.getGame(uuid);
 	}
 
 	@PostMapping(value = "/{game}/getScores", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Score>> getScores(final @PathVariable UUID game, @RequestBody List<String> notations) throws ScrabbleException
+	public ResponseEntity<List<Score>> getScores(final @PathVariable UUID game, @RequestBody List<String> notations)
 	{
 		LOGGER.trace("Called: getScores() with " + notations.size() + " actions");
 		try
@@ -70,17 +64,17 @@ public class Controller
 	}
 
 	@PostMapping(value = "/{game}/addPlayer", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Player> addPlayer(final @PathVariable UUID game, @RequestBody String playername)
+	public ResponseEntity<Player> addPlayer(final @PathVariable UUID game, @RequestBody String playerName)
 	{
 		try
 		{
-			final Player p = Player.builder().id(UUID.randomUUID()).name(playername).build();
+			final Player p = Player.builder().id(UUID.randomUUID()).name(playerName).build();
 			final PlayerInformation pi = getGame(game).addPlayer(p);
 			return new ResponseEntity<>(pi.toData(), HttpStatus.OK);
 		}
 		catch (ScrabbleException e)
 		{
-			return new ResponseEntity(ExceptionUtils.getStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 
@@ -104,7 +98,7 @@ public class Controller
 			g.play(action);
 			aBuilder.success(true).message("success");
 		}
-		catch (ScrabbleException e)
+		catch (ScrabbleException | InterruptedException e)
 		{
 			aBuilder.success(false).message(e.toString());
 		}

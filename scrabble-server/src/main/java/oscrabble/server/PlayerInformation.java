@@ -18,16 +18,6 @@ class PlayerInformation
 	final UUID uuid;
 
 	/**
-	 * Password für die Kommunikation Player &lt;&gt; Server
-	 */
-	String id;
-
-//		/**
-//		 * Queue  to receive events from client
-//		 */
-//		BlockingQueue<ScrabbleEvent> incomingEventQueue;
-
-	/**
 	 * Tiles in the rack, space for a joker.
 	 */
 	Bag rack = Bag.builder().tiles(new ArrayList<>()).build();
