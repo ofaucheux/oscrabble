@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
+import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
@@ -31,9 +32,7 @@ public class GameTest
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
-	public static IDictionary FRENCH =
-//			MicroServiceDictionary.getDefaultFrench();
-			new ScrabbleDictionary(Language.FRENCH);
+	public static IDictionary FRENCH = MicroServiceDictionary.getDefaultFrench();
 
 	private Game game;
 	private Grid grid;
@@ -510,12 +509,11 @@ public class GameTest
 	{
 		final Game game = new Game(FRENCH);
 		game.setTestModus(true);
-		final Player testplayer = Player.builder().id(UUID.randomUUID()).name("Testplayer").build();
-		game.addPlayer(testplayer);
 		game.startGame();
 
+		// Game from http://chr.amet.chez-alice.fr/p/commente.htm
 		final ArrayList<Pair<String, Integer>> plays = new ArrayList<>();
-		plays.add(new Pair<>("H4 FATUM", 36));
+		plays.add(new Pair<>("H4 FATUM", 26));
 		plays.add(new Pair<>("5E lOUANGEA", 82));
 		plays.add(new Pair<>("4L VEXA", 44));
 		plays.add(new Pair<>("8G AMBIANTE", 62));

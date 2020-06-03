@@ -74,7 +74,7 @@ public class ScoreCalculator
 				{
 					throw new ScrabbleException.ForbiddenPlayException("Square " + sq + " already occupied by " + sq.tile);
 				}
-				mmi.score += sq.tile.points * sq.letterBonus;
+				mmi.score += sq.tile.points;
 			}
 
 			sq = grid.getNeighbour(sq, action.startSquare.direction, 1);

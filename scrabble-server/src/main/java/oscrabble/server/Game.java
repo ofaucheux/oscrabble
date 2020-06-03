@@ -604,7 +604,7 @@ public class Game
 	 */
 	public void startGame()
 	{
-		if (this.players.isEmpty())
+		if (!testModus && this.players.isEmpty())
 		{
 			throw new IllegalStateException(MESSAGES.getString("cannot.start.game.no.player.registered"));
 		}
