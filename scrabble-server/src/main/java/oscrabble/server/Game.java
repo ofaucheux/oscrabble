@@ -64,14 +64,13 @@ public class Game
 	 */
 	final Object changing = new Object();
 
-	private final ArrayList<GameState> states = new ArrayList<>();
 	/**
 	 * List of the users, the first to play at head
 	 */
 	final LinkedList<PlayerInformation> toPlay = new LinkedList<>();
-	private final ScrabbleRules scrabbleRules;
+	protected final ScrabbleRules scrabbleRules;
 
-	private final Grid grid;
+	protected final Grid grid;
 	private final LinkedList<Tile> bag = new LinkedList<>();
 
 	private final Random random;
@@ -113,6 +112,11 @@ public class Game
 
 
 	private boolean testModus;
+
+	/**
+	 * Wait after all players have confirmed a play before continuing?
+	 */
+	protected boolean waitAcknowledges = true;
 
 	/**
 	 * Constructor for test purposes a game without player.
@@ -312,21 +316,6 @@ public class Game
 //				.build();
 //		addPlayer(jsonPlayer);
 //	}
-
-	/**
-	 * Plays an action without player
-	 * @param action
-	 * @throws ScrabbleException
-	 */
-	void play(final String action) throws ScrabbleException
-	{
-		final ScoreCalculator.MoveMetaInformation mi = ScoreCalculator.getMetaInformation(
-				this.grid,
-				this.scrabbleRules,
-				((Action.PlayTiles) Action.parse(null, action))
-		);
-		play(mi);
-	}
 
 	/**
 	 * Play an action.
@@ -837,9 +826,13 @@ public class Game
 			throw new ScrabbleException.NotInTurn(player.name);
 		}
 
-		while (!this.acknowledgesToWaitAfter.isEmpty())
+		if (this.waitAcknowledges)
 		{
-			Thread.sleep(100);
+
+			while (!this.acknowledgesToWaitAfter.isEmpty())
+			{
+				Thread.sleep(100);
+			}
 		}
 
 		LOGGER.info(player == null ? "" : player.uuid + " plays " + action.notation);
@@ -957,7 +950,6 @@ public class Game
 					dispatch(toInform -> toInform.afterPlay(action));
 					this.toPlay.pop();
 					this.toPlay.add(player);
-					this.states.add(getGameState());
 
 					if (player.rack.tiles.isEmpty())
 					{

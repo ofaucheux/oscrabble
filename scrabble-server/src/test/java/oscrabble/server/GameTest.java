@@ -15,8 +15,6 @@ import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
 import oscrabble.data.Player;
 import oscrabble.data.objects.Grid;
-import oscrabble.dictionary.Language;
-import oscrabble.dictionary.ScrabbleDictionary;
 
 import java.io.IOException;
 import java.util.*;
@@ -35,7 +33,6 @@ public class GameTest
 	public static IDictionary FRENCH = MicroServiceDictionary.getDefaultFrench();
 
 	private Game game;
-	private Grid grid;
 	private UUID gustav;
 	private UUID john;
 	private UUID jurek;
@@ -55,7 +52,6 @@ public class GameTest
 		this.game = new Game(FRENCH, -3300078916872261882L);
 		this.game.randomPlayerOrder = false;
 
-		this.grid = this.game.getGrid();
 		final int gameNr = RANDOM.nextInt(100);
 
 		this.gustav = addPlayer("Gustav_" + gameNr);
@@ -316,7 +312,6 @@ public class GameTest
 	public void retryAccepted() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		// test retry accepted
-		this.grid = this.game.getGrid();
 		this.game.getConfiguration().setValue("retryAccepted", true);
 		this.game.assertFirstLetters("APPESTEE");
 		this.startGame(true);
@@ -338,7 +333,6 @@ public class GameTest
 	@Disabled // todo: reimplement rollback
 	public void rollback() throws ScrabbleException, InterruptedException, TimeoutException
 	{
-		this.grid = this.game.getGrid();
 		this.game.assertFirstLetters( "APTESSIF");
 		this.startGame(true);
 
@@ -419,15 +413,15 @@ public class GameTest
 	}
 
 	@Test
-	public void wordDoesNotTouch() throws ScrabbleException, InterruptedException, TimeoutException
+	public void wordDoesNotTouch() throws ScrabbleException, InterruptedException
 	{
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.game.assertFirstLetters("ASWEEDVIGIE");
 		startGame(true);
-		this.game.play("H8 AS");
+		play(this.game, "H8 AS");
 		try
 		{
-			this.game.play("A3 VIGIE");
+			play(this.game, "A3 VIGIE");
 			fail();
 		}
 		catch (ScrabbleException e)
@@ -436,16 +430,32 @@ public class GameTest
 		}
 	}
 
+	/**
+	 * Plays an action without player
+	 *
+	 * @param game
+	 * @param action
+	 * @throws ScrabbleException
+	 */
+	void play(final Game game, final String action) throws ScrabbleException
+	{
+		final ScoreCalculator.MoveMetaInformation mi = ScoreCalculator.getMetaInformation(
+				game.grid,
+				game.scrabbleRules,
+				((Action.PlayTiles) Action.parse(null, action))
+		);
+		game.play(mi);
+	}
 
 	@Test
 	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException
 	{
 		this.game = new Game(FRENCH, 2346975568742590367L);
+		this.game.waitAcknowledges = false;
 		this.game.assertFirstLetters("FTINOA ");
 
 		final UUID etienne = addPlayer("Etienne");
 		startGame(true);
-		final Grid grid = this.game.getGrid();
 
 		this.game.play(Action.parse(etienne, "H8 As"));
 		this.game.awaitEndOfPlay(1);
