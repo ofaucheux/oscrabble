@@ -303,19 +303,6 @@ public class Game
 		pi.setName(jsonPlayer.name);
 		return pi;
 	}
-//
-//	/**
-//	 * Add a player in the game.
-//	 * @param player player to add this game to.
-//	 */
-//	public void addPlayer(final AbstractPlayer player) throws ScrabbleException
-//	{
-//		final Player jsonPlayer = Player.builder()
-//				.id(player.uuid)
-//				.name(player.name)
-//				.build();
-//		addPlayer(jsonPlayer);
-//	}
 
 	/**
 	 * Play an action.
@@ -373,22 +360,6 @@ public class Game
 		}
 		return found;
 	}
-
-//	TODO: needed?
-//	private void hydrateGameState(final GameState data)
-//	{
-//		this.state = data.state;
-//		for (final oscrabble.data.Player dataplayer : data.players)
-//		{
-//			final PlayerInformation player = this.players.get(dataplayer.name);
-//			player.rack.tiles.clear();
-//			player.rack.tiles.addAll(dataplayer.rack.tiles);
-//			player.score = dataplayer.score;
-//		}
-//
-//		this.grid = Grid.fromData(data.grid);
-//		this.bag = new LinkedList<>(data.bag.tiles);
-//	}
 
 	/**
 	 * Create a state object
@@ -491,11 +462,6 @@ public class Game
 //		}
 //
 	}
-
-//	//	public void playerConfigHasChanged(final Player player, final UUID playerKey)
-//	{
-//		saveConfiguration();
-//	}
 
 	public synchronized PlayerInformation getPlayerToPlay()
 	{
@@ -600,15 +566,6 @@ public class Game
 
 		fillBag();
 
-		// Sortiert (oder mischt) die Spieler, um eine Spielreihenfolge zu definieren.
-//		final ArrayList<Player> list = new ArrayList<>(this.players.values());
-//		Collections.shuffle(list, this.random);
-//		final HashSet<Player> mapCopy = new HashSet<>(this.players);
-//		this.players.clear();
-//		for (final Player player : list)
-//		{
-//			this.players.put(player.id, player);
-//		}
 		this.toPlay.addAll(this.players.values());
 		if (this.randomPlayerOrder)
 		{
@@ -729,7 +686,7 @@ public class Game
 //	}
 
 
-	public void quit(final PlayerInformation player, final String secret, final String message) throws ScrabbleException
+	public void quit(final PlayerInformation player, final String secret, final String message)
 	{
 		checkSecret(player, secret);
 		final String msg = MessageFormat.format(MESSAGES.getString("player.0.quits.with.message.1"), player, message);
@@ -788,6 +745,7 @@ public class Game
 		long maxTime = unit.toMillis(timeout) + System.currentTimeMillis();
 		while (getRoundNr() < roundNr /* || todo !this.actions.get(roundNr - 1) */)
 		{
+			//noinspection BusyWait
 			Thread.sleep(20);
 			if (System.currentTimeMillis() > maxTime)
 			{
@@ -806,11 +764,9 @@ public class Game
 	 *
 	 * @param action
 	 * @return score
-	 * @throws ScrabbleException.ForbiddenPlayException
-	 * @throws ScrabbleException.NotInTurn
 	 */
 	@SneakyThrows
-	public void play(final Action action) throws ScrabbleException
+	public void play(final Action action)
 	{
 		final PlayerInformation player = this.players.get(action.player);
 		if (player == null && !this.testModus)
@@ -831,6 +787,7 @@ public class Game
 
 			while (!this.acknowledgesToWaitAfter.isEmpty())
 			{
+				//noinspection BusyWait
 				Thread.sleep(100);
 			}
 		}
