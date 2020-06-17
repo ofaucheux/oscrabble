@@ -42,7 +42,7 @@ public abstract class Strategy
 
 		public BestScore(final MicroServiceScrabbleServer server, final UUID game)
 		{
-			super("BEST SCORE");
+			super("Best score"); // todo: i18n
 			this.server = server;
 			this.game = game;
 		}
