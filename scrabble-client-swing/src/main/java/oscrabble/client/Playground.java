@@ -35,7 +35,7 @@ class Playground
 {
 	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 
-	private static final  Font FONT = new Font("Monospaced", Font.PLAIN, 12).deriveFont(Font.BOLD);
+	static final Font MONOSPACED = new Font("Lucida Sans", Font.PLAIN, 12).deriveFont(Font.BOLD);
 	private static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
@@ -130,7 +130,7 @@ class Playground
 		this.pmd.setServer(this.client.server);
 		this.pmd.setGame(this.client.game);
 		this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l));
-		this.pmd.setFont(FONT);
+		this.pmd.setFont(MONOSPACED);
 		this.pmd.getMoveList().addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -148,7 +148,7 @@ class Playground
 		final JPanel historyPanel = new JPanel(new BorderLayout());
 		historyPanel.setBorder(new TitledBorder(MESSAGES.getString("moves")));
 		this.historyList = new JList<>();
-		this.historyList.setFont(FONT);
+		this.historyList.setFont(MONOSPACED);
 		this.historyList.setFocusable(false);
 		this.historyList.setCellRenderer(new DefaultListCellRenderer()
 		{

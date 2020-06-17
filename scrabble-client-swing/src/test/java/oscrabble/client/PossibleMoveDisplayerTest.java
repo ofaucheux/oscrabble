@@ -20,6 +20,7 @@ class PossibleMoveDisplayerTest
 		final GameState game = scrabbleServer.loadFixtures().iterator().next();
 
 		final PossibleMoveDisplayer pmd = new PossibleMoveDisplayer(MicroServiceDictionary.getDefaultFrench());
+		pmd.setFont(Playground.MONOSPACED);
 		pmd.setServer(scrabbleServer);
 		pmd.setGame(game.getGameId());
 
