@@ -2,6 +2,7 @@ package oscrabble.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.util.Pair;
+import lombok.SneakyThrows;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
@@ -14,10 +15,12 @@ import oscrabble.data.Bag;
 import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
 import oscrabble.data.Player;
-import oscrabble.data.objects.Grid;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -514,6 +517,7 @@ public class GameTest
 		}
 	}
 
+	@SneakyThrows
 	@Test
 	void testScoreCompleteGame() throws ScrabbleException
 	{
@@ -686,7 +690,7 @@ public class GameTest
 /**
  * Default listener. Does nothing.
  */
-abstract class TestListener implements GameListener
+abstract static class TestListener implements GameListener
 {
 
 	private final ArrayBlockingQueue<ScrabbleEvent> queue = new ArrayBlockingQueue<>(8);
