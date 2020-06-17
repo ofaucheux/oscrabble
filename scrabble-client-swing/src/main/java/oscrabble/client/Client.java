@@ -9,6 +9,7 @@ import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
 import oscrabble.data.PlayActionResponse;
+import oscrabble.data.ScrabbleRules;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +32,11 @@ public class Client
 	final Playground playground;
 	private final JRack rack;
 
+	/**
+	 *  Rules of the game
+	 */
+	final ScrabbleRules scrabbleRules;
+
 	private GameState lastKnownState = null; // TODO: use it in server.play() too
 
 	/**
@@ -46,6 +52,7 @@ public class Client
 		this.server = server;
 		this.game = game;
 		this.player = player;
+		this.scrabbleRules = this.server.getRules(this.game);
 
 		prepareCommands();
 

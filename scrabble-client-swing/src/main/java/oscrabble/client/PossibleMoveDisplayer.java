@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
 
+/**
+ * JPanel and logic to let the system display all possible moves.
+ */
 public class PossibleMoveDisplayer
 {
 

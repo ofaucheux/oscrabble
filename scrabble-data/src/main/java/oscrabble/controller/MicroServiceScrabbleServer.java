@@ -138,6 +138,17 @@ public class MicroServiceScrabbleServer
 	}
 
 	/**
+	 * Get the rules of a game.
+	 * @param game
+	 * @return
+	 */
+	public ScrabbleRules getRules(final UUID game)
+	{
+		final ScrabbleRules rules = REST_TEMPLATE.postForObject(resolve(game, "getRules"), null, ScrabbleRules.class);
+		return rules;
+	}
+
+	/**
 	 * @return id and name of the player on turn.
 	 * @throws ScrabbleException.CommunicationException -
 	 */

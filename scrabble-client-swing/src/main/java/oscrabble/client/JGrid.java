@@ -2,7 +2,10 @@ package oscrabble.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import oscrabble.controller.Action;
+import oscrabble.data.ScrabbleRules;
+import oscrabble.data.Tile;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
@@ -35,7 +38,7 @@ class JGrid extends JPanel
 	/**
 	 * char the player intend to play on this square
 	 */
-	private final HashMap<JSquare, Character> preparedTiles = new HashMap<>();
+	private final HashMap<JSquare, Tile> preparedTiles = new HashMap<>();
 
 	private final HashMap<JSquare, MatteBorder> specialBorders = new HashMap<>();
 
@@ -75,9 +78,8 @@ class JGrid extends JPanel
 	/**
 	 *
 	 * @param grid grid description coming from the server
-	 * @param playground playground this grid will belong to
 	 */
-	void setGrid(oscrabble.data.Grid grid, final Playground playground)
+	void setGrid(oscrabble.data.Grid grid)
 	{
 		this.grid = new Grid(grid);
 		final int numberOfRows = this.grid.getSize() + 2;
@@ -169,9 +171,15 @@ class JGrid extends JPanel
 		return future;
 	}
 
-	void highlightPreparedAction(final oscrabble.controller.Action.PlayTiles action)
+	/**
+	 * Display on the grid a prepared action.
+	 *
+	 * @param action
+	 * @param rules
+	 */
+	void highlightPreparedAction(final oscrabble.controller.Action.PlayTiles action, final @Nullable ScrabbleRules rules)
 	{
-		highlightWord(action);
+		highlightSquares(action);
 
 		final ArrayList<JSquare> squares = getSquares(action);
 		if (squares == null) return;
@@ -181,13 +189,16 @@ class JGrid extends JPanel
 		for (final JSquare jSquare : squares)
 		{
 			final char preparedChar = action.word.charAt(i);
-			this.preparedTiles.put(jSquare, preparedChar);
 			if (jSquare.square.tile != null && preparedChar != jSquare.square.tile.c)
 			{
 				this.preparedTiles.clear();
-				highlightWord(null);
+				highlightSquares(null);
 				break;
 			}
+
+			final int points = rules == null || preparedChar == ' ' ? 0 : rules.getLetters().get(preparedChar).points;
+			final Tile t = Tile.builder().isJoker(false).c(preparedChar).points(points).build();
+			this.preparedTiles.put(jSquare, t);
 			i++;
 		}
 
@@ -199,7 +210,7 @@ class JGrid extends JPanel
 	 * @param action remove the highlighting if {@code null}
 	 * @return
 	 */
-	void highlightWord(final Action.PlayTiles action)
+	void highlightSquares(final Action.PlayTiles action)
 	{
 		this.specialBorders.clear();
 		if (action == null)
@@ -416,10 +427,10 @@ class JGrid extends JPanel
 				}
 			}
 
-			final Character preparedTile = JGrid.this.preparedTiles.get(this);
+			final Tile preparedTile = JGrid.this.preparedTiles.get(this);
 			if (preparedTile != null)
 			{
-				JTile.drawTile(g2, this, preparedTile, 1, false, Color.black);
+				JTile.drawTile(g2, this, preparedTile.c, preparedTile.points, false, Color.black);
 			}
 
 			final MatteBorder specialBorder = JGrid.this.specialBorders.get(this);

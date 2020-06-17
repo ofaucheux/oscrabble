@@ -63,6 +63,17 @@ public class Controller
 		return ResponseEntity.ok(getGame(game).getPlayer(signature.player).rack);
 	}
 
+
+	/**
+	 * Rules.
+	 */
+	@PostMapping(value = "/{game}/getRules", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ScrabbleRules> getRules(final @PathVariable UUID game) throws ScrabbleException
+	{
+		return ResponseEntity.ok(getGame(game).getScrabbleRules());
+	}
+
+
 	@PostMapping(value = "/{game}/addPlayer", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Player> addPlayer(final @PathVariable UUID game, @RequestBody String playerName)
 	{

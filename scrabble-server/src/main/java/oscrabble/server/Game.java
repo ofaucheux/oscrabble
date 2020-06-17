@@ -759,6 +759,11 @@ public class Game
 		return this.history.size();
 	}
 
+	ScrabbleRules getScrabbleRules()
+	{
+		return this.scrabbleRules;
+	}
+
 	/**
 	 * Play an action
 	 *

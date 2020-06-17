@@ -129,7 +129,7 @@ class Playground
 		this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
 		this.pmd.setServer(this.client.server);
 		this.pmd.setGame(this.client.game);
-		this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l));
+		this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, this.client.scrabbleRules));
 		this.pmd.setFont(MONOSPACED);
 		this.pmd.getMoveList().addMouseListener(new MouseAdapter()
 		{
@@ -183,7 +183,7 @@ class Playground
 				return;
 			}
 			final PlayTiles action = getSelectedHistoryAction();
-			this.jGrid.highlightWord(action);
+			this.jGrid.highlightSquares(action);
 		});
 
 		panel1.add(historyPanel);
@@ -253,7 +253,7 @@ class Playground
 
 	public void refreshUI(final GameState state, final List<Character> rack)
 	{
-		this.jGrid.setGrid(state.getGrid(), this);
+		this.jGrid.setGrid(state.getGrid());
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
 		this.pmd.setData(state, rack);
@@ -499,7 +499,9 @@ class Playground
 				final Action action = getPreparedMove();
 				if (action instanceof PlayTiles)
 				{
-					Playground.this.jGrid.highlightPreparedAction((PlayTiles) action);
+					Playground.this.jGrid.highlightPreparedAction(
+							(PlayTiles) action,
+							Playground.this.client == null ? null : Playground.this.client.scrabbleRules);
 				}
 			}
 			catch (final ScrabbleException e1)
