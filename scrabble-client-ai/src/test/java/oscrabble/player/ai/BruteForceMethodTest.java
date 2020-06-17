@@ -67,7 +67,7 @@ public class BruteForceMethodTest
 
 		final Random random = new Random();
 		final UUID game = server.newGame();
-		this.instance.grid = server.getGrid(game);
+		this.instance.setGrid(server.getGrid(game));
 		final List<String> legalMoves = new ArrayList<>(getLegalMoves(this.instance, "ENFANIT"));
 
 		assertTrue(legalMoves.contains("F8 ENFANT"));
@@ -83,11 +83,11 @@ public class BruteForceMethodTest
 //		}
 	}
 
-	public Set<String> getLegalMoves(final BruteForceMethod bfm, final String rack)
+	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack)
 	{
 		final ArrayList<Character> list = new ArrayList<>(rack.length());
 		rack.chars().forEach(c -> list.add((char) c));
-		return bfm.getLegalMoves(list, this.configuration.strategy);
+		return bfm.getLegalMoves(list, new Strategy.BestSize());
 	}
 
 	@Test
@@ -95,9 +95,9 @@ public class BruteForceMethodTest
 	{
 		startGame("ELEPHANT");
 
-		this.instance.grid = new Grid();
-		this.instance.grid.play(null, "2J ELEPHANT");
-		final Set<String> playTiles = getLegalMoves(this.instance, "ASME TH");
+		this.instance.setGrid(new Grid());
+		this.instance.getGrid().play(null, "2J ELEPHANT");
+		final List<String> playTiles = getLegalMoves(this.instance, "ASME TH");
 		assertTrue(playTiles.contains("J5 PHASME"));
 		assertTrue(playTiles.contains("J5 PhASME"));
 	}

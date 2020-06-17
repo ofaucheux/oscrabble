@@ -6,6 +6,7 @@ import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
+import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
@@ -411,6 +412,11 @@ public class BruteForceMethod
 			crossChecks.put(crossSquare, allowed);
 		}
 		return crossChecks.get(crossSquare);
+	}
+
+	public Grid getGrid()
+	{
+		return this.grid;
 	}
 
 	static class Configuration
