@@ -21,6 +21,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOError;
+import java.io.InputStream;
 import java.text.Normalizer;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +37,19 @@ class Playground
 {
 	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 
-	static final Font MONOSPACED = new Font("Lucida Sans", Font.PLAIN, 12).deriveFont(Font.BOLD);
+	static final Font MONOSPACED;
+
+	static {
+		try (InputStream resource = Playground.class.getResourceAsStream("nk57-monospace-cd-bk.ttf"))
+		{
+			MONOSPACED = Font.createFont(Font.TRUETYPE_FONT, resource).deriveFont(14f);
+		}
+		catch (final Exception exception)
+		{
+			throw new IOError(exception);
+		}
+	}
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
