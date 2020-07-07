@@ -2,6 +2,8 @@ package oscrabble.data.objects;
 
 import org.junit.jupiter.api.Test;
 import oscrabble.ScrabbleException;
+import oscrabble.controller.MicroServiceDictionary;
+import oscrabble.data.ScrabbleRules;
 import oscrabble.data.fixtures.PrecompiledGameStates;
 
 import java.util.Arrays;
@@ -64,6 +66,16 @@ class GridTest
 
 		assertTrue(g.getWords("B3").isEmpty());
 		assertTrue(g.getWords("A1").isEmpty());
+	}
+
+	@Test
+	public void asciiArt() throws ScrabbleException.NotParsableException
+	{
+		final ScrabbleRules rules = MicroServiceDictionary.getDefaultFrench().getScrabbleRules();
+		final Grid g = new Grid();
+		g.play(rules, "G3 RHuME");
+		g.play(rules, "2H CHIEN");
+		assertEquals(g, Grid.fromAsciiArt(rules, g.toAsciiArt()));
 	}
 
 	@Test

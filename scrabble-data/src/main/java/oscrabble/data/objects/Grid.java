@@ -16,7 +16,7 @@ public class Grid
 	public static final int GRID_SIZE_PLUS_2 = GRID_SIZE + 2;
 
 	/**
-	 * Arrays the cases, as the first and last are border.
+	 * The squares. First and last are border.
 	 */
 	private final oscrabble.data.objects.Square[] squares;
 
@@ -268,10 +268,96 @@ public class Grid
 		return getNeighbour(sq, direction, +1);
 	}
 
+	/**
+	 * vgl {@link #toAsciiArt()}
+	 * @param rules
+	 * @param asciiArt
+	 * @return
+	 */
+	public static Grid fromAsciiArt(final ScrabbleRules rules, final String asciiArt)
+	{
+		final Grid grid = new Grid(true);
+		int x = 0;
+		int y = 0;
+		for (final char c : asciiArt.toCharArray())
+		{
+			if (c == '\n' || c == '\r')
+			{
+				continue;
+			}
+
+			if (Character.isLetter(c))
+			{
+				final boolean isJoker = Character.isLowerCase(c);
+				final Square sq = grid.get(x, y);
+				sq.tile = Tile.builder()
+						.c(c)
+						.points(isJoker ? 0 : rules.getLetters().get(c).points)
+						.isJoker(isJoker)
+						.position(sq.getCoordinate())
+						.build();
+			}
+			y++;
+			if (y == Grid.GRID_SIZE_PLUS_2)
+			{
+				x++;
+				y = 0;
+			}
+		}
+		return grid;
+	}
+
 	@Override
 	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder("Grid{\n");
+		sb.append(toAsciiArt());
+		sb.append("}");
+		return sb.toString();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Arrays.hashCode(this.squares);
+	}
+
+	@Override
+	public boolean equals(final Object o)
+	{
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		final Grid grid = (Grid) o;
+		return Arrays.equals(this.squares, grid.squares);
+	}
+
+	/**
+	 * Create an ascii-representation of the grid
+	 * <pre>
+#################
+#               #
+#               #
+#               #
+#               #
+#               #
+#               #
+#               #
+#   FRICHES     #
+#   O           #
+#   V     D     #
+#   ETOILEES    #
+#   A     R     #
+#   S     N     #
+#         Y     #
+#               #
+#################
+	 </pre>
+	 *
+	 * @return an ascii art
+	 */
+	public String toAsciiArt()
+	{
+		final StringBuilder sb = new StringBuilder("");
 		for (final oscrabble.data.objects.Square square : this.squares)
 		{
 			sb.append(square.isBorder ? '#' : square.tile == null ? ' ' : square.tile.c);
@@ -280,7 +366,6 @@ public class Grid
 				sb.append('\n');
 			}
 		}
-		sb.append("}");
 		return sb.toString();
 	}
 
@@ -290,6 +375,7 @@ public class Grid
 	public enum Direction
 	{
 		HORIZONTAL, VERTICAL;
+
 		public Direction other()
 		{
 			return (this == HORIZONTAL ? VERTICAL : HORIZONTAL);
@@ -297,5 +383,4 @@ public class Grid
 	}
 
 }
-
 
