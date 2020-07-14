@@ -1,22 +1,25 @@
 package oscrabble.player.ai;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.quinto.dawg.DAWGNode;
+import org.springframework.util.StreamUtils;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.AbstractPlayer;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled // todo: change
 public class BruteForceMethodTest
 {
 
@@ -83,6 +86,18 @@ public class BruteForceMethodTest
 //		}
 	}
 
+	@Test
+	void getLegalMoves2() throws IOException
+	{
+		final MicroServiceDictionary dico = MicroServiceDictionary.getDefaultFrench();
+		final String asciiArt = IOUtils.toString(BruteForceMethodTest.class.getResourceAsStream("grid_1.grid"), Charset.defaultCharset());
+		final Grid grid = Grid.fromAsciiArt(dico.getScrabbleRules(), asciiArt);
+		this.instance.setGrid(grid);
+		final List<String> moves = getLegalMoves(this.instance, "EDPWMES");
+		assertTrue(moves.contains("O8 MES"));
+	}
+
+
 	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack)
 	{
 		final ArrayList<Character> list = new ArrayList<>(rack.length());
@@ -96,7 +111,7 @@ public class BruteForceMethodTest
 		startGame("ELEPHANT");
 
 		this.instance.setGrid(new Grid());
-		this.instance.getGrid().play(null, "2J ELEPHANT");
+		this.instance.grid.play(null, "2J ELEPHANT");
 		final List<String> playTiles = getLegalMoves(this.instance, "ASME TH");
 		assertTrue(playTiles.contains("J5 PHASME"));
 		assertTrue(playTiles.contains("J5 PhASME"));

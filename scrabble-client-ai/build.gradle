@@ -17,4 +17,5 @@ dependencies {
 
     compile(project(":scrabble-data"))
 //    testCompile(project(":scrabble-server"))
+    testCompile 'commons-io:commons-io:2.6'
 }

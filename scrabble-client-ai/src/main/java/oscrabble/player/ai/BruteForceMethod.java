@@ -22,7 +22,7 @@ public class BruteForceMethod
 	CompressedDAWGSet automaton;
 	
 	/** The grid, to update after each round */
-	private Grid grid;
+	Grid grid;
 
 	public BruteForceMethod(final IDictionary dictionary)
 	{
@@ -96,7 +96,6 @@ public class BruteForceMethod
 		}
 		return anchors;
 	}
-
 
 	/**
 	 * Get all authorized moves.
@@ -412,11 +411,6 @@ public class BruteForceMethod
 			crossChecks.put(crossSquare, allowed);
 		}
 		return crossChecks.get(crossSquare);
-	}
-
-	public Grid getGrid()
-	{
-		return this.grid;
 	}
 
 	static class Configuration
