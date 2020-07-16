@@ -92,14 +92,11 @@ public class AIPlayer extends AbstractPlayer
 					List<String> moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(
 							letters,
 							this.configuration.strategy));
-					if (moves.isEmpty())
-					{
-						System.out.println("No move anymore, Rack: " + rack);
-						return;
-					}
-					final Action action = buildAction(moves.get(0));
-					System.out.println("Plays: " + action.notation);
-					final PlayActionResponse response = this.server.play(this.game, action);
+					final String notation = moves.isEmpty()
+							? Action.PASS_TURN_NOTATION
+							: moves.get(0);
+					System.out.println("Plays: " + notation);
+					final PlayActionResponse response = this.server.play(this.game, buildAction(notation));
 					if (!response.success)
 					{
 						throw new AssertionError(response.message);

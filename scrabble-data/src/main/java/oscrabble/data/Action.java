@@ -15,6 +15,11 @@ import java.util.UUID;
 public class Action
 {
 	/**
+	 * Notation for "pass the turn"
+	 */
+	public static String PASS_TURN_NOTATION = "-";
+
+	/**
 	 * ID of the turn the action is for - none for test purposes
 	 */
 	public UUID turnId;

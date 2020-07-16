@@ -12,7 +12,9 @@ import java.util.regex.Pattern;
 
 public abstract class Action
 {
-	private static final Pattern PASS_TURN = Pattern.compile("-");
+	private static final Pattern PASS_TURN = Pattern.compile(
+			Pattern.quote(oscrabble.data.Action.PASS_TURN_NOTATION)
+	);
 	private static final Pattern EXCHANGE = Pattern.compile("-\\s+(\\S+)");
 	private static final Pattern PLAY_TILES = Pattern.compile("(\\S*)\\s+(\\S*)");
 
