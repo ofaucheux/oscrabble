@@ -192,6 +192,10 @@ class Playground
 			PlayTiles action = getSelectedHistoryAction();
 			return action == null ? null : Collections.singleton(action.word);
 		});
+		final Object waitToken = new Object();
+		dda.beforeActionListeners.add(() -> client.addWaitToken(waitToken, false));
+		dda.afterActionListeners.add(() -> client.addWaitToken(waitToken, true));
+
 		dda.setRelativeComponentPosition(this.gridFrame);
 		popup.add(dda);
 		this.historyList.setComponentPopupMenu(popup);

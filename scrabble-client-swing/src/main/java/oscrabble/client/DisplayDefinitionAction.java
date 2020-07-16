@@ -6,6 +6,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -35,17 +37,28 @@ public class DisplayDefinitionAction extends AbstractAction
 		this.relativeComponentPosition = component;
 	}
 
+	final Set<Runnable> beforeActionListeners = new LinkedHashSet<>();
+	final Set<Runnable> afterActionListeners = new LinkedHashSet<>();
+
 	@Override
 	public void actionPerformed(final ActionEvent e)
 	{
-		if (component == null)
+		this.beforeActionListeners.forEach(l -> l.run());
+		try
 		{
-			component = new DictionaryComponent(this.dictionary);
+			if (component == null)
+			{
+				component = new DictionaryComponent(this.dictionary);
+			}
+			final Collection<String> words = this.wordsSupplier.get();
+			if (words != null)
+			{
+				words.forEach(word -> showDefinition(word));
+			}
 		}
-		final Collection<String> words = this.wordsSupplier.get();
-		if (words != null)
+		finally
 		{
-			words.forEach(word -> showDefinition(word));
+			this.afterActionListeners.forEach(l -> l.run());
 		}
 	}
 

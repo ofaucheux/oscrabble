@@ -15,7 +15,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
@@ -59,6 +61,9 @@ public class Client
 		this.playground = new Playground(this);
 		this.rack = new JRack();
 	}
+
+	private final Set<Object> waitingTokens = new HashSet<>();
+	private Object waitingAfterOtherPlayToken = new Object();
 
 	/**
 	 * Display the components
@@ -124,9 +129,31 @@ public class Client
 				blinkAction.get();
 			}
 		}
-		this.playground.gridFrame.setCursor(
-				this.player.equals(state.getPlayerOnTurn()) ? Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR) : Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
-		);
+
+		addWaitToken(this.waitingAfterOtherPlayToken, this.player.equals(state.getPlayerOnTurn()));
+	}
+
+	/**
+	 * Add or remove an token informing the application a waiting action is running.
+	 *
+	 * @param token  the token
+ 	 * @param remove is the token to be removed instead of being added?
+	 */
+	void addWaitToken(final Object token, final boolean remove)
+	{
+		if (remove)
+		{
+			this.waitingTokens.remove(token);
+		}
+		else
+		{
+			this.waitingTokens.add(token);
+		}
+
+		final Cursor cursor = this.waitingTokens.isEmpty()
+				? Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+				: Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+		this.playground.gridFrame.setCursor(cursor);
 	}
 
 	private void prepareCommands()

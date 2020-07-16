@@ -363,13 +363,17 @@ class JGrid extends JPanel
 				tile.grid = JGrid.this;
 			}
 
-			if (getClient() != null)
+			final Client client = getClient();
+			if (client != null)
 			{
 				final DisplayDefinitionAction showDefinitionAction = new DisplayDefinitionAction(
-						getClient().getDictionary(),
+						client.getDictionary(),
 						() -> JGrid.this.grid.getWords(square.getCoordinate())
 				);
-				showDefinitionAction.setRelativeComponentPosition(playground == null ? JGrid.this : playground.gridFrame);
+				final Object waitToken = new Object();
+				showDefinitionAction.beforeActionListeners.add(() -> client.addWaitToken(waitToken, false));
+				showDefinitionAction.afterActionListeners.add(() -> client.addWaitToken(waitToken, true));
+				showDefinitionAction.setRelativeComponentPosition(JGrid.this.playground == null ? JGrid.this : JGrid.this.playground.gridFrame);
 				final JPopupMenu popup = new JPopupMenu();
 				popup.add(showDefinitionAction);
 				setComponentPopupMenu(popup);
