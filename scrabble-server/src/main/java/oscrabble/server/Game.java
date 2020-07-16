@@ -377,6 +377,7 @@ public class Game
 		this.history.forEach( h -> playedActions.add(
 				oscrabble.data.Action.builder()
 						.notation(h.notation)
+						.score(h.score)
 						.turnId(h.turnId)
 						.player(h.player)
 						.build()

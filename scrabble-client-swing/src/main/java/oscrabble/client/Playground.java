@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -171,7 +172,11 @@ class Playground
 			{
 				final oscrabble.data.Action action = (oscrabble.data.Action) value;
 				super.getListCellRendererComponent(list, action, index, isSelected, cellHasFocus);
-				setText(action.notation);
+				//noinspection ConstantConditions
+				setText(String.format("%s %s pts",
+						StringUtils.rightPad(action.notation, 13),
+						StringUtils.leftPad(Integer.toString(action.score), 3))
+				);
 				return this;
 			}
 		});
