@@ -2,6 +2,7 @@ package oscrabble.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
@@ -195,10 +196,14 @@ public class PossibleMoveDisplayer
 		this.moveList.setFont(font);
 	}
 
+	/**
+	 * @return selected action in scrabble notation.
+	 */
+	@Nullable
 	public String getSelectedAction()
 	{
 		final Score selected = (Score) this.moveList.getSelectedValue();
-		return selected.getNotation();
+		return selected == null ? null : selected.getNotation();
 	}
 
 	public void reset()
