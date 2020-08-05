@@ -3,6 +3,7 @@ package oscrabble.client;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
@@ -187,8 +188,12 @@ public class Client
 	/**
 	 * Execute a command
 	 */
-	void executeCommand(final String command)
+	void executeCommand(final @Nullable String command)
 	{
+		if (command == null)
+		{
+			return;
+		}
 //		todo if (command.startsWith("/"))
 //		{
 //			final String[] splits = command.split("\\s+");
