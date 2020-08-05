@@ -89,17 +89,25 @@ public class AIPlayer extends AbstractPlayer
 					final ArrayList<Character> letters = new ArrayList<>();
 					rack.forEach(t -> letters.add(t.c));
 
-					List<String> moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(
-							letters,
-							this.configuration.strategy));
+					List<String> moves;
+					try
+					{
+						moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(
+								letters,
+								this.configuration.strategy));
+					}
+					catch (Throwable e)
+					{
+						throw new Exception("Error finding a word with rack " + letters, e);
+					}
+
 					final String notation = moves.isEmpty()
 							? Action.PASS_TURN_NOTATION
 							: moves.get(0);
-					System.out.println("Plays: " + notation);
 					final PlayActionResponse response = this.server.play(this.game, buildAction(notation));
 					if (!response.success)
 					{
-						throw new AssertionError(response.message);
+						throw new AssertionError("Play of " + notation + "refused: " + response.message);
 					}
 				}
 			} while (state.state != GameState.State.ENDED);
