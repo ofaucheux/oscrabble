@@ -16,9 +16,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
@@ -40,6 +38,11 @@ public class Client
 	 */
 	final ScrabbleRules scrabbleRules;
 
+	/**
+	 * Listeners to be run on game leaving
+	 */
+	private final HashSet<Runnable> onQuitGame = new HashSet<>();
+
 	private GameState lastKnownState = null; // TODO: use it in server.play() too
 
 	/**
@@ -60,6 +63,7 @@ public class Client
 		prepareCommands();
 
 		this.playground = new Playground(this);
+		this.onQuitGame.add(this.playground::dispose);
 		this.rack = new JRack();
 	}
 
@@ -83,6 +87,7 @@ public class Client
 		);
 		rackFrame.setVisible(true);
 		rackFrame.pack();
+		this.onQuitGame.add(rackFrame::dispose);
 
 		this.playground.gridFrame.addWindowFocusListener(new WindowAdapter()
 		{
@@ -130,7 +135,6 @@ public class Client
 				blinkAction.get();
 			}
 		}
-
 		addWaitToken(this.waitingAfterOtherPlayToken, this.player.equals(state.getPlayerOnTurn()));
 	}
 
@@ -253,6 +257,15 @@ public class Client
 		return DICTIONARY;
 	}
 
+	/**
+	 * Quit the game
+	 */
+	void quitGame()
+	{
+		// TODO: schickt "ende" dem Server
+		this.onQuitGame.forEach(Runnable::run);
+	}
+
 	interface Listener
 	{
 		void onNewTurn();
@@ -315,7 +328,7 @@ public class Client
 						treatNewState(state);
 					}
 					endReached = state.state == GameState.State.ENDED;
-					Thread.sleep(1000);
+					Thread.sleep(100);
 				}
 				catch (InterruptedException | ScrabbleException.CommunicationException e)
 				{

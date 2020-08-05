@@ -2,6 +2,7 @@ package oscrabble.data;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.Objects;
@@ -53,5 +54,15 @@ public class Action
 	public int hashCode()
 	{
 		return Objects.hash(this.notation);
+	}
+
+	/**
+	 *
+	 * @return the score, eventually 0
+	 */
+	@NonNull
+	public int getScore()
+	{
+		return this.score == null ? 0 : this.score;
 	}
 }

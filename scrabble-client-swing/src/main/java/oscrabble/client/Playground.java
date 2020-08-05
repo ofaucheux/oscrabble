@@ -115,10 +115,14 @@ class Playground
 				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, /*MESSAGES.getString(*/"quit.the.game"/*)*/, /*MESSAGES.getString(*/"confirm.quit"/*)*/, JOptionPane.YES_NO_OPTION);
 				if (confirm == JOptionPane.YES_OPTION)
 				{
-					// TODO: schickt "ende" dem Server
-//					Playground.this.game.setState(IGame.State.ENDED);
-					Playground.this.gridFrame.dispose();
-					System.exit(0);
+					if (client != null)
+					{
+						Playground.this.client.quitGame();
+					}
+					else
+					{
+						Playground.this.dispose();
+					}
 				}
 			}
 		};
@@ -141,24 +145,32 @@ class Playground
 		panel1.add(this.jScoreboard);
 		panel1.add(Box.createVerticalGlue());
 
-		this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
-		this.pmd.setServer(this.client.server);
-		this.pmd.setGame(this.client.game);
-		this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, this.client.scrabbleRules));
-		this.pmd.setFont(MONOSPACED);
-		this.pmd.getMoveList().addMouseListener(new MouseAdapter()
+		if (client == null)
 		{
-			@Override
-			public void mouseClicked(final MouseEvent e)
+			panel1.add(new JTextField("Place for PossibleMoveDisplayer"));
+			this.pmd = null;
+		}
+		else
+		{
+			this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
+			this.pmd.setServer(this.client.server);
+			this.pmd.setGame(this.client.game);
+			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, this.client.scrabbleRules));
+			this.pmd.setFont(MONOSPACED);
+			this.pmd.getMoveList().addMouseListener(new MouseAdapter()
 			{
-				if (e.getClickCount() == 2)
+				@Override
+				public void mouseClicked(final MouseEvent e)
 				{
-					client.executeCommand(Playground.this.pmd.getSelectedAction());
+					if (e.getClickCount() == 2)
+					{
+						client.executeCommand(Playground.this.pmd.getSelectedAction());
+					}
 				}
-			}
-		});
-		this.client.listeners.add(() -> this.pmd.reset());
-		panel1.add(this.pmd.mainPanel);
+			});
+			this.client.listeners.add(() -> this.pmd.reset());
+			panel1.add(this.pmd.mainPanel);
+		}
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
 		historyPanel.setBorder(new TitledBorder(MESSAGES.getString("moves")));
@@ -172,10 +184,9 @@ class Playground
 			{
 				final oscrabble.data.Action action = (oscrabble.data.Action) value;
 				super.getListCellRendererComponent(list, action, index, isSelected, cellHasFocus);
-				//noinspection ConstantConditions
 				setText(String.format("%s %s pts",
 						StringUtils.rightPad(action.notation, 13),
-						StringUtils.leftPad(Integer.toString(action.score), 3))
+						StringUtils.leftPad(Integer.toString(action.getScore()), 3))
 				);
 				return this;
 			}
@@ -188,16 +199,19 @@ class Playground
 		);
 
 		final JPopupMenu popup = new JPopupMenu();
-		DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
-			PlayTiles action = getSelectedHistoryAction();
-			return action == null ? null : Collections.singleton(action.word);
-		});
-		final Object waitToken = new Object();
-		dda.beforeActionListeners.add(() -> client.addWaitToken(waitToken, false));
-		dda.afterActionListeners.add(() -> client.addWaitToken(waitToken, true));
+		if (client != null)
+		{
+			DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
+				PlayTiles action = getSelectedHistoryAction();
+				return action == null ? null : Collections.singleton(action.word);
+			});
+			final Object waitToken = new Object();
+			dda.beforeActionListeners.add(() -> client.addWaitToken(waitToken, false));
+			dda.afterActionListeners.add(() -> client.addWaitToken(waitToken, true));
 
-		dda.setRelativeComponentPosition(this.gridFrame);
-		popup.add(dda);
+			dda.setRelativeComponentPosition(this.gridFrame);
+			popup.add(dda);
+		}
 		this.historyList.setComponentPopupMenu(popup);
 
 		this.historyList.addListSelectionListener(event -> {
@@ -252,6 +266,14 @@ class Playground
 	}
 
 	/**
+	 * Dispose the UI
+	 */
+	void dispose()
+	{
+		this.gridFrame.dispose();
+	}
+
+	/**
 	 * @return selected action in the history list. {@code null} if nothing is selected or if the selected
 	 * item is not a {@link PlayTiles}.
 	 */
@@ -279,7 +301,26 @@ class Playground
 		this.jGrid.setGrid(state.getGrid());
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
-		this.pmd.setData(state, rack);
+		if (this.pmd != null)
+		{
+			this.pmd.setData(state, rack);
+		}
+
+		if (state.state == GameState.State.ENDED)
+		{
+			final JTextField tf = new JTextField("Game over"); //todo: i18n
+			tf.setFont(tf.getFont().deriveFont(60f).deriveFont(Font.BOLD));
+			tf.setForeground(Color.ORANGE);
+			tf.setHorizontalAlignment(JTextField.CENTER);
+			tf.setOpaque(false);
+			final JPanel glassPane = new JPanel();
+			this.gridFrame.setGlassPane(glassPane);
+			glassPane.setLayout(new BorderLayout());
+			glassPane.add(tf);
+			glassPane.setOpaque(false);
+			glassPane.setVisible(true);
+			this.gridFrame.pack();
+		}
 	}
 
 	public String getCommand()
