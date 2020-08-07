@@ -12,12 +12,10 @@ repositories {
 lombok.config['lombok.anyConstructor.addConstructorProperties'] = 'true'
 
 dependencies {
-
     compile 'org.slf4j:slf4j-api:1.7.28'
 //    compile 'org.slf4j:slf4j-log4j12:1.7.28'
     compile 'org.springframework:spring-web:5.2.5.RELEASE'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
 
-    testCompile 'junit:junit'
+//    testCompile 'junit:junit'
 }
-
