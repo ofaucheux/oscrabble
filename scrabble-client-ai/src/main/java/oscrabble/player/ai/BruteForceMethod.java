@@ -1,12 +1,12 @@
 package oscrabble.player.ai;
 
+import org.apache.commons.io.FileUtils;
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
-import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
@@ -32,7 +32,10 @@ public class BruteForceMethod
 	void loadDictionary(final IDictionary dictionary)
 	{
 		final Set<String> admissibleWords = new HashSet<>(dictionary.getAdmissibleWords());
-		final File fff = new File("C:\\temp\\scrabble_dawg_" + admissibleWords.hashCode() + ".dawg");
+		final File fff = new File(
+			FileUtils.getTempDirectory(),
+			"scrabble_dawg_" + admissibleWords.hashCode() + ".dawg"
+		);
 		if (fff.exists())
 		{
 			try (ObjectInputStream fis = new ObjectInputStream(new FileInputStream(fff)))
