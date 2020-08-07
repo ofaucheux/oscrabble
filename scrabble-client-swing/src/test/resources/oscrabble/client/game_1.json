@@ -22,12 +22,14 @@
   "playedActions": [
     {
       "turnId": "6abfe4f9-06bd-4268-8143-46213e1d00fc",
-      "player": null,
+      "player": "70ee3422-e8b7-4332-8d55-22633505c720",
+      "score": 64,
       "notation": "H5 LAVEUR"
     },
     {
       "turnId": "d01d003e-f465-4d77-b19d-69867d45b70f",
-      "player": null,
+      "player": "d3c2461e-8669-40ae-8f66-cb00447e7541",
+      "score": 18,
       "notation": "10G BRUITENT"
     }
   ],
