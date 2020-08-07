@@ -143,4 +143,12 @@ public class Controller
 		final Game g = getGame(game);
 		g.startGame();
 	}
+
+
+	@RequestMapping(value = "/{game}/updatePlayer", method = {RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
+	public void updatePlayer(@PathVariable UUID game, @RequestBody PlayerUpdateRequest request) throws ScrabbleException
+	{
+		final Game g = getGame(game);
+		g.updatePlayer(request);
+	}
 }

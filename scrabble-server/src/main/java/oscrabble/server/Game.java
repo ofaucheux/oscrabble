@@ -1,8 +1,8 @@
 package oscrabble.server;
 
-import lombok.SneakyThrows;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.map.LinkedMap;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -156,6 +156,7 @@ public class Game
 		{
 			final PlayerInformation pi = new PlayerInformation(sp);
 			this.players.put(pi.uuid, pi);
+			pi.isAttached = true;
 			this.toPlay.add(pi);
 		}
 		if (state.playerOnTurn != null)
@@ -289,7 +290,8 @@ public class Game
 //	}
 
 	/**
-	 * Add player
+	 * Add player into the game.
+	 *
 	 * @param jsonPlayer player
 	 * @return the player
 	 */
@@ -302,6 +304,31 @@ public class Game
 		}
 		pi.setName(jsonPlayer.name);
 		return pi;
+	}
+
+	synchronized void updatePlayer(final PlayerUpdateRequest request) throws ScrabbleException
+	{
+//		checkSecret(player, secret); // todo
+
+		final PlayerInformation player = getPlayer(request.playerId);
+		switch (PlayerUpdateRequest.Parameter.valueOf(request.parameter))
+		{
+			case ATTACHED:
+				final boolean attachIt = BooleanUtils.toBoolean(request.newValue);
+				if (attachIt == player.isAttached)
+				{
+					return;
+				}
+				else if (attachIt)
+				{
+					player.isAttached = true;
+				}
+				else
+				{
+					detachPlayer(player, null);
+				}
+				break;
+		}
 	}
 
 	/**
@@ -470,7 +497,7 @@ public class Game
 	}
 
 	/**
-	 * Ends the game.
+	 * Ends the game (Game over)
 	 *
 	 * @param firstEndingPlayer player which has first emptied its rack, or {@code null} if nobody has cleared it.
 	 */
@@ -527,6 +554,7 @@ public class Game
 	 *
 	 * @param id
 	 * @return
+	 * @throws ScrabbleException if unknown player
 	 */
 	PlayerInformation getPlayer(final UUID id) throws ScrabbleException
 	{
@@ -560,7 +588,7 @@ public class Game
 	 */
 	public void startGame()
 	{
-		if (!testModus && this.players.isEmpty())
+		if (!this.testModus && this.players.isEmpty())
 		{
 			throw new IllegalStateException(MESSAGES.getString("cannot.start.game.no.player.registered"));
 		}
@@ -686,14 +714,23 @@ public class Game
 //		}
 //	}
 
-
-	public void quit(final PlayerInformation player, final String secret, final String message)
+	/**
+	 * Detach a player and end the game if all no-AI players are detached
+	 *
+	 * @param player
+	 * @param message
+	 */
+	private void detachPlayer(final PlayerInformation player, final String message)
 	{
-		checkSecret(player, secret);
 		final String msg = MessageFormat.format(MESSAGES.getString("player.0.quits.with.message.1"), player, message);
 		LOGGER.info(msg);
 		dispatchMessage(msg);
-		setState(GameState.State.ENDED);
+		player.isAttached = false;
+
+		if (this.players.values().stream().noneMatch(e->(e.isAttached || e.isRobot)))
+		{
+			setState(GameState.State.ENDED);
+		}
 	}
 
 	/**
@@ -930,7 +967,11 @@ public class Game
 					}
 				}
 
-				this.acknowledgesToWaitAfter.addAll(this.players.keySet());
+				this.players
+						.values()
+						.stream()
+						.filter(pi -> pi.isAttached)
+						.forEach(pi -> this.acknowledgesToWaitAfter.add(pi.uuid));
 			}
 		}
 	}

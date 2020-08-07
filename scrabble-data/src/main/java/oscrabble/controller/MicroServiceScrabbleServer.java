@@ -251,4 +251,21 @@ public class MicroServiceScrabbleServer
 			Thread.sleep(100);
 		}
 	}
+
+	/**
+	 * Attach or detach a player.
+	 *
+	 * @param game
+	 * @param player
+	 * @param attach if false, a detach occurs.
+	 */
+	public void attach(final UUID game, final UUID player, final boolean attach)
+	{
+		final PlayerUpdateRequest request = PlayerUpdateRequest.builder()
+				.playerId(player)
+				.parameter(PlayerUpdateRequest.Parameter.ATTACHED.toString())
+				.newValue(attach ? Boolean.TRUE.toString() : Boolean.FALSE.toString())
+				.build();
+		REST_TEMPLATE.postForObject(resolve(game, "updatePlayer"),request, Void.class);
+	}
 }

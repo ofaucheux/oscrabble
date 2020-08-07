@@ -35,6 +35,16 @@ class PlayerInformation
 	String name;
 
 	/**
+	 * is a robot?
+	 */
+	public boolean isRobot;
+
+	/**
+	 * Is currently connected with a client
+	 */
+	boolean isAttached;
+
+	/**
 	 * Construct a player from a data object.
 	 * @param dataPlayer data object
 	 */
@@ -43,6 +53,7 @@ class PlayerInformation
 		this.uuid = dataPlayer.id;
 		this.name = dataPlayer.name;
 		this.score = dataPlayer.score;
+		this.isRobot = dataPlayer.isRobot;
 	}
 
 	public PlayerInformation(final UUID uuid)
@@ -70,6 +81,8 @@ class PlayerInformation
 				.id(this.uuid)
 				.name(this.name)
 				.score(this.score)
+				.isRobot(this.isRobot)
+				.isAttached(this.isAttached)
 				.build();
 		return data;
 	}

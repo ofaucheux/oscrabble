@@ -111,5 +111,4 @@ public class MicroServiceDictionary implements IDictionary
 			throw new ScrabbleError("Cannot read scrabble rules", e);
 		}
 	}
-
 }
