@@ -308,15 +308,15 @@ class Playground
 
 		if (state.state == GameState.State.ENDED)
 		{
-			final JTextField tf = new JTextField("Game over"); //todo: i18n
-			tf.setFont(tf.getFont().deriveFont(60f).deriveFont(Font.BOLD));
-			tf.setForeground(Color.ORANGE);
-			tf.setHorizontalAlignment(JTextField.CENTER);
-			tf.setOpaque(false);
+			final JLabel gameOverLabel = new JLabel("Game over"); //todo: i18n
+			gameOverLabel.setFont(gameOverLabel.getFont().deriveFont(60f).deriveFont(Font.BOLD));
+			gameOverLabel.setForeground(Color.ORANGE);
+			gameOverLabel.setHorizontalAlignment(JTextField.CENTER);
+			gameOverLabel.setOpaque(false);
 			final JPanel glassPane = new JPanel();
 			this.gridFrame.setGlassPane(glassPane);
 			glassPane.setLayout(new BorderLayout());
-			glassPane.add(tf);
+			glassPane.add(gameOverLabel);
 			glassPane.setOpaque(false);
 			glassPane.setVisible(true);
 			this.gridFrame.pack();
@@ -558,6 +558,11 @@ class Playground
 		@Override
 		public void changedUpdate(final DocumentEvent e)
 		{
+			if (client == null)
+			{
+				return;
+			}
+
 			try
 			{
 				final Action action = getPreparedMove();
