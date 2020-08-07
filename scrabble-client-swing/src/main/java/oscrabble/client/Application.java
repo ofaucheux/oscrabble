@@ -48,6 +48,7 @@ public class Application
 		for (int i = 0; i < 4; i++)
 		{
 			final UUID anton = this.server.addPlayer(game, "Anton_" + (i+1));
+			// TODO: tell the server it is an AI Player
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
 			ai.setThrottle(1000);
 			ai.startDaemonThread();
@@ -61,6 +62,7 @@ public class Application
 		{
 			Thread.sleep(500);
 		} while (client.isVisible());
+		this.server.attach(game, edgar, true);
 	}
 
 }
