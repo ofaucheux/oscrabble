@@ -31,7 +31,6 @@ public class ScrabbleRulesFactory
 			{
 				for (final CSVRecord record : new CSVParser(new InputStreamReader(is), letterFileFormat).getRecords())
 				{
-					final ScrabbleRules.Letter letter = new ScrabbleRules.Letter();
 					final String character = record.get("character");
 					if ("blank".equals(character.toLowerCase()))
 					{
@@ -44,9 +43,11 @@ public class ScrabbleRulesFactory
 							throw new AssertionError("False character: " + character);
 						}
 
-						letter.c = character.charAt(0);
-						letter.prevalence = Integer.parseInt(record.get("prevalence"));
-						letter.points = Integer.parseInt(record.get("points"));
+						final ScrabbleRules.Letter letter = ScrabbleRules.Letter.builder()
+								.c(character.charAt(0))
+								.prevalence(Integer.parseInt(record.get("prevalence")))
+								.points(Integer.parseInt(record.get("points")))
+								.build();
 						rules.letters.put(letter.c, letter);
 					}
 				}

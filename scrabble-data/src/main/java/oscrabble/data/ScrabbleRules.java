@@ -1,6 +1,7 @@
 package oscrabble.data;
 
 import lombok.Data;
+import lombok.Builder;
 
 import java.util.Map;
 
@@ -25,6 +26,7 @@ public class ScrabbleRules
 	 * Information about the prevalence of a letter.
 	 */
 	@Data
+	@Builder
 	public static class Letter
 	{
 		public char c;
