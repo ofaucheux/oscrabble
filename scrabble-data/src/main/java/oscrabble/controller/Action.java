@@ -1,10 +1,10 @@
 package oscrabble.controller;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
-import oscrabble.data.objects.Square;
 
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -92,6 +92,22 @@ public abstract class Action
 		}
 	}
 
+	/**
+	 * Parse a notation
+	 *
+	 * @param notation
+	 * @return Tuplet (coordinate, word)
+	 */
+	public static Pair<Coordinate, String> parsePlayNotation(final String notation)
+	{
+		final Matcher m = PLAY_TILES.matcher(notation);
+		if (!m.matches())
+		{
+			throw new AssertionError();
+		}
+		return Pair.of(Coordinate.parse(m.group(1)), m.group(2));
+	}
+
 	public static class PlayTiles extends Action
 	{
 
@@ -108,14 +124,9 @@ public abstract class Action
 		private PlayTiles(final UUID player, String notation)
 		{
 			super(player, notation);
-			final Matcher m = PLAY_TILES.matcher(notation);
-			if (!m.matches())
-			{
-				throw new AssertionError();
-			}
-
-			this.startSquare = Coordinate.parse(m.group(1));
-			this.word = m.group(2);
+			final Pair<Coordinate, String> parsed = parsePlayNotation(notation);
+			this.startSquare = parsed.getLeft();
+			this.word = parsed.getRight();
 		}
 
 		public Grid.Direction getDirection()

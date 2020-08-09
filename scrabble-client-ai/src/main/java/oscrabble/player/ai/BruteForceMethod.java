@@ -144,10 +144,10 @@ public class BruteForceMethod
 			{
 				ctx.direction = direction;
 				final StringBuilder partialWord = new StringBuilder();
-				DAWGNode node = this.automaton.getSourceNode();
 
 				if (!anchor.isFirstOfLine(direction) && !this.grid.getPrevious(anchor, direction).isEmpty())
 				{
+					DAWGNode node = this.automaton.getSourceNode();
 					Square square = anchor;
 					do
 					{
@@ -166,7 +166,7 @@ public class BruteForceMethod
 					{
 						nonAnchor++;
 					}
-					leftPart(ctx, "", node, nonAnchor);
+					leftPart(ctx, "", this.automaton.getSourceNode(), nonAnchor);
 				}
 			}
 		}
@@ -241,6 +241,14 @@ public class BruteForceMethod
 		}
 	}
 
+	/**
+	 * Collect the words accepted by the grid with a given anchor.
+	 *
+	 * @param ctx the context
+	 * @param partialWord start of the word
+	 * @param node current node
+	 * @param limit
+	 */
 	private void leftPart(final CalculateCtx ctx, final String partialWord, final DAWGNode node, final int limit)
 	{
 		extendRight(ctx, partialWord, node, ctx.anchor);
@@ -266,6 +274,14 @@ public class BruteForceMethod
 		}
 	}
 
+	/**
+	 * For a given square and given word start, collect all correct words the grid allows with this word start.
+	 *
+	 * @param ctx
+	 * @param partialWord
+	 * @param node
+	 * @param possibleNextSquare
+	 */
 	private void extendRight(final CalculateCtx ctx,
 							 final String partialWord,
 							 final DAWGNode node,
@@ -380,14 +396,12 @@ public class BruteForceMethod
 		if (!crossChecks.containsKey(crossSquare))
 		{
 			final TreeSet<Character> allowed = new TreeSet<>();
-
-
 			final StringBuilder sb = new StringBuilder();
 
 			Square square = this.grid.getPrevious(crossSquare, crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
-				sb.insert(0, square.tile);
+				sb.insert(0, square.tile.c);
 				square = this.grid.getPrevious(square, crossDirection);
 			}
 
@@ -397,7 +411,7 @@ public class BruteForceMethod
 			square = this.grid.getNext(crossSquare, crossDirection);
 			while (!square.isBorder() && !square.isEmpty())
 			{
-				sb.append(square.tile);
+				sb.append(square.tile.c);
 				square = this.grid.getNext(square, crossDirection);
 			}
 

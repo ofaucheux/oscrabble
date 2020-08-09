@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.quinto.dawg.DAWGNode;
 import oscrabble.ScrabbleException;
+import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
@@ -91,8 +92,8 @@ public class BruteForceMethodTest
 	private static List<TestData> findMoveParameterProvider()
 	{
 		return List.of(
-				new TestData("grid_1.grid", "EDPWMES", Collections.emptySet(), Set.of("15H MES")),
-				new TestData("grid_2.grid", "EDPWMES", Collections.emptySet(), Set.of("14H MES"))
+				new TestData("grid_1.grid", "EDPWMES", Set.of("15J"), Set.of("15H MES")),
+				new TestData("grid_2.grid", "EDPWMES", Set.of("14J"), Set.of("14H MES"))
 		);
 	}
 
@@ -100,7 +101,6 @@ public class BruteForceMethodTest
 	@MethodSource("findMoveParameterProvider")
 	void getLegalMoves(final TestData testParams) throws IOException
 	{
-
 		final String asciiArt = IOUtils.toString(
 				BruteForceMethodTest.class.getResourceAsStream(testParams.filename),
 				Charset.defaultCharset()
@@ -114,13 +114,23 @@ public class BruteForceMethodTest
 				.forEach(a -> anchors.add(a.getCoordinate()));
 		missing = CollectionUtils.subtract(
 				testParams.anchorsToFind,
-				anchors);
+				anchors
+		);
 		MatcherAssert.assertThat(
-				grid.toString(), anchors, CoreMatchers.hasItems(testParams.anchorsToFind.toArray(new String[0])));
+				grid.toString(),
+				anchors,
+				CoreMatchers.hasItems(testParams.anchorsToFind.toArray(new String[0]))
+		);
 		assertTrue(missing.isEmpty(), "Missing anchors: " + missing);
 
 		final Set<String> moves = new TreeSet(getLegalMoves(this.instance, testParams.rack));
-		MatcherAssert.assertThat(moves, CoreMatchers.hasItems(testParams.movesToFind.toArray(new String[0])));
+		MatcherAssert.assertThat(grid.toString(), moves, CoreMatchers.hasItems(testParams.movesToFind.toArray(new String[0])));
+
+		final TreeSet<String> foundWords = new TreeSet<>();
+		moves.forEach(m -> {
+			foundWords.add(Action.parsePlayNotation(m).getRight());
+		});
+		MatcherAssert.assertThat(DICTIONARY.getAdmissibleWords(), CoreMatchers.hasItems(foundWords.toArray(new String[0])));
 	}
 
 	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack)
