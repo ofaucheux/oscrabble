@@ -65,13 +65,6 @@ public class BruteForceMethodTest
 		assertFalse(node.isAcceptNode());
 	}
 
-	private static List<Triple<String, String, Set<String>>> findMoveParameterProvider()
-	{
-		return List.of(
-				Triple.of("grid_1.grid", "EDPWMES", Set.of("15H MES"))
-		);
-	}
-
 	@Test
 	void getLegalMoves() throws ScrabbleException
 	{
@@ -94,6 +87,13 @@ public class BruteForceMethodTest
 //		}
 	}
 
+	private static List<Triple<String, String, Set<String>>> findMoveParameterProvider()
+	{
+		return List.of(
+				Triple.of("grid_1.grid", "EDPWMES", Set.of("15H MES"))
+		);
+	}
+
 	@ParameterizedTest
 	@MethodSource("findMoveParameterProvider")
 	void getLegalMoves(final Triple<String, String, Set<String>> testParams) throws IOException
@@ -108,7 +108,14 @@ public class BruteForceMethodTest
 		final List<String> moves = getLegalMoves(this.instance, rack);
 		for (final String neededResult : neededResults)
 		{
-			assertTrue(moves.contains(neededResult), "Move " + neededResult + " not found for \n" + grid);
+			assertTrue(moves.contains(neededResult),
+					String.format(
+							"Move %s not found for \n%s. Found: %s",
+							neededResult,
+							grid,
+							moves
+					)
+			);
 		}
 	}
 
