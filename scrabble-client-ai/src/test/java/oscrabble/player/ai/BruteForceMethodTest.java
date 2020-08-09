@@ -1,7 +1,9 @@
 package oscrabble.player.ai;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Triple;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -9,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.quinto.dawg.DAWGNode;
 import oscrabble.ScrabbleException;
-import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
@@ -87,36 +88,39 @@ public class BruteForceMethodTest
 //		}
 	}
 
-	private static List<Triple<String, String, Set<String>>> findMoveParameterProvider()
+	private static List<TestData> findMoveParameterProvider()
 	{
 		return List.of(
-				Triple.of("grid_1.grid", "EDPWMES", Set.of("15H MES"))
+				new TestData("grid_1.grid", "EDPWMES", Collections.emptySet(), Set.of("15H MES")),
+				new TestData("grid_2.grid", "EDPWMES", Collections.emptySet(), Set.of("14H MES"))
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("findMoveParameterProvider")
-	void getLegalMoves(final Triple<String, String, Set<String>> testParams) throws IOException
+	void getLegalMoves(final TestData testParams) throws IOException
 	{
-		final String resourceName = testParams.getLeft();
-		final String rack = testParams.getMiddle();
-		final Set<String> neededResults = testParams.getRight();
 
-		final String asciiArt = IOUtils.toString(BruteForceMethodTest.class.getResourceAsStream(resourceName), Charset.defaultCharset());
+		final String asciiArt = IOUtils.toString(
+				BruteForceMethodTest.class.getResourceAsStream(testParams.filename),
+				Charset.defaultCharset()
+		);
 		final Grid grid = Grid.fromAsciiArt(DICTIONARY.getScrabbleRules(), asciiArt);
 		this.instance.setGrid(grid);
-		final List<String> moves = getLegalMoves(this.instance, rack);
-		for (final String neededResult : neededResults)
-		{
-			assertTrue(moves.contains(neededResult),
-					String.format(
-							"Move %s not found for \n%s. Found: %s",
-							neededResult,
-							grid,
-							moves
-					)
-			);
-		}
+
+		Collection<String> missing;
+		final Set<String> anchors = new TreeSet<>();
+		this.instance.getAnchors()
+				.forEach(a -> anchors.add(a.getCoordinate()));
+		missing = CollectionUtils.subtract(
+				testParams.anchorsToFind,
+				anchors);
+		MatcherAssert.assertThat(
+				grid.toString(), anchors, CoreMatchers.hasItems(testParams.anchorsToFind.toArray(new String[0])));
+		assertTrue(missing.isEmpty(), "Missing anchors: " + missing);
+
+		final Set<String> moves = new TreeSet(getLegalMoves(this.instance, testParams.rack));
+		MatcherAssert.assertThat(moves, CoreMatchers.hasItems(testParams.movesToFind.toArray(new String[0])));
 	}
 
 	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack)
@@ -189,4 +193,22 @@ public class BruteForceMethodTest
 //		new Thread(() -> server.play()).start();
 	}
 
+	/**
+	 * Data for a test.
+	 */
+	private static class TestData
+	{
+		private final String filename;
+		private final String rack;
+		private final Set<String> movesToFind;
+		private final Set<String> anchorsToFind;
+
+		public TestData(final String filename, final String rack, final Set<String> anchorsToFind, final Set<String> movesToFind)
+		{
+			this.filename = filename;
+			this.rack = rack;
+			this.anchorsToFind = anchorsToFind;
+			this.movesToFind = movesToFind;
+		}
+	}
 }
