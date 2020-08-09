@@ -73,9 +73,33 @@ class GridTest
 	{
 		final ScrabbleRules rules = MicroServiceDictionary.getDefaultFrench().getScrabbleRules();
 		final Grid g = new Grid();
-		g.play(rules, "G3 RHuME");
-		g.play(rules, "2H CHIEN");
-		assertEquals(g, Grid.fromAsciiArt(rules, g.toAsciiArt()));
+		g.play(rules, "8D FRICHES");
+		g.play(rules, "D8 FOVEAS");
+
+		final String expected =
+				"#################\n" +
+				"#               #\n" +
+				"#               #\n" +
+				"#               #\n" +
+				"#               #\n" +
+				"#               #\n" +
+				"#               #\n" +
+				"#               #\n" +
+				"#   FRICHES     #\n" +
+				"#   O           #\n" +
+				"#   V           #\n" +
+				"#   E           #\n" +
+				"#   A           #\n" +
+				"#   S           #\n" +
+				"#               #\n" +
+				"#               #\n" +
+				"#################\n";
+
+		final String generated = g.toAsciiArt();
+//		assertEquals(g.toAsciiArt(true), generated);
+
+		assertEquals(expected, generated);
+		assertEquals(g, Grid.fromAsciiArt(rules, generated));
 	}
 
 	@Test

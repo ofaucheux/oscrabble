@@ -165,13 +165,18 @@ public class Square
 //	}
 
 	@Override
-	public boolean equals(final Object o)
+	public boolean equals(final Object other)
 	{
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		final Square square = (Square) o;
-		return this.x == square.x &&
-				this.y == square.y;
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+		final Square o = (Square) other;
+		final boolean equals = this.x == o.x
+				&& this.y == o.y
+				&& this.isBorder == o.isBorder
+				&& this.letterBonus == o.letterBonus
+				&& this.wordBonus == o.wordBonus
+				&& Objects.equals(this.tile, o.tile);
+		return equals;
 	}
 
 	@Override

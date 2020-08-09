@@ -30,14 +30,22 @@ public class Grid
 
 	/**
 	 * Create a grid.
-	 * @param fillGrid are the intern squares to be created too?
+	 * @param withIntern are the intern squares to be created too?
 	 */
-	private Grid(final boolean fillGrid)
+	private Grid(final boolean withIntern)
 	{
 		this.squares = new oscrabble.data.objects.Square[(GRID_SIZE + 2) * (GRID_SIZE + 2)];
-		if (fillGrid)
+		for (int i = 0; i < GRID_SIZE_PLUS_2 * GRID_SIZE_PLUS_2; i++)
 		{
-			fillGrid(true);
+			final int x = i / GRID_SIZE_PLUS_2;
+			final int y = i % GRID_SIZE_PLUS_2;
+			boolean border = i < GRID_SIZE_PLUS_2;
+			border |= i >= GRID_SIZE_PLUS_2 * (GRID_SIZE + 1);
+			border |= y == 0 || y == (GRID_SIZE + 1);
+			if (withIntern || border)
+			{
+				this.squares[i] = new oscrabble.data.objects.Square(x, y);
+			}
 		}
 	}
 
@@ -50,32 +58,12 @@ public class Grid
 	public static Grid fromData(final oscrabble.data.Grid data)
 	{
 		final Grid g = new Grid(false);
-		g.fillGrid(false);
 		for (final oscrabble.data.Square sq : data.squares)
 		{
 			final Coordinate coordinate = Coordinate.parse(sq.coordinate);
 			g.squares[coordinate.x * GRID_SIZE_PLUS_2 + coordinate.y] = oscrabble.data.objects.Square.fromData(sq);
 		}
 		return g;
-	}
-
-	/**
-	 * Fill the grid with empty squares
-	 */
-	void fillGrid(boolean inclusiveInside)
-	{
-		for (int i = 0; i < GRID_SIZE_PLUS_2 * GRID_SIZE_PLUS_2; i++)
-		{
-			final int x = i / GRID_SIZE_PLUS_2;
-			final int y = i % GRID_SIZE_PLUS_2;
-			boolean border = i < GRID_SIZE_PLUS_2;
-			border |= i >= GRID_SIZE_PLUS_2 * (GRID_SIZE + 1);
-			border |= y == 0 || y == (GRID_SIZE + 1);
-			if (inclusiveInside || border)
-			{
-				this.squares[i] = new oscrabble.data.objects.Square(x, y);
-			}
-		}
 	}
 
 	public oscrabble.data.objects.Square get(final Coordinate coordinate)
@@ -297,11 +285,11 @@ public class Grid
 						.position(sq.getCoordinate())
 						.build();
 			}
-			y++;
-			if (y == Grid.GRID_SIZE_PLUS_2)
+			x++;
+			if (x == Grid.GRID_SIZE_PLUS_2)
 			{
-				x++;
-				y = 0;
+				y++;
+				x = 0;
 			}
 		}
 		return grid;
@@ -311,7 +299,16 @@ public class Grid
 	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder("Grid{\n");
-		sb.append(toAsciiArt());
+		final String asciiArt = toAsciiArt();
+		sb.append("    ABCDEFGHIJKLMNO \n");
+		int i = 0;
+		for (final String line : asciiArt.split("\n"))
+		{
+			sb.append(String.format("%2d " +
+					"", i)).append(line).append("\n");
+			i++;
+		}
+		sb.append("    ABCDEFGHIJKLMNO \n");
 		sb.append("}");
 		return sb.toString();
 	}
@@ -357,16 +354,18 @@ public class Grid
 	 */
 	public String toAsciiArt()
 	{
-		final StringBuilder sb = new StringBuilder("");
+		final int gridSizePlus3 = GRID_SIZE_PLUS_2 + 1;
+		final char[] chars = new char[gridSizePlus3 * GRID_SIZE_PLUS_2];
 		for (final oscrabble.data.objects.Square square : this.squares)
 		{
-			sb.append(square.isBorder ? '#' : square.tile == null ? ' ' : square.tile.c);
-			if (square.y == GRID_SIZE + 1)
-			{
-				sb.append('\n');
-			}
+			chars[square.y * gridSizePlus3 + square.x] = square.isBorder ? '#' : square.tile == null ? ' ' : square.tile.c;
 		}
-		return sb.toString();
+		for (int i = 0; i < GRID_SIZE_PLUS_2; i++)
+		{
+			chars[i * gridSizePlus3 + GRID_SIZE_PLUS_2] = '\n';
+		}
+
+		return String.valueOf(chars);
 	}
 
 	/**

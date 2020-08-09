@@ -1,14 +1,17 @@
 package oscrabble.player.ai;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.quinto.dawg.DAWGNode;
-import org.springframework.util.StreamUtils;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.AbstractPlayer;
 
@@ -16,7 +19,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +27,7 @@ public class BruteForceMethodTest
 
 	private BruteForceMethod instance;
 
-	private final static MicroServiceDictionary DICTIONARY =  MicroServiceDictionary.getDefaultFrench();
+	private final static IDictionary DICTIONARY =  new FrenchDictionaryForTest();
 	private final static MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
 
 	private ArrayBlockingQueue<String> playQueue;
@@ -63,12 +65,18 @@ public class BruteForceMethodTest
 		assertFalse(node.isAcceptNode());
 	}
 
+	private static List<Triple<String, String, Set<String>>> findMoveParameterProvider()
+	{
+		return List.of(
+				Triple.of("grid_1.grid", "EDPWMES", Set.of("15H MES"))
+		);
+	}
+
 	@Test
-	void getLegalMoves() throws ScrabbleException, InterruptedException, TimeoutException
+	void getLegalMoves() throws ScrabbleException
 	{
 		startGame("ENFANIT");
 
-		final Random random = new Random();
 		final UUID game = server.newGame();
 		this.instance.setGrid(server.getGrid(game));
 		final List<String> legalMoves = new ArrayList<>(getLegalMoves(this.instance, "ENFANIT"));
@@ -86,17 +94,23 @@ public class BruteForceMethodTest
 //		}
 	}
 
-	@Test
-	void getLegalMoves2() throws IOException
+	@ParameterizedTest
+	@MethodSource("findMoveParameterProvider")
+	void getLegalMoves(final Triple<String, String, Set<String>> testParams) throws IOException
 	{
-		final MicroServiceDictionary dico = MicroServiceDictionary.getDefaultFrench();
-		final String asciiArt = IOUtils.toString(BruteForceMethodTest.class.getResourceAsStream("grid_1.grid"), Charset.defaultCharset());
-		final Grid grid = Grid.fromAsciiArt(dico.getScrabbleRules(), asciiArt);
-		this.instance.setGrid(grid);
-		final List<String> moves = getLegalMoves(this.instance, "EDPWMES");
-		assertTrue(moves.contains("O8 MES"));
-	}
+		final String resourceName = testParams.getLeft();
+		final String rack = testParams.getMiddle();
+		final Set<String> neededResults = testParams.getRight();
 
+		final String asciiArt = IOUtils.toString(BruteForceMethodTest.class.getResourceAsStream(resourceName), Charset.defaultCharset());
+		final Grid grid = Grid.fromAsciiArt(DICTIONARY.getScrabbleRules(), asciiArt);
+		this.instance.setGrid(grid);
+		final List<String> moves = getLegalMoves(this.instance, rack);
+		for (final String neededResult : neededResults)
+		{
+			assertTrue(moves.contains(neededResult), "Move " + neededResult + " not found for \n" + grid);
+		}
+	}
 
 	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack)
 	{
@@ -141,7 +155,7 @@ public class BruteForceMethodTest
 	 * @param bag first letters the bag must deliver.
 	 */
 	@Disabled //todo
-	private void startGame(final String bag) throws ScrabbleException
+	private void startGame(final String bag)
 	{
 		//TODO
 //		server.assertFirstLetters(bag);
