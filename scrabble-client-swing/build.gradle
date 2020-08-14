@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.2.6.RELEASE'
     id 'io.spring.dependency-management' version '1.0.7.RELEASE'
     id "io.freefair.lombok" version "5.0.0"
+    id 'application'
 }
 
 tasks.withType(JavaCompile) {
@@ -18,4 +19,12 @@ dependencies {
     compile(project(":scrabble-data"))
     compile(project(":scrabble-client-ai"))
     testCompile(project(":scrabble-server"))
+}
+
+jar {
+    enabled = true
+}
+
+bootJar {
+    enabled = true
 }
