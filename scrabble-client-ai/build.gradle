@@ -16,6 +16,6 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
     compile 'commons-io:commons-io:2.6'
 
-    compile(project(":scrabble-data"))
+    compile(project(":scrabble-common"))
     testCompile(project(":scrabble-dictionary"))
 }

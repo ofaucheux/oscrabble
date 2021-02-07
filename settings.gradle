@@ -1,4 +1,4 @@
-include 'scrabble-data'
+include 'scrabble-common'
 include "scrabble-dictionary"
 include "scrabble-server"
 include 'scrabble-client-ai'
