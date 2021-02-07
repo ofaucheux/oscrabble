@@ -7,19 +7,16 @@ import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
-import oscrabble.data.Bag;
-import oscrabble.data.GameState;
-import oscrabble.data.PlayActionResponse;
-import oscrabble.data.ScrabbleRules;
+import oscrabble.data.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
+import java.util.stream.Collectors;
 
 public class Client
 {
@@ -317,26 +314,40 @@ public class Client
 		@Override
 		public void run()
 		{
-			boolean endReached = false;
-			while (!endReached)
-			{
-				try
-				{
-					final GameState state = Client.this.server.getState(Client.this.game);
-					if (!state.equals(Client.this.lastKnownState))
-					{
+			GameState state;
+			while (true) {
+				try {
+
+					state = Client.this.server.getState(Client.this.game);
+					if (!state.equals(Client.this.lastKnownState)) {
 						treatNewState(state);
 					}
-					endReached = state.state == GameState.State.ENDED;
+					if (state.state == GameState.State.ENDED) {
+						break;
+					}
+					//noinspection BusyWait
 					Thread.sleep(100);
-				}
-				catch (InterruptedException | ScrabbleException.CommunicationException e)
-				{
+
+				} catch (InterruptedException | ScrabbleException.CommunicationException e) {
 					LOGGER.error("Error " + e, e);
 					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
 				}
 			}
-			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, "End of game reached!");
+
+			// Display end of game message
+			Client.this.playground.gridFrame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			final List<Player> players = new ArrayList<>(state.getPlayers());
+			players.sort(Comparator.comparingInt(Player::getScore).reversed());
+			final int bestScore = players.get(0).score;
+			final Set<Player> winners = players.stream().filter(p -> p.score == bestScore).collect(Collectors.toSet());
+			final StringBuilder sb = new StringBuilder();
+			sb.append("<html>End of Game.<br>Winner ").append(winners.size() == 1 ? " is " : "s are ");
+			for (final Player winner : winners) {
+				sb.append(winner.getName()).append(" and ");
+			}
+			sb.setLength(sb.length() - 5);
+			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, sb.toString());
+
 			LOGGER.debug("Thread ends");
 		}
 	}

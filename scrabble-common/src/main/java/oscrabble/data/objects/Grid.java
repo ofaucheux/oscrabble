@@ -369,7 +369,7 @@ public class Grid
 	}
 
 	/**
-	 * Get the column nummer matching a letter, as in A8.
+	 * Get the column number matching a letter, as in A8.
 	 */
 	public enum Direction
 	{

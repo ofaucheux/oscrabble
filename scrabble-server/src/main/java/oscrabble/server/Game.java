@@ -518,23 +518,16 @@ public class Game
 				{
 					if (player != firstEndingPlayer)
 					{
-						int gift = 0;
-						for (final Tile tile : player.rack.tiles)
-						{
-							gift += tile.points;
-						}
-						player.score -= gift;
-//						todo ? historyEntry.scores.put(player, -gift);
+						player.remainingLettersValue = 0;
+						player.rack.tiles.forEach(tile -> player.remainingLettersValue += tile.points);
+						player.score -= player.remainingLettersValue;
 						if (firstEndingPlayer != null)
 						{
-							firstEndingPlayer.score += gift;
-//							todo? historyEntry.scores.put(firstEndingPlayer, historyEntry.scores.get(firstEndingPlayer) + gift);
+							firstEndingPlayer.score += player.remainingLettersValue;
 						}
-						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), player.uuid, gift)).append("\n");
+						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), player.uuid, player.remainingLettersValue)).append("\n");
 					}
 				});
-
-//		dispatch(c -> c.onDispatchMessage(message.toString()));
 		setState(GameState.State.ENDED);
 	}
 
