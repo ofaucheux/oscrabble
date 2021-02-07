@@ -6,16 +6,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Duration;
 import java.util.Map;
 
 public abstract class AbstractMicroService {
 
 	@Autowired
-	private static final RestTemplate REST_TEMPLATE = new RestTemplate();
+	private static final RestTemplate REST_TEMPLATE;
+	static {
+		REST_TEMPLATE = new RestTemplateBuilder()
+				.setConnectTimeout(Duration.ofMillis(500))
+				.build();
+	}
 
 	/** URI */
 	protected final UriComponentsBuilder uriComponentsBuilder;

@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Game
 {
@@ -518,14 +519,18 @@ public class Game
 				{
 					if (player != firstEndingPlayer)
 					{
-						player.remainingLettersValue = 0;
-						player.rack.tiles.forEach(tile -> player.remainingLettersValue += tile.points);
-						player.score -= player.remainingLettersValue;
+						final AtomicInteger remainingLettersValue = new AtomicInteger();
+						player.rack.tiles.forEach(tile -> remainingLettersValue.addAndGet(tile.points));
+						player.score -= remainingLettersValue.get();
 						if (firstEndingPlayer != null)
 						{
-							firstEndingPlayer.score += player.remainingLettersValue;
+							firstEndingPlayer.score += remainingLettersValue.get();
 						}
-						message.append(MessageFormat.format(MESSAGES.getString("0.gives.1.points"), player.uuid, player.remainingLettersValue)).append("\n");
+						message.append(MessageFormat.format(
+								MESSAGES.getString("0.gives.1.points"),
+								player.uuid,
+								remainingLettersValue.get())
+						).append("\n");
 					}
 				});
 		setState(GameState.State.ENDED);
