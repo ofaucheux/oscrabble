@@ -121,7 +121,7 @@ public class Controller
 	@RequestMapping(value = "/{game}/acknowledgeState", method = {RequestMethod.POST})
 	public void acknowledge(@PathVariable UUID game, @RequestBody final PlayerSignature signature) throws ScrabbleException
 	{
-		getGame(game).acknowledge(signature.player, null);
+		getGame(game).acknowledge(signature.player);
 	}
 
 	@RequestMapping(value = "/newGame", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)

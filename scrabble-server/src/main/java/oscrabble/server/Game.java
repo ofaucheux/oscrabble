@@ -312,23 +312,15 @@ public class Game
 //		checkSecret(player, secret); // todo
 
 		final PlayerInformation player = getPlayer(request.playerId);
-		switch (PlayerUpdateRequest.Parameter.valueOf(request.parameter))
-		{
-			case ATTACHED:
-				final boolean attachIt = BooleanUtils.toBoolean(request.newValue);
-				if (attachIt == player.isAttached)
-				{
-					return;
-				}
-				else if (attachIt)
-				{
+		if (PlayerUpdateRequest.Parameter.valueOf(request.parameter) == PlayerUpdateRequest.Parameter.ATTACHED) {
+			final boolean attachIt = BooleanUtils.toBoolean(request.newValue);
+			if (attachIt != player.isAttached) {
+				if (attachIt) {
 					player.isAttached = true;
+				} else {
+					detachPlayer(player);
 				}
-				else
-				{
-					detachPlayer(player, null);
-				}
-				break;
+			}
 		}
 	}
 
@@ -352,12 +344,11 @@ public class Game
 
 	/**
 	 * To be called by a player to acknowledge the state of the server.
+	 *  @param player
 	 *
-	 * @param player
-	 * @param state
 	 */
 	@SuppressWarnings("unused")
-	void acknowledge(final UUID player, final GameState.State state)
+	void acknowledge(final UUID player)
 	{
 		// TODO: check the state
 		this.acknowledgesToWaitAfter.remove(player);
@@ -699,28 +690,13 @@ public class Game
 		return this.grid;
 	}
 
-	// TOdo?
-//	public void editParameters(final UUID caller, final Iplayer player)
-//	{
-//		if (player instanceof player)
-//		{
-//			((player) player).player.editParameters();
-//		}
-//		else
-//		{
-//			throw new IllegalArgumentException("Cannot find the player matching this info: " + player);
-//		}
-//	}
-
 	/**
 	 * Detach a player and end the game if all no-AI players are detached
-	 *
 	 * @param player
-	 * @param message
 	 */
-	private void detachPlayer(final PlayerInformation player, final String message)
+	private void detachPlayer(final PlayerInformation player)
 	{
-		final String msg = MessageFormat.format(MESSAGES.getString("player.0.quits.with.message.1"), player, message);
+		final String msg = MessageFormat.format(MESSAGES.getString("player.0.quits.with.message.1"), player, null);
 		LOGGER.info(msg);
 		dispatchMessage(msg);
 		player.isAttached = false;
@@ -742,15 +718,6 @@ public class Game
 	public Configuration getConfiguration()
 	{
 		return this.configuration;
-	}
-
-	private void checkSecret(final PlayerInformation player, final String secret)
-	{
-		// TODO
-//		if (secret == null || !secret.equals(player.secret))
-//		{
-//			throw new ScrabbleException.InvalidSecretException();
-//		}
 	}
 
 	GameState.State getState()
@@ -894,16 +861,15 @@ public class Game
 				final HashBag<Tile> newRack = new HashBag<>(player.rack.tiles);
 				for (final char ex : exchange.toExchange)
 				{
-					if (!newRack.remove(ex))
+					final Optional<Tile> toRemove = newRack.stream().filter(t -> t.c == ex).findFirst();
+					if (!toRemove.isPresent())
 					{
 						throw new ScrabbleException.ForbiddenPlayException("No (or not enough) character " + ex + " to exchange it");
 					}
+					player.rack.tiles.remove(toRemove.get());
+					this.bag.add(toRemove.get());
 				}
 
-				for (final char c : exchange.toExchange)
-				{
-//					this.bag.add(c); TODO: consider tiles, not chars
-				}
 				Collections.shuffle(this.bag, this.random);
 				LOGGER.info(player.uuid + " exchanges " + exchange.toExchange.length + " stones");
 			}

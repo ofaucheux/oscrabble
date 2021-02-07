@@ -24,3 +24,4 @@
 - ✔ Advisor
 -   Errors by scoring
 - ✔ Wait acknowledges of all players before next turn
+- ✔ Exchange tiles
