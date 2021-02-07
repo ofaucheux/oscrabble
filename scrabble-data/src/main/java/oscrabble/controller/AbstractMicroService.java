@@ -17,21 +17,36 @@ public abstract class AbstractMicroService {
 	@Autowired
 	private static final RestTemplate REST_TEMPLATE = new RestTemplate();
 
+	/** URI */
+	protected final UriComponentsBuilder uriComponentsBuilder;
+
+	/**
+	 *
+	 * @param uriComponentsBuilder
+	 */
+	protected AbstractMicroService(final UriComponentsBuilder uriComponentsBuilder) {
+		this.uriComponentsBuilder = uriComponentsBuilder;
+	}
+
 	/**
 	 * Wait for up.
 	 *
-	 * @param timeout
+	 * @param timeout default: 30 s.
 	 * @throws IllegalStateException if not reached after the timeout.
 	 */
-	protected void waitToUpStatus(final long timeout)
+	protected void waitToUpStatus(Long timeout)
 	{
+		if (timeout == null) {
+			timeout = 30000L;
+		}
+
 		final Logger logger = LoggerFactory.getLogger(this.getClass());
 		final long lastTime = System.currentTimeMillis() + timeout;
-		final String serviceURL = getUriComponentsBuilder().toUriString();
+		final String serviceURL = this.uriComponentsBuilder.toUriString();
 		do {
 			try {
 				final String health = REST_TEMPLATE.getForObject(
-						getUriComponentsBuilder().pathSegment("actuator", "health").build().toUri(),
+						serviceURL + "/actuator/health",
 						String.class
 				);
 				assert health != null;
@@ -42,7 +57,7 @@ public abstract class AbstractMicroService {
 					return;
 				}
 			} catch (RestClientException | JsonProcessingException e) {
-				logger.info(String.format("Cannot reach %s: %s", serviceURL, e));
+				logger.info(String.format("Cannot reach %s: %s", serviceURL, e.getMessage()));
 			}
 			try {
 				//noinspection BusyWait
@@ -52,8 +67,6 @@ public abstract class AbstractMicroService {
 			}
 		} while (System.currentTimeMillis() < lastTime);
 
-		throw new IllegalStateException("Dictionary service not found or not upstate");
+		throw new IllegalStateException("Service not found or not upstate");
 	}
-
-	protected abstract UriComponentsBuilder getUriComponentsBuilder();
 }

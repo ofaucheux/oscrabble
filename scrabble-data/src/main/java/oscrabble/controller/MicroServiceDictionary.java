@@ -25,7 +25,6 @@ public class MicroServiceDictionary extends AbstractMicroService implements IDic
 	public static final Logger LOGGER = LoggerFactory.getLogger(MicroServiceDictionary.class);
 
 	private final String language;
-	private final UriComponentsBuilder uriComponentsBuilder;
 
 	/**
 	 * Cache for letter information
@@ -34,7 +33,7 @@ public class MicroServiceDictionary extends AbstractMicroService implements IDic
 
 	public MicroServiceDictionary(final String host, final int port, final String language)
 	{
-		this.uriComponentsBuilder = UriComponentsBuilder.newInstance().scheme("http").host(host).port(port);
+		super(UriComponentsBuilder.newInstance().scheme("http").host(host).port(port));
 		this.language = language;
 	}
 
@@ -44,7 +43,7 @@ public class MicroServiceDictionary extends AbstractMicroService implements IDic
 	public static MicroServiceDictionary getDefaultFrench()
 	{
 		final MicroServiceDictionary dictionary = new MicroServiceDictionary("localhost", 8080, "FRENCH");
-		dictionary.waitToUpStatus(15000);
+		dictionary.waitToUpStatus(null);
 		return dictionary;
 	}
 
@@ -112,10 +111,5 @@ public class MicroServiceDictionary extends AbstractMicroService implements IDic
 		{
 			throw new ScrabbleError("Cannot read scrabble rules", e);
 		}
-	}
-
-	@Override
-	protected UriComponentsBuilder getUriComponentsBuilder() {
-		return this.uriComponentsBuilder;
 	}
 }

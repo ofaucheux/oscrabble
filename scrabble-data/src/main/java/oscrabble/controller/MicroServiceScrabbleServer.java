@@ -27,18 +27,18 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	private static final RestTemplate REST_TEMPLATE = new RestTemplate();
 	public static final Logger LOGGER = LoggerFactory.getLogger(MicroServiceScrabbleServer.class);
 
-	private final UriComponentsBuilder uriComponentsBuilder;
-
 	/**
 	 * @param host Servername
 	 * @param port port
 	 */
 	public MicroServiceScrabbleServer(final String host, final int port)
 	{
-		this.uriComponentsBuilder = UriComponentsBuilder.newInstance()
+		super(
+			UriComponentsBuilder.newInstance()
 				.scheme("http")
 				.host(host)
-				.port(port);
+				.port(port)
+		);
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	public static MicroServiceScrabbleServer getLocal()
 	{
 		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
-		server.waitToUpStatus(15000);
+		server.waitToUpStatus(null);
 		return server;
 	}
 
@@ -92,10 +92,8 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 
 
 	/**
-	 * @throws ScrabbleException.CommunicationException
 	 */
-	public void acknowledgeState(final UUID game, final UUID player, final GameState state) throws ScrabbleException.CommunicationException
-	{
+	public void acknowledgeState(final UUID game, final UUID player, final GameState state) {
 		final PlayerSignature signature = PlayerSignature.builder().player(player).build();
 		REST_TEMPLATE.postForEntity(resolve(game, "acknowledgeState"), signature, Void.class);
 	}
@@ -268,10 +266,5 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 				.newValue(attach ? Boolean.TRUE.toString() : Boolean.FALSE.toString())
 				.build();
 		REST_TEMPLATE.postForObject(resolve(game, "updatePlayer"),request, Void.class);
-	}
-
-	@Override
-	protected UriComponentsBuilder getUriComponentsBuilder() {
-		return this.uriComponentsBuilder;
 	}
 }
