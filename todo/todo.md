@@ -25,3 +25,5 @@
 -   Errors by scoring
 - ✔ Wait acknowledges of all players before next turn
 - ✔ Exchange tiles
+-   swing client configuration to select the server
+    -   configuration properties file
