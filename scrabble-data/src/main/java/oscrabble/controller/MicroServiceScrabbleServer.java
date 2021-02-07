@@ -16,7 +16,7 @@ import java.net.URI;
 import java.util.*;
 
 @SuppressWarnings("BusyWait")
-public class MicroServiceScrabbleServer
+public class MicroServiceScrabbleServer extends AbstractMicroService
 {
 	/**
 	 * Default port of scrabble servers
@@ -46,9 +46,10 @@ public class MicroServiceScrabbleServer
 	 */
 	public static MicroServiceScrabbleServer getLocal()
 	{
-		return new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
+		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
+		server.waitToUpStatus(15000);
+		return server;
 	}
-
 
 	/**
 	 * Create a game
@@ -267,5 +268,10 @@ public class MicroServiceScrabbleServer
 				.newValue(attach ? Boolean.TRUE.toString() : Boolean.FALSE.toString())
 				.build();
 		REST_TEMPLATE.postForObject(resolve(game, "updatePlayer"),request, Void.class);
+	}
+
+	@Override
+	protected UriComponentsBuilder getUriComponentsBuilder() {
+		return this.uriComponentsBuilder;
 	}
 }

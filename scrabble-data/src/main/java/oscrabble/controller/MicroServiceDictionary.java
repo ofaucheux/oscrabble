@@ -18,7 +18,7 @@ import oscrabble.data.ScrabbleRules;
 import java.net.URI;
 import java.util.Collection;
 
-public class MicroServiceDictionary implements IDictionary
+public class MicroServiceDictionary extends AbstractMicroService implements IDictionary
 {
 	@Autowired
 	public static final RestTemplate REST_TEMPLATE = new RestTemplate();
@@ -43,7 +43,9 @@ public class MicroServiceDictionary implements IDictionary
 	 */
 	public static MicroServiceDictionary getDefaultFrench()
 	{
-		return new MicroServiceDictionary("localhost", 8080, "FRENCH");
+		final MicroServiceDictionary dictionary = new MicroServiceDictionary("localhost", 8080, "FRENCH");
+		dictionary.waitToUpStatus(15000);
+		return dictionary;
 	}
 
 	private synchronized URI buildUri(final String... pathSegments)
@@ -110,5 +112,10 @@ public class MicroServiceDictionary implements IDictionary
 		{
 			throw new ScrabbleError("Cannot read scrabble rules", e);
 		}
+	}
+
+	@Override
+	protected UriComponentsBuilder getUriComponentsBuilder() {
+		return this.uriComponentsBuilder;
 	}
 }
