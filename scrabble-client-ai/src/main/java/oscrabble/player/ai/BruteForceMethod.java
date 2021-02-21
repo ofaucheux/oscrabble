@@ -6,7 +6,6 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
@@ -107,7 +106,7 @@ public class BruteForceMethod
 	 * @param strategy the ordering algorithm
 	 * @return all the moves
 	 */
-	public List<String> getLegalMoves(final Collection<Character> rack, final @Nullable Strategy strategy)
+	public List<String> getLegalMoves(final Collection<Character> rack, final Strategy strategy)
 	{
 		final ArrayList<String> moves = new ArrayList<>(getLegalMoves(rack));
 		if (strategy != null)

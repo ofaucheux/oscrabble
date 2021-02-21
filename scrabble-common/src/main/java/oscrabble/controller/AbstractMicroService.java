@@ -38,7 +38,7 @@ public abstract class AbstractMicroService {
 	/**
 	 * Wait for up.
 	 *
-	 * @param timeout default: 30 s.
+	 * @param timeout in ms. default: 30 s.
 	 * @throws IllegalStateException if not reached after the timeout.
 	 */
 	protected void waitToUpStatus(Long timeout)

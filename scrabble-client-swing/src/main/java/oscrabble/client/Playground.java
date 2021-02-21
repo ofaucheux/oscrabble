@@ -3,7 +3,6 @@ package oscrabble.client;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
@@ -81,7 +80,6 @@ class Playground
 	/**
 	 * The client this playground is for
 	 */
-	@Nullable
 	final Client client;
 
 	/**

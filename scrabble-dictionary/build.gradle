@@ -13,20 +13,20 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    compile 'commons-codec:commons-codec:1.13'
-    compile 'org.slf4j:slf4j-api:1.7.28'
-    compile 'org.apache.commons:commons-collections4:4.4'
-    compile 'org.apache.commons:commons-lang3:3.9'
-    compile 'org.jsoup:jsoup:1.13.1'
-    compile 'commons-io:commons-io:2.6'
-    compile 'org.apache.commons:commons-csv:1.7'
+    implementation 'commons-codec:commons-codec:1.13'
+    implementation 'org.slf4j:slf4j-api:1.7.28'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-lang3:3.9'
+    implementation 'org.jsoup:jsoup:1.13.1'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.apache.commons:commons-csv:1.7'
 
-    compile 'org.springframework.boot:spring-boot-starter-web:2.2.6.RELEASE'
-    compile 'org.springframework.boot:spring-boot-starter-test:2.2.6.RELEASE'
-    compile 'org.springframework.boot:spring-boot-starter-actuator:2.2.6.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.2.6.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-test:2.2.6.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.2.6.RELEASE'
 
     // TODO: split the data for dictionary of the one for game.
-    compile(project(":scrabble-common"))
+    implementation(project(":scrabble-common"))
 }
 
 bootJar {
