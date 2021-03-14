@@ -69,7 +69,6 @@ public class AIPlayer extends AbstractPlayer
 			GameState state = null;
 			do
 			{
-				Thread.sleep(this.throttle);
 				final GameState newState = this.server.getState(this.game);
 				if (!newState.equals(state))
 				{
@@ -104,6 +103,8 @@ public class AIPlayer extends AbstractPlayer
 					final String notation = moves.isEmpty()
 							? Action.PASS_TURN_NOTATION
 							: moves.get(0);
+
+					Thread.sleep(this.throttle);
 					final PlayActionResponse response = this.server.play(this.game, buildAction(notation));
 					if (!response.success)
 					{
