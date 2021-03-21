@@ -50,7 +50,7 @@ public class Application
 			final UUID anton = this.server.addPlayer(game, "Anton_" + (i+1));
 			// TODO: tell the server it is an AI Player
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
-			ai.setThrottle(1000);
+			ai.setThrottle(6000);
 			ai.startDaemonThread();
 		}
 
