@@ -10,8 +10,7 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    implementation 'org.slf4j:slf4j-api:+'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '+'
+    implementation 'org.slf4j:slf4j-api:1.7.28'
     implementation 'org.apache.commons:commons-collections4:+'
     implementation 'org.apache.commons:commons-lang3:+'
     implementation 'com.github.lgooddatepicker:LGoodDatePicker:+'
@@ -19,6 +18,9 @@ dependencies {
 
     implementation(project(":scrabble-common"))
     implementation(project(":scrabble-client-ai"))
+
+    runtimeOnly group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+
     testCompileOnly(project(":scrabble-server"))
 }
 

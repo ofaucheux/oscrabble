@@ -9,13 +9,12 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
+    implementation(project(":scrabble-common"))
     implementation 'org.slf4j:slf4j-api:1.7.28'
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'org.apache.commons:commons-lang3:3.9'
-
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
     implementation 'commons-io:commons-io:2.6'
 
-    implementation(project(":scrabble-common"))
     testCompileOnly(project(":scrabble-dictionary"))
 }

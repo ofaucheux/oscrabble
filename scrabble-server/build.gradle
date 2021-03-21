@@ -11,6 +11,12 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.2.6.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-test:2.2.6.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.2.6.RELEASE'
+
+    implementation(project(":scrabble-common"))
+
     implementation 'commons-codec:commons-codec:1.13'
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'org.apache.commons:commons-lang3:3.9'
@@ -20,11 +26,6 @@ dependencies {
     implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
     implementation group: 'com.github.lgooddatepicker', name: 'LGoodDatePicker', version: '10.3.1'
 
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.2.6.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter-test:2.2.6.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.2.6.RELEASE'
-
-    implementation(project(":scrabble-common"))
     testCompileOnly(project(":scrabble-dictionary"))
 }
 
