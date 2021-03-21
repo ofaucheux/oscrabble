@@ -7,9 +7,7 @@ import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.*;
 
 @SuppressWarnings("BusyWait")
 public class Application
@@ -41,13 +39,18 @@ public class Application
 		application.play();
 	}
 
+	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp", "Emil", "Thomas", "Romain", "Alix", "Paul");
+
 	private void play() throws InterruptedException
 	{
+		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
+		Collections.shuffle(names);
+
 		final UUID game = this.server.newGame();
-		final UUID edgar = this.server.addPlayer(game, "Edgar");
+		final UUID edgar = this.server.addPlayer(game, names.get(0));
 		for (int i = 0; i < 4; i++)
 		{
-			final UUID anton = this.server.addPlayer(game, "Anton_" + (i+1));
+			final UUID anton = this.server.addPlayer(game, names.get(i+1));
 			// TODO: tell the server it is an AI Player
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
 			ai.setThrottle(6000);
@@ -64,5 +67,4 @@ public class Application
 		} while (client.isVisible());
 		this.server.attach(game, edgar, true);
 	}
-
 }
