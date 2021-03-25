@@ -11,20 +11,17 @@ import oscrabble.data.IDictionary;
 import java.net.URI;
 import java.util.UUID;
 
-class AIPlayerTest
-{
+class AIPlayerTest {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(AIPlayerTest.class);
 
 	@BeforeAll
-	static void before()
-	{
+	static void before() {
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error(t.toString(), e));
 	}
 
 	@Test
-	void onPlayRequired() throws InterruptedException
-	{
+	void onPlayRequired() throws InterruptedException {
 
 		final IDictionary DICTIONARY = new FrenchDictionaryForTest();
 		final MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
@@ -34,8 +31,7 @@ class AIPlayerTest
 		final UUID game = server.newGame();
 
 		AIPlayer player = null;
-		for (int i = 0; i < 2; i++)
-		{
+		for (int i = 0; i < 2; i++) {
 			final UUID playerID = server.addPlayer(game, PLAYER_NAME);
 			player = new AIPlayer(bfm, game, playerID, server);
 			player.startDaemonThread();

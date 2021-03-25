@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
-public class Client
-{
+public class Client {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
 	final MicroServiceScrabbleServer server;
@@ -30,9 +29,9 @@ public class Client
 	private final JRack rack;
 
 	/**
-	 *  Rules of the game
+	 * Used dictionary TODO: not static
 	 */
-	final ScrabbleRules scrabbleRules;
+	public static MicroServiceDictionary DICTIONARY = MicroServiceDictionary.getDefaultFrench();
 
 	/**
 	 * Listeners to be run on game leaving
@@ -40,17 +39,16 @@ public class Client
 	private final HashSet<Runnable> onQuitGame = new HashSet<>();
 
 	private GameState lastKnownState = null; // TODO: use it in server.play() too
-
 	/**
-	 * Used dictionary TODO: not static
+	 * Rules of the game
 	 */
-	public static MicroServiceDictionary DICTIONARY =  MicroServiceDictionary.getDefaultFrench();
-
-	/** last played turn */
+	final ScrabbleRules scrabbleRules;
+	/**
+	 * last played turn
+	 */
 	private UUID lastPlayedTurn;
 
-	public Client(final MicroServiceScrabbleServer server, final UUID game, final UUID player)
-	{
+	public Client(final MicroServiceScrabbleServer server, final UUID game, final UUID player) {
 		this.server = server;
 		this.game = game;
 		this.player = player;
@@ -69,8 +67,7 @@ public class Client
 	/**
 	 * Display the components
 	 */
-	void displayAll()
-	{
+	void displayAll() {
 		final JFrame gridFrame = this.playground.gridFrame;
 		gridFrame.setVisible(true);
 		final JFrame rackFrame = new JFrame();
@@ -85,19 +82,15 @@ public class Client
 		rackFrame.pack();
 		this.onQuitGame.add(rackFrame::dispose);
 
-		this.playground.gridFrame.addWindowFocusListener(new WindowAdapter()
-		{
+		this.playground.gridFrame.addWindowFocusListener(new WindowAdapter() {
 			@Override
-			public void windowGainedFocus(final WindowEvent e)
-			{
+			public void windowGainedFocus(final WindowEvent e) {
 				rackFrame.toFront();
 			}
 		});
-		rackFrame.addWindowFocusListener(new WindowAdapter()
-		{
+		rackFrame.addWindowFocusListener(new WindowAdapter() {
 			@Override
-			public void windowGainedFocus(final WindowEvent e)
-			{
+			public void windowGainedFocus(final WindowEvent e) {
 				Client.this.playground.gridFrame.toFront();
 			}
 		});
@@ -108,8 +101,7 @@ public class Client
 		th.start();
 	}
 
-	public boolean isVisible()
-	{
+	public boolean isVisible() {
 		return this.playground.gridFrame.isVisible();
 	}
 
@@ -121,11 +113,9 @@ public class Client
 		this.lastKnownState = state;
 		this.playground.refreshUI(state, rack.getChars());
 		this.rack.setTiles(rack.tiles);
-		if (!state.playedActions.isEmpty())
-		{
+		if (!state.playedActions.isEmpty()) {
 			final UUID lastPlayedTurn = state.playedActions.get(state.playedActions.size() - 1).getTurnId();
-			if (Client.this.lastPlayedTurn != lastPlayedTurn)
-			{
+			if (Client.this.lastPlayedTurn != lastPlayedTurn) {
 				Client.this.lastPlayedTurn = lastPlayedTurn;
 				final ScheduledFuture<Void> blinkAction = this.playground.jGrid.scheduleLastWordBlink(lastPlayedTurn);
 				blinkAction.get();
@@ -138,16 +128,12 @@ public class Client
 	 * Add or remove an token informing the application a waiting action is running.
 	 *
 	 * @param token  the token
- 	 * @param remove is the token to be removed instead of being added?
+	 * @param remove is the token to be removed instead of being added?
 	 */
-	void addWaitToken(final Object token, final boolean remove)
-	{
-		if (remove)
-		{
+	void addWaitToken(final Object token, final boolean remove) {
+		if (remove) {
 			this.waitingTokens.remove(token);
-		}
-		else
-		{
+		} else {
 			this.waitingTokens.add(token);
 		}
 
@@ -157,8 +143,7 @@ public class Client
 		this.playground.gridFrame.setCursor(cursor);
 	}
 
-	private void prepareCommands()
-	{
+	private void prepareCommands() {
 		//			todo ?this.commands.put(KEYWORD_HELP, new Command("display help", (args -> {
 //						final StringBuffer sb = new StringBuffer();
 //						sb.append("<table border=1>");
@@ -188,10 +173,8 @@ public class Client
 	/**
 	 * Execute a command
 	 */
-	void executeCommand(final String command)
-	{
-		if (command == null)
-		{
+	void executeCommand(final String command) {
+		if (command == null) {
 			return;
 		}
 //		todo if (command.startsWith("/"))
@@ -208,8 +191,7 @@ public class Client
 //			return;
 //		}
 
-		try
-		{
+		try {
 //				final SwingPlayer swingPlayer = getCurrentSwingPlayer();
 //				if (swingPlayer != null && swingPlayer == Playground.this.currentPlay.player)
 //				{
@@ -231,40 +213,35 @@ public class Client
 					.build();
 			final PlayActionResponse response = this.server.play(this.game, action);
 			treatNewState(response.gameState);
-			if (!response.success)
-			{
+			if (!response.success) {
 				// todo: i18n
 				final StringBuilder sb = new StringBuilder("<html>Play refused: ").append(response.message);
-				if (response.retryAccepted)
-				{
+				if (response.retryAccepted) {
 					sb.append("<br>Retry accepted.");
 				}
 				throw new ScrabbleException(sb.toString());
 			}
-		}
-		catch (ScrabbleException ex)
-		{
+		} catch (ScrabbleException ex) {
 			JOptionPane.showMessageDialog(this.playground.gridFrame, ex.getMessage());
 		}
 	}
 
-	public MicroServiceDictionary getDictionary()
-	{
+	public MicroServiceDictionary getDictionary() {
 		return DICTIONARY;
 	}
 
 	/**
 	 * Quit the game
 	 */
-	void quitGame()
-	{
+	void quitGame() {
 		// TODO: schickt "ende" dem Server
 		this.onQuitGame.forEach(Runnable::run);
 	}
 
-	interface Listener
-	{
-		void onNewTurn();
+	void treatNewState(final GameState state) throws ScrabbleException.CommunicationException {
+		refreshUI(state);
+		this.listeners.forEach(l -> l.onNewTurn());
+		this.server.acknowledgeState(this.game, this.player, state);
 	}
 
 //	/**
@@ -298,21 +275,16 @@ public class Client
 //
 //	}
 
-	void treatNewState(final GameState state) throws ScrabbleException.CommunicationException
-	{
-		refreshUI(state);
-		this.listeners.forEach(l -> l.onNewTurn());
-		this.server.acknowledgeState(this.game, this.player, state);
+	interface Listener {
+		void onNewTurn();
 	}
 
 	/**
 	 * Thread to update the display of the state of the game
 	 */
-	private class GameStateDispatcherThread extends Thread
-	{
+	private class GameStateDispatcherThread extends Thread {
 		@Override
-		public void run()
-		{
+		public void run() {
 			GameState state;
 			while (true) {
 				try {

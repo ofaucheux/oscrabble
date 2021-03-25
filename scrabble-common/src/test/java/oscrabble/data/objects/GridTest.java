@@ -13,11 +13,9 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class GridTest
-{
+class GridTest {
 	@Test
-	public void notation()
-	{
+	public void notation() {
 		final Grid g = new Grid(null);
 		assertEquals("A1", Coordinate.getNotation(g.get(1, 1), Grid.Direction.HORIZONTAL));
 
@@ -29,8 +27,7 @@ class GridTest
 	}
 
 	@Test
-	public void neighbours()
-	{
+	public void neighbours() {
 		final Grid grid = new Grid();
 		Set<Square> neighbours;
 
@@ -46,16 +43,14 @@ class GridTest
 	}
 
 	@Test
-	public void jokers()
-	{
+	public void jokers() {
 		final Grid grid = new Grid();
 		assertEquals(3, grid.get("F6").letterBonus);
 		assertEquals(3, grid.get("A1").wordBonus);
 	}
 
 	@Test
-	public void getWords() throws ScrabbleException.NotParsableException
-	{
+	public void getWords() throws ScrabbleException.NotParsableException {
 		final Grid g = new Grid();
 		g.play(null, "G3 RHuME");
 		g.play(null, "2H CHIEN");
@@ -69,8 +64,7 @@ class GridTest
 	}
 
 	@Test
-	public void asciiArt() throws ScrabbleException.NotParsableException
-	{
+	public void asciiArt() throws ScrabbleException.NotParsableException {
 		final ScrabbleRules rules = MicroServiceDictionary.getDefaultFrench().getScrabbleRules();
 		final Grid g = new Grid();
 		g.play(rules, "8D FRICHES");
@@ -78,22 +72,22 @@ class GridTest
 
 		final String expected =
 				"#################\n" +
-				"#               #\n" +
-				"#               #\n" +
-				"#               #\n" +
-				"#               #\n" +
-				"#               #\n" +
-				"#               #\n" +
-				"#               #\n" +
-				"#   FRICHES     #\n" +
-				"#   O           #\n" +
-				"#   V           #\n" +
-				"#   E           #\n" +
-				"#   A           #\n" +
-				"#   S           #\n" +
-				"#               #\n" +
-				"#               #\n" +
-				"#################\n";
+						"#               #\n" +
+						"#               #\n" +
+						"#               #\n" +
+						"#               #\n" +
+						"#               #\n" +
+						"#               #\n" +
+						"#               #\n" +
+						"#   FRICHES     #\n" +
+						"#   O           #\n" +
+						"#   V           #\n" +
+						"#   E           #\n" +
+						"#   A           #\n" +
+						"#   S           #\n" +
+						"#               #\n" +
+						"#               #\n" +
+						"#################\n";
 
 		final String generated = g.toAsciiArt();
 //		assertEquals(g.toAsciiArt(true), generated);
@@ -103,8 +97,7 @@ class GridTest
 	}
 
 	@Test
-	void getFixtures()
-	{
+	void getFixtures() {
 		PrecompiledGameStates.game1();
 	}
 }

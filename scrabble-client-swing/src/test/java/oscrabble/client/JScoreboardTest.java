@@ -9,16 +9,14 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.UUID;
 
-class JScoreboardTest
-{
+class JScoreboardTest {
 
 	public static final Random RANDOM = new Random();
 
 	@SneakyThrows
 	@Test
 //	@Disabled
-	void testUpdate()
-	{
+	void testUpdate() {
 		final LinkedList<Player> players = new LinkedList<>();
 		final Player.PlayerBuilder builder = Player.builder();
 		players.add(builder.name("Kevin").score(10).id(UUID.randomUUID()).build());
@@ -33,8 +31,7 @@ class JScoreboardTest
 		f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		f.setVisible(true);
 		f.pack();
-		while (f.isVisible())
-		{
+		while (f.isVisible()) {
 			//noinspection BusyWait
 			Thread.sleep(3000);
 			scb.updateDisplay(players, players.get(RANDOM.nextInt(players.size())).id);

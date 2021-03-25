@@ -13,18 +13,15 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(Parameterized.class)
-class JsonMessageProviderTest
-{
+class JsonMessageProviderTest {
 	private final HttpServer provider;
 
-	public JsonMessageProviderTest(HttpServer provider)
-	{
+	public JsonMessageProviderTest(HttpServer provider) {
 		this.provider = provider;
 	}
 
 	@Test
-	void publishAndRead() throws TimeoutException
-	{
+	void publishAndRead() throws TimeoutException {
 		final UUID game = UUID.randomUUID();
 		final UUID server = UUID.randomUUID();
 		final UUID player1 = UUID.randomUUID();
@@ -32,13 +29,10 @@ class JsonMessageProviderTest
 
 		final JsonMessage message = new PoolMessage(game, player1, server);
 		this.provider.treat(message);
-		try
-		{
+		try {
 			this.provider.readNext(player1, 500, TimeUnit.MILLISECONDS);
 			Assert.fail("No message should have been read");
-		}
-		catch (TimeoutException e)
-		{
+		} catch (TimeoutException e) {
 			// OK
 		}
 

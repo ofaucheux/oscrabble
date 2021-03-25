@@ -12,7 +12,6 @@ import java.util.Set;
  */
 @Data
 @Builder
-public class Dictionary
-{
+public class Dictionary {
 	public Set<String> words;
 }

@@ -12,8 +12,7 @@ import java.io.InputStream;
 import java.util.*;
 
 @SuppressWarnings("BusyWait")
-public class Application
-{
+public class Application {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Thread.class);
 
 	/**
@@ -25,8 +24,7 @@ public class Application
 	private final MicroServiceScrabbleServer server;
 	private final Properties properties;
 
-	public Application(final MicroServiceDictionary dictionary, final MicroServiceScrabbleServer server, final Properties properties)
-	{
+	public Application(final MicroServiceDictionary dictionary, final MicroServiceScrabbleServer server, final Properties properties) {
 		this.dictionary = dictionary;
 		this.server = server;
 		this.properties = properties;
@@ -48,16 +46,14 @@ public class Application
 
 	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp", "Emil", "Thomas", "Romain", "Alix", "Paul");
 
-	private void play() throws InterruptedException
-	{
+	private void play() throws InterruptedException {
 		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
 		Collections.shuffle(names);
 
 		final UUID game = this.server.newGame();
 		final UUID edgar = this.server.addPlayer(game, names.get(0));
-		for (int i = 0; i < (Integer.parseInt((String)this.properties.get("players.number"))) - 1; i++)
-		{
-			final UUID anton = this.server.addPlayer(game, names.get(i+1));
+		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {
+			final UUID anton = this.server.addPlayer(game, names.get(i + 1));
 			// TODO: tell the server it is an AI Player
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
 			ai.setThrottle(6000);
@@ -68,8 +64,7 @@ public class Application
 		client.displayAll();
 		this.server.startGame(game);
 
-		do
-		{
+		do {
 			Thread.sleep(500);
 		} while (client.isVisible());
 		this.server.attach(game, edgar, true);

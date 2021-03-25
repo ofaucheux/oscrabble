@@ -33,22 +33,40 @@ import java.util.regex.Pattern;
 /**
  * Playground for Swing: grid and other components which are the same for all players.
  */
-class Playground
-{
+class Playground {
 	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 
 	static final Font MONOSPACED;
 
-	static {
-		try (InputStream resource = Playground.class.getResourceAsStream("nk57-monospace-cd-bk.ttf"))
-		{
-			MONOSPACED = Font.createFont(Font.TRUETYPE_FONT, resource).deriveFont(14f);
+	/**
+	 * Filter, das alles Eingetragene Uppercase schreibt
+	 */
+	private final static DocumentFilter UPPER_CASE_DOCUMENT_FILTER = new DocumentFilter() {
+		public void insertString(DocumentFilter.FilterBypass fb, int offset,
+								 String text, AttributeSet attr
+		) throws BadLocationException {
+
+			fb.insertString(offset, toUpperCase(text), attr);
 		}
-		catch (final Exception exception)
-		{
-			throw new IOError(exception);
+
+		public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
+							String text, AttributeSet attrs
+		) throws BadLocationException {
+
+			fb.replace(offset, length, toUpperCase(text), attrs);
 		}
-	}
+
+		/**
+		 * Entfernt die Umlaute und liefert alles Uppercase.
+		 * TODO: für Frz. sinnvoll, für Deutsch aber sicherlich nicht..
+		 */
+		private String toUpperCase(String text) {
+			text = Normalizer.normalize(text, Normalizer.Form.NFD);
+			text = text.replaceAll("[^\\p{ASCII}]", "");
+			text = text.replaceAll("\\p{M}", "");
+			return text.toUpperCase();
+		}
+	};
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
@@ -89,8 +107,15 @@ class Playground
 
 	private final PossibleMoveDisplayer pmd;
 
-	Playground(final Client client)
-	{
+	static {
+		try (InputStream resource = Playground.class.getResourceAsStream("nk57-monospace-cd-bk.ttf")) {
+			MONOSPACED = Font.createFont(Font.TRUETYPE_FONT, resource).deriveFont(14f);
+		} catch (final Exception exception) {
+			throw new IOError(exception);
+		}
+	}
+
+	Playground(final Client client) {
 		this.client = client;
 		this.jGrid = new JGrid();
 		this.jGrid.setPlayground(this);
@@ -105,20 +130,14 @@ class Playground
 		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
 
 		this.gridFrame = new JFrame();
-		final WindowAdapter frameAdapter = new WindowAdapter()
-		{
+		final WindowAdapter frameAdapter = new WindowAdapter() {
 			@Override
-			public void windowClosing(final WindowEvent e)
-			{
+			public void windowClosing(final WindowEvent e) {
 				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, /*MESSAGES.getString(*/"quit.the.game"/*)*/, /*MESSAGES.getString(*/"confirm.quit"/*)*/, JOptionPane.YES_NO_OPTION);
-				if (confirm == JOptionPane.YES_OPTION)
-				{
-					if (client != null)
-					{
+				if (confirm == JOptionPane.YES_OPTION) {
+					if (client != null) {
 						Playground.this.client.quitGame();
-					}
-					else
-					{
+					} else {
 						Playground.this.dispose();
 					}
 				}
@@ -143,25 +162,19 @@ class Playground
 		panel1.add(this.jScoreboard);
 		panel1.add(Box.createVerticalGlue());
 
-		if (client == null)
-		{
+		if (client == null) {
 			panel1.add(new JTextField("Place for PossibleMoveDisplayer"));
 			this.pmd = null;
-		}
-		else
-		{
+		} else {
 			this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
 			this.pmd.setServer(this.client.server);
 			this.pmd.setGame(this.client.game);
 			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, this.client.scrabbleRules));
 			this.pmd.setFont(MONOSPACED);
-			this.pmd.getMoveList().addMouseListener(new MouseAdapter()
-			{
+			this.pmd.getMoveList().addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseClicked(final MouseEvent e)
-				{
-					if (e.getClickCount() == 2)
-					{
+				public void mouseClicked(final MouseEvent e) {
+					if (e.getClickCount() == 2) {
 						client.executeCommand(Playground.this.pmd.getSelectedAction());
 					}
 				}
@@ -175,11 +188,9 @@ class Playground
 		this.historyList = new JList<>();
 		this.historyList.setFont(MONOSPACED);
 		this.historyList.setFocusable(false);
-		this.historyList.setCellRenderer(new DefaultListCellRenderer()
-		{
+		this.historyList.setCellRenderer(new DefaultListCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
-			{
+			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
 				final oscrabble.data.Action action = (oscrabble.data.Action) value;
 				super.getListCellRendererComponent(list, action, index, isSelected, cellHasFocus);
 				setText(String.format("%s %s pts",
@@ -197,8 +208,7 @@ class Playground
 		);
 
 		final JPopupMenu popup = new JPopupMenu();
-		if (client != null)
-		{
+		if (client != null) {
 			DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
 				PlayTiles action = getSelectedHistoryAction();
 				return action == null ? null : Collections.singleton(action.word);
@@ -213,8 +223,7 @@ class Playground
 		this.historyList.setComponentPopupMenu(popup);
 
 		this.historyList.addListSelectionListener(event -> {
-			if (event.getValueIsAdjusting())
-			{
+			if (event.getValueIsAdjusting()) {
 				return;
 			}
 			final PlayTiles action = getSelectedHistoryAction();
@@ -223,11 +232,9 @@ class Playground
 
 		panel1.add(historyPanel);
 		// todo: rollback
-		final JButton rollbackButton = new JButton(new AbstractAction(MESSAGES.getString("rollback"))
-		{
+		final JButton rollbackButton = new JButton(new AbstractAction(MESSAGES.getString("rollback")) {
 			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
+			public void actionPerformed(final ActionEvent e) {
 //				try
 //				{
 //					final SwingPlayer first = Playground.this.swingPlayers.getFirst();
@@ -266,46 +273,36 @@ class Playground
 	/**
 	 * Dispose the UI
 	 */
-	void dispose()
-	{
+	void dispose() {
 		this.gridFrame.dispose();
 	}
 
 	/**
-	 * @return selected action in the history list. {@code null} if nothing is selected or if the selected
-	 * item is not a {@link PlayTiles}.
+	 * @return selected action in the history list. {@code null} if nothing is selected or if the selected item is not a {@link PlayTiles}.
 	 */
-	private PlayTiles getSelectedHistoryAction()
-	{
+	private PlayTiles getSelectedHistoryAction() {
 		final Action action;
 		final int index = this.historyList.getSelectedIndex();
-		if (index == -1)
-		{
+		if (index == -1) {
 			return null;
 		}
-		try
-		{
+		try {
 			action = Action.parse(this.historyList.getModel().getElementAt(index));
-		}
-		catch (ScrabbleException.NotParsableException e)
-		{
+		} catch (ScrabbleException.NotParsableException e) {
 			throw new Error(e);
 		}
 		return action instanceof PlayTiles ? ((PlayTiles) action) : null;
 	}
 
-	public void refreshUI(final GameState state, final List<Character> rack)
-	{
+	public void refreshUI(final GameState state, final List<Character> rack) {
 		this.jGrid.setGrid(state.getGrid());
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
-		if (this.pmd != null)
-		{
+		if (this.pmd != null) {
 			this.pmd.setData(state, rack);
 		}
 
-		if (state.state == GameState.State.ENDED)
-		{
+		if (state.state == GameState.State.ENDED) {
 			final JLabel gameOverLabel = new JLabel("Game over"); //todo: i18n
 			gameOverLabel.setFont(gameOverLabel.getFont().deriveFont(60f).deriveFont(Font.BOLD));
 			gameOverLabel.setForeground(Color.ORANGE);
@@ -321,13 +318,11 @@ class Playground
 		}
 	}
 
-	public String getCommand()
-	{
+	public String getCommand() {
 		return this.commandPrompt.getText();
 	}
 
-	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException
-	{
+	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException {
 
 		assert this.client != null;
 
@@ -342,14 +337,10 @@ class Playground
 		final StringBuilder sb = new StringBuilder();
 
 		boolean joker = false;
-		for (final char c : command.toCharArray())
-		{
-			if (c == '*')
-			{
+		for (final char c : command.toCharArray()) {
+			if (c == '*') {
 				joker = true;
-			}
-			else
-			{
+			} else {
 				sb.append(joker ? Character.toLowerCase(c) : c);
 				joker = false;
 			}
@@ -359,15 +350,11 @@ class Playground
 
 		final Pattern playCommandPattern = Pattern.compile("(?:play\\s+)?(.*)", Pattern.CASE_INSENSITIVE);
 		Matcher matcher;
-		if ((matcher = playCommandPattern.matcher(sb.toString())).matches())
-		{
+		if ((matcher = playCommandPattern.matcher(sb.toString())).matches()) {
 			final StringBuilder inputWord = new StringBuilder(matcher.group(1));
-			if (inputWord.toString().trim().isEmpty())
-			{
+			if (inputWord.toString().trim().isEmpty()) {
 				this.action = null;
-			}
-			else
-			{
+			} else {
 				this.action = oscrabble.controller.Action.parse(this.client.player, inputWord.toString());
 			}
 //				//
@@ -427,9 +414,7 @@ class Playground
 //				}
 			this.action = Action.parse(this.client.player, inputWord.toString());
 			LOGGER.debug("Word after having positioned white tiles: " + inputWord);
-		}
-		else
-		{
+		} else {
 			this.action = null;
 		}
 		return this.action;
@@ -438,22 +423,16 @@ class Playground
 	/**
 	 * Set a cell as the start of the future tipped word.
 	 */
-	void setStartCell(final JGrid.JSquare click)
-	{
+	void setStartCell(final JGrid.JSquare click) {
 		String newPrompt = null;
-		try
-		{
+		try {
 			final String currentPrompt = this.getCommand();
-			if (currentPrompt.isEmpty())
-			{
+			if (currentPrompt.isEmpty()) {
 				newPrompt = click.square.getNotation(Grid.Direction.HORIZONTAL) + " ";
-			}
-			else
-			{
+			} else {
 				final Pattern pattern = Pattern.compile("(\\S*)(\\s+(\\S*))?");
 				final Matcher m;
-				if ((m = pattern.matcher(currentPrompt)).matches())
-				{
+				if ((m = pattern.matcher(currentPrompt)).matches()) {
 					final Coordinate currentCoordinate = Coordinate.parse(m.group(1));
 					final String word = m.group(3);
 					final Coordinate clickedCoordinate = Coordinate.parse(click.square.getCoordinate());
@@ -463,116 +442,68 @@ class Playground
 									: currentCoordinate.direction;
 
 					newPrompt = clickedCoordinate.getNotation() + " ";
-					if (word != null && !word.trim().isEmpty())
-					{
+					if (word != null && !word.trim().isEmpty()) {
 						newPrompt += word;
 					}
 				}
 			}
 
-		}
-		catch (final IllegalCoordinate e)
-		{
+		} catch (final IllegalCoordinate e) {
 			// OK: noch kein Prompt vorhanden, oder nicht parsable.
 		}
 
-		if (newPrompt != null)
-		{
+		if (newPrompt != null) {
 			this.commandPrompt.setText(newPrompt);
 		}
 	}
 
 	/**
-	 * Filter, das alles Eingetragene Uppercase schreibt
-	 */
-	private final static DocumentFilter UPPER_CASE_DOCUMENT_FILTER = new DocumentFilter()
-	{
-		public void insertString(DocumentFilter.FilterBypass fb, int offset,
-								 String text, AttributeSet attr) throws BadLocationException
-		{
-
-			fb.insertString(offset, toUpperCase(text), attr);
-		}
-
-		public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
-							String text, AttributeSet attrs) throws BadLocationException
-		{
-
-			fb.replace(offset, length, toUpperCase(text), attrs);
-		}
-
-		/**
-		 * Entfernt die Umlaute und liefert alles Uppercase.
-		 * TODO: für Frz. sinnvoll, für Deutsch aber sicherlich nicht..
-		 */
-		private String toUpperCase(String text)
-		{
-			text = Normalizer.normalize(text, Normalizer.Form.NFD);
-			text = text.replaceAll("[^\\p{ASCII}]", "");
-			text = text.replaceAll("\\p{M}", "");
-			return text.toUpperCase();
-		}
-	};
-
-	/**
 	 * Execute the command contained in the command prompt
 	 */
-	void executeCommand()
-	{
-		if (this.client == null)
-		{
+	void executeCommand() {
+		if (this.client == null) {
 			JOptionPane.showMessageDialog(Playground.this.gridFrame, "This playground has no client");
 			return;
 		}
 
-		SwingUtilities.invokeLater(()->
+		SwingUtilities.invokeLater(() ->
 		{
 			this.client.executeCommand(getCommand());
 			this.commandPrompt.setText("");
 		});
 	}
 
-	private class CommandPromptAction extends AbstractAction implements DocumentListener
-	{
+	private class CommandPromptAction extends AbstractAction implements DocumentListener {
 
 		@Override
-		public void actionPerformed(final ActionEvent e)
-		{
+		public void actionPerformed(final ActionEvent e) {
 			SwingUtilities.invokeLater(() -> executeCommand());
 		}
 
 		@Override
-		public void insertUpdate(final DocumentEvent e)
-		{
+		public void insertUpdate(final DocumentEvent e) {
 			changedUpdate(e);
 		}
 
 		@Override
-		public void removeUpdate(final DocumentEvent e)
-		{
+		public void removeUpdate(final DocumentEvent e) {
 			changedUpdate(e);
 		}
 
 		@Override
-		public void changedUpdate(final DocumentEvent e)
-		{
-			if (client == null)
-			{
+		public void changedUpdate(final DocumentEvent e) {
+			if (client == null) {
 				return;
 			}
 
-			try
-			{
+			try {
 				final Action action = getPreparedMove();
-				if (action instanceof PlayTiles)
-				{
+				if (action instanceof PlayTiles) {
 					Playground.this.jGrid.highlightPreparedAction(
 							(PlayTiles) action,
 							Playground.this.client == null ? null : Playground.this.client.scrabbleRules);
 				}
-			}
-			catch (final ScrabbleException e1)
-			{
+			} catch (final ScrabbleException e1) {
 				LOGGER.debug(e1.getMessage());
 			}
 

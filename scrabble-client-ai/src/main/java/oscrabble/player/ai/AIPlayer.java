@@ -10,8 +10,7 @@ import oscrabble.player.AbstractPlayer;
 import java.util.*;
 
 @SuppressWarnings("BusyWait")
-public class AIPlayer extends AbstractPlayer
-{
+public class AIPlayer extends AbstractPlayer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(AIPlayer.class);
 	private final BruteForceMethod bruteForceMethod;
 	private final BruteForceMethod.Configuration configuration;
@@ -31,8 +30,7 @@ public class AIPlayer extends AbstractPlayer
 	 * @param game
 	 * @param bruteForceMethod
 	 */
-	public AIPlayer(final BruteForceMethod bruteForceMethod, final UUID game, final UUID playerId, final MicroServiceScrabbleServer server)
-	{
+	public AIPlayer(final BruteForceMethod bruteForceMethod, final UUID game, final UUID playerId, final MicroServiceScrabbleServer server) {
 		super("AI");
 		this.bruteForceMethod = bruteForceMethod;
 		this.game = game;
@@ -51,10 +49,10 @@ public class AIPlayer extends AbstractPlayer
 	/**
 	 * Start the daemon thread for the AI Player to response
 	 */
-	public void startDaemonThread()
-	{
-		if (this.server == null)
+	public void startDaemonThread() {
+		if (this.server == null) {
 			throw new AssertionError("No server");
+		}
 
 		this.daemonThread.start();
 	}
@@ -62,25 +60,19 @@ public class AIPlayer extends AbstractPlayer
 	/**
 	 * Run the thread
 	 */
-	private void runDaemonThread()
-	{
-		try
-		{
+	private void runDaemonThread() {
+		try {
 			GameState state = null;
-			do
-			{
+			do {
 				final GameState newState = this.server.getState(this.game);
-				if (!newState.equals(state))
-				{
+				if (!newState.equals(state)) {
 					this.server.acknowledgeState(this.game, this.uuid, newState);
 				}
 				state = newState;
-				if (state.state == GameState.State.STARTED && this.uuid.equals(state.getPlayerOnTurn()))
-				{
+				if (state.state == GameState.State.STARTED && this.uuid.equals(state.getPlayerOnTurn())) {
 					this.bruteForceMethod.setGrid(Grid.fromData(state.getGrid()));
-					final ArrayList<Tile>  rack = this.server.getRack(this.game, this.uuid).tiles;
-					if (rack.isEmpty())
-					{
+					final ArrayList<Tile> rack = this.server.getRack(this.game, this.uuid).tiles;
+					if (rack.isEmpty()) {
 						System.out.println("Rack is empty");
 						return;
 					}
@@ -89,14 +81,11 @@ public class AIPlayer extends AbstractPlayer
 					rack.forEach(t -> letters.add(t.c));
 
 					List<String> moves;
-					try
-					{
+					try {
 						moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(
 								letters,
 								this.configuration.strategy));
-					}
-					catch (Throwable e)
-					{
+					} catch (Throwable e) {
 						throw new Exception("Error finding a word with rack " + letters, e);
 					}
 
@@ -106,24 +95,20 @@ public class AIPlayer extends AbstractPlayer
 
 					Thread.sleep(this.throttle);
 					final PlayActionResponse response = this.server.play(this.game, buildAction(notation));
-					if (!response.success)
-					{
+					if (!response.success) {
 						throw new AssertionError("Play of " + notation + "refused: " + response.message);
 					}
 				}
 			} while (state.state != GameState.State.ENDED);
 
 			LOGGER.info("Daemon thread of " + this.uuid + " ends.");
-		}
-		catch (final Throwable e)
-		{
+		} catch (final Throwable e) {
 			LOGGER.error(e.toString(), e);
 			// TODO: inform server and players
 		}
 	}
 
-	public void setThrottle(final long throttle)
-	{
+	public void setThrottle(final long throttle) {
 		this.throttle = throttle;
 	}
 

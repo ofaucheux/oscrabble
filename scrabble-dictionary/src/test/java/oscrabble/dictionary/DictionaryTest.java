@@ -5,12 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DictionaryTest
-{
+class DictionaryTest {
 
 	@Test
-	void toUpperCase()
-	{
+	void toUpperCase() {
 		final Dictionary german = Dictionary.getDictionary(Language.GERMAN);
 		assertEquals("ÄCHSEND", german.toUpperCase("ächsend"));
 		assertEquals("CAFE", german.toUpperCase("Café"));
@@ -23,8 +21,7 @@ class DictionaryTest
 	private final Dictionary french = Dictionary.getDictionary(Language.FRENCH);
 
 	@Test
-	public void getWords()
-	{
+	public void getWords() {
 		assertTrue(this.french.containUpperCaseWord("CA"));
 		assertTrue(this.french.containUpperCaseWord("LE"));
 		assertTrue(this.french.getAdmissibleWords().contains("ETERNUER"));
@@ -34,8 +31,7 @@ class DictionaryTest
 	}
 
 	@Test
-	public void containUpperCaseWord()
-	{
+	public void containUpperCaseWord() {
 		Dictionary.getDictionary(Language.FRENCH);
 		assertTrue(this.french.containUpperCaseWord("PIECE"));
 		assertTrue(this.french.containUpperCaseWord("LIVREE"));

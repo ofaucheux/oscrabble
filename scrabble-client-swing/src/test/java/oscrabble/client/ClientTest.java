@@ -10,8 +10,7 @@ import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.*;
 
-public class ClientTest
-{
+public class ClientTest {
 
 
 }

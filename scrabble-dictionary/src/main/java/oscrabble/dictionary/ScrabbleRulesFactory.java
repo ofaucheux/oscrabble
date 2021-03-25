@@ -14,32 +14,23 @@ import java.util.LinkedHashMap;
 /**
  * Factory for ScrabbleRules
  */
-public class ScrabbleRulesFactory
-{
+public class ScrabbleRulesFactory {
 	private static final CSVFormat letterFileFormat = CSVFormat.newFormat(',')
 			.withFirstRecordAsHeader();
 
-	public static ScrabbleRules create(final Language language)
-	{
+	public static ScrabbleRules create(final Language language) {
 		final ScrabbleRules rules = new ScrabbleRules();
-		try
-		{
+		try {
 			final String namePrefix = language.directoryName + "/";
 			rules.letters = new LinkedHashMap<>();
 			rules.gridSize = 15;
-			try (InputStream is = ScrabbleRulesFactory.class.getResourceAsStream(namePrefix + "tiles.csv"))
-			{
-				for (final CSVRecord record : new CSVParser(new InputStreamReader(is), letterFileFormat).getRecords())
-				{
+			try (InputStream is = ScrabbleRulesFactory.class.getResourceAsStream(namePrefix + "tiles.csv")) {
+				for (final CSVRecord record : new CSVParser(new InputStreamReader(is), letterFileFormat).getRecords()) {
 					final String character = record.get("character");
-					if ("blank".equals(character.toLowerCase()))
-					{
+					if ("blank".equals(character.toLowerCase())) {
 						rules.numberBlanks = Integer.parseInt(record.get("prevalence"));
-					}
-					else
-					{
-						if (character.length() != 1)
-						{
+					} else {
+						if (character.length() != 1) {
 							throw new AssertionError("False character: " + character);
 						}
 
@@ -52,9 +43,7 @@ public class ScrabbleRulesFactory
 					}
 				}
 			}
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw new IOError(e);
 		}
 

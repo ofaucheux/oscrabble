@@ -13,8 +13,7 @@ import java.util.UUID;
  */
 @Data
 @Builder
-public class Action
-{
+public class Action {
 	/**
 	 * Notation for "pass the turn"
 	 */
@@ -42,27 +41,27 @@ public class Action
 	public Integer score;
 
 	@Override
-	public boolean equals(final Object o)
-	{
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+	public boolean equals(final Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		final Action action = (Action) o;
 		return Objects.equals(this.notation, action.notation);
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return Objects.hash(this.notation);
 	}
 
 	/**
-	 *
 	 * @return the score, eventually 0
 	 */
 	@NonNull
-	public int getScore()
-	{
+	public int getScore() {
 		return this.score == null ? 0 : this.score;
 	}
 }

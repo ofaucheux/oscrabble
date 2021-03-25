@@ -23,16 +23,13 @@ import java.util.function.Consumer;
 /**
  * JPanel and logic to let the system display all possible moves.
  */
-public class PossibleMoveDisplayer
-{
+public class PossibleMoveDisplayer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PossibleMoveDisplayer.class);
 
-	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy("Hide")
-	{
+	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy("Hide") {
 		@Override
-		public void sort(final List<String> moves)
-		{
+		public void sort(final List<String> moves) {
 			throw new AssertionError("Should not be called");
 		}
 	};
@@ -41,23 +38,25 @@ public class PossibleMoveDisplayer
 	private final BruteForceMethod bfm;
 	private final JList<Object> moveList;
 	private final Set<AttributeChangeListener> attributeChangeListeners = new HashSet<>();
-	/** The server to calculate the scores */
+	/**
+	 * The server to calculate the scores
+	 */
 	private MicroServiceScrabbleServer server;
-	/** the game */
+	/**
+	 * the game
+	 */
 	private UUID game;
 	private List<Character> rack;
 
 	private GameState state;
 	private final JComboBox<Strategy> strategiesCb;
 
-	public PossibleMoveDisplayer(final MicroServiceDictionary dictionary)
-	{
+	public PossibleMoveDisplayer(final MicroServiceDictionary dictionary) {
 		this.bfm = new BruteForceMethod(dictionary);
 
 		final Strategy.BestScore bestScore = new Strategy.BestScore(null, null);
 		this.attributeChangeListeners.add((fieldName, newValue) -> {
-			switch (fieldName)
-			{
+			switch (fieldName) {
 				case "game":
 					bestScore.setGame((UUID) newValue);
 					break;
@@ -84,14 +83,11 @@ public class PossibleMoveDisplayer
 		this.mainPanel.add(this.strategiesCb, BorderLayout.NORTH);
 
 		this.moveList = new JList<>();
-		this.moveList.setCellRenderer(new DefaultListCellRenderer()
-		{
+		this.moveList.setCellRenderer(new DefaultListCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
-			{
+			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
 				final Component label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				if (value instanceof Score)
-				{
+				if (value instanceof Score) {
 					final Score sc = (Score) value;
 					this.setText(sc.getNotation() + "  " + sc.getScore() + " pts");
 				}
@@ -103,46 +99,40 @@ public class PossibleMoveDisplayer
 
 	/**
 	 * Add a function to execute after the selection has changed.
+	 *
 	 * @param listSelectionListener
 	 */
-	void addSelectionListener(final Consumer<Action> listSelectionListener)
-	{
+	void addSelectionListener(final Consumer<Action> listSelectionListener) {
 		this.moveList.addListSelectionListener(l -> {
 					final Score score = (Score) this.moveList.getSelectedValue();
-					if (score == null)
-					{
+					if (score == null) {
 						return;
 					}
-					try
-					{
+					try {
 						final Action action = Action.parse(null, score.getNotation());
 						listSelectionListener.accept(action);
-					}
-					catch (ScrabbleException.NotParsableException e)
-					{
+					} catch (ScrabbleException.NotParsableException e) {
 						throw new AssertionError("Assertion error", e);
 					}
 				}
 		);
 	}
 
-	public JList<Object> getMoveList()
-	{
+	public JList<Object> getMoveList() {
 		return this.moveList;
 	}
 
 	/**
 	 * Set the server this displayer is for. This information is transferred to the subcomponents too.
+	 *
 	 * @param server
 	 */
-	void setServer(final MicroServiceScrabbleServer server)
-	{
+	void setServer(final MicroServiceScrabbleServer server) {
 		this.server = server;
 		invokeListeners("server", server);
 	}
 
-	private void invokeListeners(final String fieldName, final Object newValue)
-	{
+	private void invokeListeners(final String fieldName, final Object newValue) {
 		this.attributeChangeListeners.forEach(l -> l.onChange(fieldName, newValue));
 	}
 
@@ -151,48 +141,39 @@ public class PossibleMoveDisplayer
 	 *
 	 * @param game
 	 */
-	public void setGame(final UUID game)
-	{
+	public void setGame(final UUID game) {
 		this.game = game;
 		invokeListeners("game", game);
 	}
 
-	public synchronized void setData(final GameState state, final List<Character> rack)
-	{
+	public synchronized void setData(final GameState state, final List<Character> rack) {
 		this.state = state;
 		this.rack = rack;
 	}
 
-	public synchronized void refresh()
-	{
+	public synchronized void refresh() {
 		Strategy selectedOrderStrategy = ((Strategy) this.strategiesCb.getSelectedItem());
 
-		if (selectedOrderStrategy == DO_NOT_DISPLAY_STRATEGIE)
-		{
+		if (selectedOrderStrategy == DO_NOT_DISPLAY_STRATEGIE) {
 			this.moveList.setListData(new Object[0]);
 			return;
 		}
 
-		if (!this.state.gameId.equals(this.game))
-		{
+		if (!this.state.gameId.equals(this.game)) {
 			throw new IllegalArgumentException("GameId is " + this.state.gameId + ", expected was " + this.game);
 		}
 
-		try
-		{
+		try {
 			this.bfm.setGrid(Grid.fromData(this.state.grid));
 			final List<String> legalMoves = this.bfm.getLegalMoves(this.rack, selectedOrderStrategy);
 			final Collection<Score> scores = this.server.getScores(this.state.getGameId(), legalMoves);
 			this.moveList.setListData(new Vector<>(scores));
-		}
-		catch (ScrabbleException.CommunicationException e)
-		{
+		} catch (ScrabbleException.CommunicationException e) {
 			LOGGER.error("Cannot update list", e);
 		}
 	}
 
-	public void setFont(final Font font)
-	{
+	public void setFont(final Font font) {
 		this.moveList.setFont(font);
 	}
 
@@ -200,20 +181,17 @@ public class PossibleMoveDisplayer
 	 * @return selected action in scrabble notation.
 	 */
 	@Nullable
-	public String getSelectedAction()
-	{
+	public String getSelectedAction() {
 		final Score selected = (Score) this.moveList.getSelectedValue();
 		return selected == null ? null : selected.getNotation();
 	}
 
-	public void reset()
-	{
+	public void reset() {
 		this.strategiesCb.setSelectedIndex(0);
 		refresh();
 	}
 
-	private interface AttributeChangeListener
-	{
+	private interface AttributeChangeListener {
 		void onChange(String fieldName, Object newValue);
 	}
 }

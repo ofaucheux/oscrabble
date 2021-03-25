@@ -7,8 +7,7 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class Square
-{
+public class Square {
 	/**
 	 * Coordinate of the square
 	 */

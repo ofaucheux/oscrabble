@@ -5,8 +5,7 @@ import java.util.Collection;
 /**
  * A dictionary
  */
-public interface IDictionary
-{
+public interface IDictionary {
 	/**
 	 * @return all admissible words
 	 */

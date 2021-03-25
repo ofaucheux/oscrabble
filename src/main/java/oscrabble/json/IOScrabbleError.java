@@ -3,24 +3,19 @@ package oscrabble.json;
 /**
  * Error describing an I/O problem.
  */
-public class IOScrabbleError extends Error
-{
+public class IOScrabbleError extends Error {
 	/**
-	 *
 	 * @param message -
-	 * @param cause -
+	 * @param cause   -
 	 */
-	public IOScrabbleError(final String message, final Throwable cause)
-	{
+	public IOScrabbleError(final String message, final Throwable cause) {
 		super(message, cause);
 	}
 
 	/**
-	 *
 	 * @param message -
 	 */
-	public IOScrabbleError(final String message)
-	{
+	public IOScrabbleError(final String message) {
 		this(message, null);
 	}
 }

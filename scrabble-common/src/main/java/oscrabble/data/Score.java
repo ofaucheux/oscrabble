@@ -8,8 +8,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class Score
-{
+public class Score {
 	String notation;
 	int score;
 }

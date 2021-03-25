@@ -10,8 +10,7 @@ import java.util.UUID;
 /**
  * Information the server holds about a player.
  */
-class PlayerInformation
-{
+class PlayerInformation {
 	/**
 	 * Name
 	 */
@@ -46,37 +45,34 @@ class PlayerInformation
 
 	/**
 	 * Construct a player from a data object.
+	 *
 	 * @param dataPlayer data object
 	 */
-	PlayerInformation(final Player dataPlayer)
-	{
+	PlayerInformation(final Player dataPlayer) {
 		this.uuid = dataPlayer.id;
 		this.name = dataPlayer.name;
 		this.score = dataPlayer.score;
 		this.isRobot = dataPlayer.isRobot;
 	}
 
-	public PlayerInformation(final UUID uuid)
-	{
-		if (uuid == null)
-		{
+	public PlayerInformation(final UUID uuid) {
+		if (uuid == null) {
 			throw new IllegalArgumentException("Player name not set");
 		}
 		this.uuid = uuid;
 	}
 
 	// TODO
-	public oscrabble.configuration.Configuration getConfiguration()
-	{
+	public oscrabble.configuration.Configuration getConfiguration() {
 		return null;
 	}
 
 	/**
 	 * Construct a data object
+	 *
 	 * @return the object
 	 */
-	public oscrabble.data.Player toData()
-	{
+	public oscrabble.data.Player toData() {
 		final oscrabble.data.Player data = oscrabble.data.Player.builder()
 				.id(this.uuid)
 				.name(this.name)
@@ -88,15 +84,13 @@ class PlayerInformation
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "Player{" +
 				"name='" + this.uuid + '\'' +
 				'}';
 	}
 
-	public void setName(final String name)
-	{
+	public void setName(final String name) {
 		this.name = name;
 	}
 }

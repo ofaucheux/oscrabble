@@ -18,17 +18,19 @@ public abstract class AbstractMicroService {
 
 	@Autowired
 	private static final RestTemplate REST_TEMPLATE;
+
 	static {
 		REST_TEMPLATE = new RestTemplateBuilder()
 				.setConnectTimeout(Duration.ofMillis(500))
 				.build();
 	}
 
-	/** URI */
+	/**
+	 * URI
+	 */
 	protected final UriComponentsBuilder uriComponentsBuilder;
 
 	/**
-	 *
 	 * @param uriComponentsBuilder
 	 */
 	protected AbstractMicroService(final UriComponentsBuilder uriComponentsBuilder) {
@@ -41,8 +43,7 @@ public abstract class AbstractMicroService {
 	 * @param timeout in ms. default: 30 s.
 	 * @throws IllegalStateException if not reached after the timeout.
 	 */
-	protected void waitToUpStatus(Long timeout)
-	{
+	protected void waitToUpStatus(Long timeout) {
 		if (timeout == null) {
 			timeout = 30000L;
 		}

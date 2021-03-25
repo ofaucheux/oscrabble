@@ -8,8 +8,7 @@ import java.util.UUID;
 /**
  * Interface for players.
  */
-public interface IPlayer extends Server.GameListener
-{
+public interface IPlayer extends Server.GameListener {
 	/**
 	 * @return the configuration object of this player, {@code null} if no such one.
 	 */
@@ -17,6 +16,7 @@ public interface IPlayer extends Server.GameListener
 
 	/**
 	 * Set the key generated for this client
+	 *
 	 * @param key the key
 	 */
 	void setPlayerKey(UUID key);
@@ -32,7 +32,6 @@ public interface IPlayer extends Server.GameListener
 	void setGame(Server server);
 
 	/**
-	 *
 	 * @return true if the player doesn't take any active role in the game.
 	 */
 	boolean isObserver();
@@ -60,5 +59,8 @@ public interface IPlayer extends Server.GameListener
 	/**
 	 * Destroy this player and all its resources
 	 */
-	default void destroy() {};
+	default void destroy() {
+	}
+
+	;
 }

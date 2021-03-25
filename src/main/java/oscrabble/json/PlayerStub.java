@@ -13,15 +13,13 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Representation of a remote player for the local server.
  */
-public class PlayerStub extends Stub implements IPlayer
-{
+public class PlayerStub extends Stub implements IPlayer {
 
 	private final ArrayBlockingQueue<Server.ScrabbleEvent> incomingEventQueue = new ArrayBlockingQueue<>(128);
 
 	private UUID playerKey;
 
-	public PlayerStub(final InetSocketAddress remotePlayer)
-	{
+	public PlayerStub(final InetSocketAddress remotePlayer) {
 		super(remotePlayer);
 
 		final Thread daemon = new Thread(() -> {
@@ -33,65 +31,56 @@ public class PlayerStub extends Stub implements IPlayer
 
 	@Override
 
-	public Configuration getConfiguration()
-	{
+	public Configuration getConfiguration() {
 		throw new AssertionError("Not implemented"); // TODO
 	}
 
 	@Override
-	public void setPlayerKey(final UUID key)
-	{
+	public void setPlayerKey(final UUID key) {
 		this.playerKey = key;
 	}
 
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return sendRequest(new GetName()).getName();
 	}
 
 	@Override
-	public void setGame(final Server server)
-	{
+	public void setGame(final Server server) {
 		throw new AssertionError("Not implemented"); // TODO
 	}
 
 	@Override
-	public boolean isObserver()
-	{
+	public boolean isObserver() {
 		throw new AssertionError("Not implemented"); // TODO
 	}
 
 	@Override
-	public void editParameters()
-	{
+	public void editParameters() {
 		throw new AssertionError("Not implemented"); // TODO
 	}
 
 	@Override
-	public UUID getPlayerKey()
-	{
+	public UUID getPlayerKey() {
 		return this.playerKey;
 	}
 
 	@Override
-	public Server.PlayerType getType()
-	{
+	public Server.PlayerType getType() {
 		throw new AssertionError("Not implemented"); // TODO
 	}
 
 	@Override
-	public boolean hasEditableParameters()
-	{
+	public boolean hasEditableParameters() {
 		throw new AssertionError("Not implemented"); // TODO
 	}
 
 	@Override
-	public void destroy() { }
+	public void destroy() {
+	}
 
 	@Override
-	public BlockingQueue<Server.ScrabbleEvent> getIncomingEventQueue()
-	{
+	public BlockingQueue<Server.ScrabbleEvent> getIncomingEventQueue() {
 		return this.incomingEventQueue;
 	}
 

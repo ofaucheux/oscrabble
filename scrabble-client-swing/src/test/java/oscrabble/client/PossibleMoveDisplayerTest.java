@@ -10,12 +10,10 @@ import javax.swing.*;
 
 import java.util.Arrays;
 
-class PossibleMoveDisplayerTest
-{
+class PossibleMoveDisplayerTest {
 	@SneakyThrows
 	@Test
-	public void test()
-	{
+	public void test() {
 		final MicroServiceScrabbleServer scrabbleServer = MicroServiceScrabbleServer.getLocal();
 		final GameState game = scrabbleServer.loadFixtures().iterator().next();
 
@@ -27,8 +25,7 @@ class PossibleMoveDisplayerTest
 		pmd.setData(game, Arrays.asList('c', 'A', 'R'));
 		pmd.refresh();
 		JOptionPane.showMessageDialog(null, pmd.mainPanel);
-		while (pmd.mainPanel.isVisible())
-		{
+		while (pmd.mainPanel.isVisible()) {
 			Thread.sleep(100);
 		}
 	}

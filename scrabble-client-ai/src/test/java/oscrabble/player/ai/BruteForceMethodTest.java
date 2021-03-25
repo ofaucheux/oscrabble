@@ -24,43 +24,43 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BruteForceMethodTest
-{
+public class BruteForceMethodTest {
 
 	private BruteForceMethod instance;
 
-	private final static IDictionary DICTIONARY =  new FrenchDictionaryForTest();
+	private final static IDictionary DICTIONARY = new FrenchDictionaryForTest();
 	private final static MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
 
 	private ArrayBlockingQueue<String> playQueue;
 	private AbstractPlayer player;
 
+	private static List<TestData> findMoveParameterProvider() {
+		return List.of(
+				new TestData("grid_1.grid", "EDPWMES", Set.of("15J"), Set.of("15H MES")),
+				new TestData("grid_2.grid", "EDPWMES", Set.of("14J"), Set.of("14H MES"))
+		);
+	}
 
 	@BeforeEach
-	public void BruteForceTest()
-	{
+	public void BruteForceTest() {
 		this.instance = new BruteForceMethod(DICTIONARY);
 	}
 
 	@Test
-	void loadDictionary()
-	{
-		for (final String word : Arrays.asList("HERBE", "AIMEE", "ETUVES"))
-		{
+	void loadDictionary() {
+		for (final String word : Arrays.asList("HERBE", "AIMEE", "ETUVES")) {
 			assertTrue(this.instance.automaton.contains(word), "Nicht gefunden: " + word);
 		}
 
 		DAWGNode node = this.instance.automaton.getSourceNode();
-		for (final char c : "VACANCE".toCharArray())
-		{
+		for (final char c : "VACANCE".toCharArray()) {
 			node = node.transition(c);
 		}
 		assertNotNull(node);
 		assertTrue(node.isAcceptNode());
 
 		node = this.instance.automaton.getSourceNode();
-		for (final char c : "VACANC".toCharArray())
-		{
+		for (final char c : "VACANC".toCharArray()) {
 			node = node.transition(c);
 		}
 		assertNotNull(node);
@@ -68,8 +68,7 @@ public class BruteForceMethodTest
 	}
 
 	@Test
-	void getLegalMoves() throws ScrabbleException
-	{
+	void getLegalMoves() throws ScrabbleException {
 		startGame("ENFANIT");
 
 		final UUID game = server.newGame();
@@ -89,18 +88,9 @@ public class BruteForceMethodTest
 //		}
 	}
 
-	private static List<TestData> findMoveParameterProvider()
-	{
-		return List.of(
-				new TestData("grid_1.grid", "EDPWMES", Set.of("15J"), Set.of("15H MES")),
-				new TestData("grid_2.grid", "EDPWMES", Set.of("14J"), Set.of("14H MES"))
-		);
-	}
-
 	@ParameterizedTest
 	@MethodSource("findMoveParameterProvider")
-	void getLegalMoves(final TestData testParams) throws IOException
-	{
+	void getLegalMoves(final TestData testParams) throws IOException {
 		final String asciiArt = IOUtils.toString(
 				BruteForceMethodTest.class.getResourceAsStream(testParams.filename),
 				Charset.defaultCharset()
@@ -133,16 +123,14 @@ public class BruteForceMethodTest
 		MatcherAssert.assertThat(DICTIONARY.getAdmissibleWords(), CoreMatchers.hasItems(foundWords.toArray(new String[0])));
 	}
 
-	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack)
-	{
+	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack) {
 		final ArrayList<Character> list = new ArrayList<>(rack.length());
 		rack.chars().forEach(c -> list.add((char) c));
 		return bfm.getLegalMoves(list, new Strategy.BestSize());
 	}
 
 	@Test
-	void testBlank() throws  ScrabbleException
-	{
+	void testBlank() throws ScrabbleException {
 		startGame("ELEPHANT");
 
 		this.instance.setGrid(new Grid());
@@ -172,12 +160,10 @@ public class BruteForceMethodTest
 //	}
 
 	/**
-	 *
 	 * @param bag first letters the bag must deliver.
 	 */
 	@Disabled //todo
-	private void startGame(final String bag)
-	{
+	private void startGame(final String bag) {
 		//TODO
 //		server.assertFirstLetters(bag);
 //		this.player = new AIPlayer(this.instance, "AI Player");
@@ -206,15 +192,13 @@ public class BruteForceMethodTest
 	/**
 	 * Data for a test.
 	 */
-	private static class TestData
-	{
+	private static class TestData {
 		private final String filename;
 		private final String rack;
 		private final Set<String> movesToFind;
 		private final Set<String> anchorsToFind;
 
-		public TestData(final String filename, final String rack, final Set<String> anchorsToFind, final Set<String> movesToFind)
-		{
+		public TestData(final String filename, final String rack, final Set<String> anchorsToFind, final Set<String> movesToFind) {
 			this.filename = filename;
 			this.rack = rack;
 			this.anchorsToFind = anchorsToFind;

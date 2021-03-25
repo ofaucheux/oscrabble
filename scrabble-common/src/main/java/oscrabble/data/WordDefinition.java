@@ -1,5 +1,4 @@
 package oscrabble.data;
 
-public class WordDefinition
-{
+public class WordDefinition {
 }

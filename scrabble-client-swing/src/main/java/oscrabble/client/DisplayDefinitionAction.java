@@ -13,8 +13,7 @@ import java.util.function.Supplier;
 /**
  * Action displaying the definition of words in an own window.
  */
-public class DisplayDefinitionAction extends AbstractAction
-{
+public class DisplayDefinitionAction extends AbstractAction {
 	private static DictionaryComponent component = null;
 
 	private final MicroServiceDictionary dictionary;
@@ -25,15 +24,13 @@ public class DisplayDefinitionAction extends AbstractAction
 	 */
 	private Component relativeComponentPosition;
 
-	public DisplayDefinitionAction(final MicroServiceDictionary dictionary, final Supplier<Collection<String>> wordsSupplier)
-	{
+	public DisplayDefinitionAction(final MicroServiceDictionary dictionary, final Supplier<Collection<String>> wordsSupplier) {
 		super("Show definitions");  // todo: i18n
 		this.dictionary = dictionary;
 		this.wordsSupplier = wordsSupplier;
 	}
 
-	public void setRelativeComponentPosition(final Component component)
-	{
+	public void setRelativeComponentPosition(final Component component) {
 		this.relativeComponentPosition = component;
 	}
 
@@ -41,37 +38,28 @@ public class DisplayDefinitionAction extends AbstractAction
 	final Set<Runnable> afterActionListeners = new LinkedHashSet<>();
 
 	@Override
-	public void actionPerformed(final ActionEvent e)
-	{
+	public void actionPerformed(final ActionEvent e) {
 		this.beforeActionListeners.forEach(l -> l.run());
-		try
-		{
-			if (component == null)
-			{
+		try {
+			if (component == null) {
 				component = new DictionaryComponent(this.dictionary);
 			}
 			final Collection<String> words = this.wordsSupplier.get();
-			if (words != null)
-			{
+			if (words != null) {
 				words.forEach(word -> showDefinition(word));
 			}
-		}
-		finally
-		{
+		} finally {
 			this.afterActionListeners.forEach(l -> l.run());
 		}
 	}
 
-	private void showDefinition(final String word)
-	{
+	private void showDefinition(final String word) {
 		Window dictionaryFrame = SwingUtilities.getWindowAncestor(component);
-		if (dictionaryFrame == null)
-		{
+		if (dictionaryFrame == null) {
 			dictionaryFrame = new JFrame(Playground.MESSAGES.getString("description"));
 			dictionaryFrame.add(component);
 			dictionaryFrame.setSize(600, 200);
-			if (this.relativeComponentPosition != null)
-			{
+			if (this.relativeComponentPosition != null) {
 				final Point pt = this.relativeComponentPosition.getLocation();
 				pt.translate(this.relativeComponentPosition.getWidth() + 10, 10);
 				dictionaryFrame.setLocation(pt);

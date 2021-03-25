@@ -7,8 +7,7 @@ import java.util.UUID;
 /**
  * Abstract class for players
  */
-public abstract class AbstractPlayer
-{
+public abstract class AbstractPlayer {
 	/**
 	 * UUID of the player
 	 */
@@ -19,8 +18,7 @@ public abstract class AbstractPlayer
 	 */
 	public String name;
 
-	protected AbstractPlayer(final String name)
-	{
+	protected AbstractPlayer(final String name) {
 		this.name = name;
 	}
 
@@ -30,8 +28,7 @@ public abstract class AbstractPlayer
 	 * @param notation the action in scrabble notation
 	 * @return the action
 	 */
-	public Action buildAction(/*final UUID playID, */final String notation)
-	{
+	public Action buildAction(/*final UUID playID, */final String notation) {
 		final Action action = Action.builder()
 				.player(this.uuid)
 //				.playID(playID)

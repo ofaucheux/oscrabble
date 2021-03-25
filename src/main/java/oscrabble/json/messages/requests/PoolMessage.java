@@ -8,8 +8,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Send from the client to retrieve a message the server has to deliver.
  */
-public class PoolMessage extends JsonMessage
-{
+public class PoolMessage extends JsonMessage {
 	/**
 	 * Time out before a {@link VoidResponse} is returned
 	 */
@@ -20,23 +19,19 @@ public class PoolMessage extends JsonMessage
 	 */
 	private TimeUnit timeoutUnit;
 
-	public int getTimeout()
-	{
+	public int getTimeout() {
 		return timeout;
 	}
 
-	public void setTimeout(final int timeout)
-	{
+	public void setTimeout(final int timeout) {
 		this.timeout = timeout;
 	}
 
-	public TimeUnit getTimeoutUnit()
-	{
+	public TimeUnit getTimeoutUnit() {
 		return timeoutUnit;
 	}
 
-	public void setTimeoutUnit(final TimeUnit timeoutUnit)
-	{
+	public void setTimeoutUnit(final TimeUnit timeoutUnit) {
 		this.timeoutUnit = timeoutUnit;
 	}
 }

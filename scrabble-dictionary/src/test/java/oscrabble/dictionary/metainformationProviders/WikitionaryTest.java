@@ -8,13 +8,11 @@ import oscrabble.dictionary.metainformationProviders.Wikitionary;
 import javax.swing.*;
 import java.awt.*;
 
-public class WikitionaryTest
-{
+public class WikitionaryTest {
 
 	@Test
 	@Disabled("swing tests are disabled")
-	public void getDescription() throws InterruptedException, DictionaryException
-	{
+	public void getDescription() throws InterruptedException, DictionaryException {
 		final int width = 200;
 		final Wikitionary wikitionary = new Wikitionary("https://fr.wiktionary.org");
 		wikitionary.setHtmlWidth(width);
@@ -25,7 +23,7 @@ public class WikitionaryTest
 		jFrame.add(sp);
 		sp.add(new JLabel(String.valueOf(description)));
 		jFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		jFrame.setSize(width*2, 400);
+		jFrame.setSize(width * 2, 400);
 		jFrame.setLocationRelativeTo(null);
 
 		jFrame.setVisible(true);

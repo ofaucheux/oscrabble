@@ -1,39 +1,31 @@
 package oscrabble;
 
 /**
- * Exceptions for the game.
- * TODO: i18n
+ * Exceptions for the game. TODO: i18n
  */
-public class ScrabbleException extends Exception
-{
+public class ScrabbleException extends Exception {
 
-	public ScrabbleException()
-	{
+	public ScrabbleException() {
 	}
 
-	public ScrabbleException(final String message)
-	{
+	public ScrabbleException(final String message) {
 		super(message);
 	}
 
-	public ScrabbleException(final String message, final Throwable cause)
-	{
+	public ScrabbleException(final String message, final Throwable cause) {
 		this(message + "\nCaused by: " + cause.toString());
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return this.getMessage();
 	}
 
 	/**
 	 * Exception reporting the use of an invalid secret.
 	 */
-	static public class InvalidSecretException extends ScrabbleException
-	{
-		public InvalidSecretException()
-		{
+	static public class InvalidSecretException extends ScrabbleException {
+		public InvalidSecretException() {
 			super("Invalid secret");
 		}
 	}
@@ -41,10 +33,8 @@ public class ScrabbleException extends Exception
 	/**
 	 * Exception reporting a forbidden action.
 	 */
-	static public class ForbiddenPlayException extends ScrabbleException
-	{
-		public ForbiddenPlayException(final String message)
-		{
+	static public class ForbiddenPlayException extends ScrabbleException {
+		public ForbiddenPlayException(final String message) {
 			super(message);
 		}
 	}
@@ -52,10 +42,8 @@ public class ScrabbleException extends Exception
 	/**
 	 * Exception reporting the use of a function at an time it is not valid to use it.
 	 */
-	static public class InvalidStateException extends ScrabbleException
-	{
-		public InvalidStateException(final String message)
-		{
+	static public class InvalidStateException extends ScrabbleException {
+		public InvalidStateException(final String message) {
 			super(message);
 		}
 	}
@@ -63,10 +51,8 @@ public class ScrabbleException extends Exception
 	/**
 	 * Exception informing about the attempt of a player to play outside of his turn.
 	 */
-	public static class NotInTurn extends ScrabbleException
-	{
-		public NotInTurn(final String playerName)
-		{
+	public static class NotInTurn extends ScrabbleException {
+		public NotInTurn(final String playerName) {
 			super("The player " + playerName + " is not in turn");
 		}
 	}
@@ -74,10 +60,8 @@ public class ScrabbleException extends Exception
 	/**
 	 * Thrown by communication problem: if the communication has failed or the result was an error.
 	 */
-	public static class CommunicationException extends ScrabbleException
-	{
-		public CommunicationException(final String message)
-		{
+	public static class CommunicationException extends ScrabbleException {
+		public CommunicationException(final String message) {
 			super(message);
 		}
 	}
@@ -85,10 +69,8 @@ public class ScrabbleException extends Exception
 	/**
 	 * Thrown if a notation is not parsable.
 	 */
-	public static class NotParsableException extends ScrabbleException
-	{
-		public NotParsableException(final String notation)
-		{
+	public static class NotParsableException extends ScrabbleException {
+		public NotParsableException(final String notation) {
 			super("Notation \"" + notation + "\" is not parsable");
 		}
 	}

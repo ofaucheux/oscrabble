@@ -9,39 +9,46 @@ import java.util.UUID;
 /**
  * A listener
  */
-public interface GameListener
-{
+public interface GameListener {
 	/**
 	 * Sent to all players to indicate who now has to play.
 	 */
-	default void onPlayRequired(final UUID player) { }
+	default void onPlayRequired(final UUID player) {
+	}
 
-	default void onDispatchMessage(String msg) { }
+	default void onDispatchMessage(String msg) {
+	}
 
-	default void afterRollback() { }
+	default void afterRollback() {
+	}
 
 	/**
-	 *
 	 * @param action ended play
 	 */
-	default void afterPlay(final Action action) { }
+	default void afterPlay(final Action action) {
+	}
 
-	default void beforeGameStart() { }
+	default void beforeGameStart() {
+	}
 
-	default void afterGameEnd() { }
+	default void afterGameEnd() {
+	}
 
 	Queue<ScrabbleEvent> getIncomingEventQueue();
 
 	/**
 	 * Called after the state of the game have changed
 	 */
-	default void onGameStateChanged() { }
+	default void onGameStateChanged() {
+	}
 
 	/**
 	 * Called after a player has (definitively) play an non admissible play
+	 *
 	 * @param player player having played the non admissible play
 	 * @param action the action which lead to the problem
 	 */
-	default void afterRejectedAction(final PlayerInformation player, final Action action){}
+	default void afterRejectedAction(final PlayerInformation player, final Action action) {
+	}
 }
 

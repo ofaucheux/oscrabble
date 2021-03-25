@@ -1,15 +1,12 @@
 package oscrabble.dictionary;
 
-public enum Language
-{
+public enum Language {
 	FRENCH("french"),
 	GERMAN("german"),
-	TEST("test")
-	;
+	TEST("test");
 	final String directoryName;
 
-	Language(final String directoryName)
-	{
+	Language(final String directoryName) {
 		this.directoryName = directoryName;
 	}
 }

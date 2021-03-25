@@ -6,15 +6,13 @@ import org.junit.jupiter.api.Test;
 import javax.swing.*;
 import java.awt.*;
 
-class JTileTest
-{
+class JTileTest {
 
 	@Test
 	@Disabled
-	public void test() throws InterruptedException
-	{
+	public void test() throws InterruptedException {
 		final JFrame frame = new JFrame("Test JStone");
-		frame.setLayout(new GridLayout(2,2));
+		frame.setLayout(new GridLayout(2, 2));
 //		frame.setUndecorated(true);
 //		frame.setBackground(new Color(0, 0, 0, 0));
 
@@ -31,8 +29,7 @@ class JTileTest
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-		while (frame.isVisible())
-		{
+		while (frame.isVisible()) {
 			Thread.sleep(100);
 		}
 	}

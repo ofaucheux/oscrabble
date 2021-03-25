@@ -28,8 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GameTest
-{
+public class GameTest {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
@@ -39,14 +38,12 @@ public class GameTest
 	private UUID gustav;
 
 	@BeforeAll
-	public static void mocken()
-	{
-		Thread.setDefaultUncaughtExceptionHandler((t,e) -> LOGGER.error(e.toString(), e));
+	public static void mocken() {
+		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error(e.toString(), e));
 	}
 
 	@BeforeEach
-	public void initialize() throws ScrabbleException
-	{
+	public void initialize() throws ScrabbleException {
 		this.game = new Game(FRENCH, -3300078916872261882L);
 		this.game.randomPlayerOrder = false;
 
@@ -57,11 +54,11 @@ public class GameTest
 
 	/**
 	 * Create and add a player in the game
+	 *
 	 * @param name name of the player
 	 * @return this player
 	 */
-	private UUID addPlayer(final String name) throws ScrabbleException
-	{
+	private UUID addPlayer(final String name) throws ScrabbleException {
 		final Player player = Player.builder()
 				.name(name)
 				.id(UUID.randomUUID())
@@ -71,14 +68,12 @@ public class GameTest
 	}
 
 	@AfterEach
-	public void endsGame()
-	{
+	public void endsGame() {
 		this.game.quitGame();
 	}
 
 	@Test
-	void preparedGame() throws IOException
-	{
+	void preparedGame() throws IOException {
 		final String fixture = IOUtils.toString(GameTest.class.getResourceAsStream("game_1.json"), Charsets.UTF_8);
 		final GameState gameState = new ObjectMapper().readValue(fixture, GameState.class);
 		new Game(gameState);
@@ -86,8 +81,7 @@ public class GameTest
 
 	@Test // TODO: reactivate retry
 	@Disabled
-	public void retryAccepted() throws ScrabbleException, InterruptedException, TimeoutException
-	{
+	public void retryAccepted() throws ScrabbleException, InterruptedException, TimeoutException {
 		// test retry accepted
 		this.game.getConfiguration().setValue("retryAccepted", true);
 		this.game.assertFirstLetters("APPESTEE");
@@ -108,9 +102,8 @@ public class GameTest
 
 	@Test
 	@Disabled // todo: reimplement rollback
-	public void rollback() throws ScrabbleException, InterruptedException, TimeoutException
-	{
-		this.game.assertFirstLetters( "APTESSIF");
+	public void rollback() throws ScrabbleException, InterruptedException, TimeoutException {
+		this.game.assertFirstLetters("APTESSIF");
 		this.startGame(true);
 
 		final int roundNr = this.game.getRoundNr();
@@ -130,14 +123,14 @@ public class GameTest
 
 	@Test
 	@Disabled // todo: reimplement retry
-	public void retryForbidden() throws ScrabbleException, InterruptedException, TimeoutException
-	{
+	public void retryForbidden() throws ScrabbleException, InterruptedException, TimeoutException {
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		final AtomicBoolean playRejected = new AtomicBoolean(false);
-		final TestListener listener = new TestListener()
-		{
+		final TestListener listener = new TestListener() {
 			@Override
-			public void afterRejectedAction(final PlayerInformation player, final Action action){}
+			public void afterRejectedAction(final PlayerInformation player, final Action action) {
+			}
+
 			{
 				playRejected.set(true);
 			}
@@ -153,18 +146,14 @@ public class GameTest
 	}
 
 	@Test
-	public void startWithOnlyOneLetter() throws ScrabbleException, InterruptedException
-	{
+	public void startWithOnlyOneLetter() throws ScrabbleException, InterruptedException {
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.game.assertFirstLetters("A");
 		startGame(true);
-		try
-		{
+		try {
 			this.game.play(Action.parse(null, "H8 A"));
 			Assertions.fail();
-		}
-		catch (ScrabbleException.ForbiddenPlayException e)
-		{
+		} catch (ScrabbleException.ForbiddenPlayException e) {
 			// OK
 		}
 		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
@@ -172,37 +161,29 @@ public class GameTest
 
 
 	@Test
-	public void startNotCentered() throws ScrabbleException, InterruptedException, TimeoutException
-	{
+	public void startNotCentered() throws ScrabbleException, InterruptedException, TimeoutException {
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		startGame(true);
-		try
-		{
+		try {
 			this.game.play(Action.parse(null, "G7 AS"));
 			this.game.awaitEndOfPlay(1);
 			Assertions.fail();
-		}
-		catch (ScrabbleException.ForbiddenPlayException e)
-		{
+		} catch (ScrabbleException.ForbiddenPlayException e) {
 			// OK
 		}
 		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
 	@Test
-	public void wordDoesNotTouch() throws ScrabbleException, InterruptedException
-	{
+	public void wordDoesNotTouch() throws ScrabbleException, InterruptedException {
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.game.assertFirstLetters("ASWEEDVIGIE");
 		startGame(true);
 		play(this.game, "H8 AS");
-		try
-		{
+		try {
 			play(this.game, "A3 VIGIE");
 			Assertions.fail();
-		}
-		catch (ScrabbleException e)
-		{
+		} catch (ScrabbleException e) {
 			// ok
 		}
 	}
@@ -214,8 +195,7 @@ public class GameTest
 	 * @param action
 	 * @throws ScrabbleException
 	 */
-	void play(final Game game, final String action) throws ScrabbleException
-	{
+	void play(final Game game, final String action) throws ScrabbleException {
 		final ScoreCalculator.MoveMetaInformation mi = ScoreCalculator.getMetaInformation(
 				game.grid,
 				game.scrabbleRules,
@@ -225,8 +205,7 @@ public class GameTest
 	}
 
 	@Test
-	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException
-	{
+	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException {
 		this.game = new Game(FRENCH, 2346975568742590367L);
 		this.game.waitAcknowledges = false;
 		this.game.assertFirstLetters("FTINOA ");
@@ -324,8 +303,7 @@ public class GameTest
 		game.setTestModus(true);
 		game.startGame();
 
-		for (final Pair<String, Integer> play : plays)
-		{
+		for (final Pair<String, Integer> play : plays) {
 			final oscrabble.data.Action action = oscrabble.data.Action.builder()
 					.player(null)
 					.notation(play.getKey())
@@ -341,28 +319,21 @@ public class GameTest
 	 *
 	 * @param fork on a new thread if true.
 	 */
-	public void startGame(final boolean fork) throws ScrabbleException, InterruptedException
-	{
-		this.game.listeners.add(new TestListener()
-		{
+	public void startGame(final boolean fork) throws ScrabbleException, InterruptedException {
+		this.game.listeners.add(new TestListener() {
 			@Override
-			public void onGameStateChanged()
-			{
+			public void onGameStateChanged() {
 				LOGGER.info("Game state changed to " + GameTest.this.game.getState().name());
 			}
 		});
-		if (fork)
-		{
+		if (fork) {
 			final AtomicReference<ScrabbleException> exception = new AtomicReference<>();
 			new Thread(() -> this.game.startGame()).start();
 			Thread.sleep(300);
-			if (exception.get() != null)
-			{
+			if (exception.get() != null) {
 				throw exception.get();
 			}
-		}
-		else
-		{
+		} else {
 			this.game.startGame();
 		}
 
@@ -371,27 +342,21 @@ public class GameTest
 	/**
 	 * Default listener. Does nothing.
 	 */
-	abstract static class TestListener implements GameListener
-	{
+	abstract static class TestListener implements GameListener {
 
 		private final ArrayBlockingQueue<ScrabbleEvent> queue = new ArrayBlockingQueue<>(8);
 		private final AtomicReference<Throwable> thrownException;
 
-		TestListener()
-		{
+		TestListener() {
 			this.thrownException = new AtomicReference<>();
 			final Thread thread = new Thread(() -> {
-				try
-				{
-					while (true)
-					{
+				try {
+					while (true) {
 						final ScrabbleEvent event;
 						event = TestListener.this.queue.take();
 						event.accept(this);
 					}
-				}
-				catch (final Throwable e)
-				{
+				} catch (final Throwable e) {
 					this.thrownException.set(e);
 				}
 			});
@@ -401,8 +366,7 @@ public class GameTest
 		}
 
 		@Override
-		public Queue<ScrabbleEvent> getIncomingEventQueue()
-		{
+		public Queue<ScrabbleEvent> getIncomingEventQueue() {
 			return this.queue;
 		}
 	}

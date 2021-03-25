@@ -13,37 +13,29 @@ import java.util.*;
 /**
  * A french dictionary with only a part of the world list
  */
-public class FrenchDictionaryForTest implements IDictionary
-{
+public class FrenchDictionaryForTest implements IDictionary {
 	private final Set<String> words = new HashSet<>();
 
-	FrenchDictionaryForTest() throws IOError
-	{
-		try
-		{
+	FrenchDictionaryForTest() throws IOError {
+		try {
 			words.addAll(IOUtils.readLines(FrenchDictionaryForTest.class.getResourceAsStream("PartialFrenchWordList"), Charset.defaultCharset()));
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw new IOError(e);
 		}
 	}
 
 	@Override
-	public Collection<String> getAdmissibleWords()
-	{
+	public Collection<String> getAdmissibleWords() {
 		return this.words;
 	}
 
 	@Override
-	public boolean isAdmissible(final String word)
-	{
+	public boolean isAdmissible(final String word) {
 		return this.words.contains(word);
 	}
 
 	@Override
-	public ScrabbleRules getScrabbleRules()
-	{
+	public ScrabbleRules getScrabbleRules() {
 		final ArrayList<Triple<Character, Integer, Integer>> letters = new ArrayList<>();
 		letters.add(Triple.of('E', 15, 1));
 		letters.add(Triple.of('A', 9, 1));
@@ -76,8 +68,7 @@ public class FrenchDictionaryForTest implements IDictionary
 		rules.gridSize = 7;
 		rules.numberBlanks = 2;
 		rules.letters = new HashMap<>();
-		for (final Triple<Character, Integer, Integer> triple : letters)
-		{
+		for (final Triple<Character, Integer, Integer> triple : letters) {
 			rules.letters.put(
 					triple.getLeft(),
 					ScrabbleRules.Letter.builder()

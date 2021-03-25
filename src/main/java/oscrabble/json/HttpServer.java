@@ -18,8 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
-public class HttpServer extends MessageHandler
-{
+public class HttpServer extends MessageHandler {
 	public static final String PARAM_MAX_WAIT = "maxWait";
 	public static final String PARAM_MAX_WAIT_UNIT = "maxWaitUnit";
 
@@ -29,8 +28,7 @@ public class HttpServer extends MessageHandler
 	private final IServer server;
 	private final HashMap<String, PlayerStub> playerStubs = new HashMap<>();
 
-	public HttpServer(final IServer server)
-	{
+	public HttpServer(final IServer server) {
 		this.server = server;
 	}
 
@@ -40,16 +38,14 @@ public class HttpServer extends MessageHandler
 	 * @param post message to treat
 	 * @return json response
 	 */
-	protected JsonMessage treat(final JsonMessage post) throws Exception
-	{
+	protected JsonMessage treat(final JsonMessage post) throws Exception {
 		//noinspection unchecked
 		final Class<JsonMessage> postMessageClass = (Class<JsonMessage>) Class.forName(VoidResponse.class.getPackageName() + "." + post.getCommand());
 		final Method treat = this.getClass().getMethod("treat" + postMessageClass.getSimpleName(), postMessageClass);
 		return (JsonMessage) treat.invoke(this, post);
 	}
 
-	public JsonMessage treatPoolMessage(final PoolMessage post) throws InterruptedException
-	{
+	public JsonMessage treatPoolMessage(final PoolMessage post) throws InterruptedException {
 		final BlockingQueue<Server.ScrabbleEvent> queue = this.playerStubs.get(post.getFrom()).getIncomingEventQueue();
 
 		final Server.ScrabbleEvent event = queue.poll(
@@ -57,22 +53,17 @@ public class HttpServer extends MessageHandler
 				post.getTimeoutUnit()
 		);
 		final String game = post.getGame();
-		if (event == null)
-		{
+		if (event == null) {
 			JsonMessage.instantiate(VoidResponse.class, game, this.server.getUUID().toString(), post.getFrom());
 			return new VoidResponse(); // TODO: should be something else
-		}
-		else
-		{
+		} else {
 			return null; // TODO: pack the event in a message and send it.
 		}
 	}
 
-	public AddPlayerResponse treatAddPlayer(final AddPlayer post)
-	{
+	public AddPlayerResponse treatAddPlayer(final AddPlayer post) {
 		final Matcher m = Pattern.compile("(.*):(.*)").matcher(post.getInetSocketAddress());
-		if (!m.matches())
-		{
+		if (!m.matches()) {
 			throw new IOScrabbleError("Incorrect formatted socket address: " + post.getInetSocketAddress());
 		}
 
@@ -91,8 +82,7 @@ public class HttpServer extends MessageHandler
 		return response;
 	}
 
-	public static void main(String[] args) throws Exception
-	{
+	public static void main(String[] args) throws Exception {
 		final Language language = Language.FRENCH;
 		oscrabble.server.Server scrabbleServer = new Server(language, Dictionary.getDictionary(language));
 		final HttpServer httpServer = new HttpServer(scrabbleServer);

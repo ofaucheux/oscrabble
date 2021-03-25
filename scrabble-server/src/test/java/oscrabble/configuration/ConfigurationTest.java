@@ -18,29 +18,24 @@ import java.util.Properties;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class ConfigurationTest
-{
+class ConfigurationTest {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationTest.class);
 
 	@Test
 	@Disabled
-	void configuration() throws InterruptedException, IOException
-	{
+	void configuration() throws InterruptedException, IOException {
 		final Config config1 = new Config();
 
 		final AtomicBoolean closed = new AtomicBoolean(false);
-		final WindowAdapter closeAdapter = new WindowAdapter()
-		{
+		final WindowAdapter closeAdapter = new WindowAdapter() {
 			@Override
-			public void windowClosing(final WindowEvent e)
-			{
+			public void windowClosing(final WindowEvent e) {
 				closed.set(true);
 			}
 		};
 
-		for (int i = 0; i < 3; i++)
-		{
+		for (int i = 0; i < 3; i++) {
 			final int fixI = i;
 			new Thread(() -> {
 				final JFrame frame = new JFrame();
@@ -56,10 +51,8 @@ class ConfigurationTest
 		}
 
 		final long start = System.currentTimeMillis();
-		while (System.currentTimeMillis() - start < 30000)
-		{
-			if (closed.get())
-			{
+		while (System.currentTimeMillis() - start < 30000) {
+			if (closed.get()) {
 				break;
 			}
 			Thread.sleep(100);
@@ -77,8 +70,7 @@ class ConfigurationTest
 		Assert.assertEquals(config1.happiness, config2.happiness);
 	}
 
-	private static class Config extends Configuration
-	{
+	private static class Config extends Configuration {
 		@Parameter(label = "Allow error")
 		boolean allowError;
 

@@ -7,8 +7,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class DictionaryEntry
-{
+public class DictionaryEntry {
 	public String word;
 	public List<String> definitions;
 }

@@ -9,12 +9,10 @@ import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
 
-class JsonMessageTest
-{
+class JsonMessageTest {
 
 	@Test
-	void parse() throws IOException
-	{
+	void parse() throws IOException {
 
 		JsonMessage message;
 
@@ -36,8 +34,7 @@ class JsonMessageTest
 
 	}
 
-	private JsonMessage getJsonMessage(final String filename) throws IOException
-	{
+	private JsonMessage getJsonMessage(final String filename) throws IOException {
 		final String json = IOUtils.toString(JsonMessageTest.class.getResourceAsStream("JsonMessageTest/" + filename), Charset.defaultCharset());
 		return JsonMessage.parse(json);
 	}

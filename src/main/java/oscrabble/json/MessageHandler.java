@@ -13,22 +13,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public abstract class MessageHandler extends AbstractHandler
-{
+public abstract class MessageHandler extends AbstractHandler {
 
 	public static final Logger LOGGER = Logger.getLogger(MessageHandler.class);
 
 	@Override
-	public void handle(String target, final Request baseRequest, HttpServletRequest request, final HttpServletResponse response) throws IOException
-	{
+	public void handle(String target, final Request baseRequest, HttpServletRequest request, final HttpServletResponse response) throws IOException {
 		final String posted = IOUtils.toString(baseRequest.getReader());
 		final JsonMessage post;
-		try
-		{
+		try {
 			post = JsonMessage.parse(posted);
-		}
-		catch (JsonProcessingException e)
-		{
+		} catch (JsonProcessingException e) {
 			final StringWriter stack = new StringWriter();
 			e.printStackTrace(new PrintWriter(stack));
 
@@ -38,12 +33,9 @@ public abstract class MessageHandler extends AbstractHandler
 		}
 
 		JsonMessage responseMessage;
-		try
-		{
+		try {
 			responseMessage = treat(post);
-		}
-		catch (Throwable e)
-		{
+		} catch (Throwable e) {
 			LOGGER.error("Treatment failed", e);
 
 			final StringWriter stack = new StringWriter();

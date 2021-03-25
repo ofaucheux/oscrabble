@@ -8,16 +8,14 @@ import java.util.regex.Pattern;
 /**
  * Coordinate of a move: cell and direction
  */
-public class Coordinate
-{
+public class Coordinate {
 	private static final Pattern HORIZONTAL_COORDINATE_PATTERN = Pattern.compile("(\\d+)(\\w)");
 	private static final Pattern VERTICAL_COORDINATE_PATTERN = Pattern.compile("(\\w)(\\d+)");
 
 	public Grid.Direction direction;
 	public int x, y;
 
-	public static Coordinate parse(final String notation) throws IllegalCoordinate
-	{
+	public static Coordinate parse(final String notation) throws IllegalCoordinate {
 		final Grid.Direction direction;
 		final int groupX, groupY;
 		Matcher m;
@@ -26,15 +24,11 @@ public class Coordinate
 			direction = Grid.Direction.HORIZONTAL;
 			groupX = 2;
 			groupY = 1;
-		}
-		else if ((m = VERTICAL_COORDINATE_PATTERN.matcher(notation)).matches())
-		{
+		} else if ((m = VERTICAL_COORDINATE_PATTERN.matcher(notation)).matches()) {
 			direction = Grid.Direction.VERTICAL;
 			groupX = 1;
 			groupY = 2;
-		}
-		else
-		{
+		} else {
 			throw new IllegalCoordinate(notation);
 		}
 
@@ -46,8 +40,7 @@ public class Coordinate
 	}
 
 	// tODO: move
-	public static String getNotation(final Square square, final Grid.Direction direction)
-	{
+	public static String getNotation(final Square square, final Grid.Direction direction) {
 		return getNotation(square.x, square.y, direction);
 	}
 
@@ -59,13 +52,11 @@ public class Coordinate
 	 * @param direction
 	 * @return
 	 */
-	private static String getNotation(final int x, final int y, final Grid.Direction direction)
-	{
-		String sx = Character.toString((char) ('A' + x-1));
-		switch (direction)
-		{
+	private static String getNotation(final int x, final int y, final Grid.Direction direction) {
+		String sx = Character.toString((char) ('A' + x - 1));
+		switch (direction) {
 			case VERTICAL:
-				 return sx + (y);
+				return sx + (y);
 			case HORIZONTAL:
 				return y + sx;
 			default:
@@ -73,24 +64,21 @@ public class Coordinate
 		}
 	}
 
-	public String getNotation()
-	{
+	public String getNotation() {
 		return getNotation(this.x, this.y, this.direction);
 	}
 
 	/**
 	 * @return if both objects represent the same cells, perhaps with different directions.
 	 */
-	public boolean sameCell(final Coordinate other)
-	{
+	public boolean sameCell(final Coordinate other) {
 		return this.x == other.x && this.y == other.y;
 	}
 
 	/**
 	 * @return the square this coordinate points on
 	 */
-	public Square getSquare()
-	{
+	public Square getSquare() {
 		return new Square(this.x, this.y);
 	}
 }

@@ -10,16 +10,14 @@ import java.util.ArrayList;
 /**
  * Test class
  */
-class JRackTest
-{
+class JRackTest {
 
 	/**
 	 * Display a rack.
 	 */
 	@Test
 	@Disabled
-	void setTiles()
-	{
+	void setTiles() {
 		final ArrayList<Tile> tiles = new ArrayList<>();
 		tiles.add(Tile.builder().c('A').points(1).isJoker(false).build());
 		tiles.add(Tile.builder().c('X').points(10).isJoker(false).build());

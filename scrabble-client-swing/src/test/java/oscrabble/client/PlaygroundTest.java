@@ -8,17 +8,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 
-public class PlaygroundTest
-{
+public class PlaygroundTest {
 	@Test
-	void displayGrid() throws IOException, InterruptedException
-	{
+	void displayGrid() throws IOException, InterruptedException {
 		this.displayGrid(false);
 		this.displayGrid(true);
 	}
 
-	void displayGrid(boolean ended) throws IOException, InterruptedException
-	{
+	void displayGrid(boolean ended) throws IOException, InterruptedException {
 		final Playground playground = new Playground(null);
 
 		final InputStream resourceAsStream = PlaygroundTest.class.getResourceAsStream(ended ? "ended_game.json" : "game_1.json");
@@ -26,8 +23,7 @@ public class PlaygroundTest
 		playground.refreshUI(state, Collections.emptyList());
 
 		playground.gridFrame.setVisible(true);
-		while (playground.gridFrame.isVisible())
-		{
+		while (playground.gridFrame.isVisible()) {
 			//noinspection BusyWait
 			Thread.sleep(100);
 		}

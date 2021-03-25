@@ -10,24 +10,26 @@ import java.util.UUID;
 /**
  * Darstellung eines Spielsteins.
  */
-class JTile extends JComponent
-{
+class JTile extends JComponent {
 
 	final static int CELL_SIZE = 40;
 	final static Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);
 
-	/** Grid this tile belongs to */
+	/**
+	 * Grid this tile belongs to
+	 */
 	JGrid grid;
 
-	/** Turn the tile has been played, if any */
+	/**
+	 * Turn the tile has been played, if any
+	 */
 	private UUID turn;
 
 	private final boolean isJoker;
 	private final char letter;
 	private final int value;
 
-	JTile(final char letter, final int value, final boolean isJoker)
-	{
+	JTile(final char letter, final int value, final boolean isJoker) {
 		this.letter = letter;
 		this.value = value;
 		this.isJoker = isJoker;
@@ -42,21 +44,18 @@ class JTile extends JComponent
 //		this(square.tile, square.letterBonus /* TODO isfalse */, square.isJoker());
 //	}
 
-	public JTile(final Tile tile)
-	{
+	public JTile(final Tile tile) {
 		this(tile.c, tile.points, tile.isJoker);
 		this.turn = tile.turn;
 	}
 
 	/**
-	 *
 	 * @param g2
 	 * @param container
 	 * @param tile
 	 * @param black
 	 */
-	public static void drawTile(final Graphics2D g2, final Container container, @NonNull final JTile tile, final Color black)
-	{
+	public static void drawTile(final Graphics2D g2, final Container container, @NonNull final JTile tile, final Color black) {
 		drawTile(g2, container, tile.letter, tile.value, tile.isJoker, black);
 	}
 
@@ -65,8 +64,8 @@ class JTile extends JComponent
 						 final char letter,
 						 final int value,
 						 final boolean isJoker,
-						 final Color foregroundColor)
-	{
+						 final Color foregroundColor
+	) {
 		g2.setPaint(STONE_BACKGROUND_COLOR);
 		final Insets insets = component.getInsets();
 		//noinspection SuspiciousNameCombination
@@ -78,8 +77,7 @@ class JTile extends JComponent
 				ARC_WIDTH,
 				ARC_WIDTH);
 
-		if (letter != ' ')
-		{
+		if (letter != ' ') {
 			final float characterSize = getCharacterSize(component);
 
 			// Draw the letter
@@ -93,8 +91,7 @@ class JTile extends JComponent
 			g2.drawString(str, tx, ty);
 
 			// Draw the point-value
-			if (value != 0)
-			{
+			if (value != 0) {
 				g2.setFont(font.deriveFont(characterSize * 10 / 18));
 				metrics = g2.getFontMetrics(font);
 				final String points = Integer.toString(value);
@@ -108,21 +105,18 @@ class JTile extends JComponent
 	private static final Color STONE_BACKGROUND_COLOR = Color.decode("0xF3E5AB");
 	private static final int ARC_WIDTH = 14;
 
+	static float getCharacterSize(final Container cell) {
+		return cell.getWidth() * 18 / 32f;
+	}
+
 	@Override
-	protected void paintComponent(final Graphics g)
-	{
+	protected void paintComponent(final Graphics g) {
 		super.paintComponent(g);
-		if (this.grid != null && this.grid.turnToHide != null && this.grid.turnToHide.equals(this.turn))
-		{
+		if (this.grid != null && this.grid.turnToHide != null && this.grid.turnToHide.equals(this.turn)) {
 			return;
 		}
 
 		drawTile((Graphics2D) g, this, this.letter, this.value, this.isJoker, Color.black);
-	}
-
-	static float getCharacterSize(final Container cell)
-	{
-		return cell.getWidth() * 18 / 32f;
 	}
 
 }

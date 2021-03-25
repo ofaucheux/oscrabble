@@ -8,23 +8,19 @@ import org.springframework.context.ConfigurableApplicationContext;
  * Microservice starter.
  */
 @SpringBootApplication
-public class Application
-{
+public class Application {
 
 	private ConfigurableApplicationContext applicationContext;
 
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		new Application().start();
 	}
 
-	public void start()
-	{
+	public void start() {
 		this.applicationContext = SpringApplication.run(Application.class);
 	}
 
-	public void stop()
-	{
+	public void stop() {
 		this.applicationContext.stop();
 	}
 }

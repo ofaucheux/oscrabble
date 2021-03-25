@@ -5,6 +5,5 @@ import java.util.function.Consumer;
 /**
  * An event
  */
-public interface ScrabbleEvent extends Consumer<GameListener>
-{
+public interface ScrabbleEvent extends Consumer<GameListener> {
 }

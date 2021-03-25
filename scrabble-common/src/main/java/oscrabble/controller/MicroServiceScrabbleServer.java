@@ -16,8 +16,7 @@ import java.net.URI;
 import java.util.*;
 
 @SuppressWarnings("BusyWait")
-public class MicroServiceScrabbleServer extends AbstractMicroService
-{
+public class MicroServiceScrabbleServer extends AbstractMicroService {
 	/**
 	 * Default port of scrabble servers
 	 */
@@ -31,32 +30,42 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	 * @param host Servername
 	 * @param port port
 	 */
-	public MicroServiceScrabbleServer(final String host, final int port)
-	{
+	public MicroServiceScrabbleServer(final String host, final int port) {
 		super(
-			UriComponentsBuilder.newInstance()
-				.scheme("http")
-				.host(host)
-				.port(port)
+				UriComponentsBuilder.newInstance()
+						.scheme("http")
+						.host(host)
+						.port(port)
 		);
 	}
 
 	/**
 	 * @return server on localhost with default port
 	 */
-	public static MicroServiceScrabbleServer getLocal()
-	{
+	public static MicroServiceScrabbleServer getLocal() {
 		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
 		server.waitToUpStatus(null);
 		return server;
 	}
 
 	/**
+	 * Extract the list of the players
+	 *
+	 * @param state state of the game
+	 * @return mapping player id > player.
+	 */
+	private static Map<UUID, Player> listPlayer(final GameState state) {
+		final LinkedHashMap<UUID, Player> map = new LinkedHashMap<>();
+		state.players.forEach(p -> map.put(p.id, p));
+		return map;
+	}
+
+	/**
 	 * Create a game
+	 *
 	 * @return id of the created new game
 	 */
-	public UUID newGame()
-	{
+	public UUID newGame() {
 		final GameState state = REST_TEMPLATE.postForObject(resolve(null, "newGame"), null, GameState.class);
 		assert state != null;
 		return state.gameId;
@@ -64,10 +73,10 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 
 	/**
 	 * Let the server loads the fixture games and return them.
+	 *
 	 * @return
 	 */
-	public List<GameState> loadFixtures()
-	{
+	public List<GameState> loadFixtures() {
 		final GameState[] games = REST_TEMPLATE.postForObject(resolve(null, "loadFixtures"), null, GameState[].class);
 		assert games != null;
 		return Arrays.asList(games);
@@ -77,11 +86,9 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	 * @return state of the game
 	 * @throws ScrabbleException.CommunicationException
 	 */
-	public GameState getState(final UUID game) throws ScrabbleException.CommunicationException
-	{
+	public GameState getState(final UUID game) throws ScrabbleException.CommunicationException {
 		final ResponseEntity<GameState> re = REST_TEMPLATE.postForEntity(resolve(game, "getState"), null, GameState.class);
-		if (!re.getStatusCode().is2xxSuccessful())
-		{
+		if (!re.getStatusCode().is2xxSuccessful()) {
 			throw new ScrabbleException.CommunicationException("Cannot get state: " + re.getStatusCode().getReasonPhrase());
 		}
 		final GameState gameState = re.getBody();
@@ -90,8 +97,8 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 		return gameState;
 	}
 
-
 	/**
+	 *
 	 */
 	public void acknowledgeState(final UUID game, final UUID player, final GameState state) {
 		final PlayerSignature signature = PlayerSignature.builder().player(player).build();
@@ -99,23 +106,20 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	}
 
 	/**
-	 * Compute the score of actions. No check against dictionary occurs. The order of the result is the same as the one of the
-	 * parameter.
+	 * Compute the score of actions. No check against dictionary occurs. The order of the result is the same as the one of the parameter.
 	 *
 	 * @param game
 	 * @param notations
 	 * @return
 	 * @throws ScrabbleException.CommunicationException
 	 */
-	public Collection<Score> getScores(final UUID game, final Collection<String> notations) throws ScrabbleException.CommunicationException
-	{
+	public Collection<Score> getScores(final UUID game, final Collection<String> notations) throws ScrabbleException.CommunicationException {
 		//noinspection ToArrayCallWithZeroLengthArrayArgument
 		final ResponseEntity<Score[]> re = REST_TEMPLATE.postForEntity(
 				resolve(game, "getScores"),
 				notations.toArray(new String[notations.size()]),
 				Score[].class);
-		if (!re.getStatusCode().is2xxSuccessful())
-		{
+		if (!re.getStatusCode().is2xxSuccessful()) {
 			throw new ScrabbleException.CommunicationException("Cannot get scores of " + notations);
 		}
 		//noinspection ConstantConditions
@@ -129,8 +133,7 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	 * @param player
 	 * @return
 	 */
-	public Bag getRack(final UUID game, final UUID player /* todo: secret */)
-	{
+	public Bag getRack(final UUID game, final UUID player /* todo: secret */) {
 		final PlayerSignature request = PlayerSignature.builder().player(player).build();
 		final Bag bag = REST_TEMPLATE.postForObject(resolve(game, "getRack"), request, Bag.class);
 		return bag;
@@ -138,11 +141,11 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 
 	/**
 	 * Get the rules of a game.
+	 *
 	 * @param game
 	 * @return
 	 */
-	public ScrabbleRules getRules(final UUID game)
-	{
+	public ScrabbleRules getRules(final UUID game) {
 		final ScrabbleRules rules = REST_TEMPLATE.postForObject(resolve(game, "getRules"), null, ScrabbleRules.class);
 		return rules;
 	}
@@ -151,25 +154,12 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	 * @return id and name of the player on turn.
 	 * @throws ScrabbleException.CommunicationException -
 	 */
-	public Pair<UUID, String> getPlayerOnTurn(final UUID game) throws ScrabbleException.CommunicationException
-	{
+	public Pair<UUID, String> getPlayerOnTurn(final UUID game) throws ScrabbleException.CommunicationException {
 		final GameState state = getState(game);
 		final UUID uuid = state.getPlayerOnTurn();
 		return uuid == null
 				? null
 				: new Pair<>(uuid, listPlayer(state).get(uuid).name);
-	}
-
-	/**
-	 * Extract the list of the players
-	 * @param state state of the game
-	 * @return mapping player id > player.
-	 */
-	private static Map<UUID, Player> listPlayer(final GameState state)
-	{
-		final LinkedHashMap<UUID, Player> map = new LinkedHashMap<>();
-		state.players.forEach(p -> map.put(p.id, p));
-		return map;
 	}
 //
 //	/**
@@ -187,30 +177,29 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	/**
 	 * Play an action.
 	 */
-	public PlayActionResponse play(final UUID game, final Action buildAction) throws ScrabbleException
-	{
+	public PlayActionResponse play(final UUID game, final Action buildAction) throws ScrabbleException {
 		final PlayActionResponse response = REST_TEMPLATE.postForObject(resolve(game, "playAction"), buildAction, PlayActionResponse.class);
 		return response;
 	}
 
 	/**
 	 * Add a player
+	 *
 	 * @param name of the player
 	 */
-	public UUID addPlayer(final UUID game, final String name)
-	{
+	public UUID addPlayer(final UUID game, final String name) {
 		//noinspection ConstantConditions
 		return REST_TEMPLATE.postForObject(resolve(game, "addPlayer"), name, Player.class).id;
 	}
 
 	/**
 	 * Resolve the uri for a game method
+	 *
 	 * @param game
 	 * @param method
 	 * @return the uri.
 	 */
-	private synchronized URI resolve(final UUID game, final String method)
-	{
+	private synchronized URI resolve(final UUID game, final String method) {
 		return this.uriComponentsBuilder
 				.replacePath(game == null ? null : game.toString())
 				.pathSegment(method)
@@ -221,30 +210,26 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	/**
 	 * Start the game.
 	 */
-	public void startGame(final UUID game)
-	{
+	public void startGame(final UUID game) {
 		REST_TEMPLATE.postForObject(resolve(game, "start"), null, Void.class);
 	}
 
 	/**
 	 * Get the grid.
 	 */
-	public Grid getGrid(final UUID game) throws ScrabbleException.CommunicationException
-	{
+	public Grid getGrid(final UUID game) throws ScrabbleException.CommunicationException {
 		return Grid.fromData(getState(game).getGrid());
 	}
 
 	/**
 	 * Wait after a turn has finished.  // TODO: timeout
+	 *
 	 * @param turnNumber the turn number (1 based)
 	 */
-	public void awaitEndOfPlay(final UUID game, final int turnNumber) throws ScrabbleException.CommunicationException, InterruptedException
-	{
-		while (true)
-		{
+	public void awaitEndOfPlay(final UUID game, final int turnNumber) throws ScrabbleException.CommunicationException, InterruptedException {
+		while (true) {
 			final GameState state = getState(game);
-			if (state.turnId > turnNumber)
-			{
+			if (state.turnId > turnNumber) {
 				break;
 			}
 			Thread.sleep(100);
@@ -258,13 +243,12 @@ public class MicroServiceScrabbleServer extends AbstractMicroService
 	 * @param player
 	 * @param attach if false, a detach occurs.
 	 */
-	public void attach(final UUID game, final UUID player, final boolean attach)
-	{
+	public void attach(final UUID game, final UUID player, final boolean attach) {
 		final PlayerUpdateRequest request = PlayerUpdateRequest.builder()
 				.playerId(player)
 				.parameter(PlayerUpdateRequest.Parameter.ATTACHED.toString())
 				.newValue(attach ? Boolean.TRUE.toString() : Boolean.FALSE.toString())
 				.build();
-		REST_TEMPLATE.postForObject(resolve(game, "updatePlayer"),request, Void.class);
+		REST_TEMPLATE.postForObject(resolve(game, "updatePlayer"), request, Void.class);
 	}
 }

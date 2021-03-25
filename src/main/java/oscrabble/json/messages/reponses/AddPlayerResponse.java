@@ -7,8 +7,7 @@ import oscrabble.json.messages.requests.AddPlayer;
 /**
  * Response of server to the client after an {@link AddPlayer}
  */
-public class AddPlayerResponse extends ResponseMessage
-{
+public class AddPlayerResponse extends ResponseMessage {
 	/**
 	 * Name of the new player
 	 */
@@ -19,23 +18,19 @@ public class AddPlayerResponse extends ResponseMessage
 	 */
 	private String playerKey;
 
-	public String getPlayerKey()
-	{
+	public String getPlayerKey() {
 		return playerKey;
 	}
 
-	public void setPlayerKey(final String playerKey)
-	{
+	public void setPlayerKey(final String playerKey) {
 		this.playerKey = playerKey;
 	}
 
-	public String getPlayerName()
-	{
+	public String getPlayerName() {
 		return playerName;
 	}
 
-	public void setPlayerName(final String playerName)
-	{
+	public void setPlayerName(final String playerName) {
 		this.playerName = playerName;
 	}
 }

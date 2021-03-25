@@ -21,8 +21,7 @@ import oscrabble.server.Server;
 import java.net.InetSocketAddress;
 import java.util.*;
 
-public class ServerStub extends Stub implements IServer
-{
+public class ServerStub extends Stub implements IServer {
 	/**
 	 * Listening server for incoming requests
 	 */
@@ -34,34 +33,28 @@ public class ServerStub extends Stub implements IServer
 	private final HashSet<Server.GameListener> listeners = new HashSet<>();
 	private String playerKey;
 
-	public ServerStub(final InetSocketAddress serverAddress)
-	{
+	public ServerStub(final InetSocketAddress serverAddress) {
 		super(serverAddress);
 
 		// start server
 		final int listeningPort = new Random().nextInt(2000) + 1024;
 		this.jettyServer = new org.eclipse.jetty.server.Server(listeningPort);
 //		jettyServer.setHandler(); // TODO
-		try
-		{
+		try {
 			jettyServer.start();
 			jettyServer.join();
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			throw new Error(e);
 		}
 	}
 
 	@Override
-	public void setState(final State state)
-	{
+	public void setState(final State state) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void addPlayer(final IPlayer player)
-	{
+	public void addPlayer(final IPlayer player) {
 		assert player instanceof PlayerStub;
 		final AddPlayer request = new AddPlayer();
 		request.setName(player.getName());
@@ -72,122 +65,102 @@ public class ServerStub extends Stub implements IServer
 	}
 
 	@Override
-	public void addListener(final Server.GameListener listener)
-	{
+	public void addListener(final Server.GameListener listener) {
 		// TODO
 	}
 
 	@Override
-	public int play(final UUID clientKey, final Play play, final Action action)
-	{
+	public int play(final UUID clientKey, final Play play, final Action action) {
 		return 0;// TODO
 	}
 
 	@Override
-	public IPlayer getPlayerToPlay()
-	{
+	public IPlayer getPlayerToPlay() {
 		return null;// TODO
 	}
 
 	@Override
-	public List<IPlayerInfo> getPlayers()
-	{
+	public List<IPlayerInfo> getPlayers() {
 		return null;// TODO
 	}
 
 	@Override
-	public Iterable<Server.HistoryEntry> getHistory()
-	{
+	public Iterable<Server.HistoryEntry> getHistory() {
 		return null;// TODO
 	}
 
 	@Override
-	public ScrabbleLanguageInformation getScrabbleLanguageInformation()
-	{
+	public ScrabbleLanguageInformation getScrabbleLanguageInformation() {
 		return null;// TODO
 	}
 
 	@Override
-	public Grid getGrid()
-	{
+	public Grid getGrid() {
 		return null;// TODO
 	}
 
 	@Override
-	public Rack getRack(final IPlayer player, final UUID clientKey)
-	{
+	public Rack getRack(final IPlayer player, final UUID clientKey) {
 		return null;// TODO
 	}
 
 	@Override
-	public int getScore(final IPlayer player)
-	{
+	public int getScore(final IPlayer player) {
 		return 0;// TODO
 	}
 
 	@Override
-	public void editParameters(final UUID caller, final IPlayerInfo player)
-	{
+	public void editParameters(final UUID caller, final IPlayerInfo player) {
 		// TODO
 	}
 
 	@Override
-	public void sendMessage(final IPlayer sender, final String message)
-	{
+	public void sendMessage(final IPlayer sender, final String message) {
 		// TODO
 	}
 
 	@Override
-	public void quit(final IPlayer player, final UUID key, final String message)
-	{
+	public void quit(final IPlayer player, final UUID key, final String message) {
 		// TODO
 	}
 
 	@Override
-	public Configuration getConfiguration()
-	{
+	public Configuration getConfiguration() {
 		return null;// TODO
 	}
 
 	@Override
-	public boolean isLastPlayError(final IPlayer player)
-	{
+	public boolean isLastPlayError(final IPlayer player) {
 		return false;// TODO
 	}
 
 	@Override
-	public void playerConfigHasChanged(final IPlayer player, final UUID playerKey)
-	{
+	public void playerConfigHasChanged(final IPlayer player, final UUID playerKey) {
 		// TODO
 	}
 
 	@Override
-	public int getNumberTilesInBag()
-	{
+	public int getNumberTilesInBag() {
 		return 0;// TODO
 	}
 
 	@Override
-	public int getRequiredTilesInBagForExchange()
-	{
+	public int getRequiredTilesInBagForExchange() {
 		return 0;// TODO
 	}
 
 	@Override
-	public UUID getUUID()
-	{
+	public UUID getUUID() {
 		return null;// TODO
 	}
 
 	@Override
-	public Collection<String> getMutations(final String word)
-	{
+	public Collection<String> getMutations(final String word) {
 		return null;// TODO
 	}
 
 	@Override
-	public Iterable<String> getDefinitions(final String word) throws DictionaryException
-	{
+	public Iterable<String> getDefinitions(final String word) throws DictionaryException {
 		return null;// TODO
 	}
 }

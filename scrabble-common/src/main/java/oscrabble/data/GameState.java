@@ -9,8 +9,7 @@ import java.util.UUID;
 @Data
 @Builder
 // todo: configuration of the game
-public class GameState
-{
+public class GameState {
 	/**
 	 * ID of the game
 	 */
@@ -41,7 +40,6 @@ public class GameState
 	/**
 	 * State of a game
 	 */
-	public enum State
-	{BEFORE_START, STARTED, ENDED,}
+	public enum State {BEFORE_START, STARTED, ENDED,}
 
 }

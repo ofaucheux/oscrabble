@@ -1,29 +1,30 @@
 # todo
+
 - ✔ play again AI
 - ✔ click on the case of the grid
 - ✔ quit the client application
 - ✔ focus on the rack pane
 - ✔ Problem by error message
 - ✔ Highlight only the possible tiles
--   select difficulty of AI
+- select difficulty of AI
 - ✔ preshow the play
 - ✔ clignotement
 - ✔ dictionary: show definition
 - ✔ history
 - ✔ highlight history selection
--   End of game: message, points
+- End of game: message, points
 - ✔ focus on jrack > focus on main grid
 - ✔ Field "Player" of played action is empty
--   forbid play after end
--   AI cannot play anymore
+- forbid play after end
+- AI cannot play anymore
 - ✔ order of player on the score board
 - ✔ End, wenn a player has no tiles anymore
 - ✔ show prepared tiles
 - ✔ accept retry on error
 - ✔ logs
 - ✔ Advisor
--   Errors by scoring
+- Errors by scoring
 - ✔ Wait acknowledges of all players before next turn
 - ✔ Exchange tiles
--   swing client configuration to select the server
-    -   configuration properties file
+- swing client configuration to select the server
+    - configuration properties file

@@ -9,8 +9,7 @@ import java.util.Map;
  * Information relative to the use of a language in scrabble: number of tiles, etc.
  */
 @Data
-public class ScrabbleRules
-{
+public class ScrabbleRules {
 	public Map<Character, Letter> letters;
 
 	public int numberBlanks;
@@ -27,8 +26,7 @@ public class ScrabbleRules
 	 */
 	@Data
 	@Builder
-	public static class Letter
-	{
+	public static class Letter {
 		public char c;
 		public int prevalence;
 		public int points;

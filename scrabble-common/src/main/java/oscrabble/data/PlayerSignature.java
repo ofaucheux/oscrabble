@@ -7,7 +7,6 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class PlayerSignature
-{
+public class PlayerSignature {
 	public UUID player;
 }

@@ -30,15 +30,13 @@ import java.util.concurrent.TimeoutException;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public abstract class JsonMessage
-{
+public abstract class JsonMessage {
 	/**
 	 * Mapper for serialisation
 	 */
 	static final ObjectMapper MAPPER = new ObjectMapper();
 
-	static
-	{
+	static {
 		MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 	}
 
@@ -70,84 +68,66 @@ public abstract class JsonMessage
 	 * @throws JsonParseException   if underlying input contains invalid content of type {@link JsonParser} supports (JSON for default case)
 	 * @throws JsonMappingException if the input JSON structure does not match structure expected for result type (or has other mismatch issues)
 	 */
-	public static JsonMessage parse(final String json) throws JsonProcessingException
-	{
+	public static JsonMessage parse(final String json) throws JsonProcessingException {
 		return MAPPER.readValue(json, JsonMessage.class);
 	}
 
-	public static <A extends JsonMessage> A instantiate(final Class<A> clazz, final String game, final String from, final String to)
-	{
-		try
-		{
+	public static <A extends JsonMessage> A instantiate(final Class<A> clazz, final String game, final String from, final String to) {
+		try {
 			final A m = clazz.getConstructor().newInstance();
 			m.setGame(game);
 			m.setFrom(from);
 			m.setTo(to);
 			m.setDate(new Date());
 			return m;
-		}
-		catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
-		{
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
 			throw new Error(e);
 		}
 	}
 
-	protected void setDate(final Date date)
-	{
+	protected void setDate(final Date date) {
 		this.date = date;
 	}
 
-	public Date getDate()
-	{
+	public Date getDate() {
 		return this.date;
 	}
 
-	public String getGame()
-	{
+	public String getGame() {
 		return this.game;
 	}
 
-	public String getFrom()
-	{
+	public String getFrom() {
 		return this.from;
 	}
 
-	public String getTo()
-	{
+	public String getTo() {
 		return this.to;
 	}
 
-	public String toJson()
-	{
-		try
-		{
+	public String toJson() {
+		try {
 			final StringWriter w = new StringWriter();
 			MAPPER.writeValue(w, this);
 			return w.toString();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw new IOError(e);
 		}
 	}
 
-	public void setFrom(final String from)
-	{
+	public void setFrom(final String from) {
 		this.from = from;
 	}
 
-	public void setGame(final String game)
-	{
+	public void setGame(final String game) {
 		this.game = game;
 	}
 
-	public String getCommand()
-	{
+	public String getCommand() {
 		return this.getClass().getSimpleName();
 	}
 
-	public void setTo(final String to)
-	{
+	public void setTo(final String to) {
 		this.to = to;
 	}
 
@@ -158,17 +138,14 @@ public abstract class JsonMessage
 	 * @param destination
 	 * @throws IOScrabbleError
 	 */
-	public JsonMessage send(final HttpClient sender, final InetSocketAddress destination) throws IOScrabbleError
-	{
-		try
-		{
+	public JsonMessage send(final HttpClient sender, final InetSocketAddress destination) throws IOScrabbleError {
+		try {
 			final Request request = sender.newRequest(new URI("http://" + destination.getHostString() + ":" + destination.getPort()));
 			final String input = toJson();
 			request.content(new StringContentProvider(input, "application/json"));
 			final ContentResponse response = request.send();
 			final String output = response.getContentAsString();
-			if (response.getStatus() != HttpServletResponse.SC_OK)
-			{
+			if (response.getStatus() != HttpServletResponse.SC_OK) {
 				final StringBuffer sb = new StringBuffer();
 				sb.append("Connection with server returned status ").append(response.getStatus()).append("\n");
 				sb.append("\nInput:\n").append(input);
@@ -177,19 +154,14 @@ public abstract class JsonMessage
 				throw new IOScrabbleError(sb.toString(), null);
 			}
 
-			try
-			{
+			try {
 				return output == null || output.isEmpty()
 						? null
 						: JsonMessage.parse(output);
-			}
-			catch (JsonProcessingException e)
-			{
+			} catch (JsonProcessingException e) {
 				throw new IOScrabbleError("Cannot parse response\n\n" + output, e);
 			}
-		}
-		catch (URISyntaxException | InterruptedException | TimeoutException | ExecutionException e)
-		{
+		} catch (URISyntaxException | InterruptedException | TimeoutException | ExecutionException e) {
 			throw new IOScrabbleError(e.getMessage(), e);
 		}
 	}

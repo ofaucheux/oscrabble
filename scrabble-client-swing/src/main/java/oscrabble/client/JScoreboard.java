@@ -12,17 +12,14 @@ import java.util.UUID;
 /**
  * Panel for the display of the actual score.
  */
-class JScoreboard extends JPanel
-{
-	JScoreboard()
-	{
+class JScoreboard extends JPanel {
+	JScoreboard() {
 		setPreferredSize(new Dimension(200, 0));
 		setLayout(new GridBagLayout());
 		setBorder(new TitledBorder("Score"));
 	}
 
-	void updateDisplay(final List<Player> players, final UUID playerOnTurn)
-	{
+	void updateDisplay(final List<Player> players, final UUID playerOnTurn) {
 		final double SMALL_WEIGHT = 0.1;
 		final double BIG_WEIGHT = 10;
 
@@ -30,8 +27,7 @@ class JScoreboard extends JPanel
 		final Dimension buttonDim = new Dimension(LINE_HEIGHT - 4, LINE_HEIGHT - 6);
 		final GridBagConstraints c = new GridBagConstraints();
 		removeAll();
-		for (final Player player : players)
-		{
+		for (final Player player : players) {
 			c.insets = new Insets(0, 0, 0, 0);
 			c.gridy++;
 			c.gridx = 0;
@@ -55,17 +51,13 @@ class JScoreboard extends JPanel
 			final JButton parameterButton = new JButton();
 			parameterButton.setPreferredSize(buttonDim);
 			parameterButton.setFocusable(false);
-			parameterButton.setAction(new AbstractAction("...")
-			{
+			parameterButton.setAction(new AbstractAction("...") {
 				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
+				public void actionPerformed(final ActionEvent e) {
 					// todo
-					final SwingWorker<Void, Void> worker = new SwingWorker<>()
-					{
+					final SwingWorker<Void, Void> worker = new SwingWorker<>() {
 						@Override
-						protected Void doInBackground()
-						{
+						protected Void doInBackground() {
 //							JScoreboard.this.game.editParameters(playground.swingPlayers.getFirst().getPlayerKey(), player);
 							return null;
 						}
