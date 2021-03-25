@@ -294,7 +294,7 @@ public class GameTest {
 		plays.add(new Pair<>("1L CLIN", 27));
 		plays.add(new Pair<>("B6 JOUTE", 30));
 		plays.add(new Pair<>("11A BROUM", 29));
-		plays.add(new Pair<>("M7 IODATES", 25));
+		plays.add(new Pair<>("M7 IODATES", 75));
 		testGame(plays);
 	}
 
