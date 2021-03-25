@@ -37,15 +37,10 @@ public class GameTest
 
 	private Game game;
 	private UUID gustav;
-	private UUID john;
-	private UUID jurek;
 
 	@BeforeAll
 	public static void mocken()
 	{
-//		application = new Application();
-//		application.start();
-
 		Thread.setDefaultUncaughtExceptionHandler((t,e) -> LOGGER.error(e.toString(), e));
 	}
 
@@ -58,8 +53,6 @@ public class GameTest
 		final int gameNr = RANDOM.nextInt(100);
 
 		this.gustav = addPlayer("Gustav_" + gameNr);
-		this.john = addPlayer("John_" + gameNr);
-		this.jurek = addPlayer("Jurek_" + gameNr);
 	}
 
 	/**
@@ -90,225 +83,6 @@ public class GameTest
 		final GameState gameState = new ObjectMapper().readValue(fixture, GameState.class);
 		new Game(gameState);
 	}
-
-//	@Test TODO
-//	void completeRandomGame() throws InterruptedException, ScrabbleException
-//	{
-//		for (int gameNr = 0; gameNr < 10; gameNr++)
-//		{
-//			this.game = new Game(DICTIONARY);
-//			this.game.delayBeforeEnds = 0;
-//			final BruteForceMethod method = new BruteForceMethod(DICTIONARY);
-//			this.game.listeners.add(new TestListener()
-//			{
-//				@Override
-//				public void afterPlay(final Action action)
-//				{
-//					LOGGER.info("Played: " + action.toString());
-//				}
-//			});
-//
-//			ArrayList<Game.Player> players = new ArrayList<>();
-//			for (int i = 0; i < RandomUtils.nextInt(1, 7); i++)
-//			{
-//				final BruteForceMethod.Player player = method.new Player("Player " + i)
-//				{
-//					{
-//						final Configuration configuration = this.getConfiguration();
-//						configuration.setValue("throttle", 0);
-//						configuration.setValue("force", 100);
-//						configuration.setValue("strategy", BruteForceMethod.Strategy.BEST_SCORE);
-//					}
-//				};
-//
-//				this.game.addPlayer(player);
-////				players.add(player);
-//			}
-//			final AtomicReference<Throwable> error = new AtomicReference<>();
-//			this.game.listeners.add(new TestListener()
-//			{
-//
-////				@Override TODO
-////				public void afterRejectedAction(final AbstractPlayer player, final Action action)
-////				{
-////					Assert.fail("Rejected action: " + action);
-////				}
-//
-////				@Override
-////				public void afterPlay(final Action action)
-////				{
-////						if (RANDOM.nextInt(10) == 0)
-////						{
-////							try
-////							{
-////								Game.Player caller = players.get(0);
-//////								UUID key = getKey(caller);
-////								final Snapshot before = this.snapshots.getLast();
-////								assert before != null;
-////								GameTest.this.game.rollbackLastMove(caller);
-////								final Snapshot after = collectInfos();
-////								assertEquals("Wrong play nr", before.roundNr, after.roundNr);
-////								before.scores.forEach(
-////										(player, beforeScore) -> assertEquals("Wrong score", beforeScore, after.scores.get(player))
-////								);
-////							}
-////							catch (final Throwable e)
-////							{
-////								error.set(e);
-////							}
-////						}
-////						else
-////						{
-////							this.snapshots.add(collectInfos());
-////						}
-////				}
-//
-////				protected Snapshot collectInfos()
-////				{
-////					final Snapshot info = new Snapshot();
-////					info.lastPlay = GameTest.this.game.actions.getLast();
-////					info.roundNr = GameTest.this.game.getRoundNr();
-////					for (final IPlayerInfo player : GameTest.this.game.getPlayers())
-////					{
-////						info.scores.put(player.getName(), player.getScore());
-////					}
-////					return info;
-////				}
-//
-//			});
-//			startGame(true);
-//
-//			while (this.game.getState() != GameState.State.ENDED)
-//			{
-//				Thread.sleep(100);
-//			}
-//
-//			assertNull(error.get());
-//		}
-//	}
-
-	// TODO ?
-//	/**
-//	 * Get the key of a player through reflection methods
-//	 * @param player the player
-//	 * @return the key
-//	 */
-//	protected UUID getKey(final BruteForceMethod.Player player)
-//	{
-//		try
-//		{
-//			Field field = AbstractPlayer.class.getDeclaredField("playerKey");
-//			field.setAccessible(true);
-//			return (UUID) field.get(player);
-//		}
-//		catch (NoSuchFieldException | IllegalAccessException e)
-//		{
-//			throw new Error(e);
-//		}
-//	}
-
-//	/**
-//	 * TODO: enable it again. For this, define the order of the rack.
-//	 * @throws ScrabbleException
-//	 * @throws InterruptedException
-//	 * @throws TimeoutException
-//	 */
-//	@Test
-//	void completeKnownGame() throws ScrabbleException, InterruptedException, TimeoutException
-//	{
-//		final List<PredefinedPlayer> players = Arrays.asList(this.gustav, this.john, this.jurek);
-//		final LinkedList<String> moves = new LinkedList<>(Arrays.asList(
-//				/*  1 */ "H3 APPETES",
-//				/*  2 */ "G9 VIGIE",
-//				/*  3 */ "7C WOmBATS",
-//				/*  4 */ "3G FATIGUE",
-//				/*  5 */ "12A DETELAI",
-//				/*  6 */ "8A ABUS",
-//				/*  7 */ "13G ESTIMAIT",
-//				/*  8 */ "5G EPErONNA",
-//				/*  9 */ "O3 ECIMER",
-//				/* 10 */ "D3 KOUROS",
-//				/* 11 */ "L8 ECHOUA",
-//				/* 12 */ "3A FOLKS",
-//				/* 13 */ "A1 DEFUNT",
-//				/* 14 */ "1A DRAYOIR",
-//				/* 15 */ "L2 QUAND",
-//				/* 16 */ "1A DRAYOIRE",
-//				/* 17 */ "11I ENJOUE",
-//				/* 18 */ "B10 RIELS",
-//				/* 19 */ "N10 VENTA",
-//				/* 20 */ "8K HEM"
-//		));
-//
-//		for (int i = 0; i < moves.size(); i++)
-//		{
-//			players.get(i % game.play(players.size()), Action.parse(null, moves.get(i));
-//		}
-//
-//		this.game.listeners.add(
-//				new TestListener()
-//				{
-//					@Override
-//					public void afterPlay(final Action play)
-//					{
-//						switch (GameTest.this.game.getRoundNr())
-//						{
-//							case 1:
-//								Assert.assertEquals(78, GameTest.game.getPlayer(gustav).score);
-//								break;
-//						}
-//					}
-//				}
-//		);
-//
-//		startGame(true);
-//		this.game.awaitEndOfPlay(moves.size());
-//
-//		// first rollback
-//		assertFalse(this.grid.isEmpty("8K"));
-//
-//		assertFalse(this.grid.isEmpty("8K"));
-//		assertFalse(this.grid.isEmpty("8L"));
-//		assertFalse(this.grid.isEmpty("8M"));
-//		this.game.rollbackLastMove(null);
-//		assertTrue(this.grid.isEmpty("8K"));
-//		assertFalse(this.grid.isEmpty("8L"));
-//		assertTrue(this.grid.isEmpty("8M"));
-//		assertEquals(this.john.uuid, this.game.getPlayerToPlay().uuid);
-//
-//		// second rollback
-//		assertFalse(this.grid.isEmpty("N10"));
-//		this.game.rollbackLastMove(null);
-//		assertTrue(this.grid.isEmpty("N10"));
-//		assertEquals(this.gustav.uuid, this.game.getPlayerToPlay().uuid);
-//
-//		// play both last moves again
-//		game.play(this.gustav, Action.parse(null, "N10 VENTA");
-//		game.play(this.john, Action.parse(null, "8K HEM");
-//		this.game.awaitEndOfPlay(moves.size());
-//		assertEquals(GameState.State.ENDED, this.game.getState());
-//
-//		Thread.sleep(this.game.delayBeforeEnds * 5000 / 2 + 500);
-//		assertEquals(GameState.State.ENDED, this.game.getState());
-//	}
-//
-//	@Test
-//	public void notAcceptedWord() throws ScrabbleException, InterruptedException, TimeoutException
-//	{
-//		this.game = new Game(DICTIONARY);  // for having only one player
-//		this.game.assertFirstLetters("FTINOA ");
-//
-//		final PredefinedPlayer etienne = addPlayer("Etienne");
-//		startGame(true);
-//
-//		game.play(etienne, Action.parse(null, "G8 As");
-//		this.game.awaitEndOfPlay(1);
-//		assertFalse(etienne.isLastPlayError());
-//
-//		game.play(etienne, Action.parse(null, "8H SIF");
-//		this.game.awaitEndOfPlay(2);
-//		assertTrue(etienne.isLastPlayError());
-//	}
 
 	@Test // TODO: reactivate retry
 	@Disabled
@@ -468,21 +242,6 @@ public class GameTest
 		this.game.awaitEndOfPlay(2);
 		assertEquals(4, this.game.getPlayer(etienne).score);
 
-//		do
-//		{
-//			this.game = new Game(FRENCH_DICTIONARY);
-//			final TestPlayer p2 = new TestPlayer("Anton", this.game);
-//			this.game.addPlayer(p2);
-//			startGame(true);
-//			final Rack rack = this.game.getRack(p2, p2.getKey());
-//			final List<Character> characters = rack.getCharacters();
-//			if (characters.contains(' '))
-//			{
-//				System.out.println("Rand: " + game.randomSeed + " - Chars: " + characters);
-//			}
-//			this.game.quitGame();
-//		} while (true);
-//
 		{
 			// Joker on normal case
 			this.game = new Game(FRENCH);
@@ -521,9 +280,6 @@ public class GameTest
 	@Test
 	void testScoreCompleteGame() throws ScrabbleException
 	{
-		final Game game = new Game(FRENCH);
-		game.setTestModus(true);
-		game.startGame();
 
 		// Game from http://chr.amet.chez-alice.fr/p/commente.htm
 		final ArrayList<Pair<String, Integer>> plays = new ArrayList<>();
@@ -547,10 +303,30 @@ public class GameTest
 		plays.add(new Pair<>("A1 SURVOLEREZ", 66));
 		plays.add(new Pair<>("3A RACKET", 34));
 		plays.add(new Pair<>("1G PARLOIR", 86));
+		testGame(plays);
+
+		plays.clear();
+		plays.add(new Pair<>("H4 FORGER", 28));
+		plays.add(new Pair<>("5F EVOQUE", 32));
+		plays.add(new Pair<>("F4 DEY", 33));
+		plays.add(new Pair<>("E5 RAGE", 55));
+		plays.add(new Pair<>("L4 HEIN", 32));
+		plays.add(new Pair<>("M1 LILAS", 34));
+		plays.add(new Pair<>("8A bUTTER", 18));
+		plays.add(new Pair<>("1L CLIN", 27));
+		plays.add(new Pair<>("B6 JOUTE", 30));
+		plays.add(new Pair<>("11A BROUM", 29));
+		plays.add(new Pair<>("M7 IODATES", 25));
+		testGame(plays);
+	}
+
+	private void testGame(final ArrayList<Pair<String, Integer>> plays) throws ScrabbleException, InterruptedException {
+		final Game game = new Game(FRENCH);
+		game.setTestModus(true);
+		game.startGame();
 
 		for (final Pair<String, Integer> play : plays)
 		{
-
 			final oscrabble.data.Action action = oscrabble.data.Action.builder()
 					.player(null)
 					.notation(play.getKey())
@@ -560,15 +336,6 @@ public class GameTest
 			assertEquals("Wrong score for \"" + play.getKey() + "\" false", play.getValue(), last.score);
 		}
 	}
-
-//	private void setRack(final Game.Player player, final String tiles)
-//	{
-//		player.rack.clear();
-//		for (final char c : tiles.toCharArray())
-//		{
-//			player.rack.add(c);
-//		}
-//	}
 
 	/**
 	 * Start the game.
@@ -601,129 +368,44 @@ public class GameTest
 		}
 
 	}
-//
-//	/**
-//	 * A player playing pre-defined turns.
-//	 */
-//	private class PredefinedPlayer extends AbstractPlayer
-//	{
-////		final ArrayBlockingQueue<String> moves = new ArrayBlockingQueue<>(1024);
-//
-//		private final ArrayBlockingQueue<ScrabbleEvent> scrabbleEvents = new ArrayBlockingQueue<>(1024);
-//
-//		private final AbstractGameListener listener;
-//
-//		private final Game game;
-//
-//		PredefinedPlayer(final Game game, final String name)
-//		{
-//			super();
-//			this.name = name;
-//			this.listener = new AbstractGameListener()
-//			{
-//
-//				@Override
-//				public Queue<ScrabbleEvent> getIncomingEventQueue()
-//				{
-//					return PredefinedPlayer.this.scrabbleEvents;
-//				}
-//
-//				@Override
-//				public void onPlayRequired(final UUID onTurn)
-//				{
-//					if (onTurn == PredefinedPlayer.this.uuid)
-//						try
-//						{
-//							GameTest.this.game.play(PredefinedPlayer.this.uuid, Action.parse(null, PredefinedPlayer.this.moves.poll(60, TimeUnit.SECONDS)));
-//						}
-//						catch (ScrabbleException | InterruptedException e)
-//						{
-//							throw new Error(e);
-//						}
-//				}
-//			};
-//			this.game = game;
-//			game.addListener(this.listener);
-//			final Thread th = new Thread(() ->
-//			{
-//				try
-//				{
-//					while (true)
-//					{
-//						final ScrabbleEvent event = this.scrabbleEvents.poll(1, TimeUnit.MINUTES);
-//						if (event == null)
-//						{
-//							throw new AssertionError("No input from server");
-//						}
-//						event.accept(this.listener);
-//					}
-//				}
-//				catch (InterruptedException e)
-//				{
-//					throw new Error(e);
-//				}
-//			});
-//
-//			th.setName("Player Thread - " + this.uuid);
-//			th.setDaemon(true);
-//			th.start();
-//		}
-//
-//
-//		int getScore()
-//		{
-//			return this.game.players.get(this.uuid).score;
-//		}
-//
-//		public boolean isLastPlayError()
-//		{
-//			return this.game.players.get(this.uuid).isLastPlayError;
-//		}
-//
-//		public oscrabble.data.Bag getRack()
-//		{
-//			return this.game.players.get(this.uuid).rack;
-//		}
-//	}
-//}
 
-/**
- * Default listener. Does nothing.
- */
-abstract static class TestListener implements GameListener
-{
-
-	private final ArrayBlockingQueue<ScrabbleEvent> queue = new ArrayBlockingQueue<>(8);
-	private final AtomicReference<Throwable> thrownException;
-
-	TestListener()
+	/**
+	 * Default listener. Does nothing.
+	 */
+	abstract static class TestListener implements GameListener
 	{
-		this.thrownException = new AtomicReference<>();
-		final Thread thread = new Thread(() -> {
-			try
-			{
-				while (true)
+
+		private final ArrayBlockingQueue<ScrabbleEvent> queue = new ArrayBlockingQueue<>(8);
+		private final AtomicReference<Throwable> thrownException;
+
+		TestListener()
+		{
+			this.thrownException = new AtomicReference<>();
+			final Thread thread = new Thread(() -> {
+				try
 				{
-					final ScrabbleEvent event;
-					event = TestListener.this.queue.take();
-					event.accept(this);
+					while (true)
+					{
+						final ScrabbleEvent event;
+						event = TestListener.this.queue.take();
+						event.accept(this);
+					}
 				}
-			}
-			catch (final Throwable e)
-			{
-				this.thrownException.set(e);
-			}
-		});
-		thread.setDaemon(true);
-		thread.setName("Test listener");
-		thread.start();
-	}
+				catch (final Throwable e)
+				{
+					this.thrownException.set(e);
+				}
+			});
+			thread.setDaemon(true);
+			thread.setName("Test listener");
+			thread.start();
+		}
 
-	@Override
-	public Queue<ScrabbleEvent> getIncomingEventQueue()
-	{
-		return this.queue;
+		@Override
+		public Queue<ScrabbleEvent> getIncomingEventQueue()
+		{
+			return this.queue;
+		}
 	}
-}
 }
 
