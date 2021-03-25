@@ -26,7 +26,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GameTest
 {
@@ -97,12 +97,12 @@ public class GameTest
 		this.game.play(Action.parse(null, "H3 APPETQE"));
 		Thread.sleep(100);
 		assertEquals(this.game.getPlayer(this.gustav).score, 0);
-		assertEquals(this.gustav, this.game.getPlayerToPlay());
+		assertEquals(this.gustav, this.game.getPlayerToPlay().uuid);
 		assertEquals(0, this.game.getRoundNr());
 
 		this.game.play(Action.parse(null, "8H APTES"));
 		this.game.awaitEndOfPlay(1);
-		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 		assertEquals(16, this.game.getPlayer(this.gustav).score);
 	}
 
@@ -118,7 +118,7 @@ public class GameTest
 		this.game.play(Action.parse(null, "8H APTES"));
 		this.game.awaitEndOfPlay(1);
 		assertEquals(16, this.game.getPlayer(this.gustav).score);
-		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 
 		this.game.rollbackLastMove(this.gustav);
 		assertEquals(roundNr, this.game.getRoundNr());
@@ -147,9 +147,9 @@ public class GameTest
 		this.game.play(Action.parse(null, "H3 APPETEE"));
 		this.game.awaitEndOfPlay(1);
 
-		assertTrue(playRejected.get());
+		Assertions.assertTrue(playRejected.get());
 		assertEquals(this.game.getPlayer(this.gustav).score, 0);
-		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
 	@Test
@@ -161,13 +161,13 @@ public class GameTest
 		try
 		{
 			this.game.play(Action.parse(null, "H8 A"));
-			fail();
+			Assertions.fail();
 		}
 		catch (ScrabbleException.ForbiddenPlayException e)
 		{
 			// OK
 		}
-		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
 
@@ -180,13 +180,13 @@ public class GameTest
 		{
 			this.game.play(Action.parse(null, "G7 AS"));
 			this.game.awaitEndOfPlay(1);
-			fail();
+			Assertions.fail();
 		}
 		catch (ScrabbleException.ForbiddenPlayException e)
 		{
 			// OK
 		}
-		assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
 	}
 
 	@Test
@@ -199,7 +199,7 @@ public class GameTest
 		try
 		{
 			play(this.game, "A3 VIGIE");
-			fail();
+			Assertions.fail();
 		}
 		catch (ScrabbleException e)
 		{
@@ -278,8 +278,7 @@ public class GameTest
 
 	@SneakyThrows
 	@Test
-	void testScoreCompleteGame() throws ScrabbleException
-	{
+	void testScoreCompleteGame() {
 
 		// Game from http://chr.amet.chez-alice.fr/p/commente.htm
 		final ArrayList<Pair<String, Integer>> plays = new ArrayList<>();
@@ -333,7 +332,7 @@ public class GameTest
 					.build();
 			game.play(action);
 			final Action last = game.history.get(game.history.size() - 1);
-			assertEquals("Wrong score for \"" + play.getKey() + "\" false", play.getValue(), last.score);
+			assertEquals(play.getValue(), last.score, "Wrong score for \"" + play.getKey() + "\" false");
 		}
 	}
 
