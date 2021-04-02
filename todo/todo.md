@@ -27,4 +27,5 @@
 - ✔ Wait acknowledges of all players before next turn
 - ✔ Exchange tiles
 - swing client configuration to select the server
-    - configuration properties file
+- configuration properties file
+- name of the playing player as cursor.
