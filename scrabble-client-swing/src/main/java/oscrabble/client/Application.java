@@ -41,12 +41,16 @@ public class Application {
 			properties.load(resource);
 		}
 		final Application application = new Application(dictionary, server, properties);
-		application.play();
+		application.playGame();
 	}
 
 	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp", "Emil", "Thomas", "Romain", "Alix", "Paul");
 
-	private void play() throws InterruptedException {
+	/**
+	 * Prepare the server and the client, start the game and play it till it ends.
+	 * @throws InterruptedException
+	 */
+	private void playGame() throws InterruptedException {
 		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
 		Collections.shuffle(names);
 

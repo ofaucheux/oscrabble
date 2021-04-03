@@ -16,6 +16,8 @@ public class AIPlayer extends AbstractPlayer {
 	private final BruteForceMethod.Configuration configuration;
 
 	private final UUID game;
+
+	/** Daemon thread for this AI-player. */
 	final Thread daemonThread;
 	private final MicroServiceScrabbleServer server;
 
