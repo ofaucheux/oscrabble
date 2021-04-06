@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -233,6 +234,18 @@ public class JGrid extends JPanel {
 	}
 
 	/**
+	 *
+	 * @param action
+	 * @return
+	 */
+	public Pair<Point, Dimension> getFirstSquarePosition(final Action.PlayTiles action) {
+		int x = action.startSquare.x;
+		int y = action.startSquare.y;
+		final JSquare square = this.jSquares[x][y];
+		return Pair.of(square.getLocation(), square.getSize());
+	}
+
+	/**
 	 * @param action
 	 * @return the squares the action describes
 	 */
@@ -268,13 +281,6 @@ public class JGrid extends JPanel {
 	private Client getClient() {
 		return this.playground == null ? null : this.playground.client;
 
-	}
-
-	public Point getSquareLocation(final Coordinate square) {
-		return new Point(
-				square.x * CELL_SIZE,
-				square.y * CELL_SIZE
-		);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package oscrabble.client;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -278,8 +279,6 @@ class Playground {
 		this.gridFrame.setVisible(true);
 
 		this.gridFrame.getLayeredPane().add(this.arrow, JLayeredPane.DRAG_LAYER);
-		this.arrow.setLocation(gridFrame.getWidth() / 2, gridFrame.getHeight() / 2);
-		arrow.setSize(JGrid.CELL_SIZE, JGrid.CELL_SIZE);
 		this.commandPrompt.requestFocus();
 	}
 
@@ -524,15 +523,17 @@ class Playground {
 		}
 
 		final PlayTiles playAction = ((PlayTiles) action);
-		Playground.this.arrow.setDirection(playAction.getDirection());
-		Playground.this.arrow.setLocation(
+		this.arrow.setDirection(playAction.getDirection());
+		final Pair<Point, Dimension> squarePosition = Playground.this.jGrid.getFirstSquarePosition(playAction);
+		this.arrow.setLocation(
 				SwingUtilities.convertPoint(
-						Playground.this.jGrid,
-						Playground.this.jGrid.getSquareLocation(playAction.startSquare),
-						Playground.this.gridFrame
+						this.jGrid,
+						squarePosition.getLeft(),
+						this.gridFrame
 				)
 		);
-		Playground.this.jGrid.highlightPreparedAction(
+		this.arrow.setSize(squarePosition.getRight());
+		this.jGrid.highlightPreparedAction(
 				playAction,
 				getRules()
 		);
