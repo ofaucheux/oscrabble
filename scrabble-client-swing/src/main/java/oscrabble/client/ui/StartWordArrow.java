@@ -4,7 +4,6 @@ import oscrabble.data.objects.Grid;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 
 public class StartWordArrow extends JComponent {
 
@@ -15,8 +14,12 @@ public class StartWordArrow extends JComponent {
 	}
 
 	@Override
-	public void paint(final Graphics g) {
-		final Graphics2D g2 = (Graphics2D) g;
+	public void paintComponent(final Graphics g) {
+		if (this.direction == null) {
+			return;
+		}
+
+		final Graphics2D g2 = (Graphics2D) g.create();
 
 		g2.setColor(Color.BLACK);
 		final Polygon p = new Polygon();
@@ -26,7 +29,6 @@ public class StartWordArrow extends JComponent {
 		p.addPoint(0, POLYGONE_SIZE / 2);
 		p.addPoint(POLYGONE_SIZE / 2, 0);
 
-		final AffineTransform saved = g2.getTransform();
 		switch (this.direction) {
 			case VERTICAL:
 				g2.translate(h / 2f, 6f);
@@ -39,7 +41,6 @@ public class StartWordArrow extends JComponent {
 				throw new IllegalStateException("Unexpected value: " + this.direction);
 		}
 		g2.fillPolygon(p);
-		g2.setTransform(saved);
 	}
 
 }

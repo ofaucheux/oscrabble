@@ -11,6 +11,7 @@ import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
+import oscrabble.data.ScrabbleRules;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.exception.IllegalCoordinate;
@@ -178,7 +179,7 @@ class Playground {
 			this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
 			this.pmd.setServer(this.client.server);
 			this.pmd.setGame(this.client.game);
-			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, this.client.scrabbleRules));
+			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, getRules()));
 			this.pmd.setFont(MONOSPACED);
 			this.pmd.getMoveList().addMouseListener(new MouseAdapter() {
 				@Override
@@ -276,8 +277,9 @@ class Playground {
 		this.gridFrame.setResizable(false);
 		this.gridFrame.setVisible(true);
 
-		this.gridFrame.getLayeredPane().add(this.arrow, JLayeredPane.POPUP_LAYER);
-
+		this.gridFrame.getLayeredPane().add(this.arrow, JLayeredPane.DRAG_LAYER);
+		this.arrow.setLocation(gridFrame.getWidth() / 2, gridFrame.getHeight() / 2);
+		arrow.setSize(JGrid.CELL_SIZE, JGrid.CELL_SIZE);
 		this.commandPrompt.requestFocus();
 	}
 
@@ -335,8 +337,8 @@ class Playground {
 
 	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException {
 
-		assert this.client != null;
-
+//		assert this.client != null;
+//
 		// TODO
 //			final SwingPlayer player = getCurrentSwingPlayer();
 //			if (player == null)
@@ -366,7 +368,10 @@ class Playground {
 			if (inputWord.toString().trim().isEmpty()) {
 				this.action = null;
 			} else {
-				this.action = oscrabble.controller.Action.parse(this.client.player, inputWord.toString());
+				this.action = oscrabble.controller.Action.parse(
+						getPlayer(),
+						inputWord.toString()
+				);
 			}
 //				//
 //				// todo Check if jokers are needed and try to position them
@@ -423,12 +428,20 @@ class Playground {
 //						}
 //					}
 //				}
-			this.action = Action.parse(this.client.player, inputWord.toString());
+			this.action = Action.parse(getPlayer(), inputWord.toString());
 			LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 		} else {
 			this.action = null;
 		}
 		return this.action;
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	private UUID getPlayer() {
+		return this.client == null ? null : this.client.player;
 	}
 
 	/**
@@ -521,8 +534,16 @@ class Playground {
 		);
 		Playground.this.jGrid.highlightPreparedAction(
 				playAction,
-				Playground.this.client.scrabbleRules
+				getRules()
 		);
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	private ScrabbleRules getRules() {
+		return this.client == null ? null : this.client.scrabbleRules;
 	}
 
 	private class CommandPromptAction extends AbstractAction implements DocumentListener {
@@ -544,9 +565,9 @@ class Playground {
 
 		@Override
 		public void changedUpdate(final DocumentEvent e) {
-			if (Playground.this.client == null) {
-				return;
-			}
+//			if (Playground.this.client == null) {
+//				return;
+//			}
 
 			try {
 				displayPreparedMove();

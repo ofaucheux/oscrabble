@@ -27,8 +27,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Darstellung der Spielfläche
  */
-class JGrid extends JPanel {
-	private static final int CELL_SIZE = 40;
+public class JGrid extends JPanel {
+	public static final int CELL_SIZE = 40;
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 	public static final Logger LOGGER = LoggerFactory.getLogger(JGrid.class);
 
