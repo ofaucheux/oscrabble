@@ -44,7 +44,16 @@ public class Application {
 		application.playGame();
 	}
 
-	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp", "Emil", "Thomas", "Romain", "Alix", "Paul");
+	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp",
+			"Emil",
+			"Thomas",
+			"Romain",
+			"Alix",
+			"Paul",
+			"Batiste",
+			"Noemie",
+			"Laurent"
+	);
 
 	/**
 	 * Prepare the server and the client, start the game and play it till it ends.

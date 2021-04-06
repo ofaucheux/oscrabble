@@ -4,9 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.client.ui.CursorImage;
+import oscrabble.client.utils.StateUtils;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.GameState;
+import oscrabble.data.Player;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.exception.IllegalCoordinate;
@@ -24,9 +27,8 @@ import java.awt.event.*;
 import java.io.IOError;
 import java.io.InputStream;
 import java.text.Normalizer;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +39,8 @@ class Playground {
 	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 
 	static final Font MONOSPACED;
+
+	private CursorImage cursorImage;
 
 	/**
 	 * Filter, das alles Eingetragene Uppercase schreibt
@@ -148,6 +152,8 @@ class Playground {
 		this.gridFrame.addWindowListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
+		this.cursorImage = new CursorImage("", Color.BLUE, this.gridFrame.getGraphics());
+		this.cursorImage.setOnWindow(this.gridFrame);
 
 		final JPanel mainPanel_01 = new JPanel();
 		mainPanel_01.setLayout(new BoxLayout(mainPanel_01, BoxLayout.PAGE_AXIS));
@@ -473,6 +479,22 @@ class Playground {
 		});
 	}
 
+	public void setCursor(final boolean waitState, final GameState gameState) {
+		final Player player = StateUtils.getPlayerOnTurn(gameState);
+		final Cursor cursor;
+		final String cursorText;
+		if (waitState) {
+			cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+			cursorText = player != null ? player.getName() : "";
+		} else {
+			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+			cursorText = "";
+		}
+
+		this.gridFrame.setCursor(cursor);
+		this.cursorImage.setText(cursorText);
+	}
+
 	private class CommandPromptAction extends AbstractAction implements DocumentListener {
 
 		@Override
@@ -492,7 +514,7 @@ class Playground {
 
 		@Override
 		public void changedUpdate(final DocumentEvent e) {
-			if (client == null) {
+			if (Playground.this.client == null) {
 				return;
 			}
 
@@ -501,7 +523,8 @@ class Playground {
 				if (action instanceof PlayTiles) {
 					Playground.this.jGrid.highlightPreparedAction(
 							(PlayTiles) action,
-							Playground.this.client == null ? null : Playground.this.client.scrabbleRules);
+							Playground.this.client.scrabbleRules
+					);
 				}
 			} catch (final ScrabbleException e1) {
 				LOGGER.debug(e1.getMessage());

@@ -39,6 +39,7 @@ public class Client {
 	private final HashSet<Runnable> onQuitGame = new HashSet<>();
 
 	private GameState lastKnownState = null; // TODO: use it in server.play() too
+
 	/**
 	 * Rules of the game
 	 */

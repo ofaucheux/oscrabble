@@ -101,6 +101,7 @@ public class AIPlayer extends AbstractPlayer {
 						throw new AssertionError("Play of " + notation + "refused: " + response.message);
 					}
 				}
+				Thread.sleep(this.throttle);
 			} while (state.state != GameState.State.ENDED);
 
 			LOGGER.info("Daemon thread of " + this.uuid + " ends.");
