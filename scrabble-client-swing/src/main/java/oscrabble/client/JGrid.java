@@ -6,6 +6,7 @@ import org.springframework.lang.Nullable;
 import oscrabble.controller.Action;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.data.Tile;
+import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
@@ -15,11 +16,13 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Darstellung der Spielfläche
@@ -264,6 +267,14 @@ class JGrid extends JPanel {
 
 	private Client getClient() {
 		return this.playground == null ? null : this.playground.client;
+
+	}
+
+	public Point getSquareLocation(final Coordinate square) {
+		return new Point(
+				square.x * CELL_SIZE,
+				square.y * CELL_SIZE
+		);
 	}
 
 	/**
@@ -354,7 +365,6 @@ class JGrid extends JPanel {
 		public void paint(final Graphics g) {
 			super.paint(g);
 			final Graphics2D g2 = (Graphics2D) g;
-			drawArrow(g2);
 
 			final Tile preparedTile = JGrid.this.preparedTiles.get(this);
 			if (preparedTile != null) {
@@ -369,40 +379,40 @@ class JGrid extends JPanel {
 			}
 		}
 
-		private void drawArrow(Graphics2D g2) {
-			if (JGrid.this.playground == null) {
-				return;
-			}
-
-			// Markiert die Start Zelle des Wortes todo
-			oscrabble.controller.Action.PlayTiles action;
-			if (!(JGrid.this.playground.action instanceof Action.PlayTiles)
-					|| !(action = ((Action.PlayTiles) JGrid.this.playground.action)).startSquare.getSquare().equals(this.square)) {
-				return;
-			}
-
-			g2.setColor(Color.BLACK);
-			final Polygon p = new Polygon();
-			final int h = getHeight();
-			final int POLYGONE_SIZE = h / 3;
-			p.addPoint(-POLYGONE_SIZE / 2, 0);
-			p.addPoint(0, POLYGONE_SIZE / 2);
-			p.addPoint(POLYGONE_SIZE / 2, 0);
-
-			final AffineTransform saved = g2.getTransform();
-			switch (action.getDirection()) {
-				case VERTICAL:
-					g2.translate(h / 2f, 6f);
-					break;
-				case HORIZONTAL:
-					g2.rotate(-Math.PI / 2);
-					g2.translate(-h / 2f, 6f);
-					break;
-				default:
-					throw new IllegalStateException("Unexpected value: " + action.getDirection());
-			}
-			g2.fillPolygon(p);
-			g2.setTransform(saved);
-		}
+//		private void drawArrow(Graphics2D g2) {
+//			if (JGrid.this.playground == null) {
+//				return;
+//			}
+//
+//			// Markiert die Start Zelle des Wortes todo
+//			oscrabble.controller.Action.PlayTiles action;
+//			if (!(JGrid.this.playground.action instanceof Action.PlayTiles)
+//					|| !(action = ((Action.PlayTiles) JGrid.this.playground.action)).startSquare.getSquare().equals(this.square)) {
+//				return;
+//			}
+//
+//			g2.setColor(Color.BLACK);
+//			final Polygon p = new Polygon();
+//			final int h = getHeight();
+//			final int POLYGONE_SIZE = h / 3;
+//			p.addPoint(-POLYGONE_SIZE / 2, 0);
+//			p.addPoint(0, POLYGONE_SIZE / 2);
+//			p.addPoint(POLYGONE_SIZE / 2, 0);
+//
+//			final AffineTransform saved = g2.getTransform();
+//			switch (action.getDirection()) {
+//				case VERTICAL:
+//					g2.translate(h / 2f, 6f);
+//					break;
+//				case HORIZONTAL:
+//					g2.rotate(-Math.PI / 2);
+//					g2.translate(-h / 2f, 6f);
+//					break;
+//				default:
+//					throw new IllegalStateException("Unexpected value: " + action.getDirection());
+//			}
+//			g2.fillPolygon(p);
+//			g2.setTransform(saved);
+//		}
 	}
 }

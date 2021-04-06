@@ -1,0 +1,45 @@
+package oscrabble.client.ui;
+
+import oscrabble.data.objects.Grid;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+
+public class StartWordArrow extends JComponent {
+
+	private Grid.Direction direction;
+
+	public void setDirection(final Grid.Direction direction) {
+		this.direction = direction;
+	}
+
+	@Override
+	public void paint(final Graphics g) {
+		final Graphics2D g2 = (Graphics2D) g;
+
+		g2.setColor(Color.BLACK);
+		final Polygon p = new Polygon();
+		final int h = getHeight();
+		final int POLYGONE_SIZE = h / 3;
+		p.addPoint(-POLYGONE_SIZE / 2, 0);
+		p.addPoint(0, POLYGONE_SIZE / 2);
+		p.addPoint(POLYGONE_SIZE / 2, 0);
+
+		final AffineTransform saved = g2.getTransform();
+		switch (this.direction) {
+			case VERTICAL:
+				g2.translate(h / 2f, 6f);
+				break;
+			case HORIZONTAL:
+				g2.rotate(-Math.PI / 2);
+				g2.translate(-h / 2f, 6f);
+				break;
+			default:
+				throw new IllegalStateException("Unexpected value: " + this.direction);
+		}
+		g2.fillPolygon(p);
+		g2.setTransform(saved);
+	}
+
+}

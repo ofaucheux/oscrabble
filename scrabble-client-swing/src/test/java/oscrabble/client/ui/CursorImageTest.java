@@ -20,7 +20,7 @@ class CursorImageTest {
 		button.setSize(100, 50);
 		frame.add(button);
 
-		new CursorImage("Émeraude", Color.BLUE, frame.getGraphics())
+		new CursorImage("Émeraude", Color.BLUE)
 				.setOnWindow(frame);
 
 		while (frame.isVisible()) {

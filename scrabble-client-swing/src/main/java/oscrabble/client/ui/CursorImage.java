@@ -22,7 +22,7 @@ public class CursorImage extends JComponent {
 	// As solution we register a global AWT listener and look if the cursor is on the window.
 
 	private final Color color;
-	private final Font font;
+	private final Font font = Font.decode("Arial-PLAIN-10");
 	private final Dimension cursorSize;
 	private String text;
 	private AWTEventListener mouseMoveListener;
@@ -33,18 +33,12 @@ public class CursorImage extends JComponent {
 	 * @param color
 	 * @param graphics
 	 */
-	public CursorImage(final String text, final Color color, final Graphics graphics) {
+	public CursorImage(final String text, final Color color) {
 		this.text = text;
 		this.color = color;
-		this.font = Font.decode("Arial-PLAIN-10");
-		final FontMetrics fmt = graphics.getFontMetrics(this.font);
-		final LineMetrics lm = fmt.getLineMetrics(text, graphics);
 
 		this.cursorSize = Toolkit.getDefaultToolkit().getBestCursorSize(16, 16);
-		setSize(
-				this.cursorSize.width + fmt.stringWidth(text),
-				(int) lm.getHeight()
-		);
+		setSize(this.cursorSize.width + 100, 16);
 	}
 
 	/**

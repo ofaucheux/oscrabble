@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.CursorImage;
+import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.StateUtils;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
@@ -40,7 +41,9 @@ class Playground {
 
 	static final Font MONOSPACED;
 
-	private CursorImage cursorImage;
+	private final CursorImage cursorImage;
+
+	private final StartWordArrow arrow = new StartWordArrow();
 
 	/**
 	 * Filter, das alles Eingetragene Uppercase schreibt
@@ -152,7 +155,7 @@ class Playground {
 		this.gridFrame.addWindowListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
-		this.cursorImage = new CursorImage("", Color.BLUE, this.gridFrame.getGraphics());
+		this.cursorImage = new CursorImage("", Color.BLUE);
 		this.cursorImage.setOnWindow(this.gridFrame);
 
 		final JPanel mainPanel_01 = new JPanel();
@@ -272,6 +275,8 @@ class Playground {
 		this.gridFrame.pack();
 		this.gridFrame.setResizable(false);
 		this.gridFrame.setVisible(true);
+
+		this.gridFrame.getLayeredPane().add(this.arrow, JLayeredPane.POPUP_LAYER);
 
 		this.commandPrompt.requestFocus();
 	}
@@ -495,6 +500,31 @@ class Playground {
 		this.cursorImage.setText(cursorText);
 	}
 
+	/**
+	 *
+	 * @throws ScrabbleException.NotParsableException
+	 */
+	private void displayPreparedMove() throws ScrabbleException.NotParsableException {
+		final Action action = getPreparedMove();
+		if (!(action instanceof PlayTiles)) {
+			return;
+		}
+
+		final PlayTiles playAction = ((PlayTiles) action);
+		Playground.this.arrow.setDirection(playAction.getDirection());
+		Playground.this.arrow.setLocation(
+				SwingUtilities.convertPoint(
+						Playground.this.jGrid,
+						Playground.this.jGrid.getSquareLocation(playAction.startSquare),
+						Playground.this.gridFrame
+				)
+		);
+		Playground.this.jGrid.highlightPreparedAction(
+				playAction,
+				Playground.this.client.scrabbleRules
+		);
+	}
+
 	private class CommandPromptAction extends AbstractAction implements DocumentListener {
 
 		@Override
@@ -519,19 +549,12 @@ class Playground {
 			}
 
 			try {
-				final Action action = getPreparedMove();
-				if (action instanceof PlayTiles) {
-					Playground.this.jGrid.highlightPreparedAction(
-							(PlayTiles) action,
-							Playground.this.client.scrabbleRules
-					);
-				}
+				displayPreparedMove();
 			} catch (final ScrabbleException e1) {
 				LOGGER.debug(e1.getMessage());
 			}
 
 			Playground.this.jGrid.repaint();
 		}
-
 	}
 }
