@@ -31,3 +31,4 @@
 - ✔ name of the playing player as cursor.
 - SCR-006 Performance by start of the application.
 - SCR-007 Display of arrow on start title for new word
+- SCR-008 Display of the version of the application
