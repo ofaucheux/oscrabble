@@ -354,36 +354,7 @@ class JGrid extends JPanel {
 		public void paint(final Graphics g) {
 			super.paint(g);
 			final Graphics2D g2 = (Graphics2D) g;
-			// Markiert die Start Zelle des Wortes todo
-			if (JGrid.this.playground != null) {
-				oscrabble.controller.Action.PlayTiles action;
-				if (JGrid.this.playground.action instanceof oscrabble.controller.Action.PlayTiles
-						&& (action = ((oscrabble.controller.Action.PlayTiles) JGrid.this.playground.action)).startSquare.getSquare().equals(this.square)) {
-
-					g2.setColor(Color.BLACK);
-					final Polygon p = new Polygon();
-					final int h = getHeight();
-					final int POLYGONE_SIZE = h / 3;
-					p.addPoint(-POLYGONE_SIZE / 2, 0);
-					p.addPoint(0, POLYGONE_SIZE / 2);
-					p.addPoint(POLYGONE_SIZE / 2, 0);
-
-					final AffineTransform saved = ((Graphics2D) g).getTransform();
-					switch (action.getDirection()) {
-						case VERTICAL:
-							g2.translate(h / 2f, 6f);
-							break;
-						case HORIZONTAL:
-							g2.rotate(-Math.PI / 2);
-							g2.translate(-h / 2f, 6f);
-							break;
-						default:
-							throw new IllegalStateException("Unexpected value: " + action.getDirection());
-					}
-					g2.fillPolygon(p);
-					((Graphics2D) g).setTransform(saved);
-				}
-			}
+			drawArrow(g2);
 
 			final Tile preparedTile = JGrid.this.preparedTiles.get(this);
 			if (preparedTile != null) {
@@ -396,6 +367,42 @@ class JGrid extends JPanel {
 						this, g, 0, 0, getWidth(), getHeight()
 				);
 			}
+		}
+
+		private void drawArrow(Graphics2D g2) {
+			if (JGrid.this.playground == null) {
+				return;
+			}
+
+			// Markiert die Start Zelle des Wortes todo
+			oscrabble.controller.Action.PlayTiles action;
+			if (!(JGrid.this.playground.action instanceof Action.PlayTiles)
+					|| !(action = ((Action.PlayTiles) JGrid.this.playground.action)).startSquare.getSquare().equals(this.square)) {
+				return;
+			}
+
+			g2.setColor(Color.BLACK);
+			final Polygon p = new Polygon();
+			final int h = getHeight();
+			final int POLYGONE_SIZE = h / 3;
+			p.addPoint(-POLYGONE_SIZE / 2, 0);
+			p.addPoint(0, POLYGONE_SIZE / 2);
+			p.addPoint(POLYGONE_SIZE / 2, 0);
+
+			final AffineTransform saved = g2.getTransform();
+			switch (action.getDirection()) {
+				case VERTICAL:
+					g2.translate(h / 2f, 6f);
+					break;
+				case HORIZONTAL:
+					g2.rotate(-Math.PI / 2);
+					g2.translate(-h / 2f, 6f);
+					break;
+				default:
+					throw new IllegalStateException("Unexpected value: " + action.getDirection());
+			}
+			g2.fillPolygon(p);
+			g2.setTransform(saved);
 		}
 	}
 }
