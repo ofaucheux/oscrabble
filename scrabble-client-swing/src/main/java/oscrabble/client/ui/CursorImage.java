@@ -3,14 +3,13 @@ package oscrabble.client.ui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.font.LineMetrics;
 
 /**
  * An image following the cursor and displaying a text.
  */
 public class CursorImage extends JComponent {
 
-	// Information about the implementation: the size of the cursor canndt be changed,
+	// Information about the implementation: the size of the cursor cannot be changed,
 	// at least not on windows. We therefore have to draw the text by ourselves and
 	// cannot use "setCursor".
 	//
@@ -22,7 +21,7 @@ public class CursorImage extends JComponent {
 	// As solution we register a global AWT listener and look if the cursor is on the window.
 
 	private final Color color;
-	private final Font font;
+	private final Font font = Font.decode("Arial-PLAIN-10");
 	private final Dimension cursorSize;
 	private String text;
 	private AWTEventListener mouseMoveListener;
@@ -31,20 +30,13 @@ public class CursorImage extends JComponent {
 	 *
 	 * @param text
 	 * @param color
-	 * @param graphics
 	 */
-	public CursorImage(final String text, final Color color, final Graphics graphics) {
+	public CursorImage(final String text, final Color color) {
 		this.text = text;
 		this.color = color;
-		this.font = Font.decode("Arial-PLAIN-10");
-		final FontMetrics fmt = graphics.getFontMetrics(this.font);
-		final LineMetrics lm = fmt.getLineMetrics(text, graphics);
 
 		this.cursorSize = Toolkit.getDefaultToolkit().getBestCursorSize(16, 16);
-		setSize(
-				this.cursorSize.width + fmt.stringWidth(text),
-				(int) lm.getHeight()
-		);
+		setSize(this.cursorSize.width + 100, 16);
 	}
 
 	/**
@@ -80,6 +72,9 @@ public class CursorImage extends JComponent {
 
 	@Override
 	protected void paintComponent(Graphics g) {
+		if (this.text == null) {
+			return;
+		}
 		g = g.create();
 		g.setColor(this.color);
 		g.setFont(this.font);

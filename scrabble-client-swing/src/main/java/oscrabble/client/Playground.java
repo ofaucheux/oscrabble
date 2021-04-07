@@ -1,15 +1,18 @@
 package oscrabble.client;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.CursorImage;
+import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.StateUtils;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.GameState;
 import oscrabble.data.Player;
+import oscrabble.data.ScrabbleRules;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.exception.IllegalCoordinate;
@@ -40,7 +43,15 @@ class Playground {
 
 	static final Font MONOSPACED;
 
-	private CursorImage cursorImage;
+	/**
+	 * Image following the mouse cursor
+	 */
+	private final CursorImage cursorImage;
+
+	/**
+	 * Arrow marking a square
+	 */
+	private final StartWordArrow arrow = new StartWordArrow();
 
 	/**
 	 * Filter, das alles Eingetragene Uppercase schreibt
@@ -152,7 +163,7 @@ class Playground {
 		this.gridFrame.addWindowListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
-		this.cursorImage = new CursorImage("", Color.BLUE, this.gridFrame.getGraphics());
+		this.cursorImage = new CursorImage("", Color.WHITE);
 		this.cursorImage.setOnWindow(this.gridFrame);
 
 		final JPanel mainPanel_01 = new JPanel();
@@ -175,7 +186,7 @@ class Playground {
 			this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
 			this.pmd.setServer(this.client.server);
 			this.pmd.setGame(this.client.game);
-			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, this.client.scrabbleRules));
+			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, getRules()));
 			this.pmd.setFont(MONOSPACED);
 			this.pmd.getMoveList().addMouseListener(new MouseAdapter() {
 				@Override
@@ -273,6 +284,7 @@ class Playground {
 		this.gridFrame.setResizable(false);
 		this.gridFrame.setVisible(true);
 
+		this.gridFrame.getLayeredPane().add(this.arrow, JLayeredPane.DRAG_LAYER);
 		this.commandPrompt.requestFocus();
 	}
 
@@ -300,12 +312,30 @@ class Playground {
 		return action instanceof PlayTiles ? ((PlayTiles) action) : null;
 	}
 
+	/**
+	 * Update the UI to reflect the changes in the game.
+	 * <li>update scoreboard and history list
+	 * <li>display some information if required, p.ex. « end of game »
+	 * @param state
+	 * @param rack
+	 */
 	public void refreshUI(final GameState state, final List<Character> rack) {
 		this.jGrid.setGrid(state.getGrid());
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
 		if (this.pmd != null) {
 			this.pmd.setData(state, rack);
+		}
+
+		final Player onTurn = StateUtils.getPlayerOnTurn(state);
+
+		if (state.state == GameState.State.STARTED
+				&& onTurn != null
+				&& !client.player.equals(onTurn.id)
+		) {
+			this.cursorImage.setText(onTurn.name + " on turn");
+		} else {
+			this.cursorImage.setText(null);
 		}
 
 		if (state.state == GameState.State.ENDED) {
@@ -330,8 +360,8 @@ class Playground {
 
 	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException {
 
-		assert this.client != null;
-
+//		assert this.client != null;
+//
 		// TODO
 //			final SwingPlayer player = getCurrentSwingPlayer();
 //			if (player == null)
@@ -361,7 +391,10 @@ class Playground {
 			if (inputWord.toString().trim().isEmpty()) {
 				this.action = null;
 			} else {
-				this.action = oscrabble.controller.Action.parse(this.client.player, inputWord.toString());
+				this.action = oscrabble.controller.Action.parse(
+						getPlayer(),
+						inputWord.toString()
+				);
 			}
 //				//
 //				// todo Check if jokers are needed and try to position them
@@ -418,12 +451,20 @@ class Playground {
 //						}
 //					}
 //				}
-			this.action = Action.parse(this.client.player, inputWord.toString());
+			this.action = Action.parse(getPlayer(), inputWord.toString());
 			LOGGER.debug("Word after having positioned white tiles: " + inputWord);
 		} else {
 			this.action = null;
 		}
 		return this.action;
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	private UUID getPlayer() {
+		return this.client == null ? null : this.client.player;
 	}
 
 	/**
@@ -479,20 +520,39 @@ class Playground {
 		});
 	}
 
-	public void setCursor(final boolean waitState, final GameState gameState) {
-		final Player player = StateUtils.getPlayerOnTurn(gameState);
-		final Cursor cursor;
-		final String cursorText;
-		if (waitState) {
-			cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-			cursorText = player != null ? player.getName() : "";
-		} else {
-			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-			cursorText = "";
+	/**
+	 *
+	 * @throws ScrabbleException.NotParsableException
+	 */
+	private void displayPreparedMove() throws ScrabbleException.NotParsableException {
+		final Action action = getPreparedMove();
+		if (!(action instanceof PlayTiles)) {
+			return;
 		}
 
-		this.gridFrame.setCursor(cursor);
-		this.cursorImage.setText(cursorText);
+		final PlayTiles playAction = ((PlayTiles) action);
+		this.arrow.setDirection(playAction.getDirection());
+		final Pair<Point, Dimension> squarePosition = Playground.this.jGrid.getFirstSquarePosition(playAction);
+		this.arrow.setLocation(
+				SwingUtilities.convertPoint(
+						this.jGrid,
+						squarePosition.getLeft(),
+						this.gridFrame.getLayeredPane()
+				)
+		);
+		this.arrow.setSize(squarePosition.getRight());
+		this.jGrid.highlightPreparedAction(
+				playAction,
+				getRules()
+		);
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	private ScrabbleRules getRules() {
+		return this.client == null ? null : this.client.scrabbleRules;
 	}
 
 	private class CommandPromptAction extends AbstractAction implements DocumentListener {
@@ -514,24 +574,17 @@ class Playground {
 
 		@Override
 		public void changedUpdate(final DocumentEvent e) {
-			if (Playground.this.client == null) {
-				return;
-			}
+//			if (Playground.this.client == null) {
+//				return;
+//			}
 
 			try {
-				final Action action = getPreparedMove();
-				if (action instanceof PlayTiles) {
-					Playground.this.jGrid.highlightPreparedAction(
-							(PlayTiles) action,
-							Playground.this.client.scrabbleRules
-					);
-				}
+				displayPreparedMove();
 			} catch (final ScrabbleException e1) {
 				LOGGER.debug(e1.getMessage());
 			}
 
 			Playground.this.jGrid.repaint();
 		}
-
 	}
 }

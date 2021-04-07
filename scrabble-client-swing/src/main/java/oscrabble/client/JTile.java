@@ -38,11 +38,6 @@ class JTile extends JComponent {
 //		addMouseListener(new DragMouseAdapter());
 		setInheritsPopupMenu(true);
 	}
-//
-//	public JTile(final Square square)
-//	{
-//		this(square.tile, square.letterBonus /* TODO isfalse */, square.isJoker());
-//	}
 
 	public JTile(final Tile tile) {
 		this(tile.c, tile.points, tile.isJoker);

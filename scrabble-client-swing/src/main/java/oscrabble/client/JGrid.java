@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -15,11 +16,13 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Darstellung der Spielfläche
@@ -69,7 +72,7 @@ class JGrid extends JPanel {
 	JGrid() {
 		this.setLayout(new BorderLayout());
 		this.background = new JPanel(new BorderLayout());
-		final int size = 15 * CELL_SIZE;  // TODO: use a constant
+		final int size = 15 * CELL_SIZE;
 		this.jSquares = new JSquare[17][17];
 		this.setPreferredSize(new Dimension(size, size));
 		this.add(this.background);
@@ -230,6 +233,18 @@ class JGrid extends JPanel {
 	}
 
 	/**
+	 * Retrieve information about the first square of a played word.
+	 * @param action
+	 * @return position and size of the square.
+	 */
+	public Pair<Point, Dimension> getFirstSquarePosition(final Action.PlayTiles action) {
+		int x = action.startSquare.x;
+		int y = action.startSquare.y;
+		final JSquare square = this.jSquares[x][y];
+		return Pair.of(square.getLocation(), square.getSize());
+	}
+
+	/**
 	 * @param action
 	 * @return the squares the action describes
 	 */
@@ -354,36 +369,6 @@ class JGrid extends JPanel {
 		public void paint(final Graphics g) {
 			super.paint(g);
 			final Graphics2D g2 = (Graphics2D) g;
-			// Markiert die Start Zelle des Wortes todo
-			if (JGrid.this.playground != null) {
-				oscrabble.controller.Action.PlayTiles action;
-				if (JGrid.this.playground.action instanceof oscrabble.controller.Action.PlayTiles
-						&& (action = ((oscrabble.controller.Action.PlayTiles) JGrid.this.playground.action)).startSquare.getSquare().equals(this.square)) {
-
-					g2.setColor(Color.BLACK);
-					final Polygon p = new Polygon();
-					final int h = getHeight();
-					final int POLYGONE_SIZE = h / 3;
-					p.addPoint(-POLYGONE_SIZE / 2, 0);
-					p.addPoint(0, POLYGONE_SIZE / 2);
-					p.addPoint(POLYGONE_SIZE / 2, 0);
-
-					final AffineTransform saved = ((Graphics2D) g).getTransform();
-					switch (action.getDirection()) {
-						case VERTICAL:
-							g2.translate(h / 2f, 6f);
-							break;
-						case HORIZONTAL:
-							g2.rotate(-Math.PI / 2);
-							g2.translate(-h / 2f, 6f);
-							break;
-						default:
-							throw new IllegalStateException("Unexpected value: " + action.getDirection());
-					}
-					g2.fillPolygon(p);
-					((Graphics2D) g).setTransform(saved);
-				}
-			}
 
 			final Tile preparedTile = JGrid.this.preparedTiles.get(this);
 			if (preparedTile != null) {
