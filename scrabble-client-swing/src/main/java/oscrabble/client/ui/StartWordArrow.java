@@ -31,11 +31,11 @@ public class StartWordArrow extends JComponent {
 
 		switch (this.direction) {
 			case VERTICAL:
-				g2.translate(h / 2f, 6f);
+				g2.translate(h / 2f, 4f);
 				break;
 			case HORIZONTAL:
 				g2.rotate(-Math.PI / 2);
-				g2.translate(-h / 2f, 6f);
+				g2.translate(-h / 2f, 4f);
 				break;
 			default:
 				throw new IllegalStateException("Unexpected value: " + this.direction);

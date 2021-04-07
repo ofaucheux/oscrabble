@@ -529,7 +529,7 @@ class Playground {
 				SwingUtilities.convertPoint(
 						this.jGrid,
 						squarePosition.getLeft(),
-						this.gridFrame
+						this.gridFrame.getLayeredPane()
 				)
 		);
 		this.arrow.setSize(squarePosition.getRight());
