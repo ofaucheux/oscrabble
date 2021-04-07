@@ -163,7 +163,7 @@ class Playground {
 		this.gridFrame.addWindowListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
-		this.cursorImage = new CursorImage("", Color.BLUE);
+		this.cursorImage = new CursorImage("", Color.WHITE);
 		this.cursorImage.setOnWindow(this.gridFrame);
 
 		final JPanel mainPanel_01 = new JPanel();

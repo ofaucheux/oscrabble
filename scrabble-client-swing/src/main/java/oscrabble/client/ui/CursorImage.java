@@ -3,14 +3,13 @@ package oscrabble.client.ui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.font.LineMetrics;
 
 /**
  * An image following the cursor and displaying a text.
  */
 public class CursorImage extends JComponent {
 
-	// Information about the implementation: the size of the cursor canndt be changed,
+	// Information about the implementation: the size of the cursor cannot be changed,
 	// at least not on windows. We therefore have to draw the text by ourselves and
 	// cannot use "setCursor".
 	//
