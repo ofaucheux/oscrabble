@@ -1,8 +1,9 @@
 plugins
-        {
-            id 'io.spring.dependency-management' version '1.0.7.RELEASE'
-            id "io.freefair.lombok" version "5.0.0"
-        }
+{
+    id 'io.spring.dependency-management' version '1.0.7.RELEASE'
+    id "io.freefair.lombok" version "5.0.0"
+    id 'net.researchgate.release' version '2.8.1'
+}
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'

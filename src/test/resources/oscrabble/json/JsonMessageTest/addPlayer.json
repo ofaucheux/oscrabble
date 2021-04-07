@@ -1,8 +1,0 @@
-{
-  "date": "2019-12-25 12:36:32",
-  "game": "game_1",
-  "command": "addUser",
-  "parameters": {
-    "player": "player1"
-  }
-}
