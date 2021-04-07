@@ -10,6 +10,7 @@ subprojects {
     dependencies {
         testCompileOnly 'junit:junit:4.13'
         testCompileOnly 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+        testCompileOnly 'org.junit.jupiter:junit-jupiter-params:5.6.2'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
     }
 
