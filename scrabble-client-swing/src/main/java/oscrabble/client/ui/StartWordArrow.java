@@ -5,10 +5,17 @@ import oscrabble.data.objects.Grid;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Small arrow to mark the beginning of the current played word.
+ */
 public class StartWordArrow extends JComponent {
 
 	private Grid.Direction direction;
 
+	/**
+	 *
+	 * @param direction direction of the word which is marked.
+	 */
 	public void setDirection(final Grid.Direction direction) {
 		this.direction = direction;
 	}
@@ -42,5 +49,4 @@ public class StartWordArrow extends JComponent {
 		}
 		g2.fillPolygon(p);
 	}
-
 }

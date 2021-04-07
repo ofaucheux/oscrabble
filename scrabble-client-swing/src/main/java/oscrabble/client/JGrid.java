@@ -7,7 +7,6 @@ import org.springframework.lang.Nullable;
 import oscrabble.controller.Action;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.data.Tile;
-import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
@@ -28,8 +27,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Darstellung der Spielfläche
  */
-public class JGrid extends JPanel {
-	public static final int CELL_SIZE = 40;
+class JGrid extends JPanel {
+	private static final int CELL_SIZE = 40;
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 	public static final Logger LOGGER = LoggerFactory.getLogger(JGrid.class);
 
@@ -73,7 +72,7 @@ public class JGrid extends JPanel {
 	JGrid() {
 		this.setLayout(new BorderLayout());
 		this.background = new JPanel(new BorderLayout());
-		final int size = 15 * CELL_SIZE;  // TODO: use a constant
+		final int size = 15 * CELL_SIZE;
 		this.jSquares = new JSquare[17][17];
 		this.setPreferredSize(new Dimension(size, size));
 		this.add(this.background);
@@ -234,9 +233,9 @@ public class JGrid extends JPanel {
 	}
 
 	/**
-	 *
+	 * Retrieve information about the first square of a played word.
 	 * @param action
-	 * @return
+	 * @return position and size of the square.
 	 */
 	public Pair<Point, Dimension> getFirstSquarePosition(final Action.PlayTiles action) {
 		int x = action.startSquare.x;
@@ -280,7 +279,6 @@ public class JGrid extends JPanel {
 
 	private Client getClient() {
 		return this.playground == null ? null : this.playground.client;
-
 	}
 
 	/**
@@ -384,41 +382,5 @@ public class JGrid extends JPanel {
 				);
 			}
 		}
-
-//		private void drawArrow(Graphics2D g2) {
-//			if (JGrid.this.playground == null) {
-//				return;
-//			}
-//
-//			// Markiert die Start Zelle des Wortes todo
-//			oscrabble.controller.Action.PlayTiles action;
-//			if (!(JGrid.this.playground.action instanceof Action.PlayTiles)
-//					|| !(action = ((Action.PlayTiles) JGrid.this.playground.action)).startSquare.getSquare().equals(this.square)) {
-//				return;
-//			}
-//
-//			g2.setColor(Color.BLACK);
-//			final Polygon p = new Polygon();
-//			final int h = getHeight();
-//			final int POLYGONE_SIZE = h / 3;
-//			p.addPoint(-POLYGONE_SIZE / 2, 0);
-//			p.addPoint(0, POLYGONE_SIZE / 2);
-//			p.addPoint(POLYGONE_SIZE / 2, 0);
-//
-//			final AffineTransform saved = g2.getTransform();
-//			switch (action.getDirection()) {
-//				case VERTICAL:
-//					g2.translate(h / 2f, 6f);
-//					break;
-//				case HORIZONTAL:
-//					g2.rotate(-Math.PI / 2);
-//					g2.translate(-h / 2f, 6f);
-//					break;
-//				default:
-//					throw new IllegalStateException("Unexpected value: " + action.getDirection());
-//			}
-//			g2.fillPolygon(p);
-//			g2.setTransform(saved);
-//		}
 	}
 }

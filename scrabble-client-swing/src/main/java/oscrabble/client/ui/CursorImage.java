@@ -31,7 +31,6 @@ public class CursorImage extends JComponent {
 	 *
 	 * @param text
 	 * @param color
-	 * @param graphics
 	 */
 	public CursorImage(final String text, final Color color) {
 		this.text = text;

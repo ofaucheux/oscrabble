@@ -43,8 +43,10 @@ class Playground {
 
 	static final Font MONOSPACED;
 
+	/** Image following the mouse cursor */
 	private final CursorImage cursorImage;
 
+	/** Arrow marking a square */
 	private final StartWordArrow arrow = new StartWordArrow();
 
 	/**
