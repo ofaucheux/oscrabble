@@ -43,10 +43,14 @@ class Playground {
 
 	static final Font MONOSPACED;
 
-	/** Image following the mouse cursor */
+	/**
+	 * Image following the mouse cursor
+	 */
 	private final CursorImage cursorImage;
 
-	/** Arrow marking a square */
+	/**
+	 * Arrow marking a square
+	 */
 	private final StartWordArrow arrow = new StartWordArrow();
 
 	/**
@@ -308,12 +312,30 @@ class Playground {
 		return action instanceof PlayTiles ? ((PlayTiles) action) : null;
 	}
 
+	/**
+	 * Update the UI to reflect the changes in the game.
+	 * <li>update scoreboard and history list
+	 * <li>display some information if required, p.ex. « end of game »
+	 * @param state
+	 * @param rack
+	 */
 	public void refreshUI(final GameState state, final List<Character> rack) {
 		this.jGrid.setGrid(state.getGrid());
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
 		if (this.pmd != null) {
 			this.pmd.setData(state, rack);
+		}
+
+		final Player onTurn = StateUtils.getPlayerOnTurn(state);
+
+		if (state.state == GameState.State.STARTED
+				&& onTurn != null
+				&& !client.player.equals(onTurn.id)
+		) {
+			this.cursorImage.setText(onTurn.name + " on turn");
+		} else {
+			this.cursorImage.setText(null);
 		}
 
 		if (state.state == GameState.State.ENDED) {
@@ -496,22 +518,6 @@ class Playground {
 			this.client.executeCommand(getCommand());
 			this.commandPrompt.setText("");
 		});
-	}
-
-	public void setCursor(final boolean waitState, final GameState gameState) {
-		final Player player = StateUtils.getPlayerOnTurn(gameState);
-		final Cursor cursor;
-		final String cursorText;
-		if (waitState) {
-			cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-			cursorText = player != null ? player.getName() : "";
-		} else {
-			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-			cursorText = "";
-		}
-
-		this.gridFrame.setCursor(cursor);
-		this.cursorImage.setText(cursorText);
 	}
 
 	/**

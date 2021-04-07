@@ -73,6 +73,9 @@ public class CursorImage extends JComponent {
 
 	@Override
 	protected void paintComponent(Graphics g) {
+		if (this.text == null) {
+			return;
+		}
 		g = g.create();
 		g.setColor(this.color);
 		g.setFont(this.font);
