@@ -1,3 +1,4 @@
+rootProject.name = 'OScrabble'
 include 'scrabble-common'
 include "scrabble-dictionary"
 include "scrabble-server"
