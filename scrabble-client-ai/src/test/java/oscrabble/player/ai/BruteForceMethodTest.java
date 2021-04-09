@@ -24,6 +24,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * TODO: reactivate
+ */
+@Disabled
 public class BruteForceMethodTest {
 
 	private BruteForceMethod instance;
@@ -89,12 +93,10 @@ public class BruteForceMethodTest {
 	}
 
 	/**
-	 * todo: reactivate
 	 * @param testParams
 	 * @throws IOException
 	 */
 	@ParameterizedTest
-	@Disabled
 	@MethodSource("findMoveParameterProvider")
 	void getLegalMoves(final TestData testParams) throws IOException {
 		final String asciiArt = IOUtils.toString(
