@@ -1,6 +1,7 @@
 package oscrabble.player.ai;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,12 @@ class AIPlayerTest {
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error(t.toString(), e));
 	}
 
+	/**
+	 * Todo: This test currently use a running server. It is to replace by a mock server.
+	 * @throws InterruptedException
+	 */
 	@Test
+	@Disabled
 	void onPlayRequired() throws InterruptedException {
 
 		final IDictionary DICTIONARY = new FrenchDictionaryForTest();
