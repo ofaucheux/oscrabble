@@ -88,7 +88,13 @@ public class BruteForceMethodTest {
 //		}
 	}
 
+	/**
+	 * todo: reactivate
+	 * @param testParams
+	 * @throws IOException
+	 */
 	@ParameterizedTest
+	@Disabled
 	@MethodSource("findMoveParameterProvider")
 	void getLegalMoves(final TestData testParams) throws IOException {
 		final String asciiArt = IOUtils.toString(
