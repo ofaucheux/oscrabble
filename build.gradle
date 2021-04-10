@@ -2,6 +2,10 @@
 // directories. A zip-file is generated in "build\distribution". This one
 // contains as well the start script for the application (p.ex. bin\scrabble-client-swing.bat)
 // as _all_ requested libraries (in the lib-directory).
+//
+// Additionally: the plugin boot jar create for the module (p.ex. client-swing) an
+// executable and completely contained jar file. It can be use as single file and
+// be started simply with   java -jar ....
 
 plugins {
     id 'java'
