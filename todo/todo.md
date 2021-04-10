@@ -31,4 +31,4 @@
 - SCR-006 Performance by start of the application.
 - SCR-007 Display of arrow on start title for new word
 - SCR-008 Display of the version of the application
-- SCR-009 select difficulty of AI
+- ✔ SCR-009 select difficulty of AI
