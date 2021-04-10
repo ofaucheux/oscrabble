@@ -28,13 +28,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * TODO: reactivate
  */
-@Disabled
+//@Disabled
 public class BruteForceMethodTest {
 
 	private BruteForceMethod instance;
 
 	private final static IDictionary DICTIONARY = new FrenchDictionaryForTest();
-	private final static MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
 
 	private ArrayBlockingQueue<String> playQueue;
 	private AbstractPlayer player;
@@ -74,10 +73,11 @@ public class BruteForceMethodTest {
 
 	@Test
 	void getLegalMoves() throws ScrabbleException {
+//		final MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
 		startGame("ENFANIT");
 
-		final UUID game = server.newGame();
-		this.instance.setGrid(server.getGrid(game));
+//		final UUID game = server.newGame();
+//		this.instance.setGrid(server.getGrid(game));
 		final List<String> legalMoves = new ArrayList<>(getLegalMoves(this.instance, "ENFANIT"));
 
 		assertTrue(legalMoves.contains("F8 ENFANT"));
@@ -148,10 +148,10 @@ public class BruteForceMethodTest {
 		startGame("ELEPHANT");
 
 		this.instance.setGrid(new Grid());
-		this.instance.grid.play(null, "2J ELEPHANT");
+		this.instance.grid.play(null, "J2 ELEPHANT");
 		final List<String> playTiles = getLegalMoves(this.instance, "ASME TH");
-		assertTrue(playTiles.contains("J5 PHASME"));
-		assertTrue(playTiles.contains("J5 PhASME"));
+		assertTrue(playTiles.contains("5J PHASME"));
+		assertTrue(playTiles.contains("5J PhASME"));
 	}
 
 //	@Test
