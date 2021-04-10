@@ -1,3 +1,8 @@
+// with this config file. the modules are built in their respective "build"
+// directories. A zip-file is generated in "build\distribution". This one
+// contains as well the start script for the application (p.ex. bin\scrabble-client-swing.bat)
+// as _all_ requested libraries (in the lib-directory).
+
 plugins {
     id 'java'
     id 'maven-publish'
@@ -24,7 +29,6 @@ subprojects {
         testCompileOnly 'org.junit.jupiter:junit-jupiter-params:5.6.2'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
     }
-
 
     release {
         // FIXME: the release plugin with multi projects runs only with gradle 5, not 6.
