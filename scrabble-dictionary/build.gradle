@@ -2,7 +2,7 @@ plugins
 {
     id "java"
     id 'maven-publish'
-    id 'application'
+//    id 'application'
     id 'org.springframework.boot' version '2.2.6.RELEASE'
     id "io.freefair.lombok" version "5.0.0"
     id "java-test-fixtures"
