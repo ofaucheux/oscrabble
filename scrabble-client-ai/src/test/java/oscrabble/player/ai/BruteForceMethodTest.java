@@ -6,37 +6,26 @@ import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.quinto.dawg.DAWGNode;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
-import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Grid;
-import oscrabble.player.AbstractPlayer;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * TODO: reactivate
- */
-//@Disabled
 public class BruteForceMethodTest {
 
 	private BruteForceMethod instance;
 
 	private final static IDictionary DICTIONARY = new FrenchDictionaryForTest();
-
-	private ArrayBlockingQueue<String> playQueue;
-	private AbstractPlayer player;
 
 	private static List<TestData> findMoveParameterProvider() {
 		return List.of(
@@ -71,28 +60,6 @@ public class BruteForceMethodTest {
 		assertFalse(node.isAcceptNode());
 	}
 
-	@Test
-	void getLegalMoves() throws ScrabbleException {
-//		final MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
-		startGame("ENFANIT");
-
-//		final UUID game = server.newGame();
-//		this.instance.setGrid(server.getGrid(game));
-		final List<String> legalMoves = new ArrayList<>(getLegalMoves(this.instance, "ENFANIT"));
-
-		assertTrue(legalMoves.contains("F8 ENFANT"));
-
-		// todo: reactivate after possibility of rollback
-		// Test a lot of found possibilities
-//		for (int i = 0; i < 100; i++)
-//		{
-//			this.playQueue.add(legalMoves.get(random.nextInt(legalMoves.size())));
-//			server.awaitEndOfPlay(game, 1);
-////			assertFalse(this.player.isLastPlayError);
-////			server.rollbackLastMove(this.player);
-//		}
-	}
-
 	/**
 	 * @param testParams
 	 * @throws IOException
@@ -122,13 +89,11 @@ public class BruteForceMethodTest {
 		);
 		assertTrue(missing.isEmpty(), "Missing anchors: " + missing);
 
-		final Set<String> moves = new TreeSet(getLegalMoves(this.instance, testParams.rack));
+		final TreeSet<String> moves = new TreeSet<>(getLegalMoves(this.instance, testParams.rack));
 		MatcherAssert.assertThat(grid.toString(), moves, CoreMatchers.hasItems(testParams.movesToFind.toArray(new String[0])));
 
 		final TreeSet<String> foundWords = new TreeSet<>();
-		moves.forEach(m -> {
-			foundWords.add(Action.parsePlayNotation(m).getRight());
-		});
+		moves.forEach(m -> foundWords.add(Action.parsePlayNotation(m).getRight()));
 		MatcherAssert.assertThat(DICTIONARY.getAdmissibleWords(), CoreMatchers.hasItems(foundWords.toArray(new String[0])));
 	}
 
@@ -145,62 +110,11 @@ public class BruteForceMethodTest {
 
 	@Test
 	void testBlank() throws ScrabbleException {
-		startGame("ELEPHANT");
-
 		this.instance.setGrid(new Grid());
 		this.instance.grid.play(null, "J2 ELEPHANT");
 		final List<String> playTiles = getLegalMoves(this.instance, "ASME TH");
 		assertTrue(playTiles.contains("5J PHASME"));
 		assertTrue(playTiles.contains("5J PhASME"));
-	}
-
-//	@Test
-//	void getAnchors() throws ScrabbleException
-//	{
-//		final Grid grid = new Grid( 6);
-//		grid.put(new PlayTiles(grid.getSquare(3, 3), PlayTiles.Direction.HORIZONTAL, "Z"));
-//		final Set<Grid.Square> anchors = this.instance.getAnchors(grid);
-//		assertEquals(4, anchors.size());
-//		assertFalse(anchors.contains(grid.new Square(2, 2)));
-//		assertTrue(anchors.contains(grid.new Square(2, 3)));
-//	}
-//
-//	@Test
-//	void selectMethod()
-//	{
-//		final BruteForceMethod.Player player = instance.new Player("Test client");
-//		player.editParameters();
-//		player.editParameters();
-//	}
-
-	/**
-	 * @param bag first letters the bag must deliver.
-	 */
-	@Disabled //todo
-	private void startGame(final String bag) {
-		//TODO
-//		server.assertFirstLetters(bag);
-//		this.player = new AIPlayer(this.instance, "AI Player");
-//		server.addPlayer(this.player);
-//
-//		this.playQueue = new ArrayBlockingQueue<>(100);
-//		server.addListener(new AbstractGameListener()
-//		{
-//			@Override
-//			public void onPlayRequired(final UUID player)
-//			{
-//				try
-//				{
-//					BruteForceMethodTest.this.instance.grid = BruteForceMethodTest.server.getGrid();
-//					BruteForceMethodTest.server.play(player, Action.parse(BruteForceMethodTest.this.playQueue.take()));
-//				}
-//				catch (ScrabbleException.ForbiddenPlayException | InterruptedException | ScrabbleException.NotInTurn e)
-//				{
-//					throw new Error(e);
-//				}
-//			}
-//		});
-//		new Thread(() -> server.play()).start();
 	}
 
 	/**
