@@ -28,10 +28,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled
 public class GameTest {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 	public static final Random RANDOM = new Random();
+
+	// todo: MOCKEN
 	public static IDictionary FRENCH = MicroServiceDictionary.getDefaultFrench();
 
 	private Game game;
