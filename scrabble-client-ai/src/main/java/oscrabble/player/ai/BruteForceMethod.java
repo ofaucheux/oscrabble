@@ -92,18 +92,21 @@ public class BruteForceMethod {
 	}
 
 	/**
-	 * Get all authorized moves, sorted by the intern algorithm.
+	 * Get all authorized moves. The result is a list operator positioned on the next word
+	 * the algorithm will selewt. We therefore parameter the difficulty level of the
+	 * AI-player: it can choose to play a word which is _not_ the first choice.
 	 *
 	 * @param rack     Rack
 	 * @param strategy the ordering algorithm
 	 * @return all the moves
 	 */
-	public List<String> getLegalMoves(final Collection<Character> rack, final Strategy strategy) {
+	public ListIterator<String> getLegalMoves(final Collection<Character> rack, final Strategy strategy) {
 		final ArrayList<String> moves = new ArrayList<>(getLegalMoves(rack));
 		if (strategy != null) {
-			strategy.sort(moves);
+			return strategy.sort(moves);
+		} else {
+			return moves.listIterator();
 		}
-		return moves;
 	}
 
 	/**

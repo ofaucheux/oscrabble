@@ -1,6 +1,7 @@
 package oscrabble.player.ai;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -134,7 +135,12 @@ public class BruteForceMethodTest {
 	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack) {
 		final ArrayList<Character> list = new ArrayList<>(rack.length());
 		rack.chars().forEach(c -> list.add((char) c));
-		return bfm.getLegalMoves(list, new Strategy.BestSize());
+		final ListIterator<String> iterator = bfm.getLegalMoves(list, new Strategy.BestSize());
+		// rewind
+		while (iterator.hasPrevious()) {
+			iterator.previous();
+		}
+		return IteratorUtils.toList(iterator);
 	}
 
 	@Test
