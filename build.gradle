@@ -50,3 +50,10 @@ subprojects {
     sourceCompatibility = 1.9
     targetCompatibility = 1.9
 }
+
+
+
+release {
+    failOnCommitNeeded = false
+    failOnPublishNeeded = false
+}
