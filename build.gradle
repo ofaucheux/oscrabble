@@ -26,6 +26,12 @@ subprojects {
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
     }
 
+
+    release {
+        failOnCommitNeeded = false
+        failOnPublishNeeded = false
+    }
+
     test {
         useJUnitPlatform()
         maxParallelForks = Runtime.runtime.availableProcessors()
@@ -50,8 +56,6 @@ subprojects {
     sourceCompatibility = 1.9
     targetCompatibility = 1.9
 }
-
-
 
 release {
     failOnCommitNeeded = false
