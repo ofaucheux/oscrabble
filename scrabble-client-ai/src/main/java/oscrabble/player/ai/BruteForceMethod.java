@@ -92,7 +92,7 @@ public class BruteForceMethod {
 	}
 
 	/**
-	 * Get all authorized moves.
+	 * Get all authorized moves, sorted by the intern algorithm.
 	 *
 	 * @param rack     Rack
 	 * @param strategy the ordering algorithm

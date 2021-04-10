@@ -6,7 +6,6 @@
 - ✔ focus on the rack pane
 - ✔ Problem by error message
 - ✔ Highlight only the possible tiles
-- select difficulty of AI
 - ✔ preshow the play
 - ✔ clignotement
 - ✔ dictionary: show definition
@@ -32,3 +31,4 @@
 - SCR-006 Performance by start of the application.
 - SCR-007 Display of arrow on start title for new word
 - SCR-008 Display of the version of the application
+- SCR-009 select difficulty of AI

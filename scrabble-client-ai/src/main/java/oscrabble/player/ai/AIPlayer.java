@@ -17,7 +17,9 @@ public class AIPlayer extends AbstractPlayer {
 
 	private final UUID game;
 
-	/** Daemon thread for this AI-player. */
+	/**
+	 * Daemon thread for this AI-player.
+	 */
 	final Thread daemonThread;
 	private final MicroServiceScrabbleServer server;
 
@@ -72,33 +74,8 @@ public class AIPlayer extends AbstractPlayer {
 				}
 				state = newState;
 				if (state.state == GameState.State.STARTED && this.uuid.equals(state.getPlayerOnTurn())) {
-					this.bruteForceMethod.setGrid(Grid.fromData(state.getGrid()));
-					final ArrayList<Tile> rack = this.server.getRack(this.game, this.uuid).tiles;
-					if (rack.isEmpty()) {
-						System.out.println("Rack is empty");
+					if (play(state)) {
 						return;
-					}
-
-					final ArrayList<Character> letters = new ArrayList<>();
-					rack.forEach(t -> letters.add(t.c));
-
-					List<String> moves;
-					try {
-						moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(
-								letters,
-								this.configuration.strategy));
-					} catch (Throwable e) {
-						throw new Exception("Error finding a word with rack " + letters, e);
-					}
-
-					final String notation = moves.isEmpty()
-							? Action.PASS_TURN_NOTATION
-							: moves.get(0);
-
-					Thread.sleep(this.throttle);
-					final PlayActionResponse response = this.server.play(this.game, buildAction(notation));
-					if (!response.success) {
-						throw new AssertionError("Play of " + notation + "refused: " + response.message);
 					}
 				}
 				Thread.sleep(this.throttle);
@@ -109,6 +86,44 @@ public class AIPlayer extends AbstractPlayer {
 			LOGGER.error(e.toString(), e);
 			// TODO: inform server and players
 		}
+	}
+
+	/**
+	 * Let the player play its turn: it select its word and send it to the server.
+	 * @param state
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean play(final GameState state) throws Exception {
+		this.bruteForceMethod.setGrid(Grid.fromData(state.getGrid()));
+		final ArrayList<Tile> rack = this.server.getRack(this.game, this.uuid).tiles;
+		if (rack.isEmpty()) {
+			System.out.println("Rack is empty");
+			return true;
+		}
+
+		final ArrayList<Character> letters = new ArrayList<>();
+		rack.forEach(t -> letters.add(t.c));
+
+		List<String> moves;
+		try {
+			moves = new ArrayList<>(this.bruteForceMethod.getLegalMoves(
+					letters,
+					this.configuration.strategy));
+		} catch (Throwable e) {
+			throw new Exception("Error finding a word with rack " + letters, e);
+		}
+
+		final String notation = moves.isEmpty()
+				? Action.PASS_TURN_NOTATION
+				: moves.get(0);
+
+		Thread.sleep(this.throttle);
+		final PlayActionResponse response = this.server.play(this.game, buildAction(notation));
+		if (!response.success) {
+			throw new AssertionError("Play of " + notation + "refused: " + response.message);
+		}
+		return false;
 	}
 
 	public void setThrottle(final long throttle) {
