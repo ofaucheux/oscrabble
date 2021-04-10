@@ -1,6 +1,7 @@
 package oscrabble.player.ai;
 
 
+import org.apache.commons.collections4.iterators.EmptyListIterator;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Score;
@@ -18,11 +19,12 @@ public abstract class Strategy {
 	}
 
 	/**
-	 * Sort a list of moves, the better the first.
+	 * Sort a list of moves, the better the first, and return an iterator on it,
+	 * which is positioned on the next wished word.
 	 *
 	 * @param moves moves
 	 */
-	public abstract void sort(final List<String> moves);
+	public abstract ListIterator<String> sort(final List<String> moves);
 
 	@Override
 	public String toString() {
@@ -43,13 +45,27 @@ public abstract class Strategy {
 		}
 
 		@Override
-		public void sort(final List<String> moves) {
+		public ListIterator sort(final List<String> moves) {
 			try {
+				if (moves.isEmpty()) {
+					return EmptyListIterator.INSTANCE;
+				}
+
 				final ArrayList<Score> scores = new ArrayList<>(this.server.getScores(this.game, moves));
 				Collections.shuffle(scores);
 				scores.sort((a, b) -> b.getScore() - a.getScore());
+				final ListIterator<Score> scoreListIterator = scores.listIterator();
+				final int maxScore = scoreListIterator.next().getScore();
+				final int wishedScore = (maxScore * 7 / 10);
+				while (scoreListIterator.hasNext() && scoreListIterator.next().getScore() > wishedScore) {
+					scoreListIterator.next();
+				}
+				if (!scoreListIterator.hasNext()) {
+					scoreListIterator.previous();
+				}
 				moves.clear();
 				scores.forEach(sc -> moves.add(sc.getNotation()));
+				return moves.listIterator(scoreListIterator.nextIndex());
 			} catch (ScrabbleException.CommunicationException e) {
 				throw new Error(e);
 			}
@@ -73,10 +89,10 @@ public abstract class Strategy {
 		}
 
 		@Override
-		public void sort(final List<String> moves) {
+		public ListIterator<String> sort(final List<String> moves) {
 			Collections.shuffle(moves);
 			moves.sort(LENGTH_COMPARATOR.reversed());
+			return moves.listIterator(0);
 		}
 	}
 }
-

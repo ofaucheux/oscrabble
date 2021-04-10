@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import org.apache.commons.collections4.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -29,7 +30,7 @@ public class PossibleMoveDisplayer {
 
 	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy("Hide") {
 		@Override
-		public void sort(final List<String> moves) {
+		public ListIterator<String> sort(final List<String> moves) {
 			throw new AssertionError("Should not be called");
 		}
 	};
@@ -165,7 +166,12 @@ public class PossibleMoveDisplayer {
 
 		try {
 			this.bfm.setGrid(Grid.fromData(this.state.grid));
-			final List<String> legalMoves = this.bfm.getLegalMoves(this.rack, selectedOrderStrategy);
+			final ListIterator<String> iterator = this.bfm.getLegalMoves(this.rack, selectedOrderStrategy);
+			// rewind
+			while (iterator.hasPrevious()) {
+				iterator.previous();
+			}
+			final List<String> legalMoves = IteratorUtils.toList(iterator);
 			final Collection<Score> scores = this.server.getScores(this.state.getGameId(), legalMoves);
 			this.moveList.setListData(new Vector<>(scores));
 		} catch (ScrabbleException.CommunicationException e) {
