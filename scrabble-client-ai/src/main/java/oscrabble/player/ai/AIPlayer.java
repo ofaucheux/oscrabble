@@ -105,15 +105,16 @@ public class AIPlayer extends AbstractPlayer {
 		final ArrayList<Character> letters = new ArrayList<>();
 		rack.forEach(t -> letters.add(t.c));
 
-		final String notation;
+		String notation;
 		try {
-			ListIterator<String> moves = this.bruteForceMethod.getLegalMoves(
+			notation = this.bruteForceMethod.getLegalMoves(
 					letters,
 					this.configuration.strategy
-			);
-			notation = moves.hasNext()
-					? moves.next()
-					: Action.PASS_TURN_NOTATION;
+			).getRight();
+
+			if (notation == null) {
+				notation = Action.PASS_TURN_NOTATION;
+			}
 		} catch (Throwable e) {
 			throw new Exception("Error finding a word with rack " + letters, e);
 		}
@@ -135,6 +136,4 @@ public class AIPlayer extends AbstractPlayer {
 //		{
 //			return (Configuration) this.configuration;
 //		}
-
-
 }

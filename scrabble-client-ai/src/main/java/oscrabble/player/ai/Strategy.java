@@ -1,7 +1,6 @@
 package oscrabble.player.ai;
 
 
-import org.apache.commons.collections4.iterators.EmptyListIterator;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Score;
@@ -19,12 +18,11 @@ public abstract class Strategy {
 	}
 
 	/**
-	 * Sort a list of moves, the better the first, and return an iterator on it,
-	 * which is positioned on the next wished word.
+	 * Sort a list of moves, the better the first, and return the word selected by the strategy.
 	 *
 	 * @param moves moves
 	 */
-	public abstract ListIterator<String> sort(final List<String> moves);
+	public abstract String sort(final List<String> moves);
 
 	@Override
 	public String toString() {
@@ -45,10 +43,10 @@ public abstract class Strategy {
 		}
 
 		@Override
-		public ListIterator sort(final List<String> moves) {
+		public String sort(final List<String> moves) {
 			try {
 				if (moves.isEmpty()) {
-					return EmptyListIterator.INSTANCE;
+					return null;
 				}
 
 				final ArrayList<Score> scores = new ArrayList<>(this.server.getScores(this.game, moves));
@@ -63,9 +61,9 @@ public abstract class Strategy {
 				if (!scoreListIterator.hasNext()) {
 					scoreListIterator.previous();
 				}
-				moves.clear();
+
 				scores.forEach(sc -> moves.add(sc.getNotation()));
-				return moves.listIterator(scoreListIterator.nextIndex());
+				return scoreListIterator.next().getNotation();
 			} catch (ScrabbleException.CommunicationException e) {
 				throw new Error(e);
 			}
@@ -89,10 +87,13 @@ public abstract class Strategy {
 		}
 
 		@Override
-		public ListIterator<String> sort(final List<String> moves) {
+		public String sort(final List<String> moves) {
+			if (moves.isEmpty()) {
+				return null;
+			}
 			Collections.shuffle(moves);
 			moves.sort(LENGTH_COMPARATOR.reversed());
-			return moves.listIterator(0);
+			return moves.get(0);
 		}
 	}
 }
