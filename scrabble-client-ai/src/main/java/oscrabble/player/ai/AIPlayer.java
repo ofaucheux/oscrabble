@@ -7,6 +7,7 @@ import oscrabble.data.*;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.AbstractPlayer;
 
+import java.time.Duration;
 import java.util.*;
 
 @SuppressWarnings("BusyWait")
@@ -43,7 +44,7 @@ public class AIPlayer extends AbstractPlayer {
 //			super(new Configuration(), name);
 		this.configuration = new BruteForceMethod.Configuration();
 		this.configuration.strategy = new Strategy.BestScore(server, game);
-		this.configuration.throttle = 2;
+		this.configuration.throttle = Duration.ofSeconds(2);
 
 		this.daemonThread = new Thread(() -> runDaemonThread());
 		this.daemonThread.setDaemon(true);

@@ -13,6 +13,7 @@ import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
 import java.io.*;
+import java.time.Duration;
 import java.util.*;
 
 public class BruteForceMethod {
@@ -372,7 +373,7 @@ public class BruteForceMethod {
 		Strategy strategy = new Strategy.BestScore(null, null);
 
 		//		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
-		int throttle = 2;
+		Duration throttle = Duration.ofSeconds(2);
 
 		//		@Parameter(label = "#force", isSlide = true, lowerBound = 0, upperBound = 100)
 		int force = 90;
