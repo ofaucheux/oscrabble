@@ -100,12 +100,7 @@ public class BruteForceMethodTest {
 	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack) {
 		final ArrayList<Character> list = new ArrayList<>(rack.length());
 		rack.chars().forEach(c -> list.add((char) c));
-		final ListIterator<String> iterator = bfm.getLegalMoves(list, new Strategy.BestSize());
-		// rewind
-		while (iterator.hasPrevious()) {
-			iterator.previous();
-		}
-		return IteratorUtils.toList(iterator);
+		return bfm.getLegalMoves(list, new Strategy.BestSize()).getLeft();
 	}
 
 	@Test

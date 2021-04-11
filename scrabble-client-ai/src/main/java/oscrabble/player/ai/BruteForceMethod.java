@@ -1,6 +1,7 @@
 package oscrabble.player.ai;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
@@ -92,21 +93,23 @@ public class BruteForceMethod {
 	}
 
 	/**
-	 * Get all authorized moves. The result is a list operator positioned on the next word
-	 * the algorithm will selewt. We therefore parameter the difficulty level of the
-	 * AI-player: it can choose to play a word which is _not_ the first choice.
+	 * Get all authorized moves, ordered by their scores (descending).
+	 * The result contains the word selected by the strategy. It must not be the first one of the list, if
+	 * as some strategies don't select the best word (concept of difficulty level).
 	 *
 	 * @param rack     Rack
 	 * @param strategy the ordering algorithm
-	 * @return all the moves
+	 * @return all the moves (left) and the selected word (right)
 	 */
-	public ListIterator<String> getLegalMoves(final Collection<Character> rack, final Strategy strategy) {
+	public Pair<List<String>, String> getLegalMoves(final Collection<Character> rack, final Strategy strategy) {
 		final ArrayList<String> moves = new ArrayList<>(getLegalMoves(rack));
+		final String selected;
 		if (strategy != null) {
-			return strategy.sort(moves);
+			selected = strategy.sort(moves);
 		} else {
-			return moves.listIterator();
+			selected = moves.isEmpty() ? null : moves.get(0);
 		}
+		return Pair.of(moves, selected);
 	}
 
 	/**
@@ -362,17 +365,6 @@ public class BruteForceMethod {
 			crossChecks.put(crossSquare, allowed);
 		}
 		return crossChecks.get(crossSquare);
-	}
-
-	static class Configuration {
-		//		@Parameter(label = "#strategy")
-		Strategy strategy = new Strategy.BestScore(null, null);
-
-		//		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
-		int throttle = 2;
-
-		//		@Parameter(label = "#force", isSlide = true, lowerBound = 0, upperBound = 100)
-		int force = 90;
 	}
 
 	static class CalculateCtx {
