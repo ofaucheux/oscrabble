@@ -38,8 +38,8 @@ subprojects {
         // FIXME: the release plugin with multi projects runs only with gradle 5, not 6.
         // see. https://github.com/researchgate/gradle-release/pull/349. Wait after the integration of the
         // correction.
-        failOnCommitNeeded = false
-        failOnPublishNeeded = false
+//        failOnCommitNeeded = false
+//        failOnPublishNeeded = false
     }
 
     test {
