@@ -12,9 +12,12 @@ import java.util.*;
 
 @SuppressWarnings("BusyWait")
 public class AIPlayer extends AbstractPlayer {
+
 	public static final Logger LOGGER = LoggerFactory.getLogger(AIPlayer.class);
+
 	private final BruteForceMethod bruteForceMethod;
-	private final BruteForceMethod.Configuration configuration;
+
+	private final Configuration configuration;
 
 	private final UUID game;
 
@@ -23,11 +26,6 @@ public class AIPlayer extends AbstractPlayer {
 	 */
 	final Thread daemonThread;
 	private final MicroServiceScrabbleServer server;
-
-	/**
-	 * How long to wait before playing the found word (ms).
-	 */
-	private long throttle = 0;
 
 	/**
 	 * Construct an AI Player.
@@ -42,7 +40,7 @@ public class AIPlayer extends AbstractPlayer {
 		this.uuid = playerId;
 		this.server = server;
 //			super(new Configuration(), name);
-		this.configuration = new BruteForceMethod.Configuration();
+		this.configuration = new Configuration();
 		this.configuration.strategy = new Strategy.BestScore(server, game);
 		this.configuration.throttle = Duration.ofSeconds(2);
 
@@ -79,7 +77,7 @@ public class AIPlayer extends AbstractPlayer {
 						return;
 					}
 				}
-				Thread.sleep(this.throttle);
+				Thread.sleep(this.configuration.throttle.toMillis());
 			} while (state.state != GameState.State.ENDED);
 
 			LOGGER.info("Daemon thread of " + this.uuid + " ends.");
@@ -120,7 +118,7 @@ public class AIPlayer extends AbstractPlayer {
 			throw new Exception("Error finding a word with rack " + letters, e);
 		}
 
-		Thread.sleep(this.throttle);
+		Thread.sleep(this.configuration.throttle.toMillis());
 		final PlayActionResponse response = this.server.play(this.game, buildAction(notation));
 		if (!response.success) {
 			throw new AssertionError("Play of " + notation + "refused: " + response.message);
@@ -128,13 +126,17 @@ public class AIPlayer extends AbstractPlayer {
 		return false;
 	}
 
-	public void setThrottle(final long throttle) {
-		this.throttle = throttle;
-	}
+	static class Configuration {
+		//		@Parameter(label = "#strategy")
+		Strategy strategy = new Strategy.BestScore(null, null);
 
-//		@Override
-//		public Configuration getConfiguration()
-//		{
-//			return (Configuration) this.configuration;
-//		}
+		/**
+		 * How long to wait before playing the found word (ms).
+		 */
+		//		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
+		Duration throttle = Duration.ofSeconds(2);
+
+		//		@Parameter(label = "#force", isSlide = true, lowerBound = 0, upperBound = 100)
+		int force = 90;
+	}
 }
