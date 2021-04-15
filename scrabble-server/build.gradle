@@ -29,11 +29,10 @@ dependencies {
     testCompileOnly(project(":scrabble-dictionary"))
 }
 
-
 bootJar {
     enabled = true
-}
-
-jar {
-    enabled = true
+    manifest {
+        attributes 'Implementation-Title': 'Oliviers Scrabble Game Server',
+                'Implementation-Version': project.version
+    }
 }

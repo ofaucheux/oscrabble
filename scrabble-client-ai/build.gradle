@@ -18,3 +18,11 @@ dependencies {
 
     testCompileOnly(project(":scrabble-dictionary"))
 }
+
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Oliviers Scrabble AI Client',
+                'Implementation-Version': project.version
+    }
+}

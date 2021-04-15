@@ -16,3 +16,10 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
     implementation 'org.apache.commons:commons-lang3:3.9'
 }
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Oliviers Scrabble Common libary',
+                'Implementation-Version': project.version
+    }
+}
