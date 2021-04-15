@@ -18,11 +18,11 @@ public abstract class Strategy {
 	}
 
 	/**
-	 * Sort a list of moves, the better the first, and return the word selected by the strategy.
+	 * Sort a list of moves, the better the first, and return the positision of the one selected by the strategy.
 	 *
 	 * @param moves moves
 	 */
-	public abstract String sort(final List<String> moves);
+	public abstract Integer sort(final List<String> moves);
 
 	@Override
 	public String toString() {
@@ -43,7 +43,7 @@ public abstract class Strategy {
 		}
 
 		@Override
-		public String sort(final List<String> moves) {
+		public Integer sort(final List<String> moves) {
 			try {
 				if (moves.isEmpty()) {
 					return null;
@@ -62,8 +62,9 @@ public abstract class Strategy {
 					scoreListIterator.previous();
 				}
 
+				moves.clear();
 				scores.forEach(sc -> moves.add(sc.getNotation()));
-				return scoreListIterator.next().getNotation();
+				return scoreListIterator.nextIndex();
 			} catch (ScrabbleException.CommunicationException e) {
 				throw new Error(e);
 			}
@@ -87,13 +88,13 @@ public abstract class Strategy {
 		}
 
 		@Override
-		public String sort(final List<String> moves) {
+		public Integer sort(final List<String> moves) {
 			if (moves.isEmpty()) {
 				return null;
 			}
 			Collections.shuffle(moves);
 			moves.sort(LENGTH_COMPARATOR.reversed());
-			return moves.get(0);
+			return 0;
 		}
 	}
 }

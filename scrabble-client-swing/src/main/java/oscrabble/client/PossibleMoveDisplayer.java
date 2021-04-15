@@ -29,7 +29,7 @@ public class PossibleMoveDisplayer {
 
 	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy("Hide") {
 		@Override
-		public String sort(final List<String> moves) {
+		public Integer sort(final List<String> moves) {
 			throw new AssertionError("Should not be called");
 		}
 	};

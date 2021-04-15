@@ -28,8 +28,8 @@
 - swing client configuration to select the server
 - configuration properties file
 - ✔ name of the playing player as cursor.
+- SCR-004 Word blacklist
 - SCR-006 Performance by start of the application.
-- SCR-007 Display of arrow on start title for new word
-- SCR-008 Display of the version of the application
-- ✔ SCR-009 select difficulty of AI
+- ✔ SCR-007 Display of arrow on start title for new word
+- SCR-008 Display of the version of the application- ✔ SCR-009 select difficulty of AI
 - ✔ SCR-010 batch script for start of components
