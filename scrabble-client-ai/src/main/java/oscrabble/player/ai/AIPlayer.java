@@ -1,5 +1,6 @@
 package oscrabble.player.ai;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.controller.MicroServiceScrabbleServer;
@@ -106,13 +107,16 @@ public class AIPlayer extends AbstractPlayer {
 
 		String notation;
 		try {
-			notation = this.bruteForceMethod.getLegalMoves(
+			final Pair<List<String>, Integer> sortedMoves = this.bruteForceMethod.getLegalMoves(
 					letters,
 					this.configuration.strategy
-			).getRight();
+			);
 
-			if (notation == null) {
+			final Integer selectedPosition = sortedMoves.getRight();
+			if (selectedPosition == null) {
 				notation = Action.PASS_TURN_NOTATION;
+			} else {
+				notation = sortedMoves.getLeft().get(selectedPosition);
 			}
 		} catch (Throwable e) {
 			throw new Exception("Error finding a word with rack " + letters, e);

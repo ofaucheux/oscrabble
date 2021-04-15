@@ -101,13 +101,13 @@ public class BruteForceMethod {
 	 * @param strategy the ordering algorithm
 	 * @return all the moves (left) and the selected word (right)
 	 */
-	public Pair<List<String>, String> getLegalMoves(final Collection<Character> rack, final Strategy strategy) {
+	public Pair<List<String>, Integer> getLegalMoves(final Collection<Character> rack, final Strategy strategy) {
 		final ArrayList<String> moves = new ArrayList<>(getLegalMoves(rack));
-		final String selected;
+		final Integer selected;
 		if (strategy != null) {
 			selected = strategy.sort(moves);
 		} else {
-			selected = moves.isEmpty() ? null : moves.get(0);
+			selected = moves.isEmpty() ? null : 0;
 		}
 		return Pair.of(moves, selected);
 	}
