@@ -31,6 +31,10 @@ jar {
 
 bootJar {
     enabled = true
+    manifest {
+        attributes 'Implementation-Title': 'Oliviers Scrabble Swing Client',
+                'Implementation-Version': project.version
+    }
 }
 
 application {

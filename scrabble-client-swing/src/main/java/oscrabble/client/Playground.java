@@ -278,6 +278,13 @@ class Playground {
 		panel1.add(configPanel);
 		configPanel.setBorder(new TitledBorder(MESSAGES.getString("server.configuration")));
 		eastPanel.add(panel1, BorderLayout.CENTER);
+		final String version = Application.class.getPackage().getImplementationVersion();
+		final JLabel versionLabel = new JLabel();
+		versionLabel.setFont(versionLabel.getFont().deriveFont(9f));
+		versionLabel.setText(
+				version == null ? "-" : "v" + version
+		);
+		panel1.add(versionLabel);
 		this.gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
 		this.gridFrame.pack();
