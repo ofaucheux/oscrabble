@@ -338,7 +338,7 @@ class Playground {
 
 		if (state.state == GameState.State.STARTED
 				&& onTurn != null
-				&& !client.player.equals(onTurn.id)
+				&& !this.client.player.equals(onTurn.id)
 		) {
 			this.cursorImage.setText(onTurn.name + " on turn");
 		} else {
