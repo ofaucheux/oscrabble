@@ -1,12 +1,15 @@
 package oscrabble.client;
 
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.client.ui.PropertiesPanel;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -34,12 +37,39 @@ public class Application {
 
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error("Uncaught exception", e));
 
-		final MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
-		final MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
+		//
+		// load the properties
+		//
+
 		final Properties properties = new Properties();
 		try (final InputStream resource = Application.class.getResourceAsStream("client.properties")) {
 			properties.load(resource);
 		}
+
+		//
+		// select the server
+		//
+
+		final ConnectionParameters connectionParameters = new ConnectionParameters();
+		connectionParameters.setServerName("localhost");
+		connectionParameters.setPort(2511);
+		JOptionPane.showMessageDialog(
+				null,
+				new PropertiesPanel(connectionParameters),
+				"Server connection",
+				JOptionPane.PLAIN_MESSAGE
+		);
+
+		final MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
+		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer(
+				connectionParameters.serverName,
+				connectionParameters.port
+		);
+
+		//
+		// start the application
+		//
+
 		final Application application = new Application(dictionary, server, properties);
 		application.playGame();
 	}
@@ -80,5 +110,11 @@ public class Application {
 			Thread.sleep(500);
 		} while (client.isVisible());
 		this.server.attach(game, edgar, true);
+	}
+
+	@Data
+	public static class ConnectionParameters {
+		String serverName;
+		int port;
 	}
 }
