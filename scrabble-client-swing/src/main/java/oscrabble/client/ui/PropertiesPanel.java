@@ -144,7 +144,7 @@ public final class PropertiesPanel extends JPanel {
 				final Object value = this.getters.get(fieldName).invoke(this.propertiesObject);
 				this.valuesComponents.get(fieldName).setValue(value);
 			} catch (IllegalAccessException | InvocationTargetException e) {
-				throw new Error("Cannot set component value for field " + fieldName, e);
+				throw new Error("Cannot get component value of field \"" + fieldName + "\"", e);
 			}
 		}
 	}

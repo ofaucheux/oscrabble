@@ -38,9 +38,9 @@ class PropertiesPanelTest {
 		JOptionPane.showConfirmDialog(null, demoPanel);
 		System.out.println(properties);
 	}
+
 	@Data
 	private static class PropertyObject {
-
 		boolean chosen;
 		String text;
 		int value;
