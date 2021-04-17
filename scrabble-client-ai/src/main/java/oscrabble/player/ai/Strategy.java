@@ -1,11 +1,13 @@
 package oscrabble.player.ai;
 
-
+import lombok.Getter;
+import lombok.Setter;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.Score;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Playing strategy for a player
@@ -13,21 +15,44 @@ import java.util.*;
 public abstract class Strategy {
 	private final String label;
 
+	/**
+	 * Force: 0.0 (very simple, always worst play) to 1.0 (very difficult)
+	 */
+	@Getter
+	@Setter
+	private float force;
+
 	protected Strategy(final String label) {
 		this.label = label;
+		this.force = 1.0f;
 	}
 
-	/**
-	 * Sort a list of moves, the better the first, and return the positision of the one selected by the strategy.
-	 *
-	 * @param moves moves
-	 */
-	public abstract Integer sort(final List<String> moves);
+	protected static TreeMap<Integer, List<String>> sortByFunction(
+			final Collection<String> notations,
+			final Function<String, Integer> strategyScoreFunction,
+			final Comparator<String> secondComparator
+	) {
+		final TreeMap<Integer, List<String>> scoreMap = new TreeMap<>();
+		for (final String notation : notations) {
+			final Integer strategyScore = strategyScoreFunction.apply(notation);
+			scoreMap.computeIfAbsent(strategyScore, (k) -> new ArrayList<>())
+					.add(notation);
+		}
+		if (secondComparator != null) {
+			for (final Integer value : scoreMap.keySet()) {
+				scoreMap.get(value).sort(secondComparator);
+			}
+		}
+
+		return scoreMap;
+	}
 
 	@Override
 	public String toString() {
 		return this.label;
 	}
+
+	public abstract TreeMap<Integer, List<String>> sort(final Set<String> moves);
 
 	/**
 	 * Strategy: best scores first
@@ -42,34 +67,6 @@ public abstract class Strategy {
 			this.game = game;
 		}
 
-		@Override
-		public Integer sort(final List<String> moves) {
-			try {
-				if (moves.isEmpty()) {
-					return null;
-				}
-
-				final ArrayList<Score> scores = new ArrayList<>(this.server.getScores(this.game, moves));
-				Collections.shuffle(scores);
-				scores.sort((a, b) -> b.getScore() - a.getScore());
-				final ListIterator<Score> scoreListIterator = scores.listIterator();
-				final int maxScore = scoreListIterator.next().getScore();
-				final int wishedScore = (maxScore * 7 / 10);
-				while (scoreListIterator.hasNext() && scoreListIterator.next().getScore() > wishedScore) {
-					scoreListIterator.next();
-				}
-				if (!scoreListIterator.hasNext()) {
-					scoreListIterator.previous();
-				}
-
-				moves.clear();
-				scores.forEach(sc -> moves.add(sc.getNotation()));
-				return scoreListIterator.nextIndex();
-			} catch (ScrabbleException.CommunicationException e) {
-				throw new Error(e);
-			}
-		}
-
 		public void setGame(final UUID game) {
 			this.game = game;
 		}
@@ -77,24 +74,43 @@ public abstract class Strategy {
 		public void setServer(final MicroServiceScrabbleServer server) {
 			this.server = server;
 		}
+
+		@Override
+		public TreeMap<Integer, List<String>> sort(final Set<String> moves) {
+			try {
+				final Collection<Score> scores = this.server.getScores(this.game, moves);
+				return sort(moves, scores);
+			} catch (ScrabbleException.CommunicationException e) {
+				throw new Error(e);
+			}
+		}
+
+		private TreeMap<Integer, List<String>> sort(final Set<String> moves, Collection<Score> scores) {
+			final HashMap<String, Integer> map = new HashMap<>();
+			for (final Score score : scores) {
+				map.put(score.getNotation(), score.getScore());
+			}
+			return Strategy.sortByFunction(
+					moves,
+					w -> map.get(w),
+					(a,b) -> Score.getWord(b).length() - Score.getWord(a).length()
+			);
+		}
 	}
 
 	public static class BestSize extends Strategy {
-
-		public static final Comparator<String> LENGTH_COMPARATOR = (o1, o2) -> o1.length() - o2.length();
 
 		public BestSize() {
 			super("Best size"); // todo i18n
 		}
 
 		@Override
-		public Integer sort(final List<String> moves) {
-			if (moves.isEmpty()) {
-				return null;
-			}
-			Collections.shuffle(moves);
-			moves.sort(LENGTH_COMPARATOR.reversed());
-			return 0;
+		public TreeMap<Integer, List<String>> sort(final Set<String> moves) {
+			return Strategy.sortByFunction(
+					moves,
+					m -> m.length(),
+					null
+			);
 		}
 	}
 }

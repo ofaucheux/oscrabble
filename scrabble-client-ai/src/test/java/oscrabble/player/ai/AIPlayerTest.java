@@ -26,7 +26,7 @@ class AIPlayerTest {
 	 * @throws InterruptedException
 	 */
 	@Test
-	@Disabled
+//	@Disabled
 	void onPlayRequired() throws InterruptedException {
 
 		final IDictionary DICTIONARY = new FrenchDictionaryForTest();

@@ -1,6 +1,7 @@
 package oscrabble.player.ai;
 
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.controller.MicroServiceScrabbleServer;
@@ -18,7 +19,17 @@ public class AIPlayer extends AbstractPlayer {
 
 	private final BruteForceMethod bruteForceMethod;
 
-	private final Configuration configuration;
+	@Setter
+	Strategy strategy = new Strategy.BestScore(null, null);
+
+	/**
+	 * How long to wait before playing the found word (ms).
+	 */
+	@Setter
+	Duration throttle = Duration.ofSeconds(0);
+
+	@Setter
+	Level level = Level.MIDDLE;
 
 	private final UUID game;
 
@@ -34,16 +45,19 @@ public class AIPlayer extends AbstractPlayer {
 	 * @param game
 	 * @param bruteForceMethod
 	 */
-	public AIPlayer(final BruteForceMethod bruteForceMethod, final UUID game, final UUID playerId, final MicroServiceScrabbleServer server) {
+	public AIPlayer(
+			final BruteForceMethod bruteForceMethod,
+			final UUID game,
+			final UUID playerId,
+			final MicroServiceScrabbleServer server
+	) {
 		super("AI");
 		this.bruteForceMethod = bruteForceMethod;
 		this.game = game;
 		this.uuid = playerId;
 		this.server = server;
-//			super(new Configuration(), name);
-		this.configuration = new Configuration();
-		this.configuration.strategy = new Strategy.BestScore(server, game);
-		this.configuration.throttle = Duration.ofSeconds(2);
+		this.strategy = new Strategy.BestScore(server, game);
+		this.throttle = Duration.ofSeconds(0);
 
 		this.daemonThread = new Thread(() -> runDaemonThread());
 		this.daemonThread.setDaemon(true);
@@ -78,7 +92,7 @@ public class AIPlayer extends AbstractPlayer {
 						return;
 					}
 				}
-				Thread.sleep(this.configuration.throttle.toMillis());
+				Thread.sleep(this.throttle.toMillis());
 			} while (state.state != GameState.State.ENDED);
 
 			LOGGER.info("Daemon thread of " + this.uuid + " ends.");
@@ -107,22 +121,20 @@ public class AIPlayer extends AbstractPlayer {
 
 		String notation;
 		try {
-			final Pair<List<String>, Integer> sortedMoves = this.bruteForceMethod.getLegalMoves(
-					letters,
-					this.configuration.strategy
-			);
-
-			final Integer selectedPosition = sortedMoves.getRight();
-			if (selectedPosition == null) {
+			final Set<String> legalMoves = this.bruteForceMethod.getLegalMoves(letters);
+			final TreeMap<Integer, List<String>> valuedWords = this.strategy.sort(legalMoves);
+			if (valuedWords == null) {
 				notation = Action.PASS_TURN_NOTATION;
 			} else {
-				notation = sortedMoves.getLeft().get(selectedPosition);
+				Integer selectedValue = (int) (valuedWords.lastKey() * this.level.factor);
+				selectedValue = valuedWords.floorKey(selectedValue);
+				notation = valuedWords.get(selectedValue).get(0);
 			}
 		} catch (Throwable e) {
 			throw new Exception("Error finding a word with rack " + letters, e);
 		}
 
-		Thread.sleep(this.configuration.throttle.toMillis());
+		Thread.sleep(this.throttle.toMillis());
 		final PlayActionResponse response = this.server.play(this.game, buildAction(notation));
 		if (!response.success) {
 			throw new AssertionError("Play of " + notation + "refused: " + response.message);
@@ -130,17 +142,19 @@ public class AIPlayer extends AbstractPlayer {
 		return false;
 	}
 
-	static class Configuration {
-		//		@Parameter(label = "#strategy")
-		Strategy strategy = new Strategy.BestScore(null, null);
+	/**
+	 * Difficulty level of an AI player
+	 */
+	public enum Level {
+		VERY_SIMPLE(0.4f),
+		SIMPLE(0.6f),
+		MIDDLE(0.7f),
+		HARD(0.8f),
+		VERY_HARD(1);
+		private final float factor;
 
-		/**
-		 * How long to wait before playing the found word (ms).
-		 */
-		//		@Parameter(label = "#throttle.seconds", lowerBound = 0, upperBound = 30)
-		Duration throttle = Duration.ofSeconds(2);
-
-		//		@Parameter(label = "#force", isSlide = true, lowerBound = 0, upperBound = 100)
-		int force = 90;
+		Level(final float factor) {
+			this.factor = factor;
+		}
 	}
 }

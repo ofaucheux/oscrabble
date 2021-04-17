@@ -29,7 +29,7 @@ public class PossibleMoveDisplayer {
 
 	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy("Hide") {
 		@Override
-		public Integer sort(final List<String> moves) {
+		public TreeMap<Integer, List<String>> sort(final Set<String> moves) {
 			throw new AssertionError("Should not be called");
 		}
 	};
@@ -163,14 +163,22 @@ public class PossibleMoveDisplayer {
 			throw new IllegalArgumentException("GameId is " + this.state.gameId + ", expected was " + this.game);
 		}
 
-		try {
+		final Collection<Score> scores;
+		if (selectedOrderStrategy == null) {
+			scores = Collections.emptyList();
+		} else {
 			this.bfm.setGrid(Grid.fromData(this.state.grid));
-			final List<String> legalMoves = this.bfm.getLegalMoves(this.rack, selectedOrderStrategy).getLeft();
-			final Collection<Score> scores = this.server.getScores(this.state.getGameId(), legalMoves);
-			this.moveList.setListData(new Vector<>(scores));
-		} catch (ScrabbleException.CommunicationException e) {
-			LOGGER.error("Cannot update list", e);
+			final ArrayList<String> words = new ArrayList<>();
+			for (final List<String> subWords : selectedOrderStrategy.sort(this.bfm.getLegalMoves(this.rack)).values()) {
+				words.addAll(0, subWords);
+			}
+			try {
+				scores = this.server.getScores(this.game, words);
+			} catch (ScrabbleException.CommunicationException e) {
+				throw new Error(e);
+			}
 		}
+		this.moveList.setListData(new Vector<>(scores));
 	}
 
 	public void setFont(final Font font) {

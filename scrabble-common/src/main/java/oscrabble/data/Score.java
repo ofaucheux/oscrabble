@@ -11,4 +11,12 @@ import lombok.Data;
 public class Score {
 	String notation;
 	int score;
+
+	public static String getWord(final String notation) {
+		return notation.substring(notation.indexOf(' ') + 1);
+	}
+
+	String getWord() {
+		return getWord(this.notation);
+	}
 }

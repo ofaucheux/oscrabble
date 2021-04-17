@@ -1,7 +1,6 @@
 package oscrabble.player.ai;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.quinto.dawg.CompressedDAWGSet;
 import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
@@ -93,32 +92,12 @@ public class BruteForceMethod {
 	}
 
 	/**
-	 * Get all authorized moves, ordered by their scores (descending).
-	 * The result contains the word selected by the strategy. It must not be the first one of the list, if
-	 * as some strategies don't select the best word (concept of difficulty level).
-	 *
-	 * @param rack     Rack
-	 * @param strategy the ordering algorithm
-	 * @return all the moves (left) and the selected word (right)
-	 */
-	public Pair<List<String>, Integer> getLegalMoves(final Collection<Character> rack, final Strategy strategy) {
-		final ArrayList<String> moves = new ArrayList<>(getLegalMoves(rack));
-		final Integer selected;
-		if (strategy != null) {
-			selected = strategy.sort(moves);
-		} else {
-			selected = moves.isEmpty() ? null : 0;
-		}
-		return Pair.of(moves, selected);
-	}
-
-	/**
 	 * Get all authorized moves.
 	 *
 	 * @param rack Rack
 	 * @return all the moves
 	 */
-	private Set<String> getLegalMoves(final Collection<Character> rack) {
+	public Set<String> getLegalMoves(final Collection<Character> rack) {
 		if (this.grid.isEmpty()) {
 			return getLegalWordOnEmptyGrid(rack);
 		}
