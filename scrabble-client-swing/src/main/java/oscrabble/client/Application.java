@@ -12,6 +12,7 @@ import oscrabble.player.ai.BruteForceMethod;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.*;
 
 @SuppressWarnings("BusyWait")
@@ -99,6 +100,7 @@ public class Application {
 			final UUID anton = this.server.addPlayer(game, names.get(i + 1));
 			// TODO: tell the server it is an AI Player
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
+			ai.setThrottle(Duration.ofSeconds(2));
 			ai.startDaemonThread();
 		}
 

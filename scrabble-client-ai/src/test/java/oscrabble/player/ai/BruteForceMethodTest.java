@@ -1,7 +1,6 @@
 package oscrabble.player.ai;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -97,17 +96,17 @@ public class BruteForceMethodTest {
 		MatcherAssert.assertThat(DICTIONARY.getAdmissibleWords(), CoreMatchers.hasItems(foundWords.toArray(new String[0])));
 	}
 
-	public List<String> getLegalMoves(final BruteForceMethod bfm, final String rack) {
+	public Set<String> getLegalMoves(final BruteForceMethod bfm, final String rack) {
 		final ArrayList<Character> list = new ArrayList<>(rack.length());
 		rack.chars().forEach(c -> list.add((char) c));
-		return bfm.getLegalMoves(list, new Strategy.BestSize()).getLeft();
+		return bfm.getLegalMoves(list);
 	}
 
 	@Test
 	void testBlank() throws ScrabbleException {
 		this.instance.setGrid(new Grid());
 		this.instance.grid.play(null, "J2 ELEPHANT");
-		final List<String> playTiles = getLegalMoves(this.instance, "ASME TH");
+		final Set<String> playTiles = getLegalMoves(this.instance, "ASME TH");
 		assertTrue(playTiles.contains("5J PHASME"));
 		assertTrue(playTiles.contains("5J PhASME"));
 	}
