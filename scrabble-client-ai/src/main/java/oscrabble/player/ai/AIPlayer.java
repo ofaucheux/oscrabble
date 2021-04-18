@@ -20,13 +20,13 @@ public class AIPlayer extends AbstractPlayer {
 	private final BruteForceMethod bruteForceMethod;
 
 	@Setter
-	Strategy strategy = new Strategy.BestScore(null, null);
+	Strategy strategy;
 
 	/**
 	 * How long to wait before playing the found word (ms).
 	 */
 	@Setter
-	Duration throttle = Duration.ofSeconds(0);
+	Duration throttle;
 
 	@Setter
 	Level level = Level.MIDDLE;
@@ -151,6 +151,7 @@ public class AIPlayer extends AbstractPlayer {
 		MIDDLE(0.7f),
 		HARD(0.8f),
 		VERY_HARD(1);
+
 		private final float factor;
 
 		Level(final float factor) {

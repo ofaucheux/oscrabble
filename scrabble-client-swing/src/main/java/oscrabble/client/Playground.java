@@ -366,6 +366,12 @@ class Playground {
 		return this.commandPrompt.getText();
 	}
 
+	public void setScoreboardPlayerAdditionalComponent(final Map<UUID, JComponent> components) {
+		components.forEach(
+				(p, c) -> this.jScoreboard.setAdditionalComponent(p, c)
+		);
+	}
+
 	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException {
 
 //		assert this.client != null;

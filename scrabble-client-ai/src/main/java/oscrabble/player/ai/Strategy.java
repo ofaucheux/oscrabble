@@ -15,16 +15,8 @@ import java.util.function.Function;
 public abstract class Strategy {
 	private final String label;
 
-	/**
-	 * Force: 0.0 (very simple, always worst play) to 1.0 (very difficult)
-	 */
-	@Getter
-	@Setter
-	private float force;
-
 	protected Strategy(final String label) {
 		this.label = label;
-		this.force = 1.0f;
 	}
 
 	protected static TreeMap<Integer, List<String>> sortByFunction(

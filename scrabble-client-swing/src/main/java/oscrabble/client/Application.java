@@ -3,6 +3,7 @@ package oscrabble.client;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.client.ui.LevelSlider;
 import oscrabble.client.ui.PropertiesPanel;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
@@ -94,6 +95,8 @@ public class Application {
 		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
 		Collections.shuffle(names);
 
+		final HashMap<UUID, JComponent> additionalPlayerComponents = new HashMap<>();
+
 		final UUID game = this.server.newGame();
 		final UUID edgar = this.server.addPlayer(game, names.get(0));
 		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {
@@ -102,9 +105,13 @@ public class Application {
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
 			ai.setThrottle(Duration.ofSeconds(2));
 			ai.startDaemonThread();
+			final LevelSlider levelSlider = new LevelSlider();
+			levelSlider.addChangeListener(e -> ai.setLevel(levelSlider.getSelectedLevel()));
+			additionalPlayerComponents.put(ai.uuid, levelSlider);
 		}
 
 		final Client client = new Client(this.server, game, edgar);
+		client.playground.setScoreboardPlayerAdditionalComponent(additionalPlayerComponents);
 		client.displayAll();
 		this.server.startGame(game);
 
