@@ -5,14 +5,18 @@ import oscrabble.data.Player;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 /**
  * Panel for the display of the actual score.
  */
 public class JScoreboard extends JPanel {
+
+	private final Map<UUID, JComponent> playerAdditionalComponents = new TreeMap<>();
+
 	public JScoreboard() {
 		setPreferredSize(new Dimension(200, 0));
 		setLayout(new GridBagLayout());
@@ -44,34 +48,15 @@ public class JScoreboard extends JPanel {
 			c.weightx = SMALL_WEIGHT;
 
 			c.gridx++;
-			c.anchor = GridBagConstraints.LINE_END;
-			add(new JLabel(Integer.toString(player.score)), c);
+			c.anchor = GridBagConstraints.LINE_START;
+			final JComponent additional = this.playerAdditionalComponents.get(player.id);
+			if (additional != null) {
+				add(additional, c);
+			}
 
 			c.gridx++;
-			final JButton parameterButton = new JButton();
-			parameterButton.setPreferredSize(buttonDim);
-			parameterButton.setFocusable(false);
-			parameterButton.setAction(new AbstractAction("...") {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					// todo
-					final SwingWorker<Void, Void> worker = new SwingWorker<>() {
-						@Override
-						protected Void doInBackground() {
-//							JScoreboard.this.game.editParameters(playground.swingPlayers.getFirst().getPlayerKey(), player);
-							return null;
-						}
-					};
-					worker.execute();
-				}
-			});
-			// todo
-//			parameterButton.setVisible(player.hasEditableParameters());
-			final JPanel p = new JPanel();
-			p.setMinimumSize(new Dimension(LINE_HEIGHT, LINE_HEIGHT));
-			p.add(parameterButton);
-			add(p, c);
-
+			c.anchor = GridBagConstraints.LINE_END;
+			add(new JLabel(Integer.toString(player.score)), c);
 		}
 
 		c.gridy++;
@@ -85,4 +70,7 @@ public class JScoreboard extends JPanel {
 		repaint();
 	}
 
+	public void setAdditionalComponent(UUID player, JComponent component) {
+		this.playerAdditionalComponents.put(player, component);
+	}
 }
