@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.CursorImage;
+import oscrabble.client.ui.JScoreboard;
 import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.StateUtils;
 import oscrabble.controller.Action;

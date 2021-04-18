@@ -1,4 +1,4 @@
-package oscrabble.client;
+package oscrabble.client.ui;
 
 import oscrabble.data.Player;
 
@@ -12,14 +12,14 @@ import java.util.UUID;
 /**
  * Panel for the display of the actual score.
  */
-class JScoreboard extends JPanel {
-	JScoreboard() {
+public class JScoreboard extends JPanel {
+	public JScoreboard() {
 		setPreferredSize(new Dimension(200, 0));
 		setLayout(new GridBagLayout());
 		setBorder(new TitledBorder("Score"));
 	}
 
-	void updateDisplay(final List<Player> players, final UUID playerOnTurn) {
+	public void updateDisplay(final List<Player> players, final UUID playerOnTurn) {
 		final double SMALL_WEIGHT = 0.1;
 		final double BIG_WEIGHT = 10;
 

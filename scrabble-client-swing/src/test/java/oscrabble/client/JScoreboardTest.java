@@ -2,6 +2,7 @@ package oscrabble.client;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import oscrabble.client.ui.JScoreboard;
 import oscrabble.data.Player;
 
 import javax.swing.*;
