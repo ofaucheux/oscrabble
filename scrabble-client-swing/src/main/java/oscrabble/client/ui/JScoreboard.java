@@ -1,25 +1,30 @@
-package oscrabble.client;
+package oscrabble.client.ui;
 
 import oscrabble.data.Player;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 /**
  * Panel for the display of the actual score.
  */
-class JScoreboard extends JPanel {
-	JScoreboard() {
+public class JScoreboard extends JPanel {
+
+	private final Map<UUID, JComponent> playerAdditionalComponents = new TreeMap<>();
+
+	public JScoreboard() {
 		setPreferredSize(new Dimension(200, 0));
 		setLayout(new GridBagLayout());
 		setBorder(new TitledBorder("Score"));
 	}
 
-	void updateDisplay(final List<Player> players, final UUID playerOnTurn) {
+	public void updateDisplay(final List<Player> players, final UUID playerOnTurn) {
 		final double SMALL_WEIGHT = 0.1;
 		final double BIG_WEIGHT = 10;
 
@@ -48,30 +53,16 @@ class JScoreboard extends JPanel {
 			add(new JLabel(Integer.toString(player.score)), c);
 
 			c.gridx++;
-			final JButton parameterButton = new JButton();
-			parameterButton.setPreferredSize(buttonDim);
-			parameterButton.setFocusable(false);
-			parameterButton.setAction(new AbstractAction("...") {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					// todo
-					final SwingWorker<Void, Void> worker = new SwingWorker<>() {
-						@Override
-						protected Void doInBackground() {
-//							JScoreboard.this.game.editParameters(playground.swingPlayers.getFirst().getPlayerKey(), player);
-							return null;
-						}
-					};
-					worker.execute();
-				}
-			});
-			// todo
-//			parameterButton.setVisible(player.hasEditableParameters());
-			final JPanel p = new JPanel();
-			p.setMinimumSize(new Dimension(LINE_HEIGHT, LINE_HEIGHT));
-			p.add(parameterButton);
-			add(p, c);
+			c.weightx = SMALL_WEIGHT;
+			c.anchor = GridBagConstraints.LINE_START;
+			final JComponent additional = this.playerAdditionalComponents.get(player.id);
+			if (additional != null) {
+				final JPanel panel = new JPanel(new BorderLayout());
+				panel.setBorder(new EmptyBorder(2,2,2,2));
+				panel.add(additional);
 
+				add(panel, c);
+			}
 		}
 
 		c.gridy++;
@@ -85,4 +76,7 @@ class JScoreboard extends JPanel {
 		repaint();
 	}
 
+	public void setAdditionalComponent(UUID player, JComponent component) {
+		this.playerAdditionalComponents.put(player, component);
+	}
 }

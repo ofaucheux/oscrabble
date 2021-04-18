@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.CursorImage;
+import oscrabble.client.ui.JScoreboard;
 import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.StateUtils;
 import oscrabble.controller.Action;
@@ -124,6 +125,7 @@ class Playground {
 
 	static {
 		try (InputStream resource = Playground.class.getResourceAsStream("nk57-monospace-cd-bk.ttf")) {
+			assert resource != null;
 			MONOSPACED = Font.createFont(Font.TRUETYPE_FONT, resource).deriveFont(14f);
 		} catch (final Exception exception) {
 			throw new IOError(exception);
@@ -363,6 +365,12 @@ class Playground {
 
 	public String getCommand() {
 		return this.commandPrompt.getText();
+	}
+
+	public void setScoreboardPlayerAdditionalComponent(final Map<UUID, JComponent> components) {
+		components.forEach(
+				(p, c) -> this.jScoreboard.setAdditionalComponent(p, c)
+		);
 	}
 
 	private oscrabble.controller.Action getPreparedMove() throws ScrabbleException.NotParsableException {

@@ -5,7 +5,10 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.controller.MicroServiceScrabbleServer;
-import oscrabble.data.*;
+import oscrabble.data.Action;
+import oscrabble.data.GameState;
+import oscrabble.data.PlayActionResponse;
+import oscrabble.data.Tile;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.AbstractPlayer;
 
@@ -20,16 +23,16 @@ public class AIPlayer extends AbstractPlayer {
 	private final BruteForceMethod bruteForceMethod;
 
 	@Setter
-	Strategy strategy = new Strategy.BestScore(null, null);
+	Strategy strategy;
 
 	/**
 	 * How long to wait before playing the found word (ms).
 	 */
 	@Setter
-	Duration throttle = Duration.ofSeconds(0);
+	Duration throttle;
 
-	@Setter
-	Level level = Level.MIDDLE;
+	@Setter @Getter
+	public Level level = Level.MIDDLE;
 
 	private final UUID game;
 
@@ -62,6 +65,18 @@ public class AIPlayer extends AbstractPlayer {
 		this.daemonThread = new Thread(() -> runDaemonThread());
 		this.daemonThread.setDaemon(true);
 		this.daemonThread.setName("AI Player Playing thread");
+	}
+
+	private AIPlayer() {
+		super("AI Test");
+		this.server = null;
+		this.daemonThread = null;
+		this.bruteForceMethod = null;
+		this.game = null;
+	}
+
+	public static AIPlayer createTestMocker() {
+		return new AIPlayer();
 	}
 
 	/**
@@ -151,6 +166,7 @@ public class AIPlayer extends AbstractPlayer {
 		MIDDLE(0.7f),
 		HARD(0.8f),
 		VERY_HARD(1);
+
 		private final float factor;
 
 		Level(final float factor) {

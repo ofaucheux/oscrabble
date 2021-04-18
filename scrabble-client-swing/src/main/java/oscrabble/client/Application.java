@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.*;
+import java.util.List;
 
 @SuppressWarnings("BusyWait")
 public class Application {
@@ -96,15 +97,18 @@ public class Application {
 
 		final UUID game = this.server.newGame();
 		final UUID edgar = this.server.addPlayer(game, names.get(0));
+		final HashSet<AIPlayer> aiPlayers = new HashSet<>();
 		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {
 			final UUID anton = this.server.addPlayer(game, names.get(i + 1));
 			// TODO: tell the server it is an AI Player
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
-			ai.setThrottle(Duration.ofSeconds(2));
+			ai.setThrottle(Duration.ofSeconds(1));
 			ai.startDaemonThread();
+			aiPlayers.add(ai);
 		}
 
 		final Client client = new Client(this.server, game, edgar);
+		client.setAIPlayers(aiPlayers);
 		client.displayAll();
 		this.server.startGame(game);
 

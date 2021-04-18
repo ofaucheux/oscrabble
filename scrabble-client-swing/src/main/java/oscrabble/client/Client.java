@@ -4,12 +4,16 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.client.ui.AIPlayerConfigPanel;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.data.*;
+import oscrabble.player.ai.AIPlayer;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.*;
@@ -243,6 +247,32 @@ public class Client {
 		refreshUI(state);
 		this.listeners.forEach(l -> l.onNewTurn());
 		this.server.acknowledgeState(this.game, this.player, state);
+	}
+
+	/**
+	 * Set the list of ai players
+	 * @param aiPlayers
+	 */
+	public void setAIPlayers(final HashSet<AIPlayer> aiPlayers) {
+		final HashMap<UUID, JComponent> additionalPlayerComponents = new HashMap<>();
+		for (final AIPlayer ai : aiPlayers) {
+			final JComponent configButton = new JButton(new AbstractAction("...") {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					JOptionPane.showMessageDialog(
+							null,
+							new AIPlayerConfigPanel(ai),
+							"Properties for " + ai.name,
+							JOptionPane.PLAIN_MESSAGE
+					);
+				}
+			});
+			configButton.setPreferredSize(new Dimension(16, 16));
+			configButton.setFocusable(false);
+			configButton.setBorder(new EmptyBorder(2,2,2,2));
+			additionalPlayerComponents.put(ai.uuid, configButton);
+		}
+		this.playground.setScoreboardPlayerAdditionalComponent(additionalPlayerComponents);
 	}
 
 //	/**
