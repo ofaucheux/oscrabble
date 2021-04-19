@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.ItemEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -168,8 +169,11 @@ public final class PropertiesPanel extends JPanel {
 
 		private Object lastSetValue;
 
-		final void setValue(Object value) {
-			if (value == this.lastSetValue) {
+		final synchronized void setValue(Object value) {
+			if (
+					(value == null && this.lastSetValue == null)
+				|| value.equals(this.lastSetValue)
+			) {
 				return;
 			}
 
@@ -206,8 +210,12 @@ public final class PropertiesPanel extends JPanel {
 	private class ComboBoxField extends ComponentWrapper<JComboBox<Object>> {
 		public ComboBoxField(final Class<?> type, final String fieldName) {
 			this.component = new JComboBox<>(type.getEnumConstants());
-			this.component.addActionListener(
-					e -> setFieldValue(fieldName, this.component.getSelectedItem())
+			this.component.addItemListener(
+					e -> {
+						if (e.getStateChange() == ItemEvent.SELECTED) {
+							setFieldValue(fieldName, this.component.getSelectedItem());
+						}
+					}
 			);
 		}
 

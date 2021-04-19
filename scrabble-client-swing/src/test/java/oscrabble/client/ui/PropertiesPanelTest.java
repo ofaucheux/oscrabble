@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +20,8 @@ class PropertiesPanelTest {
 	@Disabled
 	@Test
 	void displayPanel() {
+
+		System.out.println("TEST");
 		final PropertyObject properties = new PropertyObject();
 		properties.value = 2;
 
@@ -27,7 +30,7 @@ class PropertiesPanelTest {
 		panels.add(new PropertiesPanel(properties));
 
 		Executors.newScheduledThreadPool(8).scheduleAtFixedRate(
-				() -> { panels.forEach(p -> p.refreshContent());},
+				() -> panels.forEach(p -> p.refreshContent()),
 				0,
 				2,
 				TimeUnit.SECONDS
@@ -45,5 +48,6 @@ class PropertiesPanelTest {
 		String text;
 		int value;
 		LocalDate date;
+		Month month;
 	}
 }
