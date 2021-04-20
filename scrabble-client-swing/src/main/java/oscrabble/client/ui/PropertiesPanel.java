@@ -18,7 +18,7 @@ import java.util.Map;
  * Panel für die Anzeige und Änderung der Felder eines Objekts.
  * Alle Felder des Java Objects werden angezeigt, die sowohl getter wie setter haben.
  */
-public final class PropertiesPanel extends JPanel {
+public class PropertiesPanel extends JPanel {
 
 	@SuppressWarnings("ConstantConditions")
 	private final static Icon trueIcon = new ImageIcon(PropertiesPanel.class.getResource("checkboxTrue.png"));
@@ -78,7 +78,7 @@ public final class PropertiesPanel extends JPanel {
 		return jLabel;
 	}
 
-	private ComponentWrapper<?> createComponent(final Field field) {
+	protected ComponentWrapper<?> createComponent(final Field field) {
 		final Class<?> type = field.getType();
 		final ComponentWrapper<?> paramComponent;
 
@@ -124,7 +124,7 @@ public final class PropertiesPanel extends JPanel {
 		return paramComponent;
 	}
 
-	private void setFieldValue(final String fieldName, final Object value) {
+	protected void setFieldValue(final String fieldName, final Object value) {
 		try {
 			final Method setter = this.setters.get(fieldName);
 			if (setter == null) {
@@ -164,7 +164,7 @@ public final class PropertiesPanel extends JPanel {
 //		}
 //	}
 
-	private static abstract class ComponentWrapper<A extends JComponent> {
+	protected static abstract class ComponentWrapper<A extends JComponent> {
 		A component;
 
 		private Object lastSetValue;
