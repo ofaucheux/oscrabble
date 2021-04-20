@@ -3,6 +3,7 @@ package oscrabble.client.ui;
 import oscrabble.data.Player;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.List;
@@ -56,7 +57,11 @@ public class JScoreboard extends JPanel {
 			c.anchor = GridBagConstraints.LINE_START;
 			final JComponent additional = this.playerAdditionalComponents.get(player.id);
 			if (additional != null) {
-				add(additional, c);
+				final JPanel panel = new JPanel(new BorderLayout());
+				panel.setBorder(new EmptyBorder(2,2,2,2));
+				panel.add(additional);
+
+				add(panel, c);
 			}
 		}
 

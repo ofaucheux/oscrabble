@@ -3,7 +3,6 @@ package oscrabble.client;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.client.ui.AIPlayerConfigPanel;
 import oscrabble.client.ui.PropertiesPanel;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
@@ -11,8 +10,6 @@ import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -98,23 +95,20 @@ public class Application {
 		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
 		Collections.shuffle(names);
 
-		final HashMap<UUID, JComponent> additionalPlayerComponents = new HashMap<>();
-
 		final UUID game = this.server.newGame();
 		final UUID edgar = this.server.addPlayer(game, names.get(0));
+		final HashSet<AIPlayer> aiPlayers = new HashSet<>();
 		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {
 			final UUID anton = this.server.addPlayer(game, names.get(i + 1));
 			// TODO: tell the server it is an AI Player
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
 			ai.setThrottle(Duration.ofSeconds(1));
 			ai.startDaemonThread();
-
-			final JComponent configButton = createPlayerConfigButton(ai);
-			additionalPlayerComponents.put(ai.uuid, configButton);
+			aiPlayers.add(ai);
 		}
 
 		final Client client = new Client(this.server, game, edgar);
-		client.playground.setScoreboardPlayerAdditionalComponent(additionalPlayerComponents);
+		client.setAIPlayers(aiPlayers);
 		client.displayAll();
 		this.server.startGame(game);
 
@@ -122,28 +116,6 @@ public class Application {
 			Thread.sleep(500);
 		} while (client.isVisible());
 		this.server.attach(game, edgar, true);
-	}
-
-	/**
-	 *
-	 * @param ai
-	 * @return
-	 */
-	private JComponent createPlayerConfigButton(final AIPlayer ai) {
-		final JComponent configButton = new JButton(new AbstractAction("...") {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				JOptionPane.showMessageDialog(
-						null,
-						new AIPlayerConfigPanel(ai),
-						"Properties for " + ai.name,
-						JOptionPane.PLAIN_MESSAGE
-				);
-			}
-		});
-		configButton.setPreferredSize(new Dimension(16, 16));
-		configButton.setFocusable(false);
-		return configButton;
 	}
 
 	@Data
