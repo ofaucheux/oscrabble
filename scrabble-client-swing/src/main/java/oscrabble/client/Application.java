@@ -11,11 +11,13 @@ import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.*;
+import java.util.List;
 
 @SuppressWarnings("BusyWait")
 public class Application {
@@ -107,12 +109,7 @@ public class Application {
 			ai.setThrottle(Duration.ofSeconds(1));
 			ai.startDaemonThread();
 
-			final JComponent configButton = new JButton(new AbstractAction("...") {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					JOptionPane.showMessageDialog(null, new AIPlayerConfigPanel(ai));
-				}
-			});
+			final JComponent configButton = createPlayerConfigButton(ai);
 			additionalPlayerComponents.put(ai.uuid, configButton);
 		}
 
@@ -125,6 +122,28 @@ public class Application {
 			Thread.sleep(500);
 		} while (client.isVisible());
 		this.server.attach(game, edgar, true);
+	}
+
+	/**
+	 *
+	 * @param ai
+	 * @return
+	 */
+	private JComponent createPlayerConfigButton(final AIPlayer ai) {
+		final JComponent configButton = new JButton(new AbstractAction("...") {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				JOptionPane.showMessageDialog(
+						null,
+						new AIPlayerConfigPanel(ai),
+						"Properties for " + ai.name,
+						JOptionPane.PLAIN_MESSAGE
+				);
+			}
+		});
+		configButton.setPreferredSize(new Dimension(16, 16));
+		configButton.setFocusable(false);
+		return configButton;
 	}
 
 	@Data

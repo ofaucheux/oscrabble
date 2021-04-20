@@ -48,15 +48,16 @@ public class JScoreboard extends JPanel {
 			c.weightx = SMALL_WEIGHT;
 
 			c.gridx++;
+			c.anchor = GridBagConstraints.LINE_END;
+			add(new JLabel(Integer.toString(player.score)), c);
+
+			c.gridx++;
+			c.weightx = SMALL_WEIGHT;
 			c.anchor = GridBagConstraints.LINE_START;
 			final JComponent additional = this.playerAdditionalComponents.get(player.id);
 			if (additional != null) {
 				add(additional, c);
 			}
-
-			c.gridx++;
-			c.anchor = GridBagConstraints.LINE_END;
-			add(new JLabel(Integer.toString(player.score)), c);
 		}
 
 		c.gridy++;

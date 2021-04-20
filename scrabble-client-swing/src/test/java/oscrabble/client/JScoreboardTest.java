@@ -6,6 +6,7 @@ import oscrabble.client.ui.JScoreboard;
 import oscrabble.data.Player;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.UUID;
@@ -27,6 +28,11 @@ class JScoreboardTest {
 		players.add(builder.name("Grace").score(18).id(UUID.randomUUID()).build());
 
 		final JScoreboard scb = new JScoreboard();
+
+		final JButton button = new JButton("...");
+		button.setPreferredSize(new Dimension(16, 16));
+		scb.setAdditionalComponent(stanley, button);
+
 		scb.updateDisplay(players, players.get(RANDOM.nextInt(players.size())).id);
 		final JFrame f = new JFrame();
 		f.add(scb);
