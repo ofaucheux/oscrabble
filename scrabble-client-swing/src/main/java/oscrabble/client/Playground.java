@@ -125,6 +125,7 @@ class Playground {
 
 	static {
 		try (InputStream resource = Playground.class.getResourceAsStream("nk57-monospace-cd-bk.ttf")) {
+			assert resource != null;
 			MONOSPACED = Font.createFont(Font.TRUETYPE_FONT, resource).deriveFont(14f);
 		} catch (final Exception exception) {
 			throw new IOError(exception);

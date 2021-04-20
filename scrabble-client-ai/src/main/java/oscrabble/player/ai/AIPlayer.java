@@ -5,7 +5,10 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.controller.MicroServiceScrabbleServer;
-import oscrabble.data.*;
+import oscrabble.data.Action;
+import oscrabble.data.GameState;
+import oscrabble.data.PlayActionResponse;
+import oscrabble.data.Tile;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.AbstractPlayer;
 
@@ -28,8 +31,8 @@ public class AIPlayer extends AbstractPlayer {
 	@Setter
 	Duration throttle;
 
-	@Setter
-	Level level = Level.MIDDLE;
+	@Setter @Getter
+	public Level level = Level.MIDDLE;
 
 	private final UUID game;
 
@@ -62,6 +65,18 @@ public class AIPlayer extends AbstractPlayer {
 		this.daemonThread = new Thread(() -> runDaemonThread());
 		this.daemonThread.setDaemon(true);
 		this.daemonThread.setName("AI Player Playing thread");
+	}
+
+	private AIPlayer() {
+		super("AI Test");
+		this.server = null;
+		this.daemonThread = null;
+		this.bruteForceMethod = null;
+		this.game = null;
+	}
+
+	public static AIPlayer createTestMocker() {
+		return new AIPlayer();
 	}
 
 	/**

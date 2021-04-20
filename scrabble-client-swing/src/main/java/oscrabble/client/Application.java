@@ -3,7 +3,7 @@ package oscrabble.client;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.client.ui.LevelSlider;
+import oscrabble.client.ui.AIPlayerConfigPanel;
 import oscrabble.client.ui.PropertiesPanel;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
@@ -11,6 +11,7 @@ import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -103,11 +104,16 @@ public class Application {
 			final UUID anton = this.server.addPlayer(game, names.get(i + 1));
 			// TODO: tell the server it is an AI Player
 			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
-			ai.setThrottle(Duration.ofSeconds(2));
+			ai.setThrottle(Duration.ofSeconds(1));
 			ai.startDaemonThread();
-			final LevelSlider levelSlider = new LevelSlider();
-			levelSlider.addChangeListener(e -> ai.setLevel(levelSlider.getSelectedLevel()));
-			additionalPlayerComponents.put(ai.uuid, levelSlider);
+
+			final JComponent configButton = new JButton(new AbstractAction("...") {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					JOptionPane.showMessageDialog(null, new AIPlayerConfigPanel(ai));
+				}
+			});
+			additionalPlayerComponents.put(ai.uuid, configButton);
 		}
 
 		final Client client = new Client(this.server, game, edgar);
