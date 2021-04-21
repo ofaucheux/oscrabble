@@ -3,7 +3,7 @@ package oscrabble.client;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.client.ui.PropertiesPanel;
+import oscrabble.client.ui.ConnectionParameterPanel;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.player.ai.AIPlayer;
@@ -53,19 +53,35 @@ public class Application {
 		//
 
 		final ConnectionParameters connectionParameters = new ConnectionParameters();
-		connectionParameters.setServerName("localhost");
-		connectionParameters.setPort(2511);
 		JOptionPane.showMessageDialog(
 				null,
-				new PropertiesPanel(connectionParameters),
-				"Server connection",
-				JOptionPane.PLAIN_MESSAGE
+				new ConnectionParameterPanel(connectionParameters)
 		);
+
+		if (connectionParameters.localServer) {
+			final LinkedHashMap<String, String> jars = new LinkedHashMap<>();
+			jars.put("scrabble-dictionary-1.0.18-SNAPSHOT.jar", "scrabble-dictionary");
+			jars.put("scrabble-server-1.0.18-SNAPSHOT.jar", "scrabble-server");
+
+			for (final String jar : jars.keySet()) {
+				final String jarPath = String.format(
+						"C:\\Programmierung\\OScrabble\\%s\\build\\libs\\%s",
+						jars.get(jar),
+						jar
+				);
+				final Process dico = new ProcessBuilder(
+						System.getProperty("java.home") + "/bin/java",
+						"-jar",
+						jarPath
+				).start();
+				System.out.println(dico.pid());
+			}
+		}
 
 		final MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
 		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer(
 				connectionParameters.serverName,
-				connectionParameters.port
+				connectionParameters.serverPort
 		);
 
 		//
@@ -120,7 +136,8 @@ public class Application {
 
 	@Data
 	public static class ConnectionParameters {
+		int serverPort;
 		String serverName;
-		int port;
+		private boolean localServer;
 	}
 }
