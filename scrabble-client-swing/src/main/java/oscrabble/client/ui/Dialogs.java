@@ -15,8 +15,8 @@ public class Dialogs {
 	 */
 	public static void displayConnectionParameterDialog(final Application.ConnectionParameters connectionParameters) {
 		final JPanel jPanel = new JPanel(new BorderLayout());
-		final JCheckBox remoteServer = new JCheckBox("Remote server");
-		jPanel.add(remoteServer, BorderLayout.NORTH);
+		final JCheckBox localServer = new JCheckBox("Local server");
+		jPanel.add(localServer, BorderLayout.NORTH);
 
 		connectionParameters.setServerName("localhost");
 		connectionParameters.setServerPort(2511);
@@ -31,6 +31,8 @@ public class Dialogs {
 				"Server connection",
 				JOptionPane.PLAIN_MESSAGE
 		);
+
+		connectionParameters.setLocalServer(localServer.isSelected());
 	}
 
 }
