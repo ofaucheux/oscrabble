@@ -1,5 +1,6 @@
 package oscrabble.client.ui;
 
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -11,8 +12,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Panel für die Anzeige und Änderung der Felder eines Objekts.
@@ -27,16 +27,18 @@ public class PropertiesPanel extends JPanel {
 
 	private final Object propertiesObject;
 	private final Map<String, ComponentWrapper<?>> valuesComponents = new HashMap<>();
-	private final Map<String, Method> setters = new HashMap<>();
+	private final LinkedHashMap<String, Method> setters = new LinkedHashMap<>();
 	private final Map<String, Method> getters = new HashMap<>();
 
 	/**
 	 * Crete a panel.
 	 *
 	 * @param propertiesObject configuration linked with the panel.
+	 * @param whitelist selection of fields, if any.
 	 */
 	public PropertiesPanel(
-			final Object propertiesObject
+			final Object propertiesObject,
+			final Collection<String> whitelist
 	) {
 		super();
 
@@ -44,6 +46,7 @@ public class PropertiesPanel extends JPanel {
 		final Class<?> propertyClass = this.propertiesObject.getClass();
 
 		for (final Method method : propertyClass.getDeclaredMethods()) {
+
 			final String name = method.getName();
 			if (name.startsWith("set")) {
 				final String fieldName = StringUtils.uncapitalize(name.substring(3));
@@ -55,6 +58,10 @@ public class PropertiesPanel extends JPanel {
 				final String fieldName = StringUtils.uncapitalize(name.substring(2));
 				this.getters.put(fieldName, method);
 			}
+		}
+
+		if (whitelist != null) {
+			this.setters.keySet().retainAll(whitelist);
 		}
 
 		setLayout(new GridLayout(0, 2));
@@ -71,6 +78,10 @@ public class PropertiesPanel extends JPanel {
 		refreshContent();
 	}
 
+	public PropertiesPanel(Object propertiesObject) {
+		this(propertiesObject, null);
+	}
+
 	private JLabel createLabel(final Field field) {
 		final JLabel jLabel = new JLabel(field.getName());
 //		label.setToolTipText(annotation.description().isEmpty() ? labelText : i18n(annotation.description()));
@@ -84,11 +95,13 @@ public class PropertiesPanel extends JPanel {
 
 		final String fieldName = field.getName();
 		if (String.class.equals(type)) {
-			paramComponent = new TextField(fieldName);
+			paramComponent = new TextField(
+					fieldName,
+					field.getType()
+			);
 		} else if (type.isEnum()) {
 			paramComponent = new ComboBoxField(type, fieldName);
 		} else if (boolean.class.equals(type)) {
-
 			paramComponent = new Checkbox(fieldName);
 //		} else if (int.class.equals(type) && 			field.getDeclaredAnnotation(LowerBound); /*todo*/) {
 //
@@ -114,7 +127,7 @@ public class PropertiesPanel extends JPanel {
 //				((JSlider) paramComponent).addChangeListener(this.listener);
 //				listener = evt -> ((JSlider) paramComponent).setValue(((Integer) evt.getNewValue()));
 		} else if (int.class.equals(type)) {
-			paramComponent = new Spinner(fieldName);
+			paramComponent = new TextField(fieldName, Integer.class);
 		} else if (type == LocalDate.class) {
 			paramComponent = new DatePicker(fieldName);
 		} else {
@@ -172,7 +185,7 @@ public class PropertiesPanel extends JPanel {
 		final synchronized void setValue(Object value) {
 			if (
 					(value == null && this.lastSetValue == null)
-				|| value.equals(this.lastSetValue)
+				|| (value != null && value.equals(this.lastSetValue))
 			) {
 				return;
 			}
@@ -188,19 +201,31 @@ public class PropertiesPanel extends JPanel {
 	 *
 	 */
 	private class TextField extends ComponentWrapper<JTextField> {
-		TextField(final String fieldName) {
+
+		private Method valueOfMethod;
+
+		@SneakyThrows
+		TextField(final String fieldName, Class<?> fieldType) {
 			this.component = new JTextField();
+			try {
+				this.valueOfMethod = fieldType.getMethod("valueOf", String.class);
+			} catch (NoSuchMethodException e) {
+				this.valueOfMethod = fieldType.getMethod("valueOf", Object.class);
+			}
 			this.component.addFocusListener(new FocusAdapter() {
+				@SneakyThrows
 				@Override
 				public void focusLost(final FocusEvent e) {
-					setFieldValue(fieldName, TextField.this.component.getText());
+					final String text = TextField.this.component.getText();
+					final Object value = TextField.this.valueOfMethod.invoke(null, text);
+					setFieldValue(fieldName, value);
 				}
 			});
 		}
 
 		@Override
 		protected void setValueIntern(final Object o) {
-			this.component.setText((String) o);
+			this.component.setText(String.valueOf(o));
 		}
 	}
 
@@ -239,6 +264,7 @@ public class PropertiesPanel extends JPanel {
 		}
 	}
 
+	@SuppressWarnings("unused") // could be used in the future
 	private class Spinner extends ComponentWrapper<JSpinner> {
 		public Spinner(final String fieldName) {
 			this.component = new JSpinner(new SpinnerNumberModel());
