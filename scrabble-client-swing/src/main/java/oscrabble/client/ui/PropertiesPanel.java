@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -11,6 +12,7 @@ import java.awt.event.ItemEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -97,7 +99,8 @@ public class PropertiesPanel extends JPanel {
 		if (String.class.equals(type)) {
 			paramComponent = new TextField(
 					fieldName,
-					field.getType()
+					field.getType(),
+					new JFormattedTextField()
 			);
 		} else if (type.isEnum()) {
 			paramComponent = new ComboBoxField(type, fieldName);
@@ -127,7 +130,11 @@ public class PropertiesPanel extends JPanel {
 //				((JSlider) paramComponent).addChangeListener(this.listener);
 //				listener = evt -> ((JSlider) paramComponent).setValue(((Integer) evt.getNewValue()));
 		} else if (int.class.equals(type)) {
-			paramComponent = new TextField(fieldName, Integer.class);
+			NumberFormat format = NumberFormat.getInstance();
+			format.setGroupingUsed(false);
+			NumberFormatter formatter = new NumberFormatter(format);
+			formatter.setAllowsInvalid(false);
+			paramComponent = new TextField(fieldName, Integer.class, new JFormattedTextField(formatter));
 		} else if (type == LocalDate.class) {
 			paramComponent = new DatePicker(fieldName);
 		} else {
@@ -200,13 +207,13 @@ public class PropertiesPanel extends JPanel {
 	/**
 	 *
 	 */
-	private class TextField extends ComponentWrapper<JTextField> {
+	private class TextField extends ComponentWrapper<JFormattedTextField> {
 
 		private Method valueOfMethod;
 
 		@SneakyThrows
-		TextField(final String fieldName, Class<?> fieldType) {
-			this.component = new JTextField();
+		TextField(final String fieldName, final Class<?> fieldType, JFormattedTextField component) {
+			this.component = component;
 			try {
 				this.valueOfMethod = fieldType.getMethod("valueOf", String.class);
 			} catch (NoSuchMethodException e) {
