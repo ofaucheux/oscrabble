@@ -3,15 +3,13 @@ package oscrabble.client;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.client.ui.Dialogs;
-import oscrabble.client.ui.PropertiesPanel;
+import oscrabble.client.ui.ConnectionParameterPanel;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -55,8 +53,10 @@ public class Application {
 		//
 
 		final ConnectionParameters connectionParameters = new ConnectionParameters();
-		Dialogs.displayConnectionParameterDialog(connectionParameters);
-
+		JOptionPane.showMessageDialog(
+				null,
+				new ConnectionParameterPanel(connectionParameters)
+		);
 
 		if (connectionParameters.localServer) {
 			final LinkedHashMap<String, String> jars = new LinkedHashMap<>();
