@@ -7,6 +7,10 @@ import oscrabble.utils.PidFiles;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -16,12 +20,33 @@ public class Starter {
 	private final ApplicationItem[] items;
 	private JPanel panel;
 
+	/** Directories of the jar applications */
+	private final Collection<Path> applicationDirectories;
+
+	@lombok.SneakyThrows
 	Starter() {
 		this.items = new ApplicationItem[]{
 				new ApplicationItem("Dictionary", "scrabble-dictionary", () -> PidFiles.isDictionaryRunning()),
 				new ApplicationItem("Server", "scrabble-server", () -> PidFiles.isServerRunning()),
 				new ApplicationItem("Client", "scrabble-client-swing", () -> true) // todo
 		};
+
+		final Path currentJarDirectory = new File(
+				ApplicationLauncher.class
+						.getProtectionDomain()
+						.getCodeSource()
+						.getLocation()
+						.toURI()
+		).getParentFile().toPath();
+
+		this.applicationDirectories = Arrays.asList(
+				currentJarDirectory,
+				currentJarDirectory.resolve("../../scrabble-server/build/libs"),
+				currentJarDirectory.resolve("../../scrabble-dictionary/build/libs"),
+				currentJarDirectory.resolve("../../../scrabble-server/build/libs"),
+				currentJarDirectory.resolve("../../../scrabble-dictionary/build/libs")
+		);
+
 		createUI();
 	}
 
@@ -49,7 +74,7 @@ public class Starter {
 	private void startAndWaitDone(final ApplicationItem item) {
 		item.setState(State.STARTING);
 		try {
-			ApplicationLauncher.findAndStartJarApplication(null, item.jarNamePattern, false);
+			ApplicationLauncher.findAndStartJarApplication(this.applicationDirectories, item.jarNamePattern, false);
 			// wait till the application has started
 			do {
 				//noinspection BusyWait

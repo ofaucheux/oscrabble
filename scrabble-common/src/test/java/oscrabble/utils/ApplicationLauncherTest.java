@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,7 +26,7 @@ class ApplicationLauncherTest {
 	@Test
 	void startApplicationByJarName() throws InterruptedException {
 		final Process process = ApplicationLauncher.findAndStartJarApplication(
-				new File("C:\\utils"),
+				Collections.singleton(new File("C:\\utils").toPath()),
 				Pattern.compile("sqlt.*\\.jar"),
 				false
 		);
@@ -42,5 +43,20 @@ class ApplicationLauncherTest {
 		assertTrue(process.isAlive());
 		process.destroy();
 		assertFalse(process.isAlive());
+	}
+
+	@Test
+	void testApplicationJarNameComparator() {
+		final List<String> list = Arrays.asList(
+				"scrabble-1.0.20-SNAPSHOT.jar",
+				"scrabble-1.0.20.jar",
+				"scrabble-1.0.21-SNAPSHOT.jar"
+		);
+		Collections.shuffle(list);
+		list.sort(new ApplicationLauncher.ApplicationJarNameComparator());
+		final Iterator<String> it = list.iterator();
+		assertEquals("scrabble-1.0.20-SNAPSHOT.jar", it.next());
+		assertEquals("scrabble-1.0.20.jar", it.next());
+		assertEquals("scrabble-1.0.21-SNAPSHOT.jar", it.next());
 	}
 }

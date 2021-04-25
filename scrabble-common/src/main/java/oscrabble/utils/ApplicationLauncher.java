@@ -1,6 +1,7 @@
 package oscrabble.utils;
 
 import lombok.SneakyThrows;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -19,7 +19,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Utility class for the start of external applications
@@ -82,48 +81,43 @@ public class ApplicationLauncher {
 	}
 
 	/**
-	 * Search in a directory recursive a jar-application matching a name pattern and start it.
-	 * If no searchDirectory is not given, search in the upper-directories of the current application.
+	 * Search in a jar-application matching a name pattern and start it. If several ones are found, they are sorting by their
+	 * name and the last one is started - meaning: if the build number is part of the name, the last version is selected.
 	 *
-	 * @param searchDirectory
-	 * @param jarNamePattern
-	 * @param inPlace
-	 * @param args
+	 * @param searchDirectories directories to search in
+	 * @param jarNamePattern name pattern
+	 * @param inPlace start inside the application, or as separated process
+	 * @param args application arguments
 	 * @return
 	 */
 	@SneakyThrows
-	public static Process findAndStartJarApplication(File searchDirectory, Pattern jarNamePattern, boolean inPlace, String... args) {
+	public static Process findAndStartJarApplication(Collection<Path> searchDirectories, Pattern jarNamePattern, boolean inPlace, String... args) {
+		if (searchDirectories == null || searchDirectories.isEmpty()) {
+			throw new IllegalArgumentException("Search directory cannot be null or empty");
+		}
+
 		//
 		// search the application jar file
 		//
 
-		final File currentJarFile = new File(
-				ApplicationLauncher.class
-						.getProtectionDomain()
-						.getCodeSource()
-						.getLocation()
-						.toURI()
-		);
+		final TreeMap<String, Path> matchingFiles = new TreeMap<>();
 
-		if (searchDirectory == null) {
-			searchDirectory = currentJarFile;
-			for (int i = 0; i < 4; i++) {
-				searchDirectory = searchDirectory.getParentFile();
+		for (final Path directory : searchDirectories) {
+			//noinspection ConstantConditions
+			final File file = directory.toFile();
+			if (file.isDirectory()) {
+				final String[] list = file.list(new RegexFileFilter(jarNamePattern));
+				for (final String jarName : list) {
+					matchingFiles.put(jarName, directory.resolve(jarName));
+				}
 			}
 		}
 
-		final List<Path> matchingFiles = Files.find(
-				searchDirectory.toPath(),
-				999, (p, bfa) ->
-						p.toFile().isFile() && jarNamePattern.matcher(p.getFileName().toString()).matches()
-		).collect(Collectors.toList());
-
 		if (matchingFiles.isEmpty()) {
-			throw new IllegalArgumentException("No file found matching the pattern " + jarNamePattern.pattern() + " in " + searchDirectory.getAbsolutePath());
-		} else if (matchingFiles.size() > 1) {
-			throw new IllegalArgumentException("Several files found matching the pattern "+ jarNamePattern.pattern() +": " + matchingFiles);
+			throw new IllegalArgumentException("No file found matching the pattern " + jarNamePattern.pattern() + " in " + searchDirectories);
 		}
-		final File jarFile = matchingFiles.get(0).toFile();
+
+		final File jarFile = matchingFiles.lastEntry().getValue().toFile();
 
 		//
 		// Start the application
@@ -164,4 +158,39 @@ public class ApplicationLauncher {
 		);
 		return process;
 	}
+
+	/**
+	 * Assure order
+	 * <nl>
+	 *     <li>scrabble-1.0.20-SNAPSHOT.jar</li>
+	 *     <li>scrabble-1.0.20.jar</li>
+	 *     <li>scrabble-1.0.21-SNAPSHOT.jar</li>
+	 */
+	public static class ApplicationJarNameComparator implements Comparator<String> {
+
+		private static final Pattern SNAPSHOT_NAME_PATTERN = Pattern.compile("(.*)-SNAPSHOT.jar");
+
+		@Override
+		public int compare(final String o1, final String o2) {
+			if (isSnapShotOf(o1, o2)) {
+				return -1;
+			}
+			if (isSnapShotOf(o2, o1)) {
+				return 1;
+			}
+			return o1.compareTo(o2);
+		}
+
+		/**
+		 *
+		 * @param o1
+		 * @param o2
+		 * @return if o1 is the snapshot name of o2
+		 */
+		private boolean isSnapShotOf(final String o1, final String o2) {
+			final Matcher m1 = SNAPSHOT_NAME_PATTERN.matcher(o1);
+			return m1.matches() && o2.equals(o1 + "jar");
+		}
+	}
+
 }

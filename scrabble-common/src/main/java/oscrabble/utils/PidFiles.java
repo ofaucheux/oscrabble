@@ -1,5 +1,6 @@
 package oscrabble.utils;
 
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -18,6 +19,7 @@ public class PidFiles {
 		FileChannel fileChannel = null;
 		try {
 			fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE);
+			fileChannel.lock();
 			try {
 				fileChannel.close();
 			} catch (IOException e) {
@@ -37,8 +39,10 @@ public class PidFiles {
 		return isLocked(PID_FILE_SERVER);
 	}
 
+	@SneakyThrows
 	public static void writePid(File file) throws FileNotFoundException {
 		final FileOutputStream fos = new FileOutputStream(file);
+		fos.getChannel().lock();
 		final PrintStream ps = new PrintStream(fos);
 		ps.println("Process id: " + ProcessHandle.current().pid());
 		ps.println("Started at " + Instant.now().toString());
