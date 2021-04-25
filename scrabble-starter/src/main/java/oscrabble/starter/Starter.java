@@ -13,9 +13,9 @@ public class Starter {
 
 	Starter() {
 		this.items = new ApplicationItem[]{
-				new ApplicationItem("Dictionary", "oscrabble-dictionary"),
-				new ApplicationItem("Server", "oscrabble-server"),
-				new ApplicationItem("Client", "oscrabble-client")
+				new ApplicationItem("Dictionary", "scrabble-dictionary"),
+				new ApplicationItem("Server", "scrabble-server"),
+				new ApplicationItem("Client", "scrabble-client-swing")
 		};
 		createUI();
 	}
@@ -38,6 +38,7 @@ public class Starter {
 					() -> {ApplicationLauncher.findAndStartJarApplication(null, item.jarNamePattern, false);},
 					item.nameLabel.getText()
 			).start();
+			Thread.sleep(2000);
 			item.setState(State.RUNNING);
 		}
 

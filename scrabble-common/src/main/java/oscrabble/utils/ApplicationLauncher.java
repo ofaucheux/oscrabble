@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -106,20 +107,21 @@ public class ApplicationLauncher {
 
 		if (searchDirectory == null) {
 			searchDirectory = currentJarFile;
-			for (int i = 0; i < 6; i++) {
+			for (int i = 0; i < 4; i++) {
 				searchDirectory = searchDirectory.getParentFile();
 			}
 		}
 
 		final List<Path> matchingFiles = Files.find(
 				searchDirectory.toPath(),
-				999, (p, bfa) -> jarNamePattern.matcher(p.getFileName().getFileName().toString()).matches()
+				999, (p, bfa) ->
+						p.toFile().isFile() && jarNamePattern.matcher(p.getFileName().toString()).matches()
 		).collect(Collectors.toList());
 
 		if (matchingFiles.isEmpty()) {
-			throw new IllegalArgumentException("No file found matching the pattern in " + searchDirectory.getAbsolutePath());
+			throw new IllegalArgumentException("No file found matching the pattern " + jarNamePattern.pattern() + " in " + searchDirectory.getAbsolutePath());
 		} else if (matchingFiles.size() > 1) {
-			throw new IllegalArgumentException("Several files found matching the pattern: " + matchingFiles);
+			throw new IllegalArgumentException("Several files found matching the pattern "+ jarNamePattern.pattern() +": " + matchingFiles);
 		}
 		final File jarFile = matchingFiles.get(0).toFile();
 
