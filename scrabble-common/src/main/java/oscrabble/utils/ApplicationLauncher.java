@@ -27,6 +27,9 @@ public class ApplicationLauncher {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationLauncher.class);
 
+	/** flag: start inside the application, or as separated process */
+	private boolean inPlace;
+
 	/**
 	 * Start an application defined as a spring boot application in the current java machine.
 	 */
@@ -86,12 +89,11 @@ public class ApplicationLauncher {
 	 *
 	 * @param searchDirectories directories to search in
 	 * @param jarNamePattern name pattern
-	 * @param inPlace start inside the application, or as separated process
 	 * @param args application arguments
 	 * @return
 	 */
 	@SneakyThrows
-	public static Process findAndStartJarApplication(Collection<Path> searchDirectories, Pattern jarNamePattern, boolean inPlace, String... args) {
+	public Process findAndStartJarApplication(Collection<Path> searchDirectories, Pattern jarNamePattern, String... args) {
 		if (searchDirectories == null || searchDirectories.isEmpty()) {
 			throw new IllegalArgumentException("Search directory cannot be null or empty");
 		}
@@ -123,7 +125,7 @@ public class ApplicationLauncher {
 		// Start the application
 		//
 
-		if (inPlace) {
+		if (this.inPlace) {
 			startSpringBootApplicationInplace(jarFile); // todo: assure it's a spring boot application
 			return null;
 		} else {

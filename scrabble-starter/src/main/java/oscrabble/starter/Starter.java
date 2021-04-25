@@ -79,7 +79,7 @@ public class Starter {
 
 		item.setState(State.STARTING);
 		try {
-			ApplicationLauncher.findAndStartJarApplication(this.applicationDirectories, item.jarNamePattern, false);
+			new ApplicationLauncher().findAndStartJarApplication(this.applicationDirectories, item.jarNamePattern);
 			// wait till the application has started
 			do {
 				//noinspection BusyWait
