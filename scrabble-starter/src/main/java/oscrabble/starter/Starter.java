@@ -1,26 +1,31 @@
 package oscrabble.starter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.utils.ApplicationLauncher;
+import oscrabble.utils.PidFiles;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class Starter {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
 	private final ApplicationItem[] items;
 	private JPanel panel;
 
 	Starter() {
 		this.items = new ApplicationItem[]{
-				new ApplicationItem("Dictionary", "scrabble-dictionary"),
-				new ApplicationItem("Server", "scrabble-server"),
-				new ApplicationItem("Client", "scrabble-client-swing")
+				new ApplicationItem("Dictionary", "scrabble-dictionary", () -> PidFiles.isDictionaryRunning()),
+				new ApplicationItem("Server", "scrabble-server", () -> PidFiles.isServerRunning()),
+				new ApplicationItem("Client", "scrabble-client-swing", () -> true) // todo
 		};
 		createUI();
 	}
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) {
 		final Starter starter = new Starter();
 		final JFrame frame = new JFrame("Scrabble starter");
 		frame.add(starter.panel);
@@ -31,28 +36,30 @@ public class Starter {
 		starter.start();
 	}
 
-	public void start() throws InterruptedException {
+	public void start() {
 		for (final ApplicationItem item : this.items) {
-			item.setState(State.STARTING);
+			// start the thread
 			new Thread(
-					() -> {ApplicationLauncher.findAndStartJarApplication(null, item.jarNamePattern, false);},
+					() -> startAndWaitDone(item),
 					item.nameLabel.getText()
 			).start();
-			Thread.sleep(2000);
-			item.setState(State.RUNNING);
 		}
+	}
 
-		boolean done;
-		do {
-			done = true;
-			for (final ApplicationItem item : this.items) {
-				if (item.state == State.STARTING) {
-					done = false;
-					break;
-				}
-			}
-			Thread.sleep(500);
-		} while (!done);
+	private void startAndWaitDone(final ApplicationItem item) {
+		item.setState(State.STARTING);
+		try {
+			ApplicationLauncher.findAndStartJarApplication(null, item.jarNamePattern, false);
+			// wait till the application has started
+			do {
+				//noinspection BusyWait
+				Thread.sleep(500);
+			} while (!item.isStartedFunction.get());
+			item.setState(State.RUNNING);
+		} catch (Throwable e) {
+			LOGGER.error("Error starting " + item.nameLabel.getText(), e);
+			item.setState(State.ERROR);
+		}
 	}
 
 	private void createUI() {
@@ -76,7 +83,7 @@ public class Starter {
 	 *
 	 */
 	private enum State {
-		STARTING(Color.YELLOW, "⌛"),
+		STARTING(Color.BLACK, "⌛"),
 		RUNNING(Color.GREEN.darker(), "✓"),
 		ERROR(Color.RED, "✗");
 
@@ -96,10 +103,12 @@ public class Starter {
 		private final JLabel stateLabel;
 		private final JLabel nameLabel;
 		private final Pattern jarNamePattern;
-		private State state;
+		/** Function informing about the state of the application */
+		private final Supplier<Boolean> isStartedFunction;
 
-		public ApplicationItem(String name, String jarNamePrefix) {
+		public ApplicationItem(String name, String jarNamePrefix, final Supplier<Boolean> isStartedFunction) {
 			this.nameLabel = new JLabel(name);
+			this.isStartedFunction = isStartedFunction;
 			this.stateLabel = new JLabel(" ");
 			this.stateLabel.setFont(this.stateLabel.getFont().deriveFont(18f));
 			this.jarNamePattern = Pattern.compile(Pattern.quote(jarNamePrefix) + ".*\\.jar");
@@ -108,7 +117,6 @@ public class Starter {
 		public void setState(State state) {
 			this.stateLabel.setText(state.symbol);
 			this.stateLabel.setForeground(state.color);
-			this.state = state;
 		}
 	}
 }
