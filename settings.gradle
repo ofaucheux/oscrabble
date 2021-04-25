@@ -4,4 +4,5 @@ include "scrabble-dictionary"
 include "scrabble-server"
 include 'scrabble-client-ai'
 include 'scrabble-client-swing'
+include 'scrabble-starter'
 
