@@ -16,16 +16,16 @@ public class PidFiles {
 	final static public File PID_FILE_SERVER = new File(FileUtils.getTempDirectory(), "server.pid");
 
 	static boolean isLocked(final File file) {
-		FileChannel fileChannel = null;
+		if (!file.exists()) {
+			return false;
+		}
+
+		FileChannel fileChannel;
 		try {
 			fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE);
-			fileChannel.lock();
-			try {
-				fileChannel.close();
-			} catch (IOException e) {
-				throw new IOError(e);
-			}
-			return false;
+			final boolean locked = fileChannel.tryLock() == null;
+			fileChannel.close();
+			return locked;
 		} catch (IOException e) {
 			return true;
 		}
@@ -46,6 +46,7 @@ public class PidFiles {
 		final PrintStream ps = new PrintStream(fos);
 		ps.println("Process id: " + ProcessHandle.current().pid());
 		ps.println("Started at " + Instant.now().toString());
+		ps.flush();
 		// don't close or return the stream: it should not be close until the java process ends
 	}
 }

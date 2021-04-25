@@ -72,6 +72,11 @@ public class Starter {
 	}
 
 	private void startAndWaitDone(final ApplicationItem item) {
+		if (item.isStartedFunction.get()) {
+			item.setState(State.RUNNING);
+			return;
+		}
+
 		item.setState(State.STARTING);
 		try {
 			ApplicationLauncher.findAndStartJarApplication(this.applicationDirectories, item.jarNamePattern, false);
