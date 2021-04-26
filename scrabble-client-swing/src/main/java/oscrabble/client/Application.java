@@ -4,6 +4,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.client.ui.ConnectionParameterPanel;
+import oscrabble.client.utils.Starter;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.player.ai.AIPlayer;
@@ -53,9 +54,11 @@ public class Application {
 		//
 
 		final ConnectionParameters connectionParameters = new ConnectionParameters();
+		final Starter starter = new Starter();
+		starter.startApplications();
 		JOptionPane.showMessageDialog(
 				null,
-				new ConnectionParameterPanel(connectionParameters)
+				new ConnectionParameterPanel(connectionParameters, starter)
 		);
 
 		if (connectionParameters.localServer) {

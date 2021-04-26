@@ -1,6 +1,7 @@
 package oscrabble.client.ui;
 
 import oscrabble.client.Application;
+import oscrabble.client.utils.Starter;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -13,9 +14,11 @@ import java.text.NumberFormat;
  */
 public class ConnectionParameterPanel extends JPanel {
 	final Application.ConnectionParameters properties;
+	private final Starter starter;
 
-	public ConnectionParameterPanel(final Application.ConnectionParameters properties) {
+	public ConnectionParameterPanel(final Application.ConnectionParameters properties, final Starter starter) {
 		this.properties = properties;
+		this.starter = starter;
 		createUI(properties);
 	}
 
@@ -33,26 +36,34 @@ public class ConnectionParameterPanel extends JPanel {
 		setLayout(new GridBagLayout());
 		final GridBagConstraints gbc = new GridBagConstraints();
 
-		gbc.gridy = 0;
-		gbc.gridx = 0;
 		gbc.ipadx = 4;
+		gbc.anchor = GridBagConstraints.WEST;
 
-		final Panel buttonPanel = new Panel(new FlowLayout());
 		final ButtonGroup buttonGroup = new ButtonGroup();
 		final JRadioButton rbLocal = new JRadioButton("Local");
-		buttonGroup.add(rbLocal);
-		buttonPanel.add(rbLocal, gbc);
-		final JRadioButton rbInternet = new JRadioButton("Internet");
-		buttonGroup.add(rbInternet);
-		buttonPanel.add(rbInternet, gbc);
+		gbc.gridy = 0;
+		gbc.gridx = 0;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.anchor = GridBagConstraints.WEST;
-		add(buttonPanel, gbc);
+		buttonGroup.add(rbLocal);
+		add(rbLocal, gbc);
 
 		gbc.gridy++;
 		gbc.gridx = 0;
-		gbc.gridwidth = 1;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		add(this.starter.getPanel(), gbc);
 
+		gbc.gridy++;
+		gbc.gridx = 0;
+		final JRadioButton rbInternet = new JRadioButton("Internet");
+		buttonGroup.add(rbInternet);
+		add(rbInternet, gbc);
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.anchor = GridBagConstraints.WEST;
+
+		gbc.gridy++;
+		gbc.gridx = 0;
+
+		gbc.gridwidth = 1;
 		add(new JLabel("Server"), gbc);
 		gbc.gridx++;
 		final JTextField server = new JTextField(properties.getServerName());
