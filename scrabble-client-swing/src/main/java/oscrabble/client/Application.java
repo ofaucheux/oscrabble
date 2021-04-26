@@ -4,12 +4,15 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.client.ui.ConnectionParameterPanel;
+import oscrabble.client.utils.Starter;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.controller.MicroServiceScrabbleServer;
 import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -59,29 +62,34 @@ public class Application {
 		);
 
 		if (connectionParameters.localServer) {
-			final LinkedHashMap<String, String> jars = new LinkedHashMap<>();
-			jars.put("scrabble-dictionary-1.0.18-SNAPSHOT.jar", "scrabble-dictionary");
-			jars.put("scrabble-server-1.0.18-SNAPSHOT.jar", "scrabble-server");
-
-			for (final String jar : jars.keySet()) {
-				final String jarPath = String.format(
-						"C:\\Programmierung\\OScrabble\\%s\\build\\libs\\%s",
-						jars.get(jar),
-						jar
-				);
-				final Process dico = new ProcessBuilder(
-						System.getProperty("java.home") + "/bin/java",
-						"-jar",
-						jarPath
-				).start();
-				System.out.println(dico.pid());
-			}
+			final Starter starter = new Starter();
+			final JDialog dialog = new JDialog();
+			dialog.setLayout(new BorderLayout());
+			final JPanel panel = starter.getPanel();
+			panel.setBorder(new TitledBorder("Start the servers..."));
+			dialog.add(panel);
+			dialog.setMinimumSize(new Dimension(300, 100));
+			dialog.setLocationRelativeTo(null);
+			dialog.pack();
+			new Thread(() -> {
+				try {
+					starter.startApplications(true);
+					Thread.sleep(3000);
+					dialog.dispose();
+				} catch (Throwable e) {
+					LOGGER.error(e.toString(), e);
+					dialog.dispose();
+					JOptionPane.showMessageDialog(null, "Error occurred, see log.");
+				}
+			}).start();
+			dialog.setModal(true);
+			dialog.setVisible(true);
 		}
 
 		final MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
 		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer(
-				connectionParameters.serverName,
-				connectionParameters.serverPort
+				connectionParameters.localServer ? "localhost" : connectionParameters.serverName,
+				connectionParameters.localServer ? 2511 : connectionParameters.serverPort
 		);
 
 		//

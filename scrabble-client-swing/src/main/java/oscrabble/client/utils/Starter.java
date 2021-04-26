@@ -1,5 +1,6 @@
-package oscrabble.starter;
+package oscrabble.client.utils;
 
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.utils.ApplicationLauncher;
@@ -9,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,18 +21,16 @@ public class Starter {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
 	private final ApplicationItem[] items;
-	private final HashSet<Process> startedProcesses = new HashSet<Process>();
-	private JPanel panel;
-
+	private final HashSet<Process> startedProcesses = new HashSet<>();
 	/** Directories of the jar applications */
 	private final Collection<Path> applicationDirectories;
+	private JPanel panel;
 
 	@lombok.SneakyThrows
-	Starter() {
+	public Starter() {
 		this.items = new ApplicationItem[]{
 				new ApplicationItem("Dictionary", "scrabble-dictionary", () -> PidFiles.isDictionaryRunning()),
 				new ApplicationItem("Server", "scrabble-server", () -> PidFiles.isServerRunning()),
-				new ApplicationItem("Client", "scrabble-client-swing", () -> true) // todo
 		};
 
 		final Path currentJarDirectory = new File(
@@ -53,9 +53,10 @@ public class Starter {
 		createUI();
 	}
 
+	@SneakyThrows
 	public static void main(String[] args) {
 		final Starter starter = new Starter();
-		starter.start();
+		starter.startApplications(false);
 		JOptionPane.showMessageDialog(null, starter.panel);
 	}
 
@@ -63,13 +64,21 @@ public class Starter {
 		this.startedProcesses.forEach(process -> process.destroy());
 	}
 
-	public void start() {
+	public void startApplications(boolean wait) throws InterruptedException {
+		final ArrayList<Thread> threads = new ArrayList<>();
 		for (final ApplicationItem item : this.items) {
 			// start the thread
-			new Thread(
+			final Thread th = new Thread(
 					() -> startAndWaitDone(item),
 					item.nameLabel.getText()
-			).start();
+			);
+			threads.add(th);
+			th.start();
+		}
+		if (wait) {
+			for (final Thread thread : threads) {
+				thread.join();
+			}
 		}
 	}
 
@@ -98,19 +107,22 @@ public class Starter {
 
 	private void createUI() {
 		this.panel = new JPanel();
-		this.panel.setMinimumSize(new Dimension(300, 200));
-		this.panel.setLayout(new GridBagLayout());
+//		this.panel.setMinimumSize(new Dimension(300, 200));
+		this.panel.setLayout(new FlowLayout());
 
 		final GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(4, 4, 4, 4);
 
 		for (final ApplicationItem item : this.items) {
-			gbc.gridy++;
-			gbc.gridx = 0;
 			this.panel.add(item.nameLabel, gbc);
 			gbc.gridx++;
 			this.panel.add(item.stateLabel, gbc);
+			gbc.gridx++;
 		}
+	}
+
+	public JPanel getPanel() {
+		return this.panel;
 	}
 
 	/**
