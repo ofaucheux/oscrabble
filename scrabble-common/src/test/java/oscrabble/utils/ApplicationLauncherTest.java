@@ -24,12 +24,14 @@ class ApplicationLauncherTest {
 	}
 
 	@Test
-	void startApplicationByJarName() throws InterruptedException {
+	void startApplicationByJarName() throws InterruptedException, IOException {
 		final ApplicationLauncher launcher = new ApplicationLauncher();
-		final Process process = launcher.findAndStartJarApplication(
+
+		final File jarApplication = launcher.findJarFile(
 				Collections.singleton(new File("C:\\utils").toPath()),
 				Pattern.compile("sqlt.*\\.jar")
 		);
+		final Process process = ApplicationLauncher.startJarApplication(jarApplication);
 		Thread.sleep(1000);
 		assertTrue(process.isAlive());
 		process.destroy();

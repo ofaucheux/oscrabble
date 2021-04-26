@@ -11,6 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -18,6 +19,7 @@ public class Starter {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
 	private final ApplicationItem[] items;
+	private final HashSet<Process> startedProcesses = new HashSet<Process>();
 	private JPanel panel;
 
 	/** Directories of the jar applications */
@@ -32,7 +34,7 @@ public class Starter {
 		};
 
 		final Path currentJarDirectory = new File(
-				ApplicationLauncher.class
+				oscrabble.utils.ApplicationLauncher.class
 						.getProtectionDomain()
 						.getCodeSource()
 						.getLocation()
@@ -47,18 +49,18 @@ public class Starter {
 				currentJarDirectory.resolve("../../../scrabble-dictionary/build/libs")
 		);
 
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> killStartedProcesses()));
 		createUI();
 	}
 
 	public static void main(String[] args) {
 		final Starter starter = new Starter();
-		final JFrame frame = new JFrame("Scrabble starter");
-		frame.add(starter.panel);
-		frame.setVisible(true);
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-
 		starter.start();
+		JOptionPane.showMessageDialog(null, starter.panel);
+	}
+
+	private void killStartedProcesses() {
+		this.startedProcesses.forEach(process -> process.destroy());
 	}
 
 	public void start() {
@@ -79,7 +81,9 @@ public class Starter {
 
 		item.setState(State.STARTING);
 		try {
-			new ApplicationLauncher().findAndStartJarApplication(this.applicationDirectories, item.jarNamePattern);
+			final File jarFile = new ApplicationLauncher().findJarFile(this.applicationDirectories, item.jarNamePattern);
+			final Process startedApplication = ApplicationLauncher.startJarApplication(jarFile);
+			this.startedProcesses.add(startedApplication);
 			// wait till the application has started
 			do {
 				//noinspection BusyWait

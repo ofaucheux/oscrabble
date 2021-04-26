@@ -27,9 +27,6 @@ public class ApplicationLauncher {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationLauncher.class);
 
-	/** flag: start inside the application, or as separated process */
-	private boolean inPlace;
-
 	/**
 	 * Start an application defined as a spring boot application in the current java machine.
 	 */
@@ -84,6 +81,34 @@ public class ApplicationLauncher {
 	}
 
 	/**
+	 * Start (fork) an application contained in a jar file.
+	 */
+	public static Process startJarApplication(final File jar, String ... args) throws IOException {
+		Path javaExe = Paths.get(System.getProperty("java.home")).resolve("bin");
+		if (SystemUtils.IS_OS_WINDOWS) {
+			javaExe = javaExe.resolve("java.exe");
+		} else if (SystemUtils.IS_OS_UNIX) {
+			javaExe = javaExe.resolve("java");
+		} else {
+			throw new AssertionError("Unsupported OS: " + SystemUtils.OS_NAME);
+		}
+
+		final ArrayList<String> commands = new ArrayList<>();
+		commands.add(javaExe.toFile().toString());
+		commands.add("-jar");
+		commands.add(jar.toString());
+		commands.addAll(Arrays.asList(args));
+		LOGGER.debug("Starting: " + commands);
+		final Process process = new ProcessBuilder(commands).start();
+		LOGGER.info(String.format(
+				"Process started (pid) %d: %s",
+				process.pid(),
+				process.info().commandLine().orElse(commands.toString()))
+		);
+		return process;
+	}
+
+	/**
 	 * Search in a jar-application matching a name pattern and start it. If several ones are found, they are sorting by their
 	 * name and the last one is started - meaning: if the build number is part of the name, the last version is selected.
 	 *
@@ -93,7 +118,7 @@ public class ApplicationLauncher {
 	 * @return
 	 */
 	@SneakyThrows
-	public Process findAndStartJarApplication(Collection<Path> searchDirectories, Pattern jarNamePattern, String... args) {
+	public File findJarFile(Collection<Path> searchDirectories, Pattern jarNamePattern, String... args) {
 		if (searchDirectories == null || searchDirectories.isEmpty()) {
 			throw new IllegalArgumentException("Search directory cannot be null or empty");
 		}
@@ -119,46 +144,7 @@ public class ApplicationLauncher {
 			throw new IllegalArgumentException("No file found matching the pattern " + jarNamePattern.pattern() + " in " + searchDirectories);
 		}
 
-		final File jarFile = matchingFiles.lastEntry().getValue().toFile();
-
-		//
-		// Start the application
-		//
-
-		if (this.inPlace) {
-			startSpringBootApplicationInplace(jarFile); // todo: assure it's a spring boot application
-			return null;
-		} else {
-			return startJarApplication(jarFile, args);
-		}
-	}
-
-	/**
-	 * Start an application contained in a jar file.
-	 */
-	public static Process startJarApplication(final File jar, String ... args) throws IOException {
-		Path javaExe = Paths.get(System.getProperty("java.home")).resolve("bin");
-		if (SystemUtils.IS_OS_WINDOWS) {
-			javaExe = javaExe.resolve("java.exe");
-		} else if (SystemUtils.IS_OS_UNIX) {
-			javaExe = javaExe.resolve("java");
-		} else {
-			throw new AssertionError("Unsupported OS: " + SystemUtils.OS_NAME);
-		}
-
-		final ArrayList<String> commands = new ArrayList<>();
-		commands.add(javaExe.toFile().toString());
-		commands.add("-jar");
-		commands.add(jar.toString());
-		commands.addAll(Arrays.asList(args));
-		LOGGER.debug("Starting: " + commands);
-		final Process process = new ProcessBuilder(commands).start();
-		LOGGER.info(String.format(
-				"Process started (pid) %d: %s",
-				process.pid(),
-				process.info().commandLine().orElse(commands.toString()))
-		);
-		return process;
+		return matchingFiles.lastEntry().getValue().toFile();
 	}
 
 	/**
