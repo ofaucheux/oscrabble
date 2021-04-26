@@ -83,8 +83,8 @@ public class Application {
 
 		final MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
 		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer(
-				connectionParameters.serverName,
-				connectionParameters.serverPort
+				connectionParameters.localServer ? "localhost" : connectionParameters.serverName,
+				connectionParameters.localServer ? 2511 : connectionParameters.serverPort
 		);
 
 		//
