@@ -1,5 +1,6 @@
 package oscrabble.client.utils;
 
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.utils.ApplicationLauncher;
@@ -9,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -51,9 +53,10 @@ public class Starter {
 		createUI();
 	}
 
+	@SneakyThrows
 	public static void main(String[] args) {
 		final Starter starter = new Starter();
-		starter.startApplications();
+		starter.startApplications(false);
 		JOptionPane.showMessageDialog(null, starter.panel);
 	}
 
@@ -61,13 +64,21 @@ public class Starter {
 		this.startedProcesses.forEach(process -> process.destroy());
 	}
 
-	public void startApplications() {
+	public void startApplications(boolean wait) throws InterruptedException {
+		final ArrayList<Thread> threads = new ArrayList<>();
 		for (final ApplicationItem item : this.items) {
 			// start the thread
-			new Thread(
+			final Thread th = new Thread(
 					() -> startAndWaitDone(item),
 					item.nameLabel.getText()
-			).start();
+			);
+			threads.add(th);
+			th.start();
+		}
+		if (wait) {
+			for (final Thread thread : threads) {
+				thread.join();
+			}
 		}
 	}
 
