@@ -1,5 +1,9 @@
 package oscrabble.client;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +45,8 @@ public class Application {
 	public static void main(String[] unused) throws InterruptedException, IOException {
 
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error("Uncaught exception", e));
+
+		initializeLogging();
 
 		//
 		// load the properties
@@ -87,10 +93,9 @@ public class Application {
 		}
 
 		final MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
-		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer(
-				connectionParameters.localServer ? "localhost" : connectionParameters.serverName,
-				connectionParameters.localServer ? 2511 : connectionParameters.serverPort
-		);
+		final MicroServiceScrabbleServer server = connectionParameters.localServer
+				? MicroServiceScrabbleServer.getLocal()
+				: new MicroServiceScrabbleServer(connectionParameters.serverName, connectionParameters.serverPort);
 
 		//
 		// start the application
@@ -98,6 +103,24 @@ public class Application {
 
 		final Application application = new Application(dictionary, server, properties);
 		application.playGame();
+	}
+
+	/**
+	 *
+	 */
+	private static void initializeLogging() {
+		final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+		try {
+			JoranConfigurator configurator = new JoranConfigurator();
+			configurator.setContext(context);
+			// Call context.reset() to clear any previous configuration, e.g. default
+			// configuration. For multi-step configuration, omit calling context.reset().
+			context.reset();
+			configurator.doConfigure(Application.class.getResourceAsStream("/logback.xml"));
+		} catch (JoranException je) {
+			// StatusPrinter will handle this
+		}
+		StatusPrinter.printInCaseOfErrorsOrWarnings(context);
 	}
 
 	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp",

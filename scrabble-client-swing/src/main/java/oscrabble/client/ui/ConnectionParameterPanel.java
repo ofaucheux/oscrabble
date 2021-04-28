@@ -13,6 +13,8 @@ import java.text.NumberFormat;
  */
 public class ConnectionParameterPanel extends JPanel {
 	final Application.ConnectionParameters properties;
+	private JTextField server;
+	private JTextField port;
 
 	public ConnectionParameterPanel(final Application.ConnectionParameters properties) {
 		this.properties = properties;
@@ -55,47 +57,59 @@ public class ConnectionParameterPanel extends JPanel {
 
 		add(new JLabel("Server"), gbc);
 		gbc.gridx++;
-		final JTextField server = new JTextField(properties.getServerName());
-		server.setColumns(20);
-		add(server, gbc);
+		this.server = new JTextField(properties.getServerName());
+		this.server.setColumns(20);
+		add(this.server, gbc);
 		gbc.gridx++;
 		add(new JLabel("Port"), gbc);
 		gbc.gridx++;
-		final JTextField port = createNumberField(properties.getServerPort());
-		port.setColumns(6);
-		add(port, gbc);
+		this.port = createNumberField(properties.getServerPort());
+		this.port.setColumns(6);
+		add(this.port, gbc);
 
 		//
 		// Listeners
 		//
 		final ActionListener updateProperties = e -> {
-			properties.setServerName(server.getText());
-			final String portText = port.getText().trim();
+			properties.setServerName(this.server.getText());
+			final String portText = this.port.getText().trim();
 			properties.setServerPort(Integer.parseInt(portText.isEmpty() ? "-1" : portText));
 		};
 
 		rbLocal.addActionListener(a -> {
-			properties.setLocalServer(true);
-			server.setEnabled(false);
-			port.setEnabled(false);
+			updateComponentStatus(true);
 		});
 
 		rbInternet.addActionListener(a -> {
-			properties.setLocalServer(false);
-			server.setEnabled(true);
-			port.setEnabled(true);
+			updateComponentStatus(false);
 		});
 
-		server.addActionListener(updateProperties);
-		port.addActionListener(updateProperties);
+		this.server.addActionListener(updateProperties);
+		this.port.addActionListener(updateProperties);
 
 		//
 		// Start values
 		//
-		if ("localhost".equals(properties.getServerName())) {
+		final String serverName = properties.getServerName();
+		if (
+			serverName == null
+			|| serverName.trim().isEmpty()
+			|| serverName.equalsIgnoreCase("localhost")
+		) {
 			rbLocal.setSelected(true);
+			updateComponentStatus(true);
 		} else {
 			rbInternet.setSelected(true);
+			updateComponentStatus(false);
 		}
+	}
+
+	/**
+	 * @param local is the "local" button selected?
+	 */
+	private void updateComponentStatus(boolean local) {
+		this.properties.setLocalServer(local);
+		this.server.setEnabled(!local);
+		this.port.setEnabled(!local);
 	}
 }

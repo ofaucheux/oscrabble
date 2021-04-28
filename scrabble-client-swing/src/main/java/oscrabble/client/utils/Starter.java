@@ -9,6 +9,7 @@ import oscrabble.utils.PidFiles;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,20 +34,31 @@ public class Starter {
 				new ApplicationItem("Server", "scrabble-server", () -> PidFiles.isServerRunning()),
 		};
 
-		final Path currentJarDirectory = new File(
-				oscrabble.utils.ApplicationLauncher.class
-						.getProtectionDomain()
-						.getCodeSource()
-						.getLocation()
-						.toURI()
-		).getParentFile().toPath();
+		Path currentJarDirectory = null;
+		try {
+			currentJarDirectory = new File(
+					ApplicationLauncher.class
+							.getProtectionDomain()
+							.getCodeSource()
+							.getLocation()
+							.toURI()
+			).getParentFile().toPath();
+		} catch (IllegalArgumentException e) {
+			URI uri = Starter.class.getProtectionDomain().getCodeSource().getLocation()
+					.toURI();
+			String path = uri.toString().replaceFirst("!.*", "");
+			path = path.replaceFirst("^jar:file:[/\\\\]", "");
+			LOGGER.info("Current path: " + path);
+			currentJarDirectory = new File(path).toPath().getParent();
+		}
+		LOGGER.info("Current jar directory: " + currentJarDirectory);
 
 		this.applicationDirectories = Arrays.asList(
-				currentJarDirectory,
-				currentJarDirectory.resolve("../../scrabble-server/build/libs"),
-				currentJarDirectory.resolve("../../scrabble-dictionary/build/libs"),
-				currentJarDirectory.resolve("../../../scrabble-server/build/libs"),
-				currentJarDirectory.resolve("../../../scrabble-dictionary/build/libs")
+				currentJarDirectory.normalize(),
+				currentJarDirectory.resolve("../../scrabble-server/build/libs").normalize(),
+				currentJarDirectory.resolve("../../scrabble-dictionary/build/libs").normalize(),
+				currentJarDirectory.resolve("../../../scrabble-server/build/libs").normalize(),
+				currentJarDirectory.resolve("../../../scrabble-dictionary/build/libs").normalize()
 		);
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> killStartedProcesses()));

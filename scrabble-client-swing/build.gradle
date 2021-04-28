@@ -20,7 +20,8 @@ dependencies {
     implementation(project(":scrabble-common"))
     implementation(project(":scrabble-client-ai"))
 
-    runtimeOnly group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
     testCompileOnly(project(":scrabble-server"))
 }

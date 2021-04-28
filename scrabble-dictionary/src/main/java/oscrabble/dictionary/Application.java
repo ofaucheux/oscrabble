@@ -7,6 +7,9 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.EventListener;
 import oscrabble.utils.PidFiles;
+import oscrabble.utils.TempDirectory;
+
+import java.util.HashMap;
 
 /**
  * Microservice starter.
@@ -21,7 +24,11 @@ public class Application {
 	}
 
 	public void start() {
-		this.applicationContext = SpringApplication.run(Application.class);
+		final SpringApplication springApplication = new SpringApplication(Application.class);
+		final HashMap<String, Object> properties = new HashMap<>();
+		properties.put("logging.file", TempDirectory.getFile("dictionary.log").getPath());
+		springApplication.setDefaultProperties(properties);
+		this.applicationContext = springApplication.run();
 	}
 
 	public void stop() {
