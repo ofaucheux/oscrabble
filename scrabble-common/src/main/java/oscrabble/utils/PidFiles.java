@@ -1,7 +1,6 @@
 package oscrabble.utils;
 
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -12,8 +11,12 @@ import java.time.Instant;
  * Lock files to inform about an application state
  */
 public class PidFiles {
-	final static public File PID_FILE_DICTIONARY = new File(FileUtils.getTempDirectory(), "dictionary.pid");
-	final static public File PID_FILE_SERVER = new File(FileUtils.getTempDirectory(), "server.pid");
+
+	/** pid file for dictionary */
+	public static final File PID_FILE_DICTIONARY = TempDirectory.getFile("dictionary.pid");
+
+	/** pid file for server */
+	public static final File PID_FILE_SERVER = TempDirectory.getFile("server.pid");
 
 	static boolean isLocked(final File file) {
 		if (!file.exists()) {
