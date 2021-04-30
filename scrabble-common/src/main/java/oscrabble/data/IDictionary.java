@@ -1,5 +1,7 @@
 package oscrabble.data;
 
+import oscrabble.dictionary.DictionaryException;
+
 import java.util.Collection;
 
 /**
@@ -22,4 +24,5 @@ public interface IDictionary {
 	 */
 	oscrabble.data.ScrabbleRules getScrabbleRules();
 
+	DictionaryEntry getEntry(final String word) throws DictionaryException;
 }

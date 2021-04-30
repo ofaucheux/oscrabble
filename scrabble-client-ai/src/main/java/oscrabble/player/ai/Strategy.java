@@ -1,9 +1,7 @@
 package oscrabble.player.ai;
 
-import lombok.Getter;
-import lombok.Setter;
 import oscrabble.ScrabbleException;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.Score;
 
 import java.util.*;
@@ -50,10 +48,10 @@ public abstract class Strategy {
 	 * Strategy: best scores first
 	 */
 	public static class BestScore extends Strategy {
-		private MicroServiceScrabbleServer server;
+		private ScrabbleServerInterface server;
 		private UUID game;
 
-		public BestScore(final MicroServiceScrabbleServer server, final UUID game) {
+		public BestScore(final ScrabbleServerInterface server, final UUID game) {
 			super("Best score"); // todo: i18n
 			this.server = server;
 			this.game = game;
@@ -63,7 +61,7 @@ public abstract class Strategy {
 			this.game = game;
 		}
 
-		public void setServer(final MicroServiceScrabbleServer server) {
+		public void setServer(final ScrabbleServerInterface server) {
 			this.server = server;
 		}
 
@@ -72,7 +70,7 @@ public abstract class Strategy {
 			try {
 				final Collection<Score> scores = this.server.getScores(this.game, moves);
 				return sort(moves, scores);
-			} catch (ScrabbleException.CommunicationException e) {
+			} catch (ScrabbleException e) {
 				throw new Error(e);
 			}
 		}

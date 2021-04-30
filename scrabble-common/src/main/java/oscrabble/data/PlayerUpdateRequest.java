@@ -12,5 +12,14 @@ public class PlayerUpdateRequest {
 	public String parameter;
 	public String newValue;
 
-	public enum Parameter {ATTACHED}
+	public static PlayerUpdateRequest createAttachRequest(final UUID player, final boolean attach) {
+		// todo: without builder
+		return PlayerUpdateRequest.builder()
+				.playerId(player)
+				.parameter(PlayerUpdateRequest.Parameter.ATTACHED.toString())
+				.newValue(attach ? Boolean.TRUE.toString() : Boolean.FALSE.toString())
+				.build();
+	}
+
+	public enum Parameter {ATTACHED,}
 }

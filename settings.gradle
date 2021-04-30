@@ -1,8 +1,11 @@
 rootProject.name = 'OScrabble'
 include 'scrabble-common'
-include "scrabble-dictionary"
+include 'scrabble-dictionary'
 include "scrabble-server"
 include 'scrabble-client-ai'
 include 'scrabble-client-swing'
 include 'scrabble-starter'
 
+include 'scrabble-rest-common'
+include 'scrabble-rest-dictionary'
+include 'scrabble-rest-server'

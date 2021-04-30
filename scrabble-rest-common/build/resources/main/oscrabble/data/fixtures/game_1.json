@@ -1,0 +1,2096 @@
+{
+  "gameId": "10656d5a-4911-48d2-9370-ab5aedb3162d",
+  "state": "STARTED",
+  "players": [
+    {
+      "id": "6cd67ee8-d8b9-4e97-b76b-ffc631233dfd",
+      "name": "AI Player",
+      "score": 671
+    }
+  ],
+  "playerOnTurn": "6cd67ee8-d8b9-4e97-b76b-ffc631233dfd",
+  "playedActions": [],
+  "grid": {
+    "squares": [
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1A",
+        "letterBonus": 1,
+        "wordBonus": 3
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "F",
+          "points": 4,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "3A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "F",
+          "points": 4,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "4A",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "6A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "7A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "8A",
+        "letterBonus": 1,
+        "wordBonus": 3
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "9A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "10A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "12A",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "D",
+          "points": 2,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "14A",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "15A",
+        "letterBonus": 1,
+        "wordBonus": 3
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "H",
+          "points": 4,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2B",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6B",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "B",
+          "points": 3,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "7B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "8B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "9B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "10B",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "M",
+          "points": 2,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "11B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "12B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "13B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "14B",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15B",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "2C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "P",
+          "points": 3,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "3C",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "4C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "6C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "7C",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "8C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "9C",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "10C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "12C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13C",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "P",
+          "points": 3,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "14C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "15C",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1D",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "H",
+          "points": 4,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4D",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "M",
+          "points": 2,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "7D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "8D",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "9D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "10D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "11D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "12D",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "13D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": true,
+          "c": "E",
+          "points": 0,
+          "joker": true
+        },
+        "settingPlay": null,
+        "coordinate": "14D",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15D",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "B",
+          "points": 3,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "1E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "3E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "G",
+          "points": 2,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "4E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5E",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "6E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "7E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "8E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "9E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "10E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11E",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "K",
+          "points": 10,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "12E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "14E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "15E",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "2F",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "5F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6F",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "7F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "8F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "C",
+          "points": 3,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "10F",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "11F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "12F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "R",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "13F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "14F",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15F",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "2G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3G",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "5G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "7G",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "8G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9G",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "10G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "12G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13G",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "14G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "15G",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1H",
+        "letterBonus": 1,
+        "wordBonus": 3
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "J",
+          "points": 8,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4H",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "V",
+          "points": 4,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "D",
+          "points": 2,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "7H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "8H",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "C",
+          "points": 3,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "9H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "10H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "11H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "12H",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": true,
+          "c": "A",
+          "points": 0,
+          "joker": true
+        },
+        "settingPlay": null,
+        "coordinate": "13H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "14H",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15H",
+        "letterBonus": 1,
+        "wordBonus": 3
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3I",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "7I",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "8I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9I",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "W",
+          "points": 10,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "10I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "12I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13I",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "14I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15I",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "M",
+          "points": 2,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2J",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6J",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "7J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "D",
+          "points": 2,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "8J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "N",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "10J",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "12J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "14J",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "Q",
+          "points": 8,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15J",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "V",
+          "points": 4,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5K",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "7K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "8K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "10K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11K",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "12K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "14K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "U",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15K",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "1L",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "I",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "3L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "G",
+          "points": 2,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "4L",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "O",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "6L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "7L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "8L",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "10L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "12L",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "14L",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "A",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15L",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "L",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3M",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "X",
+          "points": 10,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "5M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "7M",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "8M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9M",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "10M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "12M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13M",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "14M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "T",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15M",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2N",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "5N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6N",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "7N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "8N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "10N",
+        "letterBonus": 3,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "12N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "14N",
+        "letterBonus": 1,
+        "wordBonus": 2
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "E",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15N",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "1O",
+        "letterBonus": 1,
+        "wordBonus": 3
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "2O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "3O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "4O",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "5O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "6O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "7O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "8O",
+        "letterBonus": 1,
+        "wordBonus": 3
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "9O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "10O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "11O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "12O",
+        "letterBonus": 2,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "13O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": null,
+        "settingPlay": null,
+        "coordinate": "14O",
+        "letterBonus": 1,
+        "wordBonus": 1
+      },
+      {
+        "tile": {
+          "isJoker": false,
+          "c": "S",
+          "points": 1,
+          "joker": false
+        },
+        "settingPlay": null,
+        "coordinate": "15O",
+        "letterBonus": 1,
+        "wordBonus": 3
+      }
+    ]
+  },
+  "bag": {
+    "tiles": []
+  },
+  "turnId": 0
+}

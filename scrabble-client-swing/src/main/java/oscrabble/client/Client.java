@@ -5,8 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.AIPlayerConfigPanel;
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.*;
 import oscrabble.player.ai.AIPlayer;
 
@@ -24,18 +23,18 @@ import java.util.stream.Collectors;
 public class Client {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-	final MicroServiceScrabbleServer server;
+	/**
+	 * Used dictionary
+	 */
+	public final IDictionary dictionary;
+
 	final UUID game;
 	final UUID player;
 	final Set<Listener> listeners = new HashSet<>();
 
 	final Playground playground;
 	private final JRack rack;
-
-	/**
-	 * Used dictionary TODO: not static
-	 */
-	public static MicroServiceDictionary DICTIONARY = MicroServiceDictionary.getDefaultFrench();
+	final ScrabbleServerInterface server;
 
 	/**
 	 * Listeners to be run on game leaving
@@ -48,13 +47,15 @@ public class Client {
 	 * Rules of the game
 	 */
 	final ScrabbleRules scrabbleRules;
+
 	/**
 	 * last played turn
 	 */
 	private UUID lastPlayedTurn;
 
-	public Client(final MicroServiceScrabbleServer server, final UUID game, final UUID player) {
+	public Client(final ScrabbleServerInterface server, final IDictionary dictionary, final UUID game, final UUID player) throws ScrabbleException {
 		this.server = server;
+		this.dictionary = dictionary;
 		this.game = game;
 		this.player = player;
 		this.scrabbleRules = this.server.getRules(this.game);
@@ -226,13 +227,13 @@ public class Client {
 				}
 				throw new ScrabbleException(sb.toString());
 			}
-		} catch (ScrabbleException ex) {
+		} catch (ScrabbleException | InterruptedException ex) {
 			JOptionPane.showMessageDialog(this.playground.gridFrame, ex.getMessage());
 		}
 	}
 
-	public MicroServiceDictionary getDictionary() {
-		return DICTIONARY;
+	public IDictionary getDictionary() {
+		return dictionary;
 	}
 
 	/**
@@ -243,7 +244,7 @@ public class Client {
 		this.onQuitGame.forEach(Runnable::run);
 	}
 
-	void treatNewState(final GameState state) throws ScrabbleException.CommunicationException {
+	void treatNewState(final GameState state) throws ScrabbleException {
 		refreshUI(state);
 		this.listeners.forEach(l -> l.onNewTurn());
 		this.server.acknowledgeState(this.game, this.player, state);
@@ -330,7 +331,7 @@ public class Client {
 					//noinspection BusyWait
 					Thread.sleep(100);
 
-				} catch (InterruptedException | ScrabbleException.CommunicationException e) {
+				} catch (InterruptedException | ScrabbleException e) {
 					LOGGER.error("Error " + e, e);
 					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
 				}

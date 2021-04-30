@@ -1,19 +1,19 @@
 package oscrabble.server;
 
+import lombok.Getter;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.NonNull;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.controller.Action;
-import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.*;
-import oscrabble.data.fixtures.PrecompiledGameStates;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
+import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.Language;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -42,7 +42,7 @@ public class Game {
 	/**
 	 * Used dictionary TODO: not static
 	 */
-	public static MicroServiceDictionary DICTIONARY = MicroServiceDictionary.getDefaultFrench();
+	public static IDictionary DICTIONARY = Dictionary.getDictionary(Language.FRENCH);
 
 	/**
 	 * ID of the game
@@ -206,7 +206,9 @@ public class Game {
 	 */
 	public static List<GameState> loadFixtures() {
 		final ArrayList<GameState> games = new ArrayList<>();
-		games.add(new Game(PrecompiledGameStates.game1()).getGameState());
+//		todo: implements PrecompiledGameStates so it doesn't need jackson and therefore
+//		can be used hier.
+//		games.add(new Game(PrecompiledGameStates.game1()).getGameState());
 		return games;
 	}
 
@@ -215,8 +217,7 @@ public class Game {
 	 * @return the game
 	 * @throws ScrabbleException if not found
 	 */
-	public static @NonNull
-	Game getGame(UUID uuid) throws ScrabbleException {
+	public static Game getGame(UUID uuid) throws ScrabbleException {
 		if (uuid.equals(UUID_ZERO)) {
 			if (GAMES.isEmpty()) {
 				throw new ScrabbleException("No game created");

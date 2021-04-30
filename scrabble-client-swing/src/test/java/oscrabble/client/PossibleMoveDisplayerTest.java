@@ -2,9 +2,12 @@ package oscrabble.client;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.GameState;
+import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.Language;
+import oscrabble.server.Game;
+import oscrabble.server.Server;
 
 import javax.swing.*;
 
@@ -14,10 +17,10 @@ class PossibleMoveDisplayerTest {
 	@SneakyThrows
 	@Test
 	public void test() {
-		final MicroServiceScrabbleServer scrabbleServer = MicroServiceScrabbleServer.getLocal();
-		final GameState game = scrabbleServer.loadFixtures().iterator().next();
+		final ScrabbleServerInterface scrabbleServer = new Server();
+		final GameState game = Game.loadFixtures().iterator().next();
 
-		final PossibleMoveDisplayer pmd = new PossibleMoveDisplayer(MicroServiceDictionary.getDefaultFrench());
+		final PossibleMoveDisplayer pmd = new PossibleMoveDisplayer(Dictionary.getDictionary(Language.FRENCH));
 		pmd.setFont(Playground.MONOSPACED);
 		pmd.setServer(scrabbleServer);
 		pmd.setGame(game.getGameId());

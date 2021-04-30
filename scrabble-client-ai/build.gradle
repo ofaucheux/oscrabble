@@ -16,6 +16,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
     implementation 'commons-io:commons-io:2.6'
 
+    implementation(project(':scrabble-common'))
+    testImplementation(project(":scrabble-server"))
     testCompileOnly(project(":scrabble-dictionary"))
 }
 

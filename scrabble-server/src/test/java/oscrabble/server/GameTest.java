@@ -10,11 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
-import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.Bag;
 import oscrabble.data.GameState;
 import oscrabble.data.IDictionary;
 import oscrabble.data.Player;
+import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.Language;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class GameTest {
 	public static final Random RANDOM = new Random();
 
 	// todo: MOCKEN
-	public static IDictionary FRENCH = MicroServiceDictionary.getDefaultFrench();
+	public static IDictionary FRENCH = Dictionary.getDictionary(Language.FRENCH);
 
 	private Game game;
 	private UUID gustav;

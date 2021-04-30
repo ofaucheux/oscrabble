@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id "io.freefair.lombok" version "5.0.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+lombok.config['lombok.anyConstructor.addConstructorProperties'] = 'true'
+
+dependencies {
+    implementation 'org.springframework:spring-web:5.2.5.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.2.6.RELEASE'
+
+    implementation(project(":scrabble-common"))
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Oliviers Scrabble Common libary',
+                'Implementation-Version': project.version
+    }
+}

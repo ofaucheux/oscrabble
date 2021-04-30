@@ -2,11 +2,15 @@ package oscrabble.dictionary;
 
 import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.data.DictionaryEntry;
+import oscrabble.data.IDictionary;
+import oscrabble.data.ScrabbleRules;
 import oscrabble.dictionary.metainformationProviders.UnMotDotNet;
 import oscrabble.dictionary.metainformationProviders.WordMetainformationProvider;
 
@@ -16,10 +20,9 @@ import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
 
-class Dictionary {
+public class Dictionary implements IDictionary {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Dictionary.class);
-
 
 	/**
 	 * Already loaded dictionaries
@@ -41,9 +44,11 @@ class Dictionary {
 	private final Pattern stripAccentPattern;
 
 	public final String md5;
+	private final Language language;
 	private WordMetainformationProvider metainformationProvider;
 
-	protected Dictionary(final Language language) {
+	private Dictionary(final Language language) {
+		this.language = language;
 		this.name = language.directoryName;
 		LOGGER.info("Create dictionary " + this.name);
 
@@ -141,7 +146,7 @@ class Dictionary {
 		final String provider = properties.getProperty("metainformation.provider");
 		if (provider != null) {
 			this.metainformationProvider = new UnMotDotNet();
-//			((Wikitionary) this.metainformationProvider).setHtmlWidth(200);
+//			((Wiktionary) this.metainformationProvider).setHtmlWidth(200);
 		}
 		this.md5 = DigestUtils.md5Hex(this.words.toString());
 	}
@@ -222,6 +227,10 @@ class Dictionary {
 		return this.name;
 	}
 
+	@Override
+	public boolean isAdmissible(final String word) {
+		return containUpperCaseWord(word);
+	}
 
 	/**
 	 * @param word Ein Wort, großgeschrieben, z.B. {@code CHANTE}
@@ -255,5 +264,20 @@ class Dictionary {
 		UpperCaseWord(final String uppercase) {
 			this.uppercase = uppercase;
 		}
+	}
+
+	@Override
+	public ScrabbleRules getScrabbleRules() {
+		return ScrabbleRulesFactory.create(this.language);
+	}
+
+	@Override
+	public DictionaryEntry getEntry(final String word) throws DictionaryException {
+		final WordMetainformationProvider mip = Dictionary.getDictionary(this.language).getMetainformationProvider();
+		final DictionaryEntry entry = DictionaryEntry.builder()
+				.word(word)
+				.definitions(IterableUtils.toList(mip.getDefinitions(word)))
+				.build();
+		return entry;
 	}
 }

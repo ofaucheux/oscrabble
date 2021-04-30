@@ -3,8 +3,6 @@ package oscrabble.data.objects;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import oscrabble.ScrabbleException;
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.data.ScrabbleRules;
 import oscrabble.data.fixtures.PrecompiledGameStates;
 
 import java.util.Arrays;
@@ -66,38 +64,38 @@ class GridTest {
 		assertTrue(g.getWords("A1").isEmpty());
 	}
 
-	@Test
-	public void asciiArt() throws ScrabbleException.NotParsableException {
-		final ScrabbleRules rules = MicroServiceDictionary.getDefaultFrench().getScrabbleRules();
-		final Grid g = new Grid();
-		g.play(rules, "8D FRICHES");
-		g.play(rules, "D8 FOVEAS");
-
-		final String expected =
-				"#################\n" +
-						"#               #\n" +
-						"#               #\n" +
-						"#               #\n" +
-						"#               #\n" +
-						"#               #\n" +
-						"#               #\n" +
-						"#               #\n" +
-						"#   FRICHES     #\n" +
-						"#   O           #\n" +
-						"#   V           #\n" +
-						"#   E           #\n" +
-						"#   A           #\n" +
-						"#   S           #\n" +
-						"#               #\n" +
-						"#               #\n" +
-						"#################\n";
-
-		final String generated = g.toAsciiArt();
-//		assertEquals(g.toAsciiArt(true), generated);
-
-		assertEquals(expected, generated);
-		assertEquals(g, Grid.fromAsciiArt(rules, generated));
-	}
+//	@Test
+//	public void asciiArt() throws ScrabbleException.NotParsableException {
+//		final ScrabbleRules rules = MicroServiceDictionary.getDefaultFrench().getScrabbleRules();
+//		final Grid g = new Grid();
+//		g.play(rules, "8D FRICHES");
+//		g.play(rules, "D8 FOVEAS");
+//
+//		final String expected =
+//				"#################\n" +
+//						"#               #\n" +
+//						"#               #\n" +
+//						"#               #\n" +
+//						"#               #\n" +
+//						"#               #\n" +
+//						"#               #\n" +
+//						"#               #\n" +
+//						"#   FRICHES     #\n" +
+//						"#   O           #\n" +
+//						"#   V           #\n" +
+//						"#   E           #\n" +
+//						"#   A           #\n" +
+//						"#   S           #\n" +
+//						"#               #\n" +
+//						"#               #\n" +
+//						"#################\n";
+//
+//		final String generated = g.toAsciiArt();
+////		assertEquals(g.toAsciiArt(true), generated);
+//
+//		assertEquals(expected, generated);
+//		assertEquals(g, Grid.fromAsciiArt(rules, generated));
+//	}
 
 	@Test
 	void getFixtures() {

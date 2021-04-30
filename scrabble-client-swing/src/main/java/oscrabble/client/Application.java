@@ -7,16 +7,17 @@ import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.ScrabbleException;
 import oscrabble.client.ui.ConnectionParameterPanel;
-import oscrabble.client.utils.Starter;
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.controller.ScrabbleServerInterface;
+import oscrabble.data.IDictionary;
+import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.Language;
 import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
+import oscrabble.server.Server;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -32,17 +33,17 @@ public class Application {
 	 */
 	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
 
-	private final MicroServiceDictionary dictionary;
-	private final MicroServiceScrabbleServer server;
+	private final IDictionary dictionary;
+	private final ScrabbleServerInterface server;
 	private final Properties properties;
 
-	public Application(final MicroServiceDictionary dictionary, final MicroServiceScrabbleServer server, final Properties properties) {
+	public Application(final IDictionary dictionary, final ScrabbleServerInterface server, final Properties properties) {
 		this.dictionary = dictionary;
 		this.server = server;
 		this.properties = properties;
 	}
 
-	public static void main(String[] unused) throws InterruptedException, IOException {
+	public static void main(String[] unused) throws InterruptedException, IOException, ScrabbleException {
 
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error("Uncaught exception", e));
 
@@ -67,35 +68,12 @@ public class Application {
 				new ConnectionParameterPanel(connectionParameters)
 		);
 
-		if (connectionParameters.localServer) {
-			final Starter starter = new Starter();
-			final JDialog dialog = new JDialog();
-			dialog.setLayout(new BorderLayout());
-			final JPanel panel = starter.getPanel();
-			panel.setBorder(new TitledBorder("Start the servers..."));
-			dialog.add(panel);
-			dialog.setMinimumSize(new Dimension(300, 100));
-			dialog.setLocationRelativeTo(null);
-			dialog.pack();
-			new Thread(() -> {
-				try {
-					starter.startApplications(true);
-					Thread.sleep(3000);
-					dialog.dispose();
-				} catch (Throwable e) {
-					LOGGER.error(e.toString(), e);
-					dialog.dispose();
-					JOptionPane.showMessageDialog(null, "Error occurred, see log.");
-				}
-			}).start();
-			dialog.setModal(true);
-			dialog.setVisible(true);
-		}
-
-		final MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
-		final MicroServiceScrabbleServer server = connectionParameters.localServer
-				? MicroServiceScrabbleServer.getLocal()
-				: new MicroServiceScrabbleServer(connectionParameters.serverName, connectionParameters.serverPort);
+		final IDictionary dictionary = Dictionary.getDictionary(Language.FRENCH);
+		final ScrabbleServerInterface server   // todo new MicroServiceScrabbleServer(connectionParameters.serverName, connectionParameters.serverPort);
+				;
+		server = connectionParameters.localServer
+				? new Server()
+				: null; // todo
 
 		//
 		// start the application
@@ -138,7 +116,7 @@ public class Application {
 	 * Prepare the server and the client, start the game and play it till it ends.
 	 * @throws InterruptedException
 	 */
-	private void playGame() throws InterruptedException {
+	private void playGame() throws InterruptedException, ScrabbleException {
 		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
 		Collections.shuffle(names);
 
@@ -154,7 +132,7 @@ public class Application {
 			aiPlayers.add(ai);
 		}
 
-		final Client client = new Client(this.server, game, edgar);
+		final Client client = new Client(this.server, dictionary, game, edgar);
 		client.setAIPlayers(aiPlayers);
 		client.displayAll();
 		this.server.startGame(game);

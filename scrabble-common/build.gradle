@@ -1,6 +1,7 @@
 plugins {
     id 'java'
-    id "io.freefair.lombok" version "5.0.0"
+    id 'java-test-fixtures'
+    id 'io.freefair.lombok' version '5.0.0'
 }
 
 repositories {
@@ -11,11 +12,10 @@ lombok.config['lombok.anyConstructor.addConstructorProperties'] = 'true'
 
 dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.28'
-    implementation 'org.springframework:spring-web:5.2.5.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.2.6.RELEASE'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
     implementation 'org.apache.commons:commons-lang3:3.9'
     implementation 'commons-io:commons-io:2.6'
+
+    testFixturesImplementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
 }
 
 jar {

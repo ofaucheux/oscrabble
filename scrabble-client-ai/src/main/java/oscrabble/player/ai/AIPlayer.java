@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.Action;
 import oscrabble.data.GameState;
 import oscrabble.data.PlayActionResponse;
@@ -40,7 +40,7 @@ public class AIPlayer extends AbstractPlayer {
 	 * Daemon thread for this AI-player.
 	 */
 	final Thread daemonThread;
-	private final MicroServiceScrabbleServer server;
+	private final ScrabbleServerInterface server;
 
 	/**
 	 * Construct an AI Player.
@@ -52,7 +52,7 @@ public class AIPlayer extends AbstractPlayer {
 			final BruteForceMethod bruteForceMethod,
 			final UUID game,
 			final UUID playerId,
-			final MicroServiceScrabbleServer server
+			final ScrabbleServerInterface server
 	) {
 		super("AI");
 		this.bruteForceMethod = bruteForceMethod;

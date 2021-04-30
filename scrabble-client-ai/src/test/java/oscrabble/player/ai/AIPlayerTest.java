@@ -1,15 +1,15 @@
 package oscrabble.player.ai;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.ScrabbleException;
+import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.IDictionary;
+import oscrabble.server.Game;
+import oscrabble.server.Server;
 
-import java.net.URI;
 import java.util.UUID;
 
 class AIPlayerTest {
@@ -27,10 +27,10 @@ class AIPlayerTest {
 	 */
 	@Test
 //	@Disabled
-	void onPlayRequired() throws InterruptedException {
+	void onPlayRequired() throws InterruptedException, ScrabbleException {
 
 		final IDictionary DICTIONARY = new FrenchDictionaryForTest();
-		final MicroServiceScrabbleServer server = MicroServiceScrabbleServer.getLocal();
+		final ScrabbleServerInterface server = new Server();
 
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);
 		final String PLAYER_NAME = "AI Player";

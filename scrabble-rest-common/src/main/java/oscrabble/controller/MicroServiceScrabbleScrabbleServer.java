@@ -16,7 +16,10 @@ import java.net.URI;
 import java.util.*;
 
 @SuppressWarnings("BusyWait")
-public class MicroServiceScrabbleServer extends AbstractMicroService {
+public class MicroServiceScrabbleScrabbleServer
+	extends AbstractMicroService
+	implements ScrabbleServerInterface
+{
 	/**
 	 * Default port of scrabble servers
 	 */
@@ -24,13 +27,13 @@ public class MicroServiceScrabbleServer extends AbstractMicroService {
 
 	@Autowired
 	private static final RestTemplate REST_TEMPLATE = new RestTemplate();
-	public static final Logger LOGGER = LoggerFactory.getLogger(MicroServiceScrabbleServer.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(MicroServiceScrabbleScrabbleServer.class);
 
 	/**
 	 * @param host Servername
 	 * @param port port
 	 */
-	public MicroServiceScrabbleServer(final String host, final int port) {
+	public MicroServiceScrabbleScrabbleServer(final String host, final int port) {
 		super(
 				UriComponentsBuilder.newInstance()
 						.scheme("http")
@@ -42,8 +45,8 @@ public class MicroServiceScrabbleServer extends AbstractMicroService {
 	/**
 	 * @return server on localhost with default port
 	 */
-	public static MicroServiceScrabbleServer getLocal() {
-		final MicroServiceScrabbleServer server = new MicroServiceScrabbleServer("localhost", MicroServiceScrabbleServer.DEFAULT_PORT);
+	public static MicroServiceScrabbleScrabbleServer getLocal() {
+		final MicroServiceScrabbleScrabbleServer server = new MicroServiceScrabbleScrabbleServer("localhost", MicroServiceScrabbleScrabbleServer.DEFAULT_PORT);
 		server.waitToUpStatus(null);
 		return server;
 	}
@@ -60,32 +63,14 @@ public class MicroServiceScrabbleServer extends AbstractMicroService {
 		return map;
 	}
 
-	/**
-	 * Create a game
-	 *
-	 * @return id of the created new game
-	 */
+	@Override
 	public UUID newGame() {
 		final GameState state = REST_TEMPLATE.postForObject(resolve(null, "newGame"), null, GameState.class);
 		assert state != null;
 		return state.gameId;
 	}
 
-	/**
-	 * Let the server loads the fixture games and return them.
-	 *
-	 * @return
-	 */
-	public List<GameState> loadFixtures() {
-		final GameState[] games = REST_TEMPLATE.postForObject(resolve(null, "loadFixtures"), null, GameState[].class);
-		assert games != null;
-		return Arrays.asList(games);
-	}
-
-	/**
-	 * @return state of the game
-	 * @throws ScrabbleException.CommunicationException
-	 */
+	@Override
 	public GameState getState(final UUID game) throws ScrabbleException.CommunicationException {
 		final ResponseEntity<GameState> re = REST_TEMPLATE.postForEntity(resolve(game, "getState"), null, GameState.class);
 		if (!re.getStatusCode().is2xxSuccessful()) {
@@ -97,22 +82,13 @@ public class MicroServiceScrabbleServer extends AbstractMicroService {
 		return gameState;
 	}
 
-	/**
-	 *
-	 */
+	@Override
 	public void acknowledgeState(final UUID game, final UUID player, final GameState state) {
 		final PlayerSignature signature = PlayerSignature.builder().player(player).build();
 		REST_TEMPLATE.postForEntity(resolve(game, "acknowledgeState"), signature, Void.class);
 	}
 
-	/**
-	 * Compute the score of actions. No check against dictionary occurs. The order of the result is the same as the one of the parameter.
-	 *
-	 * @param game
-	 * @param notations
-	 * @return
-	 * @throws ScrabbleException.CommunicationException
-	 */
+	@Override
 	public Collection<Score> getScores(final UUID game, final Collection<String> notations) throws ScrabbleException.CommunicationException {
 		//noinspection ToArrayCallWithZeroLengthArrayArgument
 		final ResponseEntity<Score[]> re = REST_TEMPLATE.postForEntity(
@@ -126,25 +102,15 @@ public class MicroServiceScrabbleServer extends AbstractMicroService {
 		return Arrays.asList(re.getBody());
 	}
 
-	/**
-	 * Get the bag of a player.
-	 *
-	 * @param game
-	 * @param player
-	 * @return
-	 */
+
+	@Override
 	public Bag getRack(final UUID game, final UUID player /* todo: secret */) {
 		final PlayerSignature request = PlayerSignature.builder().player(player).build();
 		final Bag bag = REST_TEMPLATE.postForObject(resolve(game, "getRack"), request, Bag.class);
 		return bag;
 	}
 
-	/**
-	 * Get the rules of a game.
-	 *
-	 * @param game
-	 * @return
-	 */
+	@Override
 	public ScrabbleRules getRules(final UUID game) {
 		final ScrabbleRules rules = REST_TEMPLATE.postForObject(resolve(game, "getRules"), null, ScrabbleRules.class);
 		return rules;
@@ -174,19 +140,13 @@ public class MicroServiceScrabbleServer extends AbstractMicroService {
 //		REST_TEMPLATE.postForObject(resolve(game, "play"), a, Action.class);
 //	}
 
-	/**
-	 * Play an action.
-	 */
+	@Override
 	public PlayActionResponse play(final UUID game, final Action buildAction) throws ScrabbleException {
 		final PlayActionResponse response = REST_TEMPLATE.postForObject(resolve(game, "playAction"), buildAction, PlayActionResponse.class);
 		return response;
 	}
 
-	/**
-	 * Add a player
-	 *
-	 * @param name of the player
-	 */
+	@Override
 	public UUID addPlayer(final UUID game, final String name) {
 		//noinspection ConstantConditions
 		return REST_TEMPLATE.postForObject(resolve(game, "addPlayer"), name, Player.class).id;
@@ -207,9 +167,7 @@ public class MicroServiceScrabbleServer extends AbstractMicroService {
 				.toUri();
 	}
 
-	/**
-	 * Start the game.
-	 */
+	@Override
 	public void startGame(final UUID game) {
 		REST_TEMPLATE.postForObject(resolve(game, "start"), null, Void.class);
 	}
@@ -236,19 +194,9 @@ public class MicroServiceScrabbleServer extends AbstractMicroService {
 		}
 	}
 
-	/**
-	 * Attach or detach a player.
-	 *
-	 * @param game
-	 * @param player
-	 * @param attach if false, a detach occurs.
-	 */
+	@Override
 	public void attach(final UUID game, final UUID player, final boolean attach) {
-		final PlayerUpdateRequest request = PlayerUpdateRequest.builder()
-				.playerId(player)
-				.parameter(PlayerUpdateRequest.Parameter.ATTACHED.toString())
-				.newValue(attach ? Boolean.TRUE.toString() : Boolean.FALSE.toString())
-				.build();
+		final PlayerUpdateRequest request = PlayerUpdateRequest.createAttachRequest(player, attach);
 		REST_TEMPLATE.postForObject(resolve(game, "updatePlayer"), request, Void.class);
 	}
 }
