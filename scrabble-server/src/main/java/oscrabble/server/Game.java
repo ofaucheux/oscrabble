@@ -11,7 +11,6 @@ import oscrabble.configuration.Parameter;
 import oscrabble.controller.Action;
 import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.*;
-import oscrabble.data.fixtures.PrecompiledGameStates;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
@@ -206,7 +205,9 @@ public class Game {
 	 */
 	public static List<GameState> loadFixtures() {
 		final ArrayList<GameState> games = new ArrayList<>();
-		games.add(new Game(PrecompiledGameStates.game1()).getGameState());
+//		todo: implements PrecompiledGameStates so it doesn't need jackson and therefore
+//		can be used hier.
+//		games.add(new Game(PrecompiledGameStates.game1()).getGameState());
 		return games;
 	}
 

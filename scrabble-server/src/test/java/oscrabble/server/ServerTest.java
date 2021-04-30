@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import oscrabble.data.GameState;
-import oscrabble.data.fixtures.PrecompiledGameStates;
 
 @Disabled
 public class ServerTest {
