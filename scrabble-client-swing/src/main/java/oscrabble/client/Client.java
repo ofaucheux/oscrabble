@@ -5,8 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.AIPlayerConfigPanel;
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.*;
 import oscrabble.player.ai.AIPlayer;
 
@@ -24,18 +23,17 @@ import java.util.stream.Collectors;
 public class Client {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
-	final MicroServiceScrabbleServer server;
+	/**
+	 * Used dictionary TODO: not static
+	 */
+	public static IDictionary DICTIONARY = null; //todo MicroServiceDictionary.getDefaultFrench();
 	final UUID game;
 	final UUID player;
 	final Set<Listener> listeners = new HashSet<>();
 
 	final Playground playground;
 	private final JRack rack;
-
-	/**
-	 * Used dictionary TODO: not static
-	 */
-	public static MicroServiceDictionary DICTIONARY = MicroServiceDictionary.getDefaultFrench();
+	final ScrabbleServerInterface server;
 
 	/**
 	 * Listeners to be run on game leaving
@@ -53,7 +51,7 @@ public class Client {
 	 */
 	private UUID lastPlayedTurn;
 
-	public Client(final MicroServiceScrabbleServer server, final UUID game, final UUID player) {
+	public Client(final ScrabbleServerInterface server, final UUID game, final UUID player) {
 		this.server = server;
 		this.game = game;
 		this.player = player;
@@ -231,7 +229,7 @@ public class Client {
 		}
 	}
 
-	public MicroServiceDictionary getDictionary() {
+	public IDictionary getDictionary() {
 		return DICTIONARY;
 	}
 

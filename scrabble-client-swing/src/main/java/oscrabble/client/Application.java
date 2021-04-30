@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.client.ui.ConnectionParameterPanel;
 import oscrabble.client.utils.Starter;
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.controller.ScrabbleServerInterface;
+import oscrabble.data.IDictionary;
 import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
@@ -32,11 +32,11 @@ public class Application {
 	 */
 	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
 
-	private final MicroServiceDictionary dictionary;
-	private final MicroServiceScrabbleServer server;
+	private final IDictionary dictionary;
+	private final ScrabbleServerInterface server;
 	private final Properties properties;
 
-	public Application(final MicroServiceDictionary dictionary, final MicroServiceScrabbleServer server, final Properties properties) {
+	public Application(final IDictionary dictionary, final ScrabbleServerInterface server, final Properties properties) {
 		this.dictionary = dictionary;
 		this.server = server;
 		this.properties = properties;
@@ -92,10 +92,11 @@ public class Application {
 			dialog.setVisible(true);
 		}
 
-		final MicroServiceDictionary dictionary = MicroServiceDictionary.getDefaultFrench();
-		final MicroServiceScrabbleServer server = connectionParameters.localServer
-				? MicroServiceScrabbleServer.getLocal()
-				: new MicroServiceScrabbleServer(connectionParameters.serverName, connectionParameters.serverPort);
+		final IDictionary dictionary = null; // todo MicroServiceDictionary.getDefaultFrench();
+		final ScrabbleServerInterface server = connectionParameters.localServer
+				? null // todo MicroServiceScrabbleServer.getLocal()
+				: null // todo new MicroServiceScrabbleServer(connectionParameters.serverName, connectionParameters.serverPort);
+		;
 
 		//
 		// start the application
