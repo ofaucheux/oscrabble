@@ -20,7 +20,6 @@ class Dictionary {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Dictionary.class);
 
-
 	/**
 	 * Already loaded dictionaries
 	 */

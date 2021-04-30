@@ -7,3 +7,4 @@ include 'scrabble-client-swing'
 include 'scrabble-starter'
 
 include 'scrabble-rest-common'
+include 'scrabble-rest-dictionary'

@@ -47,7 +47,7 @@ public class Controller {
 	public ResponseEntity<Collection<Dictionary.Mutation>> getWord(
 			final @PathVariable("language") String language,
 			final @PathVariable("word") String word
-	) throws UnknownLanguage, DictionaryException {
+	) throws UnknownLanguage {
 		final Dictionary d = Dictionary.getDictionary(getLanguage(language));
 		final String uc = d.toUpperCase(word);
 		final boolean accepted = d.containUpperCaseWord(uc);
