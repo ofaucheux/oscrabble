@@ -1,6 +1,7 @@
 package oscrabble.controller;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
@@ -16,11 +17,9 @@ Action {
 	);
 	private static final Pattern EXCHANGE = Pattern.compile("-\\s+(\\S+)");
 	private static final Pattern PLAY_TILES = Pattern.compile("(\\S*)\\s+(\\S*)");
-
-	public UUID turnId;
 	public final String notation;
 	public final UUID player;
-
+	public UUID turnId;
 	public Integer score;
 
 	protected Action(final UUID player, final String notation) {
@@ -34,7 +33,7 @@ Action {
 		return action;
 	}
 
-	public static Action parse(final UUID player, final String notation) throws ScrabbleException.NotParsableException {
+	public static Action parse(final @Nullable UUID player, final String notation) throws ScrabbleException.NotParsableException {
 		final Action action;
 		if (PASS_TURN.matcher(notation).matches()) {
 			action = new SkipTurn(player, notation);

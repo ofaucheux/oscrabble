@@ -3,6 +3,7 @@ package oscrabble.data;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -36,6 +37,7 @@ public class Action {
 	/**
 	 * Score of this action, to be filled by the server.
 	 */
+	@Nullable
 	public Integer score;
 
 	@Override
