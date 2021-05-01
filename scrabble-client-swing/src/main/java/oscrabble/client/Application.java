@@ -7,6 +7,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.ScrabbleException;
 import oscrabble.client.ui.ConnectionParameterPanel;
 import oscrabble.client.utils.Starter;
 import oscrabble.controller.ScrabbleServerInterface;
@@ -44,7 +45,7 @@ public class Application {
 		this.properties = properties;
 	}
 
-	public static void main(String[] unused) throws InterruptedException, IOException {
+	public static void main(String[] unused) throws InterruptedException, IOException, ScrabbleException {
 
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error("Uncaught exception", e));
 
@@ -141,7 +142,7 @@ public class Application {
 	 * Prepare the server and the client, start the game and play it till it ends.
 	 * @throws InterruptedException
 	 */
-	private void playGame() throws InterruptedException {
+	private void playGame() throws InterruptedException, ScrabbleException {
 		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
 		Collections.shuffle(names);
 

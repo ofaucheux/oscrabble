@@ -2,11 +2,13 @@ package oscrabble.dictionary;
 
 import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.data.DictionaryEntry;
 import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.dictionary.metainformationProviders.UnMotDotNet;
@@ -267,5 +269,15 @@ public class Dictionary implements IDictionary {
 	@Override
 	public ScrabbleRules getScrabbleRules() {
 		return ScrabbleRulesFactory.create(this.language);
+	}
+
+	@Override
+	public DictionaryEntry getEntry(final String word) throws DictionaryException {
+		final WordMetainformationProvider mip = Dictionary.getDictionary(this.language).getMetainformationProvider();
+		final DictionaryEntry entry = DictionaryEntry.builder()
+				.word(word)
+				.definitions(IterableUtils.toList(mip.getDefinitions(word)))
+				.build();
+		return entry;
 	}
 }

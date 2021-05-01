@@ -1,6 +1,6 @@
 package oscrabble.client;
 
-import oscrabble.controller.MicroServiceDictionary;
+import oscrabble.data.IDictionary;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 public class DisplayDefinitionAction extends AbstractAction {
 	private static DictionaryComponent component = null;
 
-	private final MicroServiceDictionary dictionary;
+	private final IDictionary dictionary;
 	private final Supplier<Collection<String>> wordsSupplier;
 
 	/**
@@ -24,7 +24,7 @@ public class DisplayDefinitionAction extends AbstractAction {
 	 */
 	private Component relativeComponentPosition;
 
-	public DisplayDefinitionAction(final MicroServiceDictionary dictionary, final Supplier<Collection<String>> wordsSupplier) {
+	public DisplayDefinitionAction(final IDictionary dictionary, final Supplier<Collection<String>> wordsSupplier) {
 		super("Show definitions");  // todo: i18n
 		this.dictionary = dictionary;
 		this.wordsSupplier = wordsSupplier;

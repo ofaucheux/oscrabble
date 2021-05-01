@@ -2,8 +2,10 @@ package oscrabble.player.ai;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import oscrabble.data.DictionaryEntry;
 import oscrabble.data.IDictionary;
 import oscrabble.data.ScrabbleRules;
+import oscrabble.dictionary.DictionaryException;
 
 import java.io.IOError;
 import java.io.IOException;
@@ -80,5 +82,10 @@ public class FrenchDictionaryForTest implements IDictionary {
 		}
 
 		return rules;
+	}
+
+	@Override
+	public DictionaryEntry getEntry(final String word) throws DictionaryException {
+		return DictionaryEntry.builder().definitions(Arrays.asList("No def in the test dictionary")).build();
 	}
 }

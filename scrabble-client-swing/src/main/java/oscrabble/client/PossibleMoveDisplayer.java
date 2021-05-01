@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
 import oscrabble.controller.Action;
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.controller.MicroServiceScrabbleServer;
+import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.GameState;
+import oscrabble.data.IDictionary;
 import oscrabble.data.Score;
 import oscrabble.data.objects.Grid;
 import oscrabble.player.ai.BruteForceMethod;
@@ -41,7 +41,7 @@ public class PossibleMoveDisplayer {
 	/**
 	 * The server to calculate the scores
 	 */
-	private MicroServiceScrabbleServer server;
+	private ScrabbleServerInterface server;
 	/**
 	 * the game
 	 */
@@ -51,7 +51,7 @@ public class PossibleMoveDisplayer {
 	private GameState state;
 	private final JComboBox<Strategy> strategiesCb;
 
-	public PossibleMoveDisplayer(final MicroServiceDictionary dictionary) {
+	public PossibleMoveDisplayer(final IDictionary dictionary) {
 		this.bfm = new BruteForceMethod(dictionary);
 
 		final Strategy.BestScore bestScore = new Strategy.BestScore(null, null);
@@ -61,7 +61,7 @@ public class PossibleMoveDisplayer {
 					bestScore.setGame((UUID) newValue);
 					break;
 				case "server":
-					bestScore.setServer(((MicroServiceScrabbleServer) newValue));
+					bestScore.setServer(((ScrabbleServerInterface) newValue));
 					break;
 			}
 		});
@@ -127,7 +127,7 @@ public class PossibleMoveDisplayer {
 	 *
 	 * @param server
 	 */
-	void setServer(final MicroServiceScrabbleServer server) {
+	void setServer(final ScrabbleServerInterface server) {
 		this.server = server;
 		invokeListeners("server", server);
 	}
@@ -174,7 +174,7 @@ public class PossibleMoveDisplayer {
 			}
 			try {
 				scores = this.server.getScores(this.game, words);
-			} catch (ScrabbleException.CommunicationException e) {
+			} catch (ScrabbleException e) {
 				throw new Error(e);
 			}
 		}

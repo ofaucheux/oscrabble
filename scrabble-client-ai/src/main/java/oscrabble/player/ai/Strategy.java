@@ -70,7 +70,7 @@ public abstract class Strategy {
 			try {
 				final Collection<Score> scores = this.server.getScores(this.game, moves);
 				return sort(moves, scores);
-			} catch (ScrabbleException.CommunicationException e) {
+			} catch (ScrabbleException e) {
 				throw new Error(e);
 			}
 		}

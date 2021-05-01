@@ -18,6 +18,7 @@ dependencies {
     implementation group: 'org.springframework', name: 'spring-core', version: '5.3.4'
 
     implementation(project(":scrabble-common"))
+
     implementation(project(":scrabble-client-ai"))
     implementation(project(":scrabble-dictionary"))
 

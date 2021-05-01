@@ -1,7 +1,8 @@
 package oscrabble.client;
 
-import oscrabble.controller.MicroServiceDictionary;
-import oscrabble.data.DictionaryEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import oscrabble.data.DictionaryEntry;import oscrabble.data.IDictionary;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,19 +16,20 @@ import java.util.Set;
  */
 public class DictionaryComponent extends JTabbedPane {
 
+	protected static final Logger LOGGER = LoggerFactory.getLogger(DictionaryComponent.class);
 	/**
 	 * Liste der gefundenen Definition
 	 */
 	private final Set<String> found = new HashSet<>();
 
-	private final MicroServiceDictionary dictionary;
+	private final IDictionary dictionary;
 
 	/**
 	 * Erstellt ein {@link DictionaryComponent}-
 	 *
 	 * @param dictionary
 	 */
-	public DictionaryComponent(final MicroServiceDictionary dictionary) {
+	public DictionaryComponent(final IDictionary dictionary) {
 		this.dictionary = dictionary;
 
 		// add a word
@@ -74,17 +76,22 @@ public class DictionaryComponent extends JTabbedPane {
 			}
 		}
 
-		final DictionaryEntry entry = this.dictionary.getEntry(word);
-		this.found.add(word);
-
 		final JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-		if (entry.definitions.isEmpty()) {
-			panel.add(new JLabel(word + ": no definition found"));
-		} else {
-			entry.definitions.forEach(definition -> panel.add(new JLabel(String.valueOf(definition))));
+		try {
+			final DictionaryEntry entry = this.dictionary.getEntry(word);
+			this.found.add(word);
+			if (entry.definitions.isEmpty()) {
+				panel.add(new JLabel(word + ": no definition found"));
+			} else {
+				entry.definitions.forEach(definition -> panel.add(new JLabel(String.valueOf(definition))));
+			}
+		} catch (Throwable e) {
+			LOGGER.error("Cannot load word", e);
+			panel.add(new JLabel("Error: " + e));
 		}
+
+
 
 		final JScrollPane sp = new JScrollPane(panel);
 		addTab(word, sp);

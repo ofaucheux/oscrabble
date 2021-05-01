@@ -70,17 +70,6 @@ public class MicroServiceScrabbleScrabbleServer
 		return state.gameId;
 	}
 
-	/**
-	 * Let the server loads the fixture games and return them.
-	 *
-	 * @return
-	 */
-	public List<GameState> loadFixtures() {
-		final GameState[] games = REST_TEMPLATE.postForObject(resolve(null, "loadFixtures"), null, GameState[].class);
-		assert games != null;
-		return Arrays.asList(games);
-	}
-
 	@Override
 	public GameState getState(final UUID game) throws ScrabbleException.CommunicationException {
 		final ResponseEntity<GameState> re = REST_TEMPLATE.postForEntity(resolve(game, "getState"), null, GameState.class);
@@ -207,11 +196,7 @@ public class MicroServiceScrabbleScrabbleServer
 
 	@Override
 	public void attach(final UUID game, final UUID player, final boolean attach) {
-		final PlayerUpdateRequest request = PlayerUpdateRequest.builder()
-				.playerId(player)
-				.parameter(PlayerUpdateRequest.Parameter.ATTACHED.toString())
-				.newValue(attach ? Boolean.TRUE.toString() : Boolean.FALSE.toString())
-				.build();
+		final PlayerUpdateRequest request = PlayerUpdateRequest.createAttachRequest(player, attach);
 		REST_TEMPLATE.postForObject(resolve(game, "updatePlayer"), request, Void.class);
 	}
 }

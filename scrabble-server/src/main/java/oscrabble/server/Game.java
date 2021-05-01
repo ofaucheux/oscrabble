@@ -1,5 +1,6 @@
 package oscrabble.server;
 
+import lombok.Getter;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.BooleanUtils;
@@ -8,10 +9,11 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.controller.Action;
-import oscrabble.controller.MicroServiceDictionary;
 import oscrabble.data.*;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
+import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.Language;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -40,7 +42,7 @@ public class Game {
 	/**
 	 * Used dictionary TODO: not static
 	 */
-	public static MicroServiceDictionary DICTIONARY = MicroServiceDictionary.getDefaultFrench();
+	public static IDictionary DICTIONARY = Dictionary.getDictionary(Language.FRENCH);
 
 	/**
 	 * ID of the game

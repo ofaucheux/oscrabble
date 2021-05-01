@@ -17,15 +17,21 @@ public interface ScrabbleServerInterface {
 	 * @return
 	 * @throws ScrabbleException.CommunicationException
 	 */
-	Collection<Score> getScores(final UUID game, final Collection<String> notations) throws ScrabbleException.CommunicationException;
+	Collection<Score> getScores(final UUID game, final Collection<String> notations) throws ScrabbleException;
 
 	/**
 	 * @return state of the game
 	 * @throws ScrabbleException.CommunicationException
 	 */
-	GameState getState(final UUID game) throws ScrabbleException.CommunicationException;
+	GameState getState(final UUID game) throws ScrabbleException;
 
-	void acknowledgeState(final UUID game, final UUID player, final GameState state);
+	/**
+	 * Inform the server that the player has read the state.
+	 * @param game
+	 * @param player
+	 * @param state
+	 */
+	void acknowledgeState(final UUID game, final UUID player, final GameState state) throws ScrabbleException;
 
 	/**
 	 * Get the bag of a player.
@@ -34,15 +40,16 @@ public interface ScrabbleServerInterface {
 	 * @param player
 	 * @return
 	 */
-	Bag getRack(final UUID game, final UUID player /* todo: secret */);
+	Bag getRack(final UUID game, final UUID player /* todo: secret */) throws ScrabbleException;
 
 	/**
 	 * Play an action.
 	 */
-	PlayActionResponse play(final UUID game, final Action buildAction) throws ScrabbleException;
+	PlayActionResponse play(final UUID game, final Action buildAction) throws ScrabbleException, InterruptedException;
 
 	/**
 	 * Create a game
+	 * TODO: string parameter for the game language
 	 *
 	 * @return id of the created new game
 	 */
@@ -53,13 +60,13 @@ public interface ScrabbleServerInterface {
 	 *
 	 * @param name of the player
 	 */
-	UUID addPlayer(final UUID game, final String name);
+	UUID addPlayer(final UUID game, final String name) throws ScrabbleException;
 
 
 	/**
 	 * Start the game.
 	 */
-	void startGame(final UUID game);
+	void startGame(final UUID game) throws ScrabbleException;
 
 	/**
 	 * Get the rules of a game.
@@ -67,7 +74,7 @@ public interface ScrabbleServerInterface {
 	 * @param game
 	 * @return
 	 */
-	ScrabbleRules getRules(final UUID game);
+	ScrabbleRules getRules(final UUID game) throws ScrabbleException;
 
 	/**
 	 * Attach or detach a player.
@@ -76,6 +83,6 @@ public interface ScrabbleServerInterface {
 	 * @param player
 	 * @param attach if false, a detach occurs.
 	 */
-	void attach(final UUID game, final UUID player, final boolean attach);
+	void attach(final UUID game, final UUID player, final boolean attach) throws ScrabbleException;
 
 }

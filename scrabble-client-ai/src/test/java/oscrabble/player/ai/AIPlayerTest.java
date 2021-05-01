@@ -4,8 +4,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.ScrabbleException;
 import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.IDictionary;
+import oscrabble.server.Game;
+import oscrabble.server.Server;
 
 import java.util.UUID;
 
@@ -24,10 +27,10 @@ class AIPlayerTest {
 	 */
 	@Test
 //	@Disabled
-	void onPlayRequired() throws InterruptedException {
+	void onPlayRequired() throws InterruptedException, ScrabbleException {
 
 		final IDictionary DICTIONARY = new FrenchDictionaryForTest();
-		final ScrabbleServerInterface server = null; //MicroServiceScrabbleServer.getLocal(); // todo
+		final ScrabbleServerInterface server = new Server();
 
 		final BruteForceMethod bfm = new BruteForceMethod(DICTIONARY);
 		final String PLAYER_NAME = "AI Player";
