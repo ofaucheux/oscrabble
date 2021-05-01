@@ -24,9 +24,10 @@ public class Client {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
 	/**
-	 * Used dictionary TODO: not static
+	 * Used dictionary
 	 */
-	public static IDictionary DICTIONARY = null; //todo MicroServiceDictionary.getDefaultFrench();
+	public final IDictionary dictionary;
+
 	final UUID game;
 	final UUID player;
 	final Set<Listener> listeners = new HashSet<>();
@@ -46,13 +47,15 @@ public class Client {
 	 * Rules of the game
 	 */
 	final ScrabbleRules scrabbleRules;
+
 	/**
 	 * last played turn
 	 */
 	private UUID lastPlayedTurn;
 
-	public Client(final ScrabbleServerInterface server, final UUID game, final UUID player) throws ScrabbleException {
+	public Client(final ScrabbleServerInterface server, final IDictionary dictionary, final UUID game, final UUID player) throws ScrabbleException {
 		this.server = server;
+		this.dictionary = dictionary;
 		this.game = game;
 		this.player = player;
 		this.scrabbleRules = this.server.getRules(this.game);
@@ -230,7 +233,7 @@ public class Client {
 	}
 
 	public IDictionary getDictionary() {
-		return DICTIONARY;
+		return dictionary;
 	}
 
 	/**
