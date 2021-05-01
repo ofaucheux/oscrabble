@@ -5,7 +5,6 @@ import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.NonNull;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.controller.Action;
@@ -216,8 +215,7 @@ public class Game {
 	 * @return the game
 	 * @throws ScrabbleException if not found
 	 */
-	public static @NonNull
-	Game getGame(UUID uuid) throws ScrabbleException {
+	public static Game getGame(UUID uuid) throws ScrabbleException {
 		if (uuid.equals(UUID_ZERO)) {
 			if (GAMES.isEmpty()) {
 				throw new ScrabbleException("No game created");
