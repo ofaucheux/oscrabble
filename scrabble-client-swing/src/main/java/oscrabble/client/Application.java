@@ -11,6 +11,8 @@ import oscrabble.client.ui.ConnectionParameterPanel;
 import oscrabble.client.utils.Starter;
 import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.IDictionary;
+import oscrabble.dictionary.Dictionary;
+import oscrabble.dictionary.Language;
 import oscrabble.player.ai.AIPlayer;
 import oscrabble.player.ai.BruteForceMethod;
 
@@ -92,7 +94,7 @@ public class Application {
 			dialog.setVisible(true);
 		}
 
-		final IDictionary dictionary = null; // todo MicroServiceDictionary.getDefaultFrench();
+		final IDictionary dictionary = Dictionary.getDictionary(Language.FRENCH);
 		final ScrabbleServerInterface server = connectionParameters.localServer
 				? null // todo MicroServiceScrabbleServer.getLocal()
 				: null // todo new MicroServiceScrabbleServer(connectionParameters.serverName, connectionParameters.serverPort);
