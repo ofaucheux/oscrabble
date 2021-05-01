@@ -51,7 +51,7 @@ public class Client {
 	 */
 	private UUID lastPlayedTurn;
 
-	public Client(final ScrabbleServerInterface server, final UUID game, final UUID player) {
+	public Client(final ScrabbleServerInterface server, final UUID game, final UUID player) throws ScrabbleException {
 		this.server = server;
 		this.game = game;
 		this.player = player;
@@ -224,7 +224,7 @@ public class Client {
 				}
 				throw new ScrabbleException(sb.toString());
 			}
-		} catch (ScrabbleException ex) {
+		} catch (ScrabbleException | InterruptedException ex) {
 			JOptionPane.showMessageDialog(this.playground.gridFrame, ex.getMessage());
 		}
 	}
@@ -241,7 +241,7 @@ public class Client {
 		this.onQuitGame.forEach(Runnable::run);
 	}
 
-	void treatNewState(final GameState state) throws ScrabbleException.CommunicationException {
+	void treatNewState(final GameState state) throws ScrabbleException {
 		refreshUI(state);
 		this.listeners.forEach(l -> l.onNewTurn());
 		this.server.acknowledgeState(this.game, this.player, state);
@@ -328,7 +328,7 @@ public class Client {
 					//noinspection BusyWait
 					Thread.sleep(100);
 
-				} catch (InterruptedException | ScrabbleException.CommunicationException e) {
+				} catch (InterruptedException | ScrabbleException e) {
 					LOGGER.error("Error " + e, e);
 					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
 				}
