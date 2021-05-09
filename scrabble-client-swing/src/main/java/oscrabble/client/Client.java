@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.client.utils.I18N;
 import oscrabble.client.ui.AIPlayerConfigPanel;
 import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.*;
@@ -15,12 +16,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
 public class Client {
+
 	public static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
 	/**
@@ -68,7 +71,7 @@ public class Client {
 	}
 
 	private final Set<Object> waitingTokens = new HashSet<>();
-	private Object waitingAfterOtherPlayToken = new Object();
+	private final Object waitingAfterOtherPlayToken = new Object();
 
 	/**
 	 * Display the components
@@ -102,7 +105,7 @@ public class Client {
 		});
 
 		final GameStateDispatcherThread th = new GameStateDispatcherThread();
-		th.setName("State DTh");
+		th.setName("State DTh"); //NON-NLS
 		th.setDaemon(true);
 		th.start();
 	}
@@ -114,7 +117,7 @@ public class Client {
 	@SneakyThrows
 	private void refreshUI(final GameState state)   // todo: display for several racks
 	{
-		LOGGER.info("Refresh ui called with turn id " + state.turnId);
+		LOGGER.info("Refresh ui called with turn id " + state.turnId); //NON-NLS
 		final Bag rack = this.server.getRack(this.game, this.player);
 		this.lastKnownState = state;
 		this.playground.refreshUI(state, rack.getChars());
@@ -221,9 +224,9 @@ public class Client {
 			treatNewState(response.gameState);
 			if (!response.success) {
 				// todo: i18n
-				final StringBuilder sb = new StringBuilder("<html>Play refused: ").append(response.message);
+				final StringBuilder sb = new StringBuilder("<html>").append(I18N.get("play.refused")).append(response.message);
 				if (response.retryAccepted) {
-					sb.append("<br>Retry accepted.");
+					sb.append("<br>").append(I18N.get("retry.accepted"));
 				}
 				throw new ScrabbleException(sb.toString());
 			}
@@ -233,7 +236,7 @@ public class Client {
 	}
 
 	public IDictionary getDictionary() {
-		return dictionary;
+		return this.dictionary;
 	}
 
 	/**
@@ -263,7 +266,7 @@ public class Client {
 					JOptionPane.showMessageDialog(
 							null,
 							new AIPlayerConfigPanel(ai),
-							"Properties for " + ai.name,
+							MessageFormat.format(I18N.get("properties.for.0"), ai.name),
 							JOptionPane.PLAIN_MESSAGE
 					);
 				}
@@ -332,7 +335,7 @@ public class Client {
 					Thread.sleep(100);
 
 				} catch (InterruptedException | ScrabbleException e) {
-					LOGGER.error("Error " + e, e);
+					LOGGER.error("Error " + e, e); //NON-NLS
 					JOptionPane.showMessageDialog(Client.this.playground.gridFrame, e.toString());
 				}
 			}
@@ -344,14 +347,23 @@ public class Client {
 			final int bestScore = players.get(0).score;
 			final Set<Player> winners = players.stream().filter(p -> p.score == bestScore).collect(Collectors.toSet());
 			final StringBuilder sb = new StringBuilder();
-			sb.append("<html>End of Game.<br>Winner ").append(winners.size() == 1 ? " is " : "s are ");
+			sb.append("<html>")
+					.append(I18N.get("end.of.game"))
+					.append("<br>")
+					.append(
+							winners.size() == 1
+									? I18N.get("winner.is")
+									: I18N.get("winners.are"));
 			for (final Player winner : winners) {
-				sb.append(winner.getName()).append(" and ");
+				sb.append(winner.getName())
+						.append(' ')
+						.append(I18N.get("and"))
+						.append(' ');
 			}
 			sb.setLength(sb.length() - 5);
 			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, sb.toString());
 
-			LOGGER.debug("Thread ends");
+			LOGGER.debug("Thread ends"); //NON-NLS
 		}
 	}
 }

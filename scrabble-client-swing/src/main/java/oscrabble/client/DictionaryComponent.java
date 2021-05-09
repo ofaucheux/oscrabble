@@ -2,12 +2,14 @@ package oscrabble.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.client.utils.I18N;
 import oscrabble.data.DictionaryEntry;import oscrabble.data.IDictionary;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +19,7 @@ import java.util.Set;
 public class DictionaryComponent extends JTabbedPane {
 
 	protected static final Logger LOGGER = LoggerFactory.getLogger(DictionaryComponent.class);
+
 	/**
 	 * Liste der gefundenen Definition
 	 */
@@ -33,7 +36,7 @@ public class DictionaryComponent extends JTabbedPane {
 		this.dictionary = dictionary;
 
 		// add a word
-		insertTab("+", null, null, "Search a word...", 0);
+		insertTab("+", null, null, I18N.get("search.a.word"), 0);
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
@@ -42,8 +45,8 @@ public class DictionaryComponent extends JTabbedPane {
 				if (index == 0) {
 					final String wordToSearch = JOptionPane.showInputDialog(
 							DictionaryComponent.this,
-							"Word to search",
-							"Search a word...",
+							I18N.get("word.to.search"),
+							I18N.get("search.a.word"),
 							JOptionPane.PLAIN_MESSAGE);
 					if (wordToSearch != null && !wordToSearch.trim().isEmpty()) {
 						showDescription(wordToSearch);
@@ -82,13 +85,13 @@ public class DictionaryComponent extends JTabbedPane {
 			final DictionaryEntry entry = this.dictionary.getEntry(word);
 			this.found.add(word);
 			if (entry.definitions.isEmpty()) {
-				panel.add(new JLabel(word + ": no definition found"));
+				panel.add(new JLabel(MessageFormat.format(I18N.get("0.no.definition.found"), word)));
 			} else {
 				entry.definitions.forEach(definition -> panel.add(new JLabel(String.valueOf(definition))));
 			}
 		} catch (Throwable e) {
-			LOGGER.error("Cannot load word", e);
-			panel.add(new JLabel("Error: " + e));
+			LOGGER.error("Cannot load word", e); //NON-NLS
+			panel.add(new JLabel(MessageFormat.format(I18N.get("error.0"), e)));
 		}
 
 

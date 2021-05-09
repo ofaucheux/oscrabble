@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import oscrabble.client.utils.I18N;
 import oscrabble.data.IDictionary;
 
 import javax.swing.*;
@@ -25,7 +26,7 @@ public class DisplayDefinitionAction extends AbstractAction {
 	private Component relativeComponentPosition;
 
 	public DisplayDefinitionAction(final IDictionary dictionary, final Supplier<Collection<String>> wordsSupplier) {
-		super("Show definitions");  // todo: i18n
+		super(I18N.get("show.definitions"));
 		this.dictionary = dictionary;
 		this.wordsSupplier = wordsSupplier;
 	}
@@ -56,7 +57,7 @@ public class DisplayDefinitionAction extends AbstractAction {
 	private void showDefinition(final String word) {
 		Window dictionaryFrame = SwingUtilities.getWindowAncestor(component);
 		if (dictionaryFrame == null) {
-			dictionaryFrame = new JFrame(Playground.MESSAGES.getString("description"));
+			dictionaryFrame = new JFrame(I18N.get("description"));
 			dictionaryFrame.add(component);
 			dictionaryFrame.setSize(600, 200);
 			if (this.relativeComponentPosition != null) {

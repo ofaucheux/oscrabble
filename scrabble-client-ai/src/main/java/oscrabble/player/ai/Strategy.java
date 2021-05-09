@@ -11,11 +11,6 @@ import java.util.function.Function;
  * Playing strategy for a player
  */
 public abstract class Strategy {
-	private final String label;
-
-	protected Strategy(final String label) {
-		this.label = label;
-	}
 
 	protected static TreeMap<Integer, List<String>> sortByFunction(
 			final Collection<String> notations,
@@ -37,11 +32,6 @@ public abstract class Strategy {
 		return scoreMap;
 	}
 
-	@Override
-	public String toString() {
-		return this.label;
-	}
-
 	public abstract TreeMap<Integer, List<String>> sort(final Set<String> moves);
 
 	/**
@@ -52,7 +42,6 @@ public abstract class Strategy {
 		private UUID game;
 
 		public BestScore(final ScrabbleServerInterface server, final UUID game) {
-			super("Best score"); // todo: i18n
 			this.server = server;
 			this.game = game;
 		}
@@ -89,10 +78,6 @@ public abstract class Strategy {
 	}
 
 	public static class BestSize extends Strategy {
-
-		public BestSize() {
-			super("Best size"); // todo i18n
-		}
 
 		@Override
 		public TreeMap<Integer, List<String>> sort(final Set<String> moves) {

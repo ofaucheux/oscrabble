@@ -2,6 +2,7 @@ package oscrabble.client.ui;
 
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import oscrabble.client.utils.I18N;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -85,7 +86,7 @@ public class PropertiesPanel extends JPanel {
 	}
 
 	private JLabel createLabel(final Field field) {
-		final JLabel jLabel = new JLabel(field.getName());
+		final JLabel jLabel = new JLabel(I18N.get(field.getName()));
 //		label.setToolTipText(annotation.description().isEmpty() ? labelText : i18n(annotation.description()));
 
 		return jLabel;

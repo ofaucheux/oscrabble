@@ -1,6 +1,7 @@
 package oscrabble.client.ui;
 
 import oscrabble.client.Application;
+import oscrabble.client.utils.I18N;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -12,6 +13,7 @@ import java.text.NumberFormat;
  * Panel displaying the values of a {@link oscrabble.client.Application.ConnectionParameters}
  */
 public class ConnectionParameterPanel extends JPanel {
+
 	final Application.ConnectionParameters properties;
 	private JTextField server;
 	private JTextField port;
@@ -41,10 +43,10 @@ public class ConnectionParameterPanel extends JPanel {
 
 		final Panel buttonPanel = new Panel(new FlowLayout());
 		final ButtonGroup buttonGroup = new ButtonGroup();
-		final JRadioButton rbLocal = new JRadioButton("Local");
+		final JRadioButton rbLocal = new JRadioButton(I18N.get("game.mode.local"));
 		buttonGroup.add(rbLocal);
 		buttonPanel.add(rbLocal, gbc);
-		final JRadioButton rbInternet = new JRadioButton("Internet");
+		final JRadioButton rbInternet = new JRadioButton(I18N.get("play.mode.network"));
 		buttonGroup.add(rbInternet);
 		buttonPanel.add(rbInternet, gbc);
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -55,13 +57,13 @@ public class ConnectionParameterPanel extends JPanel {
 		gbc.gridx = 0;
 		gbc.gridwidth = 1;
 
-		add(new JLabel("Server"), gbc);
+		add(new JLabel(I18N.get("server")), gbc);
 		gbc.gridx++;
 		this.server = new JTextField(properties.getServerName());
 		this.server.setColumns(20);
 		add(this.server, gbc);
 		gbc.gridx++;
-		add(new JLabel("Port"), gbc);
+		add(new JLabel(I18N.get("port")), gbc);
 		gbc.gridx++;
 		this.port = createNumberField(properties.getServerPort());
 		this.port.setColumns(6);
@@ -76,13 +78,9 @@ public class ConnectionParameterPanel extends JPanel {
 			properties.setServerPort(Integer.parseInt(portText.isEmpty() ? "-1" : portText));
 		};
 
-		rbLocal.addActionListener(a -> {
-			updateComponentStatus(true);
-		});
+		rbLocal.addActionListener(a -> updateComponentStatus(true));
 
-		rbInternet.addActionListener(a -> {
-			updateComponentStatus(false);
-		});
+		rbInternet.addActionListener(a -> updateComponentStatus(false));
 
 		this.server.addActionListener(updateProperties);
 		this.port.addActionListener(updateProperties);
@@ -94,7 +92,7 @@ public class ConnectionParameterPanel extends JPanel {
 		if (
 			serverName == null
 			|| serverName.trim().isEmpty()
-			|| serverName.equalsIgnoreCase("localhost")
+			|| serverName.equalsIgnoreCase("localhost") //NON-NLS
 		) {
 			rbLocal.setSelected(true);
 			updateComponentStatus(true);

@@ -9,6 +9,7 @@ import oscrabble.client.ui.CursorImage;
 import oscrabble.client.ui.JScoreboard;
 import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.StateUtils;
+import oscrabble.client.utils.I18N;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.GameState;
@@ -40,7 +41,6 @@ import java.util.regex.Pattern;
  * Playground for Swing: grid and other components which are the same for all players.
  */
 class Playground {
-	public static final ResourceBundle MESSAGES = Application.MESSAGES;
 
 	static final Font MONOSPACED;
 
@@ -78,8 +78,8 @@ class Playground {
 		 */
 		private String toUpperCase(String text) {
 			text = Normalizer.normalize(text, Normalizer.Form.NFD);
-			text = text.replaceAll("[^\\p{ASCII}]", "");
-			text = text.replaceAll("\\p{M}", "");
+			text = text.replaceAll("[^\\p{ASCII}]", ""); //NON-NLS
+			text = text.replaceAll("\\p{M}", ""); //NON-NLS
 			return text.toUpperCase();
 		}
 	};
@@ -124,7 +124,7 @@ class Playground {
 	private final PossibleMoveDisplayer pmd;
 
 	static {
-		try (InputStream resource = Playground.class.getResourceAsStream("nk57-monospace-cd-bk.ttf")) {
+		try (InputStream resource = Playground.class.getResourceAsStream("nk57-monospace-cd-bk.ttf")) { //NON-NLS
 			assert resource != null;
 			MONOSPACED = Font.createFont(Font.TRUETYPE_FONT, resource).deriveFont(14f);
 		} catch (final Exception exception) {
@@ -150,7 +150,7 @@ class Playground {
 		final WindowAdapter frameAdapter = new WindowAdapter() {
 			@Override
 			public void windowClosing(final WindowEvent e) {
-				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, /*MESSAGES.getString(*/"quit.the.game"/*)*/, /*MESSAGES.getString(*/"confirm.quit"/*)*/, JOptionPane.YES_NO_OPTION);
+				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, I18N.get("quit.the.game"), I18N.get("confirm.quit"), JOptionPane.YES_NO_OPTION);
 				if (confirm == JOptionPane.YES_OPTION) {
 					if (client != null) {
 						Playground.this.client.quitGame();
@@ -182,7 +182,7 @@ class Playground {
 		panel1.add(Box.createVerticalGlue());
 
 		if (client == null) {
-			panel1.add(new JTextField("Place for PossibleMoveDisplayer"));
+			panel1.add(new JTextField("Place for PossibleMoveDisplayer")); //NON-NLS
 			this.pmd = null;
 		} else {
 			this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
@@ -203,7 +203,7 @@ class Playground {
 		}
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
-		historyPanel.setBorder(new TitledBorder(MESSAGES.getString("moves")));
+		historyPanel.setBorder(new TitledBorder(I18N.get("moves")));
 		this.historyList = new JList<>();
 		this.historyList.setFont(MONOSPACED);
 		this.historyList.setFocusable(false);
@@ -212,7 +212,7 @@ class Playground {
 			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
 				final oscrabble.data.Action action = (oscrabble.data.Action) value;
 				super.getListCellRendererComponent(list, action, index, isSelected, cellHasFocus);
-				setText(String.format("%s %s pts",
+				setText(String.format("%s %s pts", //NON-NLS
 						StringUtils.rightPad(action.notation, 13),
 						StringUtils.leftPad(Integer.toString(action.getScore()), 3))
 				);
@@ -251,7 +251,7 @@ class Playground {
 
 		panel1.add(historyPanel);
 		// todo: rollback
-		final JButton rollbackButton = new JButton(new AbstractAction(MESSAGES.getString("rollback")) {
+		final JButton rollbackButton = new JButton(new AbstractAction(I18N.get("rollback")) {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 //				try
@@ -278,13 +278,13 @@ class Playground {
 //				Collections.singleton("dictionary")
 //		);
 		panel1.add(configPanel);
-		configPanel.setBorder(new TitledBorder(MESSAGES.getString("server.configuration")));
+		configPanel.setBorder(new TitledBorder(I18N.get("server.configuration")));
 		eastPanel.add(panel1, BorderLayout.CENTER);
 		final String version = Application.class.getPackage().getImplementationVersion();
 		final JLabel versionLabel = new JLabel();
 		versionLabel.setFont(versionLabel.getFont().deriveFont(9f));
 		versionLabel.setText(
-				version == null ? "-" : "v" + version
+				version == null ? "-" : "v" + version //NON-NLS
 		);
 		panel1.add(versionLabel);
 		this.gridFrame.add(eastPanel, BorderLayout.LINE_END);
@@ -342,13 +342,13 @@ class Playground {
 				&& onTurn != null
 				&& !this.client.player.equals(onTurn.id)
 		) {
-			this.cursorImage.setText(onTurn.name + " on turn");
+			this.cursorImage.setText(I18N.get("0.on.turn", onTurn.name));
 		} else {
 			this.cursorImage.setText(null);
 		}
 
 		if (state.state == GameState.State.ENDED) {
-			final JLabel gameOverLabel = new JLabel("Game over"); //todo: i18n
+			final JLabel gameOverLabel = new JLabel(I18N.get("game.over")); //todo: i18n
 			gameOverLabel.setFont(gameOverLabel.getFont().deriveFont(60f).deriveFont(Font.BOLD));
 			gameOverLabel.setForeground(Color.ORANGE);
 			gameOverLabel.setHorizontalAlignment(JTextField.CENTER);
@@ -446,7 +446,7 @@ class Playground {
 //						{
 //							if (remainingJokers < missing)
 //							{
-//								throw new JokerPlacementException(MESSAGES.getString("no.enough.jokers"), null);
+//								throw new JokerPlacementException(Locale.get("no.enough.jokers"), null);
 //							}
 //
 //							if (missing == required)
@@ -460,14 +460,14 @@ class Playground {
 //							else
 //							{
 //								throw new JokerPlacementException(
-//										MESSAGES.getString("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
+//										Locale.get("cannot.place.the.jokers.several.emplacement.possible.use.the.a.notation"),
 //										null);
 //							}
 //						}
 //					}
 //				}
 			this.action = Action.parse(getPlayer(), inputWord.toString());
-			LOGGER.debug("Word after having positioned white tiles: " + inputWord);
+			LOGGER.debug("Word after having positioned white tiles: " + inputWord); //NON-NLS
 		} else {
 			this.action = null;
 		}
@@ -524,7 +524,7 @@ class Playground {
 	 */
 	void executeCommand() {
 		if (this.client == null) {
-			JOptionPane.showMessageDialog(Playground.this.gridFrame, "This playground has no client");
+			JOptionPane.showMessageDialog(Playground.this.gridFrame, I18N.get("this.playground.has.no.client"));
 			return;
 		}
 
