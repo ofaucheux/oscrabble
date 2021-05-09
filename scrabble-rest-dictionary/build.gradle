@@ -30,7 +30,7 @@ dependencies {
 bootJar {
     enabled = true
     manifest {
-        attributes 'Implementation-Title': 'Oliviers Scrabble Dictionnary',
+        attributes 'Implementation-Title': 'Olivier\'s Scrabble Dictionnary',
                 'Implementation-Version': project.version
     }
 }
