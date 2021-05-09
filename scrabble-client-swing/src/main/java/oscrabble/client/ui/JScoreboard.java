@@ -1,5 +1,6 @@
 package oscrabble.client.ui;
 
+import oscrabble.client.utils.I18N;
 import oscrabble.data.Player;
 
 import javax.swing.*;
@@ -21,7 +22,7 @@ public class JScoreboard extends JPanel {
 	public JScoreboard() {
 		setPreferredSize(new Dimension(200, 0));
 		setLayout(new GridBagLayout());
-		setBorder(new TitledBorder("Score"));
+		setBorder(new TitledBorder(I18N.get("border.title.score")));
 	}
 
 	public void updateDisplay(final List<Player> players, final UUID playerOnTurn) {

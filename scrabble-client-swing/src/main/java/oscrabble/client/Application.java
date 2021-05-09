@@ -28,11 +28,6 @@ import java.util.List;
 public class Application {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Thread.class);
 
-	/**
-	 * Resource Bundle
-	 */
-	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
-
 	private final IDictionary dictionary;
 	private final ScrabbleServerInterface server;
 	private final Properties properties;
@@ -43,9 +38,21 @@ public class Application {
 		this.properties = properties;
 	}
 
+	@SuppressWarnings("HardCodedStringLiteral")
+	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp",
+			"Emil",
+			"Thomas",
+			"Romain",
+			"Alix",
+			"Paul",
+			"Batiste",
+			"Noemie",
+			"Laurent"
+	);
+
 	public static void main(String[] unused) throws InterruptedException, IOException, ScrabbleException {
 
-		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error("Uncaught exception", e));
+		Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOGGER.error("uncaught.exception", e));
 
 		initializeLogging();
 
@@ -94,23 +101,12 @@ public class Application {
 			// Call context.reset() to clear any previous configuration, e.g. default
 			// configuration. For multi-step configuration, omit calling context.reset().
 			context.reset();
-			configurator.doConfigure(Application.class.getResourceAsStream("/logback.xml"));
+			configurator.doConfigure(Application.class.getResourceAsStream("/logback.xml")); //NON-NLS
 		} catch (JoranException je) {
 			// StatusPrinter will handle this
 		}
 		StatusPrinter.printInCaseOfErrorsOrWarnings(context);
 	}
-
-	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp",
-			"Emil",
-			"Thomas",
-			"Romain",
-			"Alix",
-			"Paul",
-			"Batiste",
-			"Noemie",
-			"Laurent"
-	);
 
 	/**
 	 * Prepare the server and the client, start the game and play it till it ends.
@@ -132,7 +128,7 @@ public class Application {
 			aiPlayers.add(ai);
 		}
 
-		final Client client = new Client(this.server, dictionary, game, edgar);
+		final Client client = new Client(this.server, this.dictionary, game, edgar);
 		client.setAIPlayers(aiPlayers);
 		client.displayAll();
 		this.server.startGame(game);

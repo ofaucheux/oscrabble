@@ -1,9 +1,8 @@
 package oscrabble.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import oscrabble.ScrabbleException;
+import oscrabble.client.utils.I18N;
 import oscrabble.controller.Action;
 import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.GameState;
@@ -25,9 +24,7 @@ import java.util.function.Consumer;
  */
 public class PossibleMoveDisplayer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(PossibleMoveDisplayer.class);
-
-	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy("Hide") {
+	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy(I18N.get("hide")) {
 		@Override
 		public TreeMap<Integer, List<String>> sort(final Set<String> moves) {
 			throw new AssertionError("Should not be called");
@@ -57,7 +54,7 @@ public class PossibleMoveDisplayer {
 		final Strategy.BestScore bestScore = new Strategy.BestScore(null, null);
 		this.attributeChangeListeners.add((fieldName, newValue) -> {
 			switch (fieldName) {
-				case "game":
+				case "game": //NON-NLS
 					bestScore.setGame((UUID) newValue);
 					break;
 				case "server":
@@ -73,7 +70,7 @@ public class PossibleMoveDisplayer {
 		);
 
 		this.mainPanel = new JPanel();
-		this.mainPanel.setBorder(new TitledBorder(Application.MESSAGES.getString("possible.moves")));
+		this.mainPanel.setBorder(new TitledBorder(I18N.get("possible.moves")));
 		this.mainPanel.setSize(new Dimension(200, 500));
 		this.mainPanel.setLayout(new BorderLayout());
 
@@ -89,7 +86,7 @@ public class PossibleMoveDisplayer {
 				final Component label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (value instanceof Score) {
 					final Score sc = (Score) value;
-					this.setText(sc.getNotation() + "  " + sc.getScore() + " pts");
+					this.setText(sc.getNotation() + "  " + sc.getScore() + I18N.get("pts"));
 				}
 				return label;
 			}
@@ -143,7 +140,7 @@ public class PossibleMoveDisplayer {
 	 */
 	public void setGame(final UUID game) {
 		this.game = game;
-		invokeListeners("game", game);
+		invokeListeners("game", game); //NON-NLS
 	}
 
 	public synchronized void setData(final GameState state, final List<Character> rack) {
