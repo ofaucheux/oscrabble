@@ -30,12 +30,16 @@ dependencies {
 
 jar {
     enabled = true
+    manifest {
+        attributes 'Implementation-Title': 'Olivier\'s Scrabble Swing Client',
+                'Implementation-Version': project.version
+    }
 }
 
 bootJar {
     enabled = true
     manifest {
-        attributes 'Implementation-Title': 'Oliviers Scrabble Swing Client',
+        attributes 'Implementation-Title': 'Olivier\'s Scrabble Swing Client',
                 'Implementation-Version': project.version
     }
 }
