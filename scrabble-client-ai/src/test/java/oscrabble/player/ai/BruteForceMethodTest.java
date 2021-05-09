@@ -26,10 +26,11 @@ public class BruteForceMethodTest {
 
 	private final static IDictionary DICTIONARY = new FrenchDictionaryForTest();
 
+	@SuppressWarnings("unused")
 	private static List<TestData> findMoveParameterProvider() {
-		return List.of(
-				new TestData("grid_1.grid", "EDPWMES", Set.of("15J"), Set.of("15H MES")),
-				new TestData("grid_2.grid", "EDPWMES", Set.of("14J"), Set.of("14H MES"))
+		return Arrays.asList(
+				new TestData("grid_1.grid", "EDPWMES", new HashSet<>(Collections.singleton("15J")), new HashSet<>(Collections.singleton(("15H MES")))),
+				new TestData("grid_2.grid", "EDPWMES", new HashSet<>(Collections.singleton("14J")), new HashSet<>(Collections.singleton(("14H MES"))))
 		);
 	}
 
