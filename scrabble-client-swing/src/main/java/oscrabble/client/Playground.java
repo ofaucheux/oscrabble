@@ -150,7 +150,7 @@ class Playground {
 		final WindowAdapter frameAdapter = new WindowAdapter() {
 			@Override
 			public void windowClosing(final WindowEvent e) {
-				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, /*Locale.get(*/"quit.the.game"/*)*/, /*Locale.get(*/"confirm.quit"/*)*/, JOptionPane.YES_NO_OPTION);
+				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, I18N.get("quit.the.game"), I18N.get("confirm.quit"), JOptionPane.YES_NO_OPTION);
 				if (confirm == JOptionPane.YES_OPTION) {
 					if (client != null) {
 						Playground.this.client.quitGame();
