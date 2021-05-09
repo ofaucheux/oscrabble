@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  */
 public class PossibleMoveDisplayer {
 
-	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy(I18N.get("hide")) {
+	private static final Strategy DO_NOT_DISPLAY_STRATEGIE = new Strategy() {
 		@Override
 		public TreeMap<Integer, List<String>> sort(final Set<String> moves) {
 			throw new AssertionError("Should not be called");
@@ -63,11 +63,10 @@ public class PossibleMoveDisplayer {
 			}
 		});
 
-		final List<Strategy> orderStrategies = Arrays.asList(
-				DO_NOT_DISPLAY_STRATEGIE,
-				bestScore,
-				new Strategy.BestSize()
-		);
+		final LinkedHashMap<Strategy, String> orderStrategies = new LinkedHashMap<>();
+		orderStrategies.put(DO_NOT_DISPLAY_STRATEGIE, I18N.get("nothing"));
+		orderStrategies.put(bestScore, I18N.get("best.scores"));
+		orderStrategies.put(new Strategy.BestSize(), I18N.get("best.sizes"));
 
 		this.mainPanel = new JPanel();
 		this.mainPanel.setBorder(new TitledBorder(I18N.get("possible.moves")));
@@ -75,7 +74,15 @@ public class PossibleMoveDisplayer {
 		this.mainPanel.setLayout(new BorderLayout());
 
 		this.strategiesCb = new JComboBox<>();
-		orderStrategies.forEach(os -> this.strategiesCb.addItem(os));
+		this.strategiesCb.setRenderer(new DefaultListCellRenderer() {
+			@SuppressWarnings("SuspiciousMethodCalls")
+			@Override
+			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
+				assert orderStrategies.containsKey(value);
+				return new JLabel(orderStrategies.get(value));
+			}
+		});
+		orderStrategies.keySet().forEach(os -> this.strategiesCb.addItem(os));
 		this.strategiesCb.addActionListener(a -> refresh());
 		this.mainPanel.add(this.strategiesCb, BorderLayout.NORTH);
 
