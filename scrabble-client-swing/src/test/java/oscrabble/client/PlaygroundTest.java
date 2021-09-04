@@ -1,6 +1,7 @@
 package oscrabble.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import oscrabble.data.GameState;
 
@@ -10,6 +11,7 @@ import java.util.Collections;
 
 public class PlaygroundTest {
 	@Test
+	@Disabled("because with GUI interaction")
 	void displayGrid() throws IOException, InterruptedException {
 		this.displayGrid(false);
 		this.displayGrid(true);

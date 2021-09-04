@@ -1,6 +1,7 @@
 package oscrabble.client;
 
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.GameState;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 class PossibleMoveDisplayerTest {
 	@SneakyThrows
 	@Test
+	@Disabled("because with GUI interaction")
 	public void test() {
 		final ScrabbleServerInterface scrabbleServer = new Server();
 		final GameState game = Game.loadFixtures().iterator().next();
