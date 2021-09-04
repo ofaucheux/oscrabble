@@ -20,6 +20,7 @@ import oscrabble.server.Server;
 
 import javax.swing.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.List;
 @SuppressWarnings("BusyWait")
 public class Application {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Thread.class);
+	private static final Random RANDOM = new Random();
 
 	private final IDictionary dictionary;
 	private final ScrabbleServerInterface server;
@@ -99,7 +101,10 @@ public class Application {
 	@SneakyThrows
 	static ArrayList<String> getFrenchFirstNames() {
 		final ArrayList<String> names = new ArrayList<>();
-		final BufferedReader is = new BufferedReader(new InputStreamReader(Application.class.getResourceAsStream("frenchFirstNames.txt")));
+		final BufferedReader is = new BufferedReader(new InputStreamReader(
+				Application.class.getResourceAsStream("frenchFirstNames.txt"),
+				StandardCharsets.UTF_8
+		));
 		String line;
 		while ((line = is.readLine()) != null) {
 			names.add(line);
@@ -112,14 +117,16 @@ public class Application {
 	 * @throws InterruptedException
 	 */
 	private void playGame() throws InterruptedException, ScrabbleException {
-		final List<String> names = getFrenchFirstNames();
-		final Random random = new Random();
 
 		final UUID game = this.server.newGame();
-		final UUID humanPlayer = this.server.addPlayer(game, null);
+		final String humanName = System.getProperty("user.name");
+		final UUID humanPlayer = this.server.addPlayer(game, humanName);
+
+		final List<String> names = getFrenchFirstNames();
+		names.remove(humanName);
 		final HashSet<AIPlayer> aiPlayers = new HashSet<>();
 		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {
-			final String aiPlayerName = names.get(random.nextInt(names.size()));
+			final String aiPlayerName = names.get(RANDOM.nextInt(names.size()));
 			names.remove(aiPlayerName);
 			final UUID aiPlayerId = this.server.addPlayer(game, aiPlayerName);
 			// TODO: tell the server it is an AI Player
