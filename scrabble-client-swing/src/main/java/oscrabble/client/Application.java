@@ -5,6 +5,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Data;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -18,8 +19,8 @@ import oscrabble.player.ai.BruteForceMethod;
 import oscrabble.server.Server;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.List;
 @SuppressWarnings("BusyWait")
 public class Application {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Thread.class);
+	private static final Random RANDOM = new Random();
 
 	private final IDictionary dictionary;
 	private final ScrabbleServerInterface server;
@@ -37,18 +39,6 @@ public class Application {
 		this.server = server;
 		this.properties = properties;
 	}
-
-	@SuppressWarnings("HardCodedStringLiteral")
-	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp",
-			"Emil",
-			"Thomas",
-			"Romain",
-			"Alix",
-			"Paul",
-			"Batiste",
-			"Noemie",
-			"Laurent"
-	);
 
 	public static void main(String[] unused) throws InterruptedException, IOException, ScrabbleException {
 
@@ -108,27 +98,45 @@ public class Application {
 		StatusPrinter.printInCaseOfErrorsOrWarnings(context);
 	}
 
+	@SneakyThrows
+	static ArrayList<String> getFrenchFirstNames() {
+		final ArrayList<String> names = new ArrayList<>();
+		final BufferedReader is = new BufferedReader(new InputStreamReader(
+				Application.class.getResourceAsStream("frenchFirstNames.txt"),
+				StandardCharsets.UTF_8
+		));
+		String line;
+		while ((line = is.readLine()) != null) {
+			names.add(line);
+		}
+		return names;
+	}
+
 	/**
 	 * Prepare the server and the client, start the game and play it till it ends.
 	 * @throws InterruptedException
 	 */
 	private void playGame() throws InterruptedException, ScrabbleException {
-		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
-		Collections.shuffle(names);
 
 		final UUID game = this.server.newGame();
-		final UUID edgar = this.server.addPlayer(game, names.get(0));
+		final String humanName = System.getProperty("user.name");
+		final UUID humanPlayer = this.server.addPlayer(game, humanName);
+
+		final List<String> names = getFrenchFirstNames();
+		names.remove(humanName);
 		final HashSet<AIPlayer> aiPlayers = new HashSet<>();
 		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {
-			final UUID anton = this.server.addPlayer(game, names.get(i + 1));
+			final String aiPlayerName = names.get(RANDOM.nextInt(names.size()));
+			names.remove(aiPlayerName);
+			final UUID aiPlayerId = this.server.addPlayer(game, aiPlayerName);
 			// TODO: tell the server it is an AI Player
-			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
+			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, aiPlayerId, this.server);
 			ai.setThrottle(Duration.ofSeconds(1));
 			ai.startDaemonThread();
 			aiPlayers.add(ai);
 		}
 
-		final Client client = new Client(this.server, this.dictionary, game, edgar);
+		final Client client = new Client(this.server, this.dictionary, game, humanPlayer);
 		client.setAIPlayers(aiPlayers);
 		client.displayAll();
 		this.server.startGame(game);
@@ -136,7 +144,7 @@ public class Application {
 		do {
 			Thread.sleep(500);
 		} while (client.isVisible());
-		this.server.attach(game, edgar, true);
+		this.server.attach(game, humanPlayer, true);
 	}
 
 	@Data
