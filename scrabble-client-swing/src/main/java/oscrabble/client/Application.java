@@ -5,6 +5,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Data;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -18,8 +19,7 @@ import oscrabble.player.ai.BruteForceMethod;
 import oscrabble.server.Server;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.List;
@@ -37,18 +37,6 @@ public class Application {
 		this.server = server;
 		this.properties = properties;
 	}
-
-	@SuppressWarnings("HardCodedStringLiteral")
-	final private static List<String> POSSIBLE_PLAYER_NAMES = Arrays.asList("Philipp",
-			"Emil",
-			"Thomas",
-			"Romain",
-			"Alix",
-			"Paul",
-			"Batiste",
-			"Noemie",
-			"Laurent"
-	);
 
 	public static void main(String[] unused) throws InterruptedException, IOException, ScrabbleException {
 
@@ -108,27 +96,40 @@ public class Application {
 		StatusPrinter.printInCaseOfErrorsOrWarnings(context);
 	}
 
+	@SneakyThrows
+	static ArrayList<String> getFrenchFirstNames() {
+		final ArrayList<String> names = new ArrayList<>();
+		final BufferedReader is = new BufferedReader(new InputStreamReader(Application.class.getResourceAsStream("frenchFirstNames.txt")));
+		String line;
+		while ((line = is.readLine()) != null) {
+			names.add(line);
+		}
+		return names;
+	}
+
 	/**
 	 * Prepare the server and the client, start the game and play it till it ends.
 	 * @throws InterruptedException
 	 */
 	private void playGame() throws InterruptedException, ScrabbleException {
-		final List<String> names = new ArrayList<>(POSSIBLE_PLAYER_NAMES);
-		Collections.shuffle(names);
+		final List<String> names = getFrenchFirstNames();
+		final Random random = new Random();
 
 		final UUID game = this.server.newGame();
-		final UUID edgar = this.server.addPlayer(game, names.get(0));
+		final UUID humanPlayer = this.server.addPlayer(game, null);
 		final HashSet<AIPlayer> aiPlayers = new HashSet<>();
 		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {
-			final UUID anton = this.server.addPlayer(game, names.get(i + 1));
+			final String aiPlayerName = names.get(random.nextInt(names.size()));
+			names.remove(aiPlayerName);
+			final UUID aiPlayerId = this.server.addPlayer(game, aiPlayerName);
 			// TODO: tell the server it is an AI Player
-			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, anton, this.server);
+			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, aiPlayerId, this.server);
 			ai.setThrottle(Duration.ofSeconds(1));
 			ai.startDaemonThread();
 			aiPlayers.add(ai);
 		}
 
-		final Client client = new Client(this.server, this.dictionary, game, edgar);
+		final Client client = new Client(this.server, this.dictionary, game, humanPlayer);
 		client.setAIPlayers(aiPlayers);
 		client.displayAll();
 		this.server.startGame(game);
@@ -136,7 +137,7 @@ public class Application {
 		do {
 			Thread.sleep(500);
 		} while (client.isVisible());
-		this.server.attach(game, edgar, true);
+		this.server.attach(game, humanPlayer, true);
 	}
 
 	@Data
