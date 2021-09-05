@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.CursorImage;
 import oscrabble.client.ui.JScoreboard;
+import oscrabble.client.ui.ServerConfigPanel;
 import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.StateUtils;
 import oscrabble.client.utils.I18N;
@@ -32,8 +33,10 @@ import java.awt.event.*;
 import java.io.IOError;
 import java.io.InputStream;
 import java.text.Normalizer;
-import java.util.*;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -271,14 +274,13 @@ class Playground {
 		panel1.add(rollbackButton);
 
 		// todo: config panel
-		final JPanel configPanel = new JPanel();
-//		final ConfigurationPanel configPanel = new ConfigurationPanel(
-//				this.game.getConfiguration(),
-//				null,
-//				Collections.singleton("dictionary")
-//		);
-		panel1.add(configPanel);
-		configPanel.setBorder(new TitledBorder(I18N.get("server.configuration")));
+		final JButton serverConfigButton = new JButton(new AbstractAction(I18N.get("server.configuration")) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				new ServerConfigPanel(client.server);
+			}
+		});
+		panel1.add(serverConfigButton);
 		eastPanel.add(panel1, BorderLayout.CENTER);
 		final String version = Application.class.getPackage().getImplementationVersion();
 		final JLabel versionLabel = new JLabel();
@@ -595,8 +597,7 @@ class Playground {
 
 			try {
 				displayPreparedMove();
-			} catch (final ScrabbleException e1) {
-				LOGGER.debug(e1.getMessage());
+			} catch (final ScrabbleException ignored) {
 			}
 
 			Playground.this.jGrid.repaint();

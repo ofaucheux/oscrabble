@@ -9,29 +9,29 @@ import org.springframework.web.bind.annotation.*;
 import oscrabble.ScrabbleException;
 import oscrabble.data.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
+@SuppressWarnings("HardCodedStringLiteral")
 @RestController
 public class Controller {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 	private final Server server;
 
 	public Controller() {
-		server = new Server();
+		this.server = new Server();
 	}
 
 	@PostMapping(value = "/{game}/getState", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<GameState> getState(final @PathVariable UUID game) throws ScrabbleException {
 		LOGGER.trace("Called: getState()");
-		return ResponseEntity.ok(server.getState(game));
+		return ResponseEntity.ok(this.server.getState(game));
 	}
 
 	@PostMapping(value = "/{game}/getScores", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Score>> getScores(final @PathVariable UUID game, @RequestBody List<String> notations) {
 		LOGGER.trace("Called: getScores() with " + notations.size() + " actions");
 		try {
-			return ResponseEntity.ok(server.getScores(game, notations));
+			return ResponseEntity.ok(this.server.getScores(game, notations));
 		} catch (ScrabbleException e) {
 			LOGGER.error("Error by call of getScores() with actions: " + notations, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -43,7 +43,7 @@ public class Controller {
 	 */
 	@PostMapping(value = "/{game}/getRack", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Bag> getRack(final @PathVariable UUID game, final @RequestBody PlayerSignature signature) throws ScrabbleException {
-		return ResponseEntity.ok(server.getRack(game, signature.player));
+		return ResponseEntity.ok(this.server.getRack(game, signature.player));
 	}
 
 
@@ -52,19 +52,24 @@ public class Controller {
 	 */
 	@PostMapping(value = "/{game}/getRules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ScrabbleRules> getRules(final @PathVariable UUID game) throws ScrabbleException {
-		return ResponseEntity.ok(server.getRules(game));
+		return ResponseEntity.ok(this.server.getRules(game));
 	}
-
 
 	@PostMapping(value = "/{game}/addPlayer", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Player> addPlayer(final @PathVariable UUID game, @RequestBody String playerName) {
 		try {
 			final Player p = Player.builder().id(UUID.randomUUID()).name(playerName).build();
-			p.id = server.addPlayer(game, playerName);
+			p.id = this.server.addPlayer(game, playerName);
 			return new ResponseEntity<>(p, HttpStatus.OK);
 		} catch (ScrabbleException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
+	}
+
+	@PostMapping(value = "/{game}/setRefusedWords", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Set<String>> addRefusedWord(final @PathVariable UUID game, @RequestBody List<String> refusedWord) throws ScrabbleException {
+		this.server.setAdditionalRefusedWords(game, new HashSet<>(refusedWord));
+		return ResponseEntity.ok(this.server.getAdditionalRefusedWords(game));
 	}
 
 	/**
@@ -76,7 +81,7 @@ public class Controller {
 	@PostMapping(value = "/{game}/playAction", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PlayActionResponse> play(@PathVariable UUID game, @RequestBody Action action) {
 		try {
-			final PlayActionResponse actionResponse = server.play(game, action);
+			final PlayActionResponse actionResponse = this.server.play(game, action);
 			return new ResponseEntity<>(actionResponse, HttpStatus.OK);
 		} catch (ScrabbleException | InterruptedException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -85,13 +90,13 @@ public class Controller {
 
 	@RequestMapping(value = "/{game}/acknowledgeState", method = {RequestMethod.POST})
 	public void acknowledge(@PathVariable UUID game, @RequestBody final PlayerSignature signature) throws ScrabbleException {
-		server.acknowledgeState(game, signature.player, null);
+		this.server.acknowledgeState(game, signature.player, null);
 	}
 
 	@RequestMapping(value = "/newGame", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
 	public GameState newGame() throws ScrabbleException {
-		final UUID uuid = server.newGame();
-		return server.getState(uuid);
+		final UUID uuid = this.server.newGame();
+		return this.server.getState(uuid);
 	}
 
 	@RequestMapping(value = "/loadFixtures", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -101,13 +106,11 @@ public class Controller {
 
 	@RequestMapping(value = "/{game}/start", method = {RequestMethod.GET, RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
 	public void startGame(@PathVariable UUID game) throws ScrabbleException {
-		server.startGame(game);
+		this.server.startGame(game);
 	}
-
 
 	@RequestMapping(value = "/{game}/updatePlayer", method = {RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
 	public void updatePlayer(@PathVariable UUID game, @RequestBody PlayerUpdateRequest request) throws ScrabbleException {
-		final Game g = server.getGame(game);
-		g.updatePlayer(request);
+		Server.getGame(game).updatePlayer(request);
 	}
 }

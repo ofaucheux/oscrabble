@@ -1,6 +1,7 @@
 package oscrabble.client;
 
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import oscrabble.client.ui.JScoreboard;
 import oscrabble.data.Player;
@@ -11,13 +12,14 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.UUID;
 
+@SuppressWarnings("HardCodedStringLiteral")
 class JScoreboardTest {
 
 	public static final Random RANDOM = new Random();
 
 	@SneakyThrows
 	@Test
-//	@Disabled
+	@Disabled// disable swing tests
 	void testUpdate() {
 		final LinkedList<Player> players = new LinkedList<>();
 		final Player.PlayerBuilder builder = Player.builder();
