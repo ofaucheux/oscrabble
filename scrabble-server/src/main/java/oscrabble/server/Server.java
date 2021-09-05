@@ -8,6 +8,8 @@ import java.util.*;
 
 public class Server implements ScrabbleServerInterface {
 
+	private final HashSet<String> refusedWords = new HashSet<>();
+
 	/**
 	 * Get an already known game.
 	 *
@@ -85,7 +87,16 @@ public class Server implements ScrabbleServerInterface {
 		getGame(game).updatePlayer(PlayerUpdateRequest.createAttachRequest(player, attach));
 	}
 
+	@Override
+	public void addRefusedWord(final UUID game, final String refusedWord) {
+		// remarks: we could check the game, but don't for the time
+		this.refusedWords.add(refusedWord);
+	}
 
+	@Override
+	public Set<String> getRefusedWords(final UUID game) {
+		return Collections.unmodifiableSet(this.refusedWords);
+	}
 
 //	/**
 //	 * Let the server loads the fixture games and return them.

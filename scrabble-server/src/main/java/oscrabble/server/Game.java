@@ -1,6 +1,5 @@
 package oscrabble.server;
 
-import lombok.Getter;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.BooleanUtils;
@@ -770,7 +769,7 @@ public class Game {
 				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player == null ? null : player.uuid, playTiles.notation, action.score));
 			} else if (action instanceof Action.Exchange) {
 				if (player == null) {
-					throw new IllegalStateException("Player requiered");
+					throw new IllegalStateException("Player required");
 				}
 
 				if (this.bag.size() < this.dictionary.getScrabbleRules().requiredTilesInBagForExchange) {
@@ -869,6 +868,8 @@ public class Game {
 				final String details = MessageFormat.format(MESSAGES.getString("word.0.is.not.allowed"), crossword);
 				throw new ScrabbleException.ForbiddenPlayException(details);
 			}
+
+			// todo: check not refused
 		}
 
 		this.grid.play(this.scrabbleRules, moveMI.action);
