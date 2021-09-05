@@ -1,6 +1,6 @@
 package oscrabble.configuration;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -67,9 +67,10 @@ class ConfigurationTest {
 		final Config config2 = new Config();
 		properties.load(new StringReader(sw.toString()));
 		config2.loadProperties(properties);
-		Assert.assertEquals(config1.happiness, config2.happiness);
+		Assertions.assertEquals(config1.happiness, config2.happiness);
 	}
 
+	@SuppressWarnings("HardCodedStringLiteral")
 	private static class Config extends Configuration {
 		@Parameter(label = "Allow error")
 		boolean allowError;

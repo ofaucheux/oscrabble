@@ -20,6 +20,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("HardCodedStringLiteral")
 public class BruteForceMethodTest {
 
 	private BruteForceMethod instance;
