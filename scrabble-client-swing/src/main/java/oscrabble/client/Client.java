@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.client.utils.CaseUtils;
 import oscrabble.client.utils.I18N;
 import oscrabble.client.ui.AIPlayerConfigPanel;
 import oscrabble.controller.ScrabbleServerInterface;
@@ -201,37 +202,54 @@ public class Client {
 //		}
 
 		try {
-//				final SwingPlayer swingPlayer = getCurrentSwingPlayer();
-//				if (swingPlayer != null && swingPlayer == Playground.this.currentPlay.player)
-//				{
-//			final Matcher m;
-			// Todo
-//					if ((m = PATTERN_EXCHANGE_COMMAND.matcher(command)).matches())
-//					{
-//						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, new Exchange(m.group(1)));
-//					}
-//					else if (PATTERN_PASS_COMMAND.matcher(command).matches())
-//					{
-//						Playground.this.game.play(swingPlayer.getPlayerKey(), Playground.this.currentPlay, SkipTurn.SINGLETON);
-//					}
-//					else
-			final oscrabble.data.Action action = oscrabble.data.Action.builder()
-					.player(this.player)
-					.turnId(UUID.randomUUID()) //TODO: the game should give the id
-					.notation(command)
-					.build();
-			final PlayActionResponse response = this.server.play(this.game, action);
-			treatNewState(response.gameState);
-			if (!response.success) {
-				// todo: i18n
-				final StringBuilder sb = new StringBuilder("<html>").append(I18N.get("play.refused")).append(response.message);
-				if (response.retryAccepted) {
-					sb.append("<br>").append(I18N.get("retry.accepted"));
-				}
-				throw new ScrabbleException(sb.toString());
+			if (command.startsWith("/")) {
+				executeSpecialCommand(command);
+			} else {
+				executePlayCommand(command);
 			}
 		} catch (ScrabbleException | InterruptedException ex) {
 			JOptionPane.showMessageDialog(this.playground.gridFrame, ex.getMessage());
+		}
+	}
+
+	private void executeSpecialCommand(String commandString) {
+		assert commandString.startsWith("/");
+		final String[] splits = commandString.split("\\s+"); //NON-NLS
+		SPECIAL_COMMAND command;
+		try {
+			if (splits.length == 0) {
+				command = SPECIAL_COMMAND.HELP;
+			} else {
+				command = SPECIAL_COMMAND.valueOf(CaseUtils.toSnakeCase(splits[0].substring(1)));
+			}
+		} catch (IllegalArgumentException e) {
+			command = SPECIAL_COMMAND.HELP;
+		}
+		switch (command) {
+			case ADD_REFUSED_WORD:
+				this.server.addRefusedWord(this.game, splits[1]);
+				break;
+			case HELP:
+				// todo: SCR-23
+				break;
+		}
+	}
+
+	private void executePlayCommand(final String command) throws ScrabbleException, InterruptedException {
+		final oscrabble.data.Action action = oscrabble.data.Action.builder()
+				.player(this.player)
+				.turnId(UUID.randomUUID()) //TODO: the game should give the id
+				.notation(command)
+				.build();
+		final PlayActionResponse response = this.server.play(this.game, action);
+		treatNewState(response.gameState);
+		if (!response.success) {
+			// todo: i18n
+			final StringBuilder sb = new StringBuilder("<html>").append(I18N.get("play.refused")).append(response.message);
+			if (response.retryAccepted) {
+				sb.append("<br>").append(I18N.get("retry.accepted"));
+			}
+			throw new ScrabbleException(sb.toString());
 		}
 	}
 
@@ -364,6 +382,20 @@ public class Client {
 			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, sb.toString());
 
 			LOGGER.debug("Thread ends"); //NON-NLS
+		}
+	}
+
+	/** special commands */
+	@SuppressWarnings("HardCodedStringLiteral")
+	enum SPECIAL_COMMAND {
+		ADD_REFUSED_WORD("addRefusedWord <word>"),
+		HELP("help")
+		;
+
+		private final String description;
+
+		SPECIAL_COMMAND(final String description) {
+			this.description = description;
 		}
 	}
 }
