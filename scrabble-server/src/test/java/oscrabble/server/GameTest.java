@@ -48,7 +48,7 @@ public class GameTest {
 
 	@BeforeEach
 	public void initialize() throws ScrabbleException {
-		this.game = new Game(FRENCH, -3300078916872261882L);
+		this.game = new Game(new Server(), FRENCH, -3300078916872261882L);
 		this.game.randomPlayerOrder = false;
 
 		final int gameNr = RANDOM.nextInt(100);
@@ -210,7 +210,7 @@ public class GameTest {
 
 	@Test
 	public void testScore() throws ScrabbleException, InterruptedException, TimeoutException {
-		this.game = new Game(FRENCH, 2346975568742590367L);
+		this.game = new Game(new Server(), FRENCH, 2346975568742590367L);
 		this.game.waitAcknowledges = false;
 		this.game.assertFirstLetters("FTINOA ");
 
@@ -244,7 +244,7 @@ public class GameTest {
 
 		{
 			// Joker on blue case
-			this.game = new Game(FRENCH, -6804219371477742897L);
+			this.game = new Game(new Server(), FRENCH, -6804219371477742897L);
 			final UUID anton = addPlayer("Anton");
 			this.game.assertFirstLetters(" CELMNPAISSE");
 			startGame(true);

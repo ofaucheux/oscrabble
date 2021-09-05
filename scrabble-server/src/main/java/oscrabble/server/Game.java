@@ -91,6 +91,8 @@ public class Game {
 	 */
 	private final File propertyFile;
 
+	private final Server server;
+
 	/**
 	 * State of the game
 	 */
@@ -118,12 +120,12 @@ public class Game {
 	protected boolean waitAcknowledges = true;
 
 	/**
-	 * Constructor for test purposes a game without player.
+	 * Constructor
 	 *
 	 * @param dictionary dictionary
 	 * @param randomSeed seed to initialize the random generator
 	 */
-	public Game(final IDictionary dictionary, final long randomSeed) {
+	public Game(final Server server, final IDictionary dictionary, final long randomSeed) {
 		this.id = UUID.randomUUID();
 
 		// TODO: random weg, prüfen ob der Constructor sinnvoll ist - ist für Tests
@@ -137,6 +139,7 @@ public class Game {
 
 		this.configuration.retryAccepted = true;
 		register(this);
+		this.server = server;
 	}
 
 	/**
@@ -181,6 +184,7 @@ public class Game {
 		// TODO: should be set otherwise
 		this.random = new Random();
 		this.dictionary = DICTIONARY;
+		this.server = new Server();
 		this.configuration = new Configuration();
 		this.propertyFile = null;
 		this.scrabbleRules = this.dictionary.getScrabbleRules();
@@ -192,10 +196,10 @@ public class Game {
 	 * Constructor for test purposes.
 	 *
 	 * @param dictionary dictionary
-	 * @see #Game(IDictionary, long)
+	 * @see #Game(Server, IDictionary, long)
 	 */
 	public Game(final IDictionary dictionary) {
-		this(dictionary, new Random().nextLong());
+		this(new Server(), dictionary, new Random().nextLong());
 	}
 
 	/**
@@ -204,11 +208,10 @@ public class Game {
 	 * @return the games
 	 */
 	public static List<GameState> loadFixtures() {
-		final ArrayList<GameState> games = new ArrayList<>();
 //		todo: implements PrecompiledGameStates so it doesn't need jackson and therefore
 //		can be used hier.
 //		games.add(new Game(PrecompiledGameStates.game1()).getGameState());
-		return games;
+		return new ArrayList<>();
 	}
 
 	/**
@@ -864,12 +867,14 @@ public class Game {
 		toTest.add(moveMI.action.word);
 		toTest.addAll(moveMI.crosswords);
 		for (final String crossword : toTest) {
-			if (!this.dictionary.isAdmissible(crossword.toUpperCase())) {
+			final String upperCase = crossword.toUpperCase();
+			if (
+				this.server.getRefusedWords(this.id).contains(upperCase)
+				|| !this.dictionary.isAdmissible(upperCase)
+			) {
 				final String details = MessageFormat.format(MESSAGES.getString("word.0.is.not.allowed"), crossword);
 				throw new ScrabbleException.ForbiddenPlayException(details);
 			}
-
-			// todo: check not refused
 		}
 
 		this.grid.play(this.scrabbleRules, moveMI.action);
@@ -940,12 +945,14 @@ public class Game {
 	 * Configuration parameters of a game. The list of players is not part of the configuration.
 	 */
 	static class Configuration extends oscrabble.configuration.Configuration {
+		@SuppressWarnings("HardCodedStringLiteral")
 		@Parameter(label = "Dictionary", description = "#dictionary.of.the.game")
 		String language = "FRENCH";
 
 		/**
 		 * Accept a new attempt after a player has tried a forbidden move
 		 */
+		@SuppressWarnings("HardCodedStringLiteral")
 		@Parameter(label = "Retry allowed", description = "#allow.retry.on.error")
 		private boolean retryAccepted;
 	}

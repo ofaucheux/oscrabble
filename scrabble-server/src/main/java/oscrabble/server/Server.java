@@ -61,7 +61,7 @@ public class Server implements ScrabbleServerInterface {
 
 	@Override
 	public UUID newGame() {
-		final Game game = new Game(Game.DICTIONARY);
+		final Game game = new Game(this, Game.DICTIONARY, new Random().nextLong());
 		return game.id;
 	}
 
