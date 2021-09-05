@@ -32,8 +32,10 @@ import java.awt.event.*;
 import java.io.IOError;
 import java.io.InputStream;
 import java.text.Normalizer;
-import java.util.*;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -595,8 +597,7 @@ class Playground {
 
 			try {
 				displayPreparedMove();
-			} catch (final ScrabbleException e1) {
-				LOGGER.debug(e1.getMessage());
+			} catch (final ScrabbleException ignored) {
 			}
 
 			Playground.this.jGrid.repaint();

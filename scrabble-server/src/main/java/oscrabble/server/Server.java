@@ -89,7 +89,7 @@ public class Server implements ScrabbleServerInterface {
 
 	@Override
 	public void addRefusedWord(final UUID game, final String refusedWord) {
-		// remarks: we could check the game, but don't for the time
+		// remarks: we could check the game, but don't for the moment
 		this.refusedWords.add(refusedWord.toUpperCase());
 	}
 
