@@ -867,10 +867,9 @@ public class Game {
 		toTest.add(moveMI.action.word);
 		toTest.addAll(moveMI.crosswords);
 		for (final String crossword : toTest) {
-			final String upperCase = crossword.toUpperCase();
 			if (
-				this.server.getRefusedWords(this.id).contains(upperCase)
-				|| !this.dictionary.isAdmissible(upperCase)
+				this.server.isRefused(this.id, crossword)
+				|| !this.dictionary.isAdmissible(crossword)
 			) {
 				final String details = MessageFormat.format(MESSAGES.getString("word.0.is.not.allowed"), crossword);
 				throw new ScrabbleException.ForbiddenPlayException(details);

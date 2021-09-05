@@ -90,12 +90,16 @@ public class Server implements ScrabbleServerInterface {
 	@Override
 	public void addRefusedWord(final UUID game, final String refusedWord) {
 		// remarks: we could check the game, but don't for the time
-		this.refusedWords.add(refusedWord);
+		this.refusedWords.add(refusedWord.toUpperCase());
 	}
 
 	@Override
 	public Set<String> getRefusedWords(final UUID game) {
 		return Collections.unmodifiableSet(this.refusedWords);
+	}
+
+	public boolean isRefused(final UUID game, final String word) {
+		return this.refusedWords.contains(word.toUpperCase());
 	}
 
 //	/**
