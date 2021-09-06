@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import oscrabble.ScrabbleException;
 import oscrabble.data.*;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @SuppressWarnings("HardCodedStringLiteral")
 @RestController
@@ -68,9 +66,9 @@ public class Controller {
 		}
 	}
 
-	@PostMapping(value = "/{game}/addRefusedWord", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Set<String>> addRefusedWord(final @PathVariable UUID game, @RequestBody String refusedWord) {
-		this.server.addRefusedWord(game, refusedWord);
+	@PostMapping(value = "/{game}/setRefusedWords", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Set<String>> addRefusedWord(final @PathVariable UUID game, @RequestBody List<String> refusedWord) {
+		this.server.setRefusedWords(game, new HashSet<>(refusedWord));
 		return ResponseEntity.ok(this.server.getRefusedWords(game));
 	}
 

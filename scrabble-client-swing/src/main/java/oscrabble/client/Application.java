@@ -34,10 +34,17 @@ public class Application {
 	private final ScrabbleServerInterface server;
 	private final Properties properties;
 
+	private static Application singleton;
+	private UUID gameId;
+
 	public Application(final IDictionary dictionary, final ScrabbleServerInterface server, final Properties properties) {
+		if (singleton != null) {
+			throw new IllegalStateException("Singleton already set");
+		}
 		this.dictionary = dictionary;
 		this.server = server;
 		this.properties = properties;
+		singleton = this;
 	}
 
 	public static void main(String[] unused) throws InterruptedException, IOException, ScrabbleException {
@@ -112,15 +119,18 @@ public class Application {
 		return names;
 	}
 
+	public static UUID getGameId() {
+		return singleton == null ? null : singleton.gameId;
+	}
+
 	/**
 	 * Prepare the server and the client, start the game and play it till it ends.
 	 * @throws InterruptedException
 	 */
 	private void playGame() throws InterruptedException, ScrabbleException {
-
-		final UUID game = this.server.newGame();
+		gameId = this.server.newGame();
 		final String humanName = System.getProperty("user.name");
-		final UUID humanPlayer = this.server.addPlayer(game, humanName);
+		final UUID humanPlayer = this.server.addPlayer(gameId, humanName);
 
 		final List<String> names = getFrenchFirstNames();
 		names.remove(humanName);
@@ -128,23 +138,23 @@ public class Application {
 		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {
 			final String aiPlayerName = names.get(RANDOM.nextInt(names.size()));
 			names.remove(aiPlayerName);
-			final UUID aiPlayerId = this.server.addPlayer(game, aiPlayerName);
+			final UUID aiPlayerId = this.server.addPlayer(gameId, aiPlayerName);
 			// TODO: tell the server it is an AI Player
-			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), game, aiPlayerId, this.server);
+			final AIPlayer ai = new AIPlayer(new BruteForceMethod(this.dictionary), gameId, aiPlayerId, this.server);
 			ai.setThrottle(Duration.ofSeconds(1));
 			ai.startDaemonThread();
 			aiPlayers.add(ai);
 		}
 
-		final Client client = new Client(this.server, this.dictionary, game, humanPlayer);
+		final Client client = new Client(this.server, this.dictionary, gameId, humanPlayer);
 		client.setAIPlayers(aiPlayers);
 		client.displayAll();
-		this.server.startGame(game);
+		this.server.startGame(gameId);
 
 		do {
 			Thread.sleep(500);
 		} while (client.isVisible());
-		this.server.attach(game, humanPlayer, true);
+		this.server.attach(gameId, humanPlayer, true);
 	}
 
 	@Data

@@ -8,7 +8,7 @@ import java.util.*;
 
 public class Server implements ScrabbleServerInterface {
 
-	private final HashSet<String> refusedWords = new HashSet<>();
+	private final TreeSet<String> refusedWords = new TreeSet<>();
 
 	/**
 	 * Get an already known game.
@@ -91,6 +91,12 @@ public class Server implements ScrabbleServerInterface {
 	public void addRefusedWord(final UUID game, final String refusedWord) {
 		// remarks: we could check the game, but don't for the moment
 		this.refusedWords.add(refusedWord.toUpperCase());
+	}
+
+	@Override
+	public void setRefusedWords(final UUID game, final Set<String> refusedWords) {
+		this.refusedWords.clear();
+		refusedWords.forEach(w -> this.refusedWords.add(w.toUpperCase(Locale.ROOT)));
 	}
 
 	@Override
