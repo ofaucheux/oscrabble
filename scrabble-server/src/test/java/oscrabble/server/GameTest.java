@@ -19,12 +19,9 @@ import oscrabble.dictionary.Language;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,6 +78,7 @@ public class GameTest {
 	@Test
 	@Disabled
 	void preparedGame() throws IOException {
+		//noinspection ConstantConditions
 		final String fixture = IOUtils.toString(GameTest.class.getResourceAsStream("game_1.json"), Charsets.UTF_8);
 		final GameState gameState = new ObjectMapper().readValue(fixture, GameState.class);
 		new Game(gameState);
