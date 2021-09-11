@@ -5,6 +5,7 @@ import oscrabble.data.*;
 import oscrabble.data.Action;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 
 public interface ScrabbleServerInterface {
@@ -85,4 +86,23 @@ public interface ScrabbleServerInterface {
 	 */
 	void attach(final UUID game, final UUID player, final boolean attach) throws ScrabbleException;
 
+	/**
+	 * Add a refused word to the current game. The implementation decides if the word will be refused for
+	 * future games too.
+	 * @param game
+	 * @param refusedWord
+	 */
+	void addRefusedWord(UUID game, String refusedWord);
+
+	/**
+	 * @param game
+	 * @param refusedWords the list of words the server would refuse.
+	 */
+	void setAdditionalRefusedWords(UUID game, Set<String> refusedWords) throws ScrabbleException;
+
+	/**
+	 * @param game
+	 * @return the list of word the server would refuse.
+	 */
+	Set<String> getAdditionalRefusedWords(UUID game);
 }

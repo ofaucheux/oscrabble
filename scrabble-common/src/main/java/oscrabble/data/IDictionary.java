@@ -15,7 +15,7 @@ public interface IDictionary {
 
 	/**
 	 * @param word word
-	 * @return if the word is admissible
+	 * @return if the word is admissible (case-insensitive)
 	 */
 	boolean isAdmissible(String word);
 

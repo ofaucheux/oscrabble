@@ -8,6 +8,8 @@ import java.util.*;
 
 public class Server implements ScrabbleServerInterface {
 
+	private final TreeSet<String> refusedWords = new TreeSet<>();
+
 	/**
 	 * Get an already known game.
 	 *
@@ -59,7 +61,7 @@ public class Server implements ScrabbleServerInterface {
 
 	@Override
 	public UUID newGame() {
-		final Game game = new Game(Game.DICTIONARY);
+		final Game game = new Game(this, Game.DICTIONARY, new Random().nextLong());
 		return game.id;
 	}
 
@@ -85,7 +87,31 @@ public class Server implements ScrabbleServerInterface {
 		getGame(game).updatePlayer(PlayerUpdateRequest.createAttachRequest(player, attach));
 	}
 
+	@Override
+	public void addRefusedWord(final UUID game, final String refusedWord) {
+		// remarks: we could check the game, but don't for the moment
+		this.refusedWords.add(refusedWord.toUpperCase());
+	}
 
+	@Override
+	public void setAdditionalRefusedWords(final UUID gameId, final Set<String> refusedWords) throws ScrabbleException {
+		if (refusedWords.equals(this.refusedWords)) {
+			return;
+		}
+
+		this.refusedWords.clear();
+		refusedWords.forEach(w -> this.refusedWords.add(w.toUpperCase(Locale.ROOT)));
+		getGame(gameId).dispatch(l -> l.afterAdditionalRefusedWordsChanged());
+	}
+
+	@Override
+	public Set<String> getAdditionalRefusedWords(final UUID game) {
+		return Collections.unmodifiableSet(this.refusedWords);
+	}
+
+	public boolean isRefused(final UUID game, final String word) {
+		return this.refusedWords.contains(word.toUpperCase());
+	}
 
 //	/**
 //	 * Let the server loads the fixture games and return them.
