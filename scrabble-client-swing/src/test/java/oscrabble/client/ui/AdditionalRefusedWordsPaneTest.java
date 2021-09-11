@@ -3,7 +3,6 @@ package oscrabble.client.ui;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import oscrabble.server.Server;
 
@@ -15,7 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ServerConfigPanelTest {
+class AdditionalRefusedWordsPaneTest {
 
 	@Mock
 	Server server;
@@ -25,7 +24,7 @@ class ServerConfigPanelTest {
 		final HashSet<String> refused = new HashSet<>();
 		doAnswer(invocation -> new HashSet<>(refused))
 				.when(this.server)
-				.getRefusedWords(any());
+				.getAdditionalRefusedWords(any());
 		doAnswer(invocation -> {
 			refused.clear();
 			refused.addAll(invocation.getArgument(1, Set.class));

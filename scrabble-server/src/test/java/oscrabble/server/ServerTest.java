@@ -22,7 +22,7 @@ public class ServerTest {
 	public void refusedWords() {
 		final Server server = new Server();
 		final UUID game = UUID.randomUUID();
-		Assertions.assertTrue(server.getRefusedWords(game).isEmpty());
+		Assertions.assertTrue(server.getAdditionalRefusedWords(game).isEmpty());
 		server.addRefusedWord(game, "word1");
 		server.addRefusedWord(game, "word2");
 		Assertions.assertTrue(server.isRefused(game, "WorD1"));

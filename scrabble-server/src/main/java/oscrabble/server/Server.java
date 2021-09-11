@@ -100,7 +100,7 @@ public class Server implements ScrabbleServerInterface {
 	}
 
 	@Override
-	public Set<String> getRefusedWords(final UUID game) {
+	public Set<String> getAdditionalRefusedWords(final UUID game) {
 		return Collections.unmodifiableSet(this.refusedWords);
 	}
 

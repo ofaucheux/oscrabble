@@ -104,5 +104,5 @@ public interface ScrabbleServerInterface {
 	 * @param game
 	 * @return the list of word the server would refuse.
 	 */
-	Set<String> getRefusedWords(UUID game);
+	Set<String> getAdditionalRefusedWords(UUID game);
 }
