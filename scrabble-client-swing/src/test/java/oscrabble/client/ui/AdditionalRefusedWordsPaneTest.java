@@ -1,5 +1,6 @@
 package oscrabble.client.ui;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -21,6 +22,7 @@ class AdditionalRefusedWordsPaneTest {
 	Server server;
 
 	@Test
+	@Disabled // disable swing tests
 	public void test() throws ScrabbleException {
 		final HashSet<String> refused = new HashSet<>();
 		doAnswer(invocation -> new HashSet<>(refused))
@@ -28,6 +30,7 @@ class AdditionalRefusedWordsPaneTest {
 				.getAdditionalRefusedWords(any());
 		doAnswer(invocation -> {
 			refused.clear();
+			//noinspection unchecked
 			refused.addAll(invocation.getArgument(1, Set.class));
 			return null;
 		}).when(this.server).setAdditionalRefusedWords(any(), any());
