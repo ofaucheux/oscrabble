@@ -50,11 +50,6 @@ public class Game {
 	final UUID id;
 
 	/**
-	 * Seed initially used to create the random generator.
-	 */
-	final List<GameListener> listeners = new ArrayList<>();
-
-	/**
 	 * Players linked to their ids.
 	 */
 	final LinkedHashMap<UUID, PlayerInformation> players = new LinkedHashMap<>();
@@ -616,22 +611,6 @@ public class Game {
 		}
 	}
 
-	/**
-	 * Send an event to each listener, and don't wait after an answer.
-	 */
-	private void dispatch(final ScrabbleEvent scrabbleEvent) {
-		for (final GameListener listener : this.listeners) {
-			final Queue<ScrabbleEvent> queue = listener.getIncomingEventQueue();
-			if (queue != null) {
-				// in the queue
-				queue.add(scrabbleEvent);
-			} else {
-				// on the same thread
-				scrabbleEvent.accept(listener);
-			}
-		}
-	}
-
 	public synchronized Grid getGrid() {
 		return this.grid;
 	}
@@ -817,7 +796,6 @@ public class Game {
 				if (player != null) {
 					refillRack(player);
 					player.lastAction = action;
-					dispatch(toInform -> toInform.afterPlay(action));
 					this.toPlay.pop();
 					this.toPlay.add(player);
 
