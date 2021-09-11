@@ -67,8 +67,8 @@ public class Controller {
 	}
 
 	@PostMapping(value = "/{game}/setRefusedWords", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Set<String>> addRefusedWord(final @PathVariable UUID game, @RequestBody List<String> refusedWord) {
-		this.server.setRefusedWords(game, new HashSet<>(refusedWord));
+	public ResponseEntity<Set<String>> addRefusedWord(final @PathVariable UUID game, @RequestBody List<String> refusedWord) throws ScrabbleException {
+		this.server.setAdditionalRefusedWords(game, new HashSet<>(refusedWord));
 		return ResponseEntity.ok(this.server.getAdditionalRefusedWords(game));
 	}
 

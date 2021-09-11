@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import oscrabble.ScrabbleException;
 import oscrabble.server.Server;
 
 import javax.swing.*;
@@ -20,7 +21,7 @@ class AdditionalRefusedWordsPaneTest {
 	Server server;
 
 	@Test
-	public void test() {
+	public void test() throws ScrabbleException {
 		final HashSet<String> refused = new HashSet<>();
 		doAnswer(invocation -> new HashSet<>(refused))
 				.when(this.server)
@@ -29,7 +30,7 @@ class AdditionalRefusedWordsPaneTest {
 			refused.clear();
 			refused.addAll(invocation.getArgument(1, Set.class));
 			return null;
-		}).when(this.server).setRefusedWords(any(), any());
+		}).when(this.server).setAdditionalRefusedWords(any(), any());
 
 		JOptionPane.showMessageDialog(null, new ServerConfigPanel(this.server));
 	}

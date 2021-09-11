@@ -49,7 +49,7 @@ public class Game {
 	final UUID id;
 
 	/**
-	 * Seed initially used to create the random generator.
+	 * Listeners
 	 */
 	final List<GameListener> listeners = new ArrayList<>();
 
@@ -621,7 +621,7 @@ public class Game {
 	/**
 	 * Send an event to each listener, and don't wait after an answer.
 	 */
-	private void dispatch(final ScrabbleEvent scrabbleEvent) {
+	void dispatch(final ScrabbleEvent scrabbleEvent) {
 		for (final GameListener listener : this.listeners) {
 			final Queue<ScrabbleEvent> queue = listener.getIncomingEventQueue();
 			if (queue != null) {

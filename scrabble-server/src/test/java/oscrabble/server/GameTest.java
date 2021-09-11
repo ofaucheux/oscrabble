@@ -370,6 +370,9 @@ public class GameTest {
 		}
 
 		@Override
+		public void afterAdditionalRefusedWordsChanged() {}
+
+		@Override
 		public Queue<ScrabbleEvent> getIncomingEventQueue() {
 			return this.queue;
 		}

@@ -1,8 +1,10 @@
 package oscrabble.client.ui;
 
+import oscrabble.ScrabbleException;
 import oscrabble.client.Application;
 import oscrabble.controller.ScrabbleServerInterface;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -28,7 +30,11 @@ class AdditionalRefusedWordsPane extends JTextPaneWithoutTab {
 					words.add(word.trim().toLowerCase());
 				}
 				words.remove("");
-				server.setRefusedWords(AdditionalRefusedWordsPane.this.gameId, words);
+				try {
+					server.setAdditionalRefusedWords(AdditionalRefusedWordsPane.this.gameId, words);
+				} catch (ScrabbleException ex) {
+					JOptionPane.showMessageDialog(AdditionalRefusedWordsPane.this, ex.toString());
+				}
 				updateListFromServer();
 			}
 		});

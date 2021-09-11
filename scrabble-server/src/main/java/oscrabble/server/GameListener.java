@@ -50,5 +50,10 @@ public interface GameListener {
 	 */
 	default void afterRejectedAction(final PlayerInformation player, final Action action) {
 	}
+
+	/**
+	 * Called after the list of the additional refused words has changed
+	 */
+	void afterAdditionalRefusedWordsChanged();
 }
 

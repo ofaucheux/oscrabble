@@ -94,9 +94,14 @@ public class Server implements ScrabbleServerInterface {
 	}
 
 	@Override
-	public void setRefusedWords(final UUID game, final Set<String> refusedWords) {
+	public void setAdditionalRefusedWords(final UUID gameId, final Set<String> refusedWords) throws ScrabbleException {
+		if (refusedWords.equals(this.refusedWords)) {
+			return;
+		}
+
 		this.refusedWords.clear();
 		refusedWords.forEach(w -> this.refusedWords.add(w.toUpperCase(Locale.ROOT)));
+		getGame(gameId).dispatch(l -> l.afterAdditionalRefusedWordsChanged());
 	}
 
 	@Override
