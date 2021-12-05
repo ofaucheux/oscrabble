@@ -1,6 +1,7 @@
 package oscrabble.player.ai;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ class AIPlayerTest {
 	 * @throws InterruptedException
 	 */
 	@Test
-//	@Disabled
+	@Disabled
 	void onPlayRequired() throws InterruptedException, ScrabbleException {
 
 		final IDictionary DICTIONARY = new FrenchDictionaryForTest();
