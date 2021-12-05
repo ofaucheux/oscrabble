@@ -866,10 +866,11 @@ public class Game {
 		final Set<String> toTest = new LinkedHashSet<>();
 		toTest.add(moveMI.action.word);
 		toTest.addAll(moveMI.crosswords);
-		for (final String crossword : toTest) {
+		for (String crossword : toTest) {
+			crossword = crossword.toUpperCase();
 			if (
-				this.server.isRefused(this.id, crossword)
-				|| !this.dictionary.isAdmissible(crossword)
+					this.server.isRefused(this.id, crossword)
+							|| !this.dictionary.isAdmissible(crossword)
 			) {
 				final String details = MessageFormat.format(MESSAGES.getString("word.0.is.not.allowed"), crossword);
 				throw new ScrabbleException.ForbiddenPlayException(details);

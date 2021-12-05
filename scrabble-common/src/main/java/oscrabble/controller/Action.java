@@ -94,7 +94,7 @@ public abstract class Action {
 		public final Coordinate startSquare;
 
 		/**
-		 * The word created by this move, incl. already set tiles and where blanks are represented by their value letters.
+		 * The word created by this move, incl. already set tiles and where blanks are represented by lowercase letters.
 		 */
 		public String word;
 
