@@ -101,7 +101,6 @@ public class Server implements ScrabbleServerInterface {
 
 		this.refusedWords.clear();
 		refusedWords.forEach(w -> this.refusedWords.add(w.toUpperCase(Locale.ROOT)));
-		getGame(gameId).dispatch(l -> l.afterAdditionalRefusedWordsChanged());
 	}
 
 	@Override

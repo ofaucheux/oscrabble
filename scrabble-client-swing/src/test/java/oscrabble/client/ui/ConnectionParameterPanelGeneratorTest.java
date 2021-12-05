@@ -7,13 +7,11 @@ import oscrabble.client.Application;
 
 import javax.swing.*;
 
-class ConnectionParameterPanelTest {
+class ConnectionParameterPanelGeneratorTest {
 
 	@SneakyThrows
 	@Test
-	@Disabled
-		// disable swing tests
-
+	@Disabled // disable swing tests
 	void testUI() {
 		final Application.ConnectionParameters properties = new Application.ConnectionParameters();
 		final ConnectionParameterPanel panel = new ConnectionParameterPanel(properties);
