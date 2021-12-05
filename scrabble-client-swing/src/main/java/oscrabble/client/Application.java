@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.ConnectionParameterPanel;
+import oscrabble.client.utils.I18N;
 import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.IDictionary;
 import oscrabble.dictionary.Dictionary;
@@ -69,7 +70,9 @@ public class Application {
 		final ConnectionParameters connectionParameters = new ConnectionParameters();
 		JOptionPane.showMessageDialog(
 				null,
-				new ConnectionParameterPanel(connectionParameters)
+				new ConnectionParameterPanel(connectionParameters),
+				I18N.get("connection.panel.title"),
+				JOptionPane.PLAIN_MESSAGE
 		);
 
 		final IDictionary dictionary = Dictionary.getDictionary(Language.FRENCH);
