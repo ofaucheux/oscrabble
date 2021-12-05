@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.controller.Action;
+import oscrabble.controller.SetRefusedWordAction;
 import oscrabble.data.*;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
@@ -369,7 +370,7 @@ public class Game {
 		final ArrayList<oscrabble.data.Action> playedActions = new ArrayList<>();
 		this.history.forEach(h -> playedActions.add(
 				oscrabble.data.Action.builder()
-						.notation(h.notation)
+						.notation(h.getNotation())
 						.score(h.score)
 						.turnId(h.turnId)
 						.player(h.player)
@@ -709,7 +710,7 @@ public class Game {
 			}
 		}
 
-		LOGGER.info(player == null ? "" : player.uuid + " plays " + action.notation);
+		LOGGER.info(player == null ? "" : player.uuid + " plays " + action.getNotation());
 
 		final ScoreCalculator.MoveMetaInformation moveMI;
 		boolean done = false;
@@ -748,7 +749,7 @@ public class Game {
 				}
 
 				action.score = moveMI.score;
-				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player == null ? null : player.uuid, playTiles.notation, action.score));
+				LOGGER.info(MessageFormat.format(MESSAGES.getString("0.plays.1.for.2.points"), player == null ? null : player.uuid, playTiles.getNotation(), action.score));
 			} else if (action instanceof Action.Exchange) {
 				if (player == null) {
 					throw new IllegalStateException("Player required");
@@ -824,6 +825,15 @@ public class Game {
 						.forEach(pi -> this.acknowledgesToWaitAfter.add(pi.uuid));
 			}
 		}
+	}
+
+	/**
+	 * To be use only for special actions which aren't directly part of the game.
+	 *
+	 * @param specialAction
+	 */
+	void addAction(SetRefusedWordAction specialAction) {
+		this.history.add(specialAction);
 	}
 
 	void play(final ScoreCalculator.MoveMetaInformation moveMI) throws ScrabbleException.ForbiddenPlayException {

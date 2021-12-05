@@ -2,6 +2,7 @@ package oscrabble.server;
 
 import oscrabble.ScrabbleException;
 import oscrabble.controller.ScrabbleServerInterface;
+import oscrabble.controller.SetRefusedWordAction;
 import oscrabble.data.*;
 
 import java.util.*;
@@ -101,7 +102,7 @@ public class Server implements ScrabbleServerInterface {
 
 		this.refusedWords.clear();
 		refusedWords.forEach(w -> this.refusedWords.add(w.toUpperCase(Locale.ROOT)));
-		getGame(gameId).dispatch(l -> l.afterAdditionalRefusedWordsChanged());
+		getGame(gameId).addAction(new SetRefusedWordAction(refusedWords));
 	}
 
 	@Override

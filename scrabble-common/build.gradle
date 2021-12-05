@@ -14,13 +14,14 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.28'
     implementation 'org.apache.commons:commons-lang3:3.9'
     implementation 'commons-io:commons-io:2.6'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
 
     testFixturesImplementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
 }
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Olivier\'s Scrabble Common libary',
+        attributes 'Implementation-Title': 'Olivier\'s Scrabble Common library',
                 'Implementation-Version': project.version
     }
 }
