@@ -11,11 +11,11 @@ repositories {
 lombok.config['lombok.anyConstructor.addConstructorProperties'] = 'true'
 
 dependencies {
-    implementation 'org.slf4j:slf4j-api:1.7.28'
-    implementation 'org.apache.commons:commons-lang3:3.9'
-    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.slf4j:slf4j-api:1.7.+'
+    implementation 'org.apache.commons:commons-lang3:3.+'
+    implementation 'commons-io:commons-io:2.+'
 
-    testFixturesImplementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
+    testFixturesImplementation 'com.fasterxml.jackson.core:jackson-databind:2.10.+'
 }
 
 jar {
