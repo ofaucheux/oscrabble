@@ -9,3 +9,5 @@ include 'scrabble-starter'
 include 'scrabble-rest-common'
 include 'scrabble-rest-dictionary'
 include 'scrabble-rest-server'
+
+include 'scrabble-client-vaadin'
