@@ -4,3 +4,19 @@
 /.gradle/
 /.idea/
 /log.log
+
+/target/
+.gradle
+build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# The following files are generated/updated by vaadin-maven-plugin or vaadin-gradle-plugin
+node_modules/
+frontend/generated/
+pnpmfile.js
+.npmrc
+webpack.generated.js
+vite.generated.ts
