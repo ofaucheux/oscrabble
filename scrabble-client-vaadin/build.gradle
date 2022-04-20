@@ -21,6 +21,8 @@ dependencies {
 
     implementation(project(":scrabble-common"))
     implementation(project(":scrabble-dictionary"))
+    implementation(project(":scrabble-server"))
+    implementation(project(":scrabble-client-swing"))
 
     implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.+'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.+'

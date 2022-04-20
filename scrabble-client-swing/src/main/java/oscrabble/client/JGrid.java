@@ -10,12 +10,17 @@ import oscrabble.data.Tile;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -27,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Darstellung der Spielfläche
  */
-class JGrid extends JPanel {
+public class JGrid extends JPanel {
 	private static final int CELL_SIZE = 40;
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 	public static final Logger LOGGER = LoggerFactory.getLogger(JGrid.class);
@@ -35,7 +40,6 @@ class JGrid extends JPanel {
 	final JSquare[][] jSquares;
 	final JComponent background;
 	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
 
 	/**
 	 * char the player intend to play on this square
@@ -69,20 +73,26 @@ class JGrid extends JPanel {
 	/**
 	 * Spielfeld des Scrabbles
 	 */
-	JGrid() {
+	public JGrid() {
 		this.setLayout(new BorderLayout());
 		this.background = new JPanel(new BorderLayout());
 		final int size = 15 * CELL_SIZE;
 		this.jSquares = new JSquare[17][17];
-		this.setPreferredSize(new Dimension(size, size));
+		final Dimension dimension = new Dimension(size, size);
+		this.setPreferredSize(dimension);
+		setSize(dimension);
 		this.add(this.background);
+	}
+
+	public void setGrid(oscrabble.data.Grid grid) {
+		setGrid(new Grid(grid));
 	}
 
 	/**
 	 * @param grid grid description coming from the server
 	 */
-	void setGrid(oscrabble.data.Grid grid) {
-		this.grid = new Grid(grid);
+	public void setGrid(Grid grid) {
+		this.grid = grid;
 		final int numberOfRows = this.grid.getSize() + 2;
 
 		final JPanel p1 = new JPanel();
@@ -275,6 +285,24 @@ class JGrid extends JPanel {
 			throw new AssertionError("The client is already set");
 		}
 		this.playground = client;
+	}
+
+	public byte[] getImage() {
+		BufferedImage image = new BufferedImage(
+				(int) getPreferredSize().getWidth(),
+				(int) getPreferredSize().getHeight(),
+				BufferedImage.TYPE_INT_RGB);
+		Graphics2D cg = (Graphics2D) image.getGraphics();
+		this.paint(cg);
+		image.flush();
+		try {
+			final ByteArrayOutputStream os = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", os);
+			os.flush();
+			return os.toByteArray();
+		} catch (IOException e) {
+			throw new IOError(e);
+		}
 	}
 
 	private Client getClient() {
