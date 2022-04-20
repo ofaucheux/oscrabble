@@ -1,7 +1,6 @@
 package oscrabble.client.vaadin;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -21,20 +20,18 @@ public class ScrabbleView extends VerticalLayout {
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 	public static final String CELL_SIZE = "30px";
 	private final Grid grid;
-	//	ScrabbleGrid grid = new ScrabbleGrid(new Grid());
 
 	public ScrabbleView() {
-		grid = new Grid();
+		this.grid = new Grid();
 		try {
 			final ScrabbleRules rules = ScrabbleRulesFactory.create(Language.FRENCH);
-			grid.play(rules, "A1 ELEPHANT");
+			this.grid.play(rules, "A1 ELEPHANT");
 		} catch (ScrabbleException.NotParsableException e) {
 			throw new Error(e);
 		}
 
 		addClassName("scrabble-view");
 		setSizeFull();
-		add(new Label("Hier!"));
 		final Div div = new Div();
 		add(div);
 		div.getElement().setProperty("innerHTML", createGridHTML());
@@ -52,8 +49,12 @@ public class ScrabbleView extends VerticalLayout {
 	}
 
 	private String createGridHTML() {
+		final CssProperties tableCss = new CssProperties();
+		tableCss.put("background-color", "black");
+		tableCss.put("border-collapse", "collapse");
+
 		final StringBuilder sb = new StringBuilder();
-		sb.append("<table>");
+		sb.append("<table style='").append(tableCss).append("'>");
 		for (int y = 0; y < Grid.GRID_SIZE; y++) {
 			sb.append("<tr>");
 			for (int x = 0; x < Grid.GRID_SIZE; x++) {
@@ -68,9 +69,11 @@ public class ScrabbleView extends VerticalLayout {
 		final StringBuilder sb = new StringBuilder();
 		final Square square = this.grid.get(x, y);
 
+		final CssProperties cellCss = new CssProperties();
 		final Color cellColor;
 		if (square.tile != null) {
 			cellColor = Color.decode("#FFFFF0").darker(); // ivory
+			cellCss.put("border-radius", "5px");
 		} else if (square.letterBonus == 2) {
 			cellColor = Color.decode("0x00BFFF");
 		} else if (square.letterBonus == 3) {
@@ -83,12 +86,14 @@ public class ScrabbleView extends VerticalLayout {
 			cellColor = SCRABBLE_GREEN;
 		}
 
+		cellCss.put("height", CELL_SIZE);
+		cellCss.put("width", CELL_SIZE);
+		cellCss.put("background-color", getHTMLColorString(cellColor));
+
 		sb.append(String.format(
-				"<div align='center' style='height:%s; width:%s; background-color:%s'>",
-				CELL_SIZE,
-				CELL_SIZE,
-				getHTMLColorString(cellColor))
-		);
+				"<div align='center' style='%s'>",
+				cellCss
+			));
 		final Tile tile = square.tile;
 		sb.append(tile != null ? tile.c : ' ');
 		sb.append("</div>");
