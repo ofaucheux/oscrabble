@@ -2,8 +2,10 @@ package oscrabble.client.vaadin;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.AppShellSettings;
 import oscrabble.ScrabbleException;
 import oscrabble.client.JGrid;
 import oscrabble.client.utils.SwingUtils;
@@ -14,16 +16,15 @@ import oscrabble.dictionary.Language;
 import oscrabble.server.Game;
 import oscrabble.server.Server;
 
-import javax.swing.border.TitledBorder;
-import java.awt.*;
 import java.util.Base64;
 import java.util.Random;
 import java.util.UUID;
 
-@Route(value = "")
+@Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
-public class ScrabbleView extends VerticalLayout {
-
+public class ScrabbleView extends VerticalLayout
+		implements AppShellConfigurator
+{
 	private static final Random RANDOM = new Random();
 	private final Game game;
 
@@ -38,6 +39,12 @@ public class ScrabbleView extends VerticalLayout {
 		final Div div = new Div();
 		add(div);
 		div.getElement().setProperty("innerHTML", createGridHTML());
+	}
+
+	@Override
+	public void configurePage(final AppShellSettings settings) {
+		AppShellConfigurator.super.configurePage(settings);
+		settings.addFavIcon("icon", "icons/oscrabble-icon.png", "192x192");
 	}
 
 	private String createGridHTML() {
