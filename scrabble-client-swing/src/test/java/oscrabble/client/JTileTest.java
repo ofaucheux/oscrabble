@@ -1,36 +1,46 @@
 package oscrabble.client;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 class JTileTest {
 
+	@BeforeEach
+	public void setUpHeadlessMode() {
+		System.setProperty("java.awt.headless", "true");
+	}
+
 	@Test
 	@Disabled
-	public void test() throws InterruptedException {
-		final JFrame frame = new JFrame("Test JStone");
-		frame.setLayout(new GridLayout(2, 2));
-//		frame.setUndecorated(true);
-//		frame.setBackground(new Color(0, 0, 0, 0));
+	public void test() throws InterruptedException, IOException {
+		do {
+			final JGrid grid = new JGrid();
+			grid.setLayout(new GridLayout(2, 2));
 
-		JTile stone;
-		stone = new JTile('A', 1, false);
-		frame.add(stone);
-		stone = new JTile('Y', 10, false);
-		frame.add(stone);
-		stone = new JTile('c', 0, true);
-		frame.add(stone);
+			JTile stone;
+			stone = new JTile('A', 1, false);
+			grid.add(stone);
+			stone = new JTile('Y', 10, false);
+			grid.add(stone);
+			stone = new JTile('c', 0, true);
+			grid.add(stone);
 
-		frame.setVisible(true);
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			grid.validate();
+			grid.setSize(600,600);
 
-		while (frame.isVisible()) {
-			Thread.sleep(100);
-		}
+			final byte[] png = grid.getImage();
+			FileUtils.writeByteArrayToFile(
+					new File("C:/temp/2022-04-22/" + System.currentTimeMillis() + ".png"),
+					png
+			);
+			Thread.sleep(5000);
+		} while (true);
 	}
 }

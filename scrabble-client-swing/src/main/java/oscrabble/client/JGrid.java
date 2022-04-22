@@ -292,8 +292,11 @@ public class JGrid extends JPanel {
 				(int) getPreferredSize().getWidth(),
 				(int) getPreferredSize().getHeight(),
 				BufferedImage.TYPE_INT_RGB);
+		final Dimension size = this.getPreferredSize();
+		this.setSize(size);
+		this.doLayout();
 		Graphics2D cg = (Graphics2D) image.getGraphics();
-		this.paint(cg);
+		this.print(cg);
 		image.flush();
 		try {
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
