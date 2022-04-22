@@ -189,8 +189,7 @@ class Playground {
 			this.pmd = null;
 		} else {
 			this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
-			this.pmd.setServer(this.client.server);
-			this.pmd.setGame(this.client.game);
+			this.pmd.refresh(this.client.server, null, null);
 			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, getRules()));
 			this.pmd.setFont(MONOSPACED);
 			this.pmd.getMoveList().addMouseListener(new MouseAdapter() {
@@ -282,12 +281,9 @@ class Playground {
 		});
 		panel1.add(serverConfigButton);
 		eastPanel.add(panel1, BorderLayout.CENTER);
-		final String version = Application.class.getPackage().getImplementationVersion();
 		final JLabel versionLabel = new JLabel();
 		versionLabel.setFont(versionLabel.getFont().deriveFont(9f));
-		versionLabel.setText(
-				version == null ? "-" : "v" + version //NON-NLS
-		);
+		versionLabel.setText(Application.getFormattedVersion());
 		panel1.add(versionLabel);
 		this.gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
@@ -298,6 +294,8 @@ class Playground {
 		this.gridFrame.getLayeredPane().add(this.arrow, JLayeredPane.DRAG_LAYER);
 		this.commandPrompt.requestFocus();
 	}
+
+
 
 	/**
 	 * Dispose the UI
@@ -335,7 +333,7 @@ class Playground {
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
 		if (this.pmd != null) {
-			this.pmd.setData(state, rack);
+			this.pmd.refresh(client.server, state, rack);
 		}
 
 		final Player onTurn = StateUtils.getPlayerOnTurn(state);
