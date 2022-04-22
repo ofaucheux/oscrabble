@@ -1,5 +1,6 @@
 package oscrabble.server;
 
+import lombok.Getter;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.BooleanUtils;
@@ -46,6 +47,7 @@ public class Game {
 	/**
 	 * ID of the game
 	 */
+	@Getter
 	final UUID id;
 
 	/**
@@ -360,7 +362,7 @@ public class Game {
 	 *
 	 * @return the state object
 	 */
-	GameState getGameState() {
+	public GameState getGameState() {
 		final ArrayList<oscrabble.data.Player> players = new ArrayList<>();
 		for (final PlayerInformation player : this.players.values()) {
 			players.add(player.toData());
@@ -651,7 +653,6 @@ public class Game {
 	public void setState(final GameState.State state) {
 		if (this.state != state) {
 			this.state = state;
-//			this.listeners.forEach(l -> l.onGameStateChanged());
 		}
 	}
 

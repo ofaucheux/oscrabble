@@ -24,6 +24,7 @@ import oscrabble.server.Server;
 
 import java.awt.*;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 @Route(value = "scrabble")
@@ -90,7 +91,7 @@ public class ScrabbleView extends HorizontalLayout {
 		Element legend = new Element("legend").setText(title);
 		fs.appendChild(legend);
 		final Div div = new Div(child);
-		div.setWidth("200px");
+		div.setWidth("220px");
 		fs.appendChild(div.getElement());
 		parent.getElement().appendChild(fs);
 	}
@@ -103,6 +104,11 @@ public class ScrabbleView extends HorizontalLayout {
 
 	class PlayerComponent extends Grid<Player> {
 		PlayerComponent() {
+			super(Player.class, false);
+			addColumn(Player::getName);
+			addColumn(Player::getScore);
+			setSelectionMode(SelectionMode.NONE);
+			setItems(game.getGameState().players);
 			setHeight("150px");
 		}
 	}
