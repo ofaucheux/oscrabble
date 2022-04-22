@@ -1,8 +1,6 @@
 package oscrabble.client;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import oscrabble.controller.Action;
 import oscrabble.data.ScrabbleRules;
@@ -10,17 +8,12 @@ import oscrabble.data.Tile;
 import oscrabble.data.objects.Grid;
 import oscrabble.data.objects.Square;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOError;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -35,10 +28,8 @@ import java.util.concurrent.TimeUnit;
 public class JGrid extends JPanel {
 	private static final int CELL_SIZE = 40;
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
-	public static final Logger LOGGER = LoggerFactory.getLogger(JGrid.class);
 
 	final JSquare[][] jSquares;
-	final JComponent background;
 	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	/**
@@ -66,22 +57,15 @@ public class JGrid extends JPanel {
 	private Playground playground;
 
 	/**
-	 * Last played action
-	 */
-	private UUID lastAction;
-
-	/**
 	 * Spielfeld des Scrabbles
 	 */
 	public JGrid() {
 		this.setLayout(new BorderLayout());
-		this.background = new JPanel(new BorderLayout());
 		final int size = 15 * CELL_SIZE;
 		this.jSquares = new JSquare[17][17];
 		final Dimension dimension = new Dimension(size, size);
 		this.setPreferredSize(dimension);
 		setSize(dimension);
-		this.add(this.background);
 	}
 
 	public void setGrid(oscrabble.data.Grid grid) {
@@ -103,7 +87,7 @@ public class JGrid extends JPanel {
 		gbc.weightx = 1;
 		gbc.weighty = 1;
 
-		// Draw each Cell
+		// Add each Cell
 		for (int y = 0; y < numberOfRows; y++) {
 			gbc.gridy = y;
 			for (int x = 0; x < numberOfRows; x++) {
@@ -136,9 +120,9 @@ public class JGrid extends JPanel {
 			}
 		}
 
-		this.background.removeAll();
-		this.background.add(p1);
-		this.background.revalidate();
+		this.removeAll();
+		this.add(p1);
+		this.revalidate();
 	}
 
 	/**
@@ -147,7 +131,8 @@ public class JGrid extends JPanel {
 	 * @return
 	 */
 	ScheduledFuture<Void> scheduleLastWordBlink(final UUID turnToHide) {
-		final ScheduledFuture<Void> future = this.executor.schedule(
+
+		return this.executor.schedule(
 				() -> {
 					for (int i = 0; i < 3; i++) {
 						this.turnToHide = null;
@@ -163,8 +148,6 @@ public class JGrid extends JPanel {
 				},
 				0,
 				TimeUnit.SECONDS);
-
-		return future;
 	}
 
 	/**
@@ -287,24 +270,6 @@ public class JGrid extends JPanel {
 		this.playground = client;
 	}
 
-	public byte[] getImage() {
-		BufferedImage image = new BufferedImage(
-				(int) getPreferredSize().getWidth(),
-				(int) getPreferredSize().getHeight(),
-				BufferedImage.TYPE_INT_RGB);
-		Graphics2D cg = (Graphics2D) image.getGraphics();
-		this.paint(cg);
-		image.flush();
-		try {
-			final ByteArrayOutputStream os = new ByteArrayOutputStream();
-			ImageIO.write(image, "png", os);
-			os.flush();
-			return os.toByteArray();
-		} catch (IOException e) {
-			throw new IOError(e);
-		}
-	}
-
 	private Client getClient() {
 		return this.playground == null ? null : this.playground.client;
 	}
@@ -317,6 +282,7 @@ public class JGrid extends JPanel {
 
 		BorderCell(final Square square) {
 			this.square = square;
+			this.setPreferredSize(JTile.CELL_DIMENSION);
 		}
 
 		@Override
