@@ -22,6 +22,7 @@ import oscrabble.dictionary.Language;
 import oscrabble.server.Game;
 import oscrabble.server.Server;
 
+import java.awt.*;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -38,6 +39,11 @@ public class ScrabbleView extends HorizontalLayout {
 		this.game.addPlayer(Player.builder().name("Eleonore").id(eleonore).build());
 		this.game.startGame();
 		this.game.play(Action.builder().notation("H8 GATE").player(eleonore).build());
+
+		getElement().getStyle().set(
+				"background-color",
+				"#eeeeee"
+		); // fixme: not a good thing to change the style here
 
 		//
 		// Center column
@@ -65,6 +71,7 @@ public class ScrabbleView extends HorizontalLayout {
 
 		add(rightColumn);
 		rightColumn.setPadding(false);
+		rightColumn.setHeight(centerColumn.getHeight());
 	}
 
 	private String createGridHTML() {
@@ -96,14 +103,19 @@ public class ScrabbleView extends HorizontalLayout {
 
 	class PlayerComponent extends Grid<Player> {
 		PlayerComponent() {
-
+			setHeight("150px");
 		}
-
 	}
 
 	private class PossibleMoves extends Grid<Score> {
+		public PossibleMoves() {
+			setHeight("150px");
+		}
 	}
 
 	private class HistoryComponent extends Grid<Action> {
+		public HistoryComponent() {
+			setHeight("150px");
+		}
 	}
 }
