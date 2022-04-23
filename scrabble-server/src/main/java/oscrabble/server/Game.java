@@ -459,9 +459,8 @@ public class Game {
 //
 	}
 
-	// todo: remove - only used for tests
-	public synchronized PlayerInformation getPlayerToPlay() {
-		return this.toPlay.getFirst();
+	public synchronized UUID getPlayerOnTurnUUID() {
+		return this.toPlay.getFirst().uuid;
 	}
 
 	/**
