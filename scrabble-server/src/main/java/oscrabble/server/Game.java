@@ -71,6 +71,7 @@ public class Game {
 
 	private final Random random;
 
+	@Getter
 	private final IDictionary dictionary;
 
 	/**

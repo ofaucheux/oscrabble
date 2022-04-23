@@ -3,6 +3,7 @@ package oscrabble.client.vaadin;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.ItemLabelGenerator;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -14,14 +15,13 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import oscrabble.ScrabbleException;
+import oscrabble.client.AbstractPossibleMoveDisplayer;
 import oscrabble.client.JGrid;
 import oscrabble.client.utils.SwingUtils;
-import oscrabble.data.Action;
-import oscrabble.data.GameState;
-import oscrabble.data.Player;
-import oscrabble.data.Score;
+import oscrabble.data.*;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
+import oscrabble.player.ai.Strategy;
 import oscrabble.server.Game;
 import oscrabble.server.Server;
 
@@ -84,7 +84,7 @@ public class ScrabbleView extends HorizontalLayout {
 				gameState.players,
 				gameState.playerOnTurn
 		));
-		addTitledComponent(rightColumn, "possible moves", new PossibleMoves());
+		addTitledComponent(rightColumn, "possible moves", new PossibleMovesDisplayer(this.game.getDictionary()).createComponent());
 		addTitledComponent(rightColumn, "history", new HistoryComponent(gameState.playedActions));
 
 		add(rightColumn);
@@ -147,9 +147,41 @@ public class ScrabbleView extends HorizontalLayout {
 		}
 	}
 
-	private static class PossibleMoves extends Grid<Score> {
-		public PossibleMoves() {
-			setHeight("150px");
+	private static class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
+		final Grid<Score> grid;
+		private final ComboBox<Strategy> strategyComboBox;
+		private Strategy selectedValue = null;
+
+		public PossibleMovesDisplayer(IDictionary dictionary) {
+			super(dictionary);
+			this.grid = new Grid<>();
+			this.grid.setHeight("150px");
+
+			final LinkedHashMap<Strategy, String> strategies = getStrategyList();
+			this.strategyComboBox = new ComboBox<>();
+			this.strategyComboBox.setAllowCustomValue(false);
+			final ItemLabelGenerator<Strategy> labelGenerator = item -> strategies.get(item);
+			this.strategyComboBox.setRenderer(new TextRenderer<>(labelGenerator));
+			this.strategyComboBox.setItemLabelGenerator(labelGenerator);
+			this.strategyComboBox.setItems(strategies.keySet());
+			this.strategyComboBox.addValueChangeListener(a -> {
+				this.selectedValue = a.getValue();
+				refresh();
+			});
+		}
+
+		public Component createComponent() {
+			return new VerticalLayout(this.strategyComboBox, this.grid);
+		}
+
+		@Override
+		protected Strategy getSelectedStrategy() {
+			return this.selectedValue;
+		}
+
+		@Override
+		protected void setListData(final Collection<Score> scores) {
+			this.grid.setItems(scores);
 		}
 	}
 
