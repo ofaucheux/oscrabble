@@ -459,6 +459,7 @@ public class Game {
 //
 	}
 
+	// todo: remove - only used for tests
 	public synchronized PlayerInformation getPlayerToPlay() {
 		return this.toPlay.getFirst();
 	}

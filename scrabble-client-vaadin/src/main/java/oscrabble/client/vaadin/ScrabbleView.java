@@ -2,12 +2,14 @@ package oscrabble.client.vaadin;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -15,6 +17,7 @@ import oscrabble.ScrabbleException;
 import oscrabble.client.JGrid;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.Action;
+import oscrabble.data.GameState;
 import oscrabble.data.Player;
 import oscrabble.data.Score;
 import oscrabble.dictionary.Dictionary;
@@ -22,10 +25,8 @@ import oscrabble.dictionary.Language;
 import oscrabble.server.Game;
 import oscrabble.server.Server;
 
-import java.awt.*;
-import java.util.Base64;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
 
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
@@ -34,12 +35,24 @@ public class ScrabbleView extends HorizontalLayout {
 	private final Game game;
 
 	public ScrabbleView() throws ScrabbleException, InterruptedException {
+
+		List<Player> players = new ArrayList<>();
+		for (String n : Arrays.asList("Eleonore", "Kevin", "Charlotte")) {
+			players.add(Player.builder().name(n).id(UUID.randomUUID()).build());
+		}
+
 		final Server server = new Server();
 		this.game = new Game(server, Dictionary.getDictionary(Language.FRENCH), 2);
-		final UUID eleonore = UUID.randomUUID();
-		this.game.addPlayer(Player.builder().name("Eleonore").id(eleonore).build());
+		for (Player p : players) {
+			this.game.addPlayer(p);
+		}
 		this.game.startGame();
-		this.game.play(Action.builder().notation("H8 GATE").player(eleonore).build());
+		this.game.play(
+				Action.builder()
+						.notation("H8 GATE")
+						.player(this.game.getPlayerOnTurnUUID())
+						.build()
+		);
 
 		getElement().getStyle().set(
 				"background-color",
@@ -66,9 +79,13 @@ public class ScrabbleView extends HorizontalLayout {
 
 		final VerticalLayout rightColumn = new VerticalLayout();
 
-		addTitledComponent(rightColumn, "scores", new PlayerComponent());
+		final GameState gameState = this.game.getGameState();
+		addTitledComponent(rightColumn, "scores", new PlayerComponent(
+				gameState.players,
+				gameState.playerOnTurn
+		));
 		addTitledComponent(rightColumn, "possible moves", new PossibleMoves());
-		addTitledComponent(rightColumn, "history", new HistoryComponent());
+		addTitledComponent(rightColumn, "history", new HistoryComponent(gameState.playedActions));
 
 		add(rightColumn);
 		rightColumn.setPadding(false);
@@ -102,26 +119,50 @@ public class ScrabbleView extends HorizontalLayout {
 		}
 	}
 
-	class PlayerComponent extends Grid<Player> {
-		PlayerComponent() {
-			super(Player.class, false);
+	private static void setThemeVariants(Grid<?> grid) {
+		grid.addThemeVariants(GridVariant.LUMO_COMPACT);
+		grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS);
+	}
+
+	static class PlayerComponent extends Grid<Player> {
+		PlayerComponent(Collection<Player> players, final UUID onTurnUUID) {
+			final ItemLabelGenerator<Player> onTurn =
+					player -> player.getId().equals(onTurnUUID)
+							? "\u27A4"
+							: "";
+
+			addColumn(new TextRenderer<>(onTurn));
 			addColumn(Player::getName);
 			addColumn(Player::getScore);
+
 			setSelectionMode(SelectionMode.NONE);
-			setItems(game.getGameState().players);
 			setHeight("150px");
+			final Iterator<Column<Player>> it = getColumns().iterator();
+			it.next().setWidth("5px");
+			it.next().setAutoWidth(true);
+			it.next().setWidth("50px");
+			setThemeVariants(this);
+
+			setItems(players);
 		}
 	}
 
-	private class PossibleMoves extends Grid<Score> {
+	private static class PossibleMoves extends Grid<Score> {
 		public PossibleMoves() {
 			setHeight("150px");
 		}
 	}
 
-	private class HistoryComponent extends Grid<Action> {
-		public HistoryComponent() {
+	private static class HistoryComponent extends Grid<Action> {
+		public HistoryComponent(final List<Action> history) {
+
+			final ItemLabelGenerator<Action> score = a -> a.getScore() + " pts";
+
+			addColumn(Action::getNotation);
+			addColumn(new TextRenderer<>(score));
 			setHeight("150px");
+
+			setItems(history);
 		}
 	}
 }
