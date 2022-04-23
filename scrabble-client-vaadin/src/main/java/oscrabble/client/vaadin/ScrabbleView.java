@@ -9,6 +9,7 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.dom.Element;
@@ -149,7 +150,7 @@ public class ScrabbleView extends HorizontalLayout {
 
 	private static class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
 		final Grid<Score> grid;
-		private final ComboBox<Strategy> strategyComboBox;
+		private final Select<Strategy> strategyComboBox;
 		private Strategy selectedValue = null;
 
 		public PossibleMovesDisplayer(IDictionary dictionary) {
@@ -158,11 +159,10 @@ public class ScrabbleView extends HorizontalLayout {
 			this.grid.setHeight("150px");
 
 			final LinkedHashMap<Strategy, String> strategies = getStrategyList();
-			this.strategyComboBox = new ComboBox<>();
-			this.strategyComboBox.setAllowCustomValue(false);
+			this.strategyComboBox = new Select<>();
 			final ItemLabelGenerator<Strategy> labelGenerator = item -> strategies.get(item);
 			this.strategyComboBox.setRenderer(new TextRenderer<>(labelGenerator));
-			this.strategyComboBox.setItemLabelGenerator(labelGenerator);
+//			this.strategyComboBox.setItemLabelGenerator(labelGenerator);
 			this.strategyComboBox.setItems(strategies.keySet());
 			this.strategyComboBox.addValueChangeListener(a -> {
 				this.selectedValue = a.getValue();
