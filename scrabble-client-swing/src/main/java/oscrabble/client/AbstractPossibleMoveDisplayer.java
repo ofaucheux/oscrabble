@@ -21,27 +21,18 @@ public abstract class AbstractPossibleMoveDisplayer {
 		}
 	};
 
-	protected final Set<PossibleMoveDisplayer.AttributeChangeListener> attributeChangeListeners = new HashSet<>();
+	private final Set<PossibleMoveDisplayer.AttributeChangeListener> attributeChangeListeners = new HashSet<>();
 
 	/**
 	 * The server to calculate the scores
 	 */
-	protected ScrabbleServerInterface server;
+	private ScrabbleServerInterface server;
 
 	private final BruteForceMethod bfm;
 
 	protected AbstractPossibleMoveDisplayer(final IDictionary dictionary) {
 		this.bfm = new BruteForceMethod(dictionary);
 	}
-
-	/**
-	 * the game
-	 */
-	protected UUID game;
-
-	protected List<Character> rack;
-
-	protected GameState state;
 
 	protected LinkedHashMap<Strategy, String> getStrategyList() {
 		final Strategy.BestScore bestScore = new Strategy.BestScore(null, null);
@@ -63,63 +54,49 @@ public abstract class AbstractPossibleMoveDisplayer {
 		return orderStrategies;
 	}
 
-	/**
-	 * Set the server this displayer is for. This information is transferred to the subcomponents too.
-	 *
-	 * @param server
-	 */
-	void setServer(final ScrabbleServerInterface server) {
-		this.server = server;
-		invokeListeners("server", server);
-	}
-
-	/**
-	 * Set the game this displayer is for. This information is transferred to the under-components too.
-	 *
-	 * @param game
-	 */
-	public void setGame(final UUID game) {
-		this.game = game;
-		invokeListeners("game", game); //NON-NLS
-	}
-
-	public synchronized void setData(final GameState state, final List<Character> rack) {
-		this.state = state;
-		this.rack = rack;
-	}
-
 	protected void invokeListeners(final String fieldName, final Object newValue) {
 		this.attributeChangeListeners.forEach(l -> l.onChange(fieldName, newValue));
 	}
 
 	protected abstract Strategy getSelectedStrategy();
 
-	public synchronized void refresh() {
+	/** state as known by the last refresh */
+	private GameState state;
+	/** rack as known by the last refresh */
+	private List<Character> rack;
+
+	public synchronized void refresh(ScrabbleServerInterface server, GameState state, List<Character> rack) {
+		this.server = server;
+		this.state = state;
+		this.rack = rack;
+
+		invokeListeners("game", state.gameId);
+		invokeListeners("server", server);
+		refresh();
+	}
+
+	protected void refresh() {
 		Strategy selectedOrderStrategy = getSelectedStrategy();
 
-		if (selectedOrderStrategy == DO_NOT_DISPLAY_STRATEGIE) {
+		if (this.state == null || this.rack == null) {
+			throw new IllegalStateException("Game state and rack have not been set");
+		}
+
+		final Collection<Score> scores;
+		if (this.rack.isEmpty() || selectedOrderStrategy == null || selectedOrderStrategy == DO_NOT_DISPLAY_STRATEGIE) {
 			setListData(Collections.emptyList());
 			return;
 		}
 
-		if (!this.state.gameId.equals(this.game)) {
-			throw new IllegalArgumentException("GameId is " + this.state.gameId + ", expected was " + this.game);
+		this.bfm.setGrid(Grid.fromData(this.state.grid));
+		final ArrayList<String> words = new ArrayList<>();
+		for (final List<String> subWords : selectedOrderStrategy.sort(this.bfm.getLegalMoves(this.rack)).values()) {
+			words.addAll(0, subWords);
 		}
-
-		final Collection<Score> scores;
-		if (selectedOrderStrategy == null) {
-			scores = Collections.emptyList();
-		} else {
-			this.bfm.setGrid(Grid.fromData(this.state.grid));
-			final ArrayList<String> words = new ArrayList<>();
-			for (final List<String> subWords : selectedOrderStrategy.sort(this.bfm.getLegalMoves(this.rack)).values()) {
-				words.addAll(0, subWords);
-			}
-			try {
-				scores = this.server.getScores(this.game, words);
-			} catch (ScrabbleException e) {
-				throw new Error(e);
-			}
+		try {
+			scores = this.server.getScores(this.state.getGameId(), words);
+		} catch (ScrabbleException e) {
+			throw new Error(e);
 		}
 		setListData(new Vector<>(scores));
 	}

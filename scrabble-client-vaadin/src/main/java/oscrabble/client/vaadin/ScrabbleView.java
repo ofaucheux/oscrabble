@@ -3,7 +3,6 @@ package oscrabble.client.vaadin;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.ItemLabelGenerator;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -33,7 +32,11 @@ import java.util.List;
 @PageTitle("Scrabble | By Olivier")
 public class ScrabbleView extends HorizontalLayout {
 
+	private static final TextRenderer<Action> ACTION_RENDERER = new TextRenderer<>(a -> a.getScore() + " pts");
+	private static final TextRenderer<Score> SCORE_RENDERER = new TextRenderer<>(score -> score.getNotation() + " " + score.getScore() + " pts");
+
 	private final Game game;
+	private final Server server;
 
 	public ScrabbleView() throws ScrabbleException, InterruptedException {
 
@@ -42,8 +45,8 @@ public class ScrabbleView extends HorizontalLayout {
 			players.add(Player.builder().name(n).id(UUID.randomUUID()).build());
 		}
 
-		final Server server = new Server();
-		this.game = new Game(server, Dictionary.getDictionary(Language.FRENCH), 2);
+		this.server = new Server();
+		this.game = new Game(this.server, Dictionary.getDictionary(Language.FRENCH), 2);
 		for (Player p : players) {
 			this.game.addPlayer(p);
 		}
@@ -148,26 +151,38 @@ public class ScrabbleView extends HorizontalLayout {
 		}
 	}
 
-	private static class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
+	private class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
 		final Grid<Score> grid;
 		private final Select<Strategy> strategyComboBox;
-		private Strategy selectedValue = null;
+		private Strategy selectedStrategy = null;
 
-		public PossibleMovesDisplayer(IDictionary dictionary) {
+		public PossibleMovesDisplayer(IDictionary dictionary) throws ScrabbleException {
 			super(dictionary);
+
 			this.grid = new Grid<>();
 			this.grid.setHeight("150px");
+			this.grid.setItems(Score.builder().score(12).notation("A 34").build());
+			this.grid.addColumn(SCORE_RENDERER);
+			setThemeVariants(this.grid);
 
+			final Bag rack = ScrabbleView.this.server.getRack(ScrabbleView.this.game.getId(), ScrabbleView.this.game.getPlayerOnTurnUUID());
 			final LinkedHashMap<Strategy, String> strategies = getStrategyList();
+			refresh(
+					ScrabbleView.this.server,
+					ScrabbleView.this.game.getGameState(),
+					rack.getChars()
+			);
 			this.strategyComboBox = new Select<>();
 			final ItemLabelGenerator<Strategy> labelGenerator = item -> strategies.get(item);
 			this.strategyComboBox.setRenderer(new TextRenderer<>(labelGenerator));
-//			this.strategyComboBox.setItemLabelGenerator(labelGenerator);
 			this.strategyComboBox.setItems(strategies.keySet());
 			this.strategyComboBox.addValueChangeListener(a -> {
-				this.selectedValue = a.getValue();
+				this.selectedStrategy = a.getValue();
 				refresh();
 			});
+			setListData(List.of(
+					Score.builder().score(100).notation("A14").build()
+			));
 		}
 
 		public Component createComponent() {
@@ -176,7 +191,7 @@ public class ScrabbleView extends HorizontalLayout {
 
 		@Override
 		protected Strategy getSelectedStrategy() {
-			return this.selectedValue;
+			return this.selectedStrategy;
 		}
 
 		@Override
@@ -187,11 +202,8 @@ public class ScrabbleView extends HorizontalLayout {
 
 	private static class HistoryComponent extends Grid<Action> {
 		public HistoryComponent(final List<Action> history) {
-
-			final ItemLabelGenerator<Action> score = a -> a.getScore() + " pts";
-
 			addColumn(Action::getNotation);
-			addColumn(new TextRenderer<>(score));
+			addColumn(ACTION_RENDERER);
 			setHeight("150px");
 
 			setItems(history);
