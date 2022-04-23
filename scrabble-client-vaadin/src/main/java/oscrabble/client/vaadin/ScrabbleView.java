@@ -2,6 +2,7 @@ package oscrabble.client.vaadin;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -26,7 +27,6 @@ import oscrabble.server.Game;
 import oscrabble.server.Server;
 
 import java.util.*;
-import java.util.List;
 
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
@@ -66,7 +66,6 @@ public class ScrabbleView extends HorizontalLayout {
 		//
 		// Center column
 		//
-
 		final VerticalLayout centerColumn = new VerticalLayout();
 		centerColumn.setAlignItems(Alignment.STRETCH);
 
@@ -128,6 +127,10 @@ public class ScrabbleView extends HorizontalLayout {
 		grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS);
 	}
 
+	private static void setMonospacedFont(HasStyle component) {
+		component.getStyle().set("font-family", "Nanum Gothic Coding, monospace");
+	}
+
 	static class PlayerComponent extends Grid<Player> {
 		PlayerComponent(Collection<Player> players, final UUID onTurnUUID) {
 			final ItemLabelGenerator<Player> onTurn =
@@ -164,6 +167,7 @@ public class ScrabbleView extends HorizontalLayout {
 			this.grid.setItems(Score.builder().score(12).notation("A 34").build());
 			this.grid.addColumn(SCORE_RENDERER);
 			setThemeVariants(this.grid);
+			setMonospacedFont(this.grid);
 
 			final Bag rack = ScrabbleView.this.server.getRack(ScrabbleView.this.game.getId(), ScrabbleView.this.game.getPlayerOnTurnUUID());
 			final LinkedHashMap<Strategy, String> strategies = getStrategyList();
@@ -205,7 +209,7 @@ public class ScrabbleView extends HorizontalLayout {
 			addColumn(Action::getNotation);
 			addColumn(ACTION_RENDERER);
 			setHeight("150px");
-
+			setMonospacedFont(this);
 			setItems(history);
 		}
 	}
