@@ -281,12 +281,9 @@ class Playground {
 		});
 		panel1.add(serverConfigButton);
 		eastPanel.add(panel1, BorderLayout.CENTER);
-		final String version = Application.class.getPackage().getImplementationVersion();
 		final JLabel versionLabel = new JLabel();
 		versionLabel.setFont(versionLabel.getFont().deriveFont(9f));
-		versionLabel.setText(
-				version == null ? "-" : "v" + version //NON-NLS
-		);
+		versionLabel.setText(Application.getFormattedVersion());
 		panel1.add(versionLabel);
 		this.gridFrame.add(eastPanel, BorderLayout.LINE_END);
 
@@ -297,6 +294,8 @@ class Playground {
 		this.gridFrame.getLayeredPane().add(this.arrow, JLayeredPane.DRAG_LAYER);
 		this.commandPrompt.requestFocus();
 	}
+
+
 
 	/**
 	 * Dispose the UI

@@ -127,6 +127,14 @@ public class Application {
 	}
 
 	/**
+	 * @return p.ex. "v1.0.22-SNAPSHOT"
+	 */
+	public static String getFormattedVersion() {
+		final String version = Application.class.getPackage().getImplementationVersion();
+		return version == null ? "-" : "v" + version; //NON-NLS
+	}
+
+	/**
 	 * Prepare the server and the client, start the game and play it till it ends.
 	 * @throws InterruptedException
 	 */

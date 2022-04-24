@@ -4,32 +4,44 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.ItemLabelGenerator;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 import oscrabble.ScrabbleException;
 import oscrabble.client.AbstractPossibleMoveDisplayer;
+import oscrabble.client.Application;
 import oscrabble.client.JGrid;
+import oscrabble.client.utils.I18N;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.*;
+import oscrabble.data.Action;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
 import oscrabble.player.ai.Strategy;
 import oscrabble.server.Game;
 import oscrabble.server.Server;
 
+import javax.swing.*;
 import java.util.*;
 
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
+@JsModule("@vaadin/vaadin-lumo-styles/presets/compact.js")
+@Theme("Lumo")
 public class ScrabbleView extends HorizontalLayout {
 
 	private static final TextRenderer<Action> ACTION_RENDERER = new TextRenderer<>(a -> a.getScore() + " pts");
@@ -58,10 +70,14 @@ public class ScrabbleView extends HorizontalLayout {
 						.build()
 		);
 
-		getElement().getStyle().set(
+		final Style style = getElement().getStyle();
+		style.set(
 				"background-color",
 				"#eeeeee"
 		); // fixme: not a good thing to change the style here
+		style.set("font-family", "Tahoma");
+		style.set("font-weight", "bold");
+		style.set("font-size", "12px");
 
 		//
 		// Center column
@@ -83,12 +99,16 @@ public class ScrabbleView extends HorizontalLayout {
 		final VerticalLayout rightColumn = new VerticalLayout();
 
 		final GameState gameState = this.game.getGameState();
-		addTitledComponent(rightColumn, "scores", new PlayerComponent(
+		addTitledComponent(rightColumn, I18N.get("border.title.score"), new PlayerComponent(
 				gameState.players,
 				gameState.playerOnTurn
 		));
-		addTitledComponent(rightColumn, "possible moves", new PossibleMovesDisplayer(this.game.getDictionary()).createComponent());
-		addTitledComponent(rightColumn, "history", new HistoryComponent(gameState.playedActions));
+		addTitledComponent(rightColumn, I18N.get("possible.moves"), new PossibleMovesDisplayer(this.game.getDictionary()).createComponent());
+		addTitledComponent(rightColumn, I18N.get("moves"), new HistoryComponent(gameState.playedActions));
+		addTitledComponent(rightColumn, I18N.get("server.configuration"), new Label());
+		rightColumn.add(new Button(I18N.get("rollback"))); // fixme: migrate into history panel
+
+		rightColumn.add(new VersionLabel());
 
 		add(rightColumn);
 		rightColumn.setPadding(false);
@@ -128,7 +148,22 @@ public class ScrabbleView extends HorizontalLayout {
 	}
 
 	private static void setMonospacedFont(HasStyle component) {
-		component.getStyle().set("font-family", "Nanum Gothic Coding, monospace");
+		final Style style = component.getStyle();
+		style.set("font-family", "Nanum Gothic Coding, monospace");
+		style.set("font-weight", "normal");
+	}
+
+	private static void setDefaultFont(HasStyle component) {
+		final Style style = component.getStyle();
+		style.remove("font-family");
+		style.remove("font-weight");
+		style.remove("font-size");
+
+	}
+
+
+	private static void setFontSize(HasStyle component, String size) {
+		component.getStyle().set("font-size", size);
 	}
 
 	static class PlayerComponent extends Grid<Player> {
@@ -143,12 +178,13 @@ public class ScrabbleView extends HorizontalLayout {
 			addColumn(Player::getScore);
 
 			setSelectionMode(SelectionMode.NONE);
-			setHeight("150px");
+			setHeight("120px");
 			final Iterator<Column<Player>> it = getColumns().iterator();
 			it.next().setWidth("5px");
 			it.next().setAutoWidth(true);
 			it.next().setWidth("50px");
 			setThemeVariants(this);
+			setDefaultFont(this);
 
 			setItems(players);
 		}
@@ -190,7 +226,9 @@ public class ScrabbleView extends HorizontalLayout {
 		}
 
 		public Component createComponent() {
-			return new VerticalLayout(this.strategyComboBox, this.grid);
+			final VerticalLayout verticalLayout = new VerticalLayout(this.strategyComboBox, this.grid);
+			verticalLayout.getStyle().set("padding", "0px");
+			return verticalLayout;
 		}
 
 		@Override
@@ -211,6 +249,14 @@ public class ScrabbleView extends HorizontalLayout {
 			setHeight("150px");
 			setMonospacedFont(this);
 			setItems(history);
+		}
+	}
+
+	private class VersionLabel extends Label {
+		public VersionLabel() {
+			super();
+			setText(Application.getFormattedVersion());
+			setFontSize(this, "small");
 		}
 	}
 }
