@@ -1,10 +1,10 @@
 package oscrabble.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.util.Pair;
 import lombok.SneakyThrows;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,12 +96,12 @@ public class GameTest {
 		this.game.play(Action.parse(null, "H3 APPETQE"));
 		Thread.sleep(100);
 		assertEquals(this.game.getPlayer(this.gustav).score, 0);
-		assertEquals(this.gustav, this.game.getPlayerToPlay().uuid);
+		assertEquals(this.gustav, getPlayerToPlay(this.game).uuid);
 		assertEquals(0, this.game.getRoundNr());
 
 		this.game.play(Action.parse(null, "8H APTES"));
 		this.game.awaitEndOfPlay(1);
-		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, getPlayerToPlay(this.game));
 		assertEquals(16, this.game.getPlayer(this.gustav).score);
 	}
 
@@ -116,12 +116,12 @@ public class GameTest {
 		this.game.play(Action.parse(null, "8H APTES"));
 		this.game.awaitEndOfPlay(1);
 		assertEquals(16, this.game.getPlayer(this.gustav).score);
-		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, getPlayerToPlay(this.game));
 
 		this.game.rollbackLastMove(this.gustav);
 		assertEquals(roundNr, this.game.getRoundNr());
 		assertEquals(0, this.game.getPlayer(this.gustav).score);
-		assertEquals(this.gustav, this.game.getPlayerToPlay().uuid);
+		assertEquals(this.gustav, getPlayerToPlay(this.game).uuid);
 		assertEquals(startRack, this.game.getPlayer(this.gustav).rack);
 	}
 
@@ -131,7 +131,7 @@ public class GameTest {
 		this.game.getConfiguration().setValue("retryAccepted", false);
 		this.startGame(true);
 
-		Assertions.assertEquals(this.gustav, this.game.getPlayerToPlay().uuid);
+		Assertions.assertEquals(this.gustav, getPlayerToPlay(this.game).uuid);
 		try {
 			this.game.play(Action.parse(this.gustav, "H3 APPETEE"));
 			fail();
@@ -141,7 +141,7 @@ public class GameTest {
 		this.game.awaitEndOfPlay(1);
 
 		assertEquals(this.game.getPlayer(this.gustav).score, 0);
-		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay().uuid);
+		Assertions.assertNotEquals(this.gustav, getPlayerToPlay(this.game).uuid);
 	}
 
 	@Test
@@ -155,7 +155,7 @@ public class GameTest {
 		} catch (ScrabbleException.ForbiddenPlayException e) {
 			// OK
 		}
-		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, getPlayerToPlay(this.game));
 	}
 
 
@@ -170,7 +170,7 @@ public class GameTest {
 		} catch (ScrabbleException.ForbiddenPlayException e) {
 			// OK
 		}
-		Assertions.assertNotEquals(this.gustav, this.game.getPlayerToPlay());
+		Assertions.assertNotEquals(this.gustav, getPlayerToPlay(this.game));
 	}
 
 	@Test
@@ -261,40 +261,40 @@ public class GameTest {
 
 		// Game from http://chr.amet.chez-alice.fr/p/commente.htm
 		final ArrayList<Pair<String, Integer>> plays = new ArrayList<>();
-		plays.add(new Pair<>("H4 FATUM", 26));
-		plays.add(new Pair<>("5E lOUANGEA", 82));
-		plays.add(new Pair<>("4L VEXA", 44));
-		plays.add(new Pair<>("8G AMBIANTE", 62));
-		plays.add(new Pair<>("I8 BUILDING", 64));
-		plays.add(new Pair<>("O3 FAITES", 63));
-		plays.add(new Pair<>("O1 DEFAITES", 36));
-		plays.add(new Pair<>("N2 MIX", 37));
-		plays.add(new Pair<>("13G WHIP", 28));
-		plays.add(new Pair<>("K8 AJOURS", 45));
-		plays.add(new Pair<>("6A LYCEE", 37));
-		plays.add(new Pair<>("N8 ELUSSENT", 70));
-		plays.add(new Pair<>("15C HOLDING", 39));
-		plays.add(new Pair<>("A4 VOLER", 36));
-		plays.add(new Pair<>("15L BOTE", 27));
-		plays.add(new Pair<>("M2 ARETE", 35));
-		plays.add(new Pair<>("D6 ENQuIMES", 96));
-		plays.add(new Pair<>("A1 SURVOLEREZ", 66));
-		plays.add(new Pair<>("3A RACKET", 34));
-		plays.add(new Pair<>("1G PARLOIR", 86));
+		plays.add(Pair.of("H4 FATUM", 26));
+		plays.add(Pair.of("5E lOUANGEA", 82));
+		plays.add(Pair.of("4L VEXA", 44));
+		plays.add(Pair.of("8G AMBIANTE", 62));
+		plays.add(Pair.of("I8 BUILDING", 64));
+		plays.add(Pair.of("O3 FAITES", 63));
+		plays.add(Pair.of("O1 DEFAITES", 36));
+		plays.add(Pair.of("N2 MIX", 37));
+		plays.add(Pair.of("13G WHIP", 28));
+		plays.add(Pair.of("K8 AJOURS", 45));
+		plays.add(Pair.of("6A LYCEE", 37));
+		plays.add(Pair.of("N8 ELUSSENT", 70));
+		plays.add(Pair.of("15C HOLDING", 39));
+		plays.add(Pair.of("A4 VOLER", 36));
+		plays.add(Pair.of("15L BOTE", 27));
+		plays.add(Pair.of("M2 ARETE", 35));
+		plays.add(Pair.of("D6 ENQuIMES", 96));
+		plays.add(Pair.of("A1 SURVOLEREZ", 66));
+		plays.add(Pair.of("3A RACKET", 34));
+		plays.add(Pair.of("1G PARLOIR", 86));
 		testGame(plays);
 
 		plays.clear();
-		plays.add(new Pair<>("H4 FORGER", 28));
-		plays.add(new Pair<>("5F EVOQUE", 32));
-		plays.add(new Pair<>("F4 DEY", 33));
-		plays.add(new Pair<>("E5 RAGE", 55));
-		plays.add(new Pair<>("L4 HEIN", 32));
-		plays.add(new Pair<>("M1 LILAS", 34));
-		plays.add(new Pair<>("8A bUTTER", 18));
-		plays.add(new Pair<>("1L CLIN", 27));
-		plays.add(new Pair<>("B6 JOUTE", 30));
-		plays.add(new Pair<>("11A BROUM", 29));
-		plays.add(new Pair<>("M7 IODATES", 75));
+		plays.add(Pair.of("H4 FORGER", 28));
+		plays.add(Pair.of("5F EVOQUE", 32));
+		plays.add(Pair.of("F4 DEY", 33));
+		plays.add(Pair.of("E5 RAGE", 55));
+		plays.add(Pair.of("L4 HEIN", 32));
+		plays.add(Pair.of("M1 LILAS", 34));
+		plays.add(Pair.of("8A bUTTER", 18));
+		plays.add(Pair.of("1L CLIN", 27));
+		plays.add(Pair.of("B6 JOUTE", 30));
+		plays.add(Pair.of("11A BROUM", 29));
+		plays.add(Pair.of("M7 IODATES", 75));
 		testGame(plays);
 	}
 
@@ -330,7 +330,11 @@ public class GameTest {
 		} else {
 			this.game.startGame();
 		}
-
 	}
+	
+	public synchronized PlayerInformation getPlayerToPlay(Game game) {
+		return game.toPlay.getFirst();
+	}
+
 }
 

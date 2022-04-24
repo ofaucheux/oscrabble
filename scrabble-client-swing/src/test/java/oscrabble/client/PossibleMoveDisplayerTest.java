@@ -24,11 +24,7 @@ class PossibleMoveDisplayerTest {
 
 		final PossibleMoveDisplayer pmd = new PossibleMoveDisplayer(Dictionary.getDictionary(Language.FRENCH));
 		pmd.setFont(Playground.MONOSPACED);
-		pmd.setServer(scrabbleServer);
-		pmd.setGame(game.getGameId());
-
-		pmd.setData(game, Arrays.asList('c', 'A', 'R'));
-		pmd.refresh();
+		pmd.refresh(scrabbleServer, game, Arrays.asList('c', 'A', 'R'));
 		JOptionPane.showMessageDialog(null, pmd.mainPanel);
 		while (pmd.mainPanel.isVisible()) {
 			Thread.sleep(100);
