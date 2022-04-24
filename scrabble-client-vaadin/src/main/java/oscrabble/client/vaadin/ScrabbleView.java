@@ -5,26 +5,19 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.AppShellSettings;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
-import com.vaadin.flow.theme.Theme;
 import oscrabble.ScrabbleException;
 import oscrabble.client.AbstractPossibleMoveDisplayer;
 import oscrabble.client.Application;
@@ -32,26 +25,21 @@ import oscrabble.client.JGrid;
 import oscrabble.client.utils.I18N;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.*;
-import oscrabble.data.Action;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
 import oscrabble.player.ai.Strategy;
 import oscrabble.server.Game;
 import oscrabble.server.Server;
 
-import javax.swing.*;
 import java.util.*;
-import java.util.Base64;
-import java.util.Random;
-import java.util.UUID;
 
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
-@JsModule("@vaadin/vaadin-lumo-styles/presets/compact.js")
-@Theme("Lumo")
-public class ScrabbleView extends VerticalLayout
-		implements AppShellConfigurator
+public class ScrabbleView extends HorizontalLayout
 {
+	private static final TextRenderer<Action> ACTION_RENDERER = new TextRenderer<>(a -> a.getScore() + " pts");
+	private static final TextRenderer<Score> SCORE_RENDERER = new TextRenderer<>(score -> score.getNotation() + " " + score.getScore() + " pts");
+
 	private final Game game;
 	private final Server server;
 
@@ -120,12 +108,6 @@ public class ScrabbleView extends VerticalLayout
 		rightColumn.setHeight(centerColumn.getHeight());
 	}
 
-	@Override
-	public void configurePage(final AppShellSettings settings) {
-		AppShellConfigurator.super.configurePage(settings);
-		settings.addFavIcon("icon", "icons/oscrabble-icon.png", "192x192");
-	}
-
 	private String createGridHTML() {
 		final JGrid jGrid = new JGrid();
 		jGrid.setGrid(this.game.getGrid());
@@ -171,7 +153,6 @@ public class ScrabbleView extends VerticalLayout
 		style.remove("font-size");
 
 	}
-
 
 	private static void setFontSize(HasStyle component, String size) {
 		component.getStyle().set("font-size", size);
@@ -263,7 +244,7 @@ public class ScrabbleView extends VerticalLayout
 		}
 	}
 
-	private class VersionLabel extends Label {
+	private static class VersionLabel extends Label {
 		public VersionLabel() {
 			super();
 			setText(Application.getFormattedVersion());
