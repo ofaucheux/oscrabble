@@ -1,9 +1,6 @@
 package oscrabble.client.vaadin;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.ItemLabelGenerator;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -18,13 +15,14 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.AbstractPossibleMoveDisplayer;
 import oscrabble.client.Application;
 import oscrabble.client.JGrid;
 import oscrabble.client.JRack;
 import oscrabble.client.utils.I18N;
-import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.*;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
@@ -38,12 +36,16 @@ import java.util.*;
 @PageTitle("Scrabble | By Olivier")
 public class ScrabbleView extends HorizontalLayout
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ScrabbleView.class);
+
 	private static final TextRenderer<Action> ACTION_RENDERER = new TextRenderer<>(a -> a.getScore() + " pts");
 	private static final TextRenderer<Score> SCORE_RENDERER = new TextRenderer<>(score -> score.getNotation() + " " + score.getScore() + " pts");
 
 	private final Game game;
-	private final Player player;
+	private final UUID player;
 	private final Server server;
+	private final TextField inputTextField;
+	private final GridComponent grid;
 
 	public ScrabbleView() throws ScrabbleException, InterruptedException {
 
@@ -51,7 +53,7 @@ public class ScrabbleView extends HorizontalLayout
 		for (String n : Arrays.asList("Eleonore", "Kevin", "Charlotte")) {
 			players.add(Player.builder().name(n).id(UUID.randomUUID()).build());
 		}
-		this.player = players.get(0);
+		this.player = players.get(0).id;
 
 		this.server = new Server();
 		this.game = new Game(this.server, Dictionary.getDictionary(Language.FRENCH), 2);
@@ -82,10 +84,13 @@ public class ScrabbleView extends HorizontalLayout
 		final VerticalLayout centerColumn = new VerticalLayout();
 		centerColumn.setAlignItems(Alignment.STRETCH);
 
-		final GridComponent grid = new GridComponent();
+		grid = new GridComponent();
 		centerColumn.add(grid);
-		centerColumn.add(new TextField());
-
+		inputTextField = new TextField();
+		centerColumn.add(inputTextField);
+		inputTextField.addValueChangeListener(
+			ev -> play()
+		);
 		add(centerColumn);
 		centerColumn.setWidth(grid.getWidth());
 
@@ -113,6 +118,29 @@ public class ScrabbleView extends HorizontalLayout
 		rightColumn.setHeight(centerColumn.getHeight());
 	}
 
+	private void play() {
+		final oscrabble.data.Action action = oscrabble.data.Action.builder()
+				.player(this.player)
+				.turnId(UUID.randomUUID()) //TODO: the game should give the id
+				.notation(this.inputTextField.getValue().toUpperCase())
+				.build();
+		try {
+			final PlayActionResponse response = this.server.play(this.game.getId(), action);
+			LOGGER.info(response.message);
+			if (response.success) {
+				this.inputTextField.clear();
+				this.inputTextField.setHelperText("");
+			} else {
+				this.inputTextField.setHelperText(response.message);
+			}
+		} catch (ScrabbleException | InterruptedException e) {
+			LOGGER.error(e.toString(), e);
+			this.inputTextField.setHelperText(e.toString());
+		} finally {
+			this.grid.actualize();
+		}
+	}
+
 	private String createGridHTML() {
 		final String encoded = Base64.getEncoder().encodeToString(
 				JGrid.createImage(this.game.getGrid())
@@ -124,7 +152,7 @@ public class ScrabbleView extends HorizontalLayout
 	}
 
 	private String createRackHTML() throws ScrabbleException {
-		final Bag rack = server.getRack(game.getId(), player.getId());
+		final Bag rack = server.getRack(game.getId(), player);
 		final String encoded = Base64.getEncoder().encodeToString(
 				JRack.createImage(rack.getTiles())
 		);
@@ -146,6 +174,10 @@ public class ScrabbleView extends HorizontalLayout
 
 	class GridComponent extends Div {
 		GridComponent() {
+			actualize();
+		}
+
+		private void actualize() {
 			getElement().setProperty("innerHTML", createGridHTML());
 		}
 	}
