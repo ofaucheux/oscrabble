@@ -2,6 +2,7 @@ package oscrabble.client;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.Nullable;
+import oscrabble.client.utils.SwingUtils;
 import oscrabble.controller.Action;
 import oscrabble.data.ScrabbleRules;
 import oscrabble.data.Tile;
@@ -57,9 +58,20 @@ public class JGrid extends JPanel {
 	private Playground playground;
 
 	/**
+	 * Create the image of a grid
+	 * @param grid
+	 * @return
+	 */
+	public static byte[] createImage(Grid grid) {
+		final JGrid jGrid = new JGrid();
+		jGrid.setGrid(grid);
+		return SwingUtils.getImage(jGrid, null);
+	}
+
+	/**
 	 * Spielfeld des Scrabbles
 	 */
-	public JGrid() {
+	JGrid() {
 		this.setLayout(new BorderLayout());
 		final int size = 15 * CELL_SIZE;
 		this.jSquares = new JSquare[17][17];
@@ -75,7 +87,7 @@ public class JGrid extends JPanel {
 	/**
 	 * @param grid grid description coming from the server
 	 */
-	public void setGrid(Grid grid) {
+	void setGrid(Grid grid) {
 		this.grid = grid;
 		final int numberOfRows = this.grid.getSize() + 2;
 

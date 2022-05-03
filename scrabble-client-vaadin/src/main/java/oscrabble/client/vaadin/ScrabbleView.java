@@ -22,6 +22,7 @@ import oscrabble.ScrabbleException;
 import oscrabble.client.AbstractPossibleMoveDisplayer;
 import oscrabble.client.Application;
 import oscrabble.client.JGrid;
+import oscrabble.client.JRack;
 import oscrabble.client.utils.I18N;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.*;
@@ -41,6 +42,7 @@ public class ScrabbleView extends HorizontalLayout
 	private static final TextRenderer<Score> SCORE_RENDERER = new TextRenderer<>(score -> score.getNotation() + " " + score.getScore() + " pts");
 
 	private final Game game;
+	private final Player player;
 	private final Server server;
 
 	public ScrabbleView() throws ScrabbleException, InterruptedException {
@@ -49,6 +51,7 @@ public class ScrabbleView extends HorizontalLayout
 		for (String n : Arrays.asList("Eleonore", "Kevin", "Charlotte")) {
 			players.add(Player.builder().name(n).id(UUID.randomUUID()).build());
 		}
+		this.player = players.get(0);
 
 		this.server = new Server();
 		this.game = new Game(this.server, Dictionary.getDictionary(Language.FRENCH), 2);
@@ -56,6 +59,7 @@ public class ScrabbleView extends HorizontalLayout
 			this.game.addPlayer(p);
 		}
 		this.game.startGame();
+
 		this.game.play(
 				Action.builder()
 						.notation("H8 GATE")
@@ -96,6 +100,7 @@ public class ScrabbleView extends HorizontalLayout
 				gameState.players,
 				gameState.playerOnTurn
 		));
+		rightColumn.add(new RackComponent());
 		addTitledComponent(rightColumn, I18N.get("possible.moves"), new PossibleMovesDisplayer(this.game.getDictionary()).createComponent());
 		addTitledComponent(rightColumn, I18N.get("moves"), new HistoryComponent(gameState.playedActions));
 		addTitledComponent(rightColumn, I18N.get("server.configuration"), new Label());
@@ -109,10 +114,20 @@ public class ScrabbleView extends HorizontalLayout
 	}
 
 	private String createGridHTML() {
-		final JGrid jGrid = new JGrid();
-		jGrid.setGrid(this.game.getGrid());
-		final byte[] image = SwingUtils.getImage(jGrid, null);
-		final String encoded = Base64.getEncoder().encodeToString(image);
+		final String encoded = Base64.getEncoder().encodeToString(
+				JGrid.createImage(this.game.getGrid())
+		);
+		return String.format(
+				"<img style='display:block' id='base64image' src='data:image/png;base64,%s' />",
+				encoded
+		);
+	}
+
+	private String createRackHTML() throws ScrabbleException {
+		final Bag rack = server.getRack(game.getId(), player.getId());
+		final String encoded = Base64.getEncoder().encodeToString(
+				JRack.createImage(rack.getTiles())
+		);
 		return String.format(
 				"<img style='display:block' id='base64image' src='data:image/png;base64,%s' />",
 				encoded
@@ -134,6 +149,13 @@ public class ScrabbleView extends HorizontalLayout
 			getElement().setProperty("innerHTML", createGridHTML());
 		}
 	}
+
+	class RackComponent extends Div {
+		RackComponent() throws ScrabbleException {
+			getElement().setProperty("innerHTML", createRackHTML());
+		}
+	}
+
 
 	private static void setThemeVariants(Grid<?> grid) {
 		grid.addThemeVariants(GridVariant.LUMO_COMPACT);

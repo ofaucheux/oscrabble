@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.Tile;
 
 import javax.swing.*;
@@ -13,6 +14,17 @@ public class JRack extends JPanel {
 	static final int RACK_SIZE = 7;
 
 	final JRackCell[] cells = new JRackCell[7];
+
+	/**
+	 * Create the image of a rack containing tiles
+	 * @param tiles
+	 * @return
+	 */
+	public static byte[] createImage(List<Tile> tiles) {
+		final JRack jRack = new JRack();
+		jRack.setTiles(tiles);
+		return SwingUtils.getImage(jRack, null);
+	}
 
 	/**
 	 *
