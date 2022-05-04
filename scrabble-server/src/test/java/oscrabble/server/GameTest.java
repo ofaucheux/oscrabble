@@ -70,11 +70,6 @@ public class GameTest {
 		return player.id;
 	}
 
-	@AfterEach
-	public void endsGame() {
-		this.game.quitGame();
-	}
-
 	@Test
 	@Disabled
 	void preparedGame() throws IOException {
@@ -235,7 +230,6 @@ public class GameTest {
 			this.game.play(Action.parse(null, RANDOM.nextBoolean() ? "4F NIERa" : "4F NIERA"));
 			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getPlayer(anton).score);
-			this.game.quitGame();
 		}
 
 		{
@@ -251,7 +245,6 @@ public class GameTest {
 			this.game.play(Action.parse(null, "7D CAISSE"));
 			this.game.awaitEndOfPlay(move);
 			assertEquals(28, this.game.getPlayer(anton).score);
-			this.game.quitGame();
 		}
 	}
 
