@@ -15,6 +15,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -24,13 +25,12 @@ import oscrabble.client.JGrid;
 import oscrabble.client.JRack;
 import oscrabble.client.utils.I18N;
 import oscrabble.data.*;
-import oscrabble.dictionary.Dictionary;
-import oscrabble.dictionary.Language;
 import oscrabble.player.ai.Strategy;
-import oscrabble.server.Game;
-import oscrabble.server.Server;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
@@ -41,34 +41,15 @@ public class ScrabbleView extends HorizontalLayout
 	private static final TextRenderer<Action> ACTION_RENDERER = new TextRenderer<>(a -> a.getScore() + " pts");
 	private static final TextRenderer<Score> SCORE_RENDERER = new TextRenderer<>(score -> score.getNotation() + " " + score.getScore() + " pts");
 
-	private final Game game;
-	private final UUID player;
-	private final Server server;
 	private final TextField inputTextField;
 	private final GridComponent grid;
+	private final PlayerComponent playerComponent;
+	private final HistoryComponent historyComponent;
+	private final RackComponent rackComponent;
+	private final PossibleMovesDisplayer possibleMovesDisplayer;
+	private UI ui;
 
-	public ScrabbleView() throws ScrabbleException, InterruptedException {
-
-		List<Player> players = new ArrayList<>();
-		for (String n : Arrays.asList("Eleonore", "Kevin", "Charlotte")) {
-			players.add(Player.builder().name(n).id(UUID.randomUUID()).build());
-		}
-		this.player = players.get(0).id;
-
-		this.server = new Server();
-		this.game = new Game(this.server, Dictionary.getDictionary(Language.FRENCH), 2);
-		for (Player p : players) {
-			this.game.addPlayer(p);
-		}
-		this.game.startGame();
-
-		this.game.play(
-				Action.builder()
-						.notation("H8 GATE")
-						.player(this.game.getPlayerOnTurnUUID())
-						.build()
-		);
-
+	public ScrabbleView() {
 		final Style style = getElement().getStyle();
 		style.set(
 				"background-color",
@@ -84,15 +65,15 @@ public class ScrabbleView extends HorizontalLayout
 		final VerticalLayout centerColumn = new VerticalLayout();
 		centerColumn.setAlignItems(Alignment.STRETCH);
 
-		grid = new GridComponent();
-		centerColumn.add(grid);
-		inputTextField = new TextField();
-		centerColumn.add(inputTextField);
-		inputTextField.addValueChangeListener(
+		this.grid = new GridComponent();
+		centerColumn.add(this.grid);
+		this.inputTextField = new TextField();
+		centerColumn.add(this.inputTextField);
+		this.inputTextField.addValueChangeListener(
 			ev -> play()
 		);
 		add(centerColumn);
-		centerColumn.setWidth(grid.getWidth());
+		centerColumn.setWidth(this.grid.getWidth());
 
 		//
 		// Right column
@@ -100,14 +81,14 @@ public class ScrabbleView extends HorizontalLayout
 
 		final VerticalLayout rightColumn = new VerticalLayout();
 
-		final GameState gameState = this.game.getGameState();
-		addTitledComponent(rightColumn, I18N.get("border.title.score"), new PlayerComponent(
-				gameState.players,
-				gameState.playerOnTurn
-		));
-		rightColumn.add(new RackComponent());
-		addTitledComponent(rightColumn, I18N.get("possible.moves"), new PossibleMovesDisplayer(this.game.getDictionary()).createComponent());
-		addTitledComponent(rightColumn, I18N.get("moves"), new HistoryComponent(gameState.playedActions));
+		this.playerComponent = new PlayerComponent();
+		addTitledComponent(rightColumn, I18N.get("border.title.score"), this.playerComponent);
+		this.rackComponent = new RackComponent();
+		rightColumn.add(this.rackComponent);
+		this.possibleMovesDisplayer = new PossibleMovesDisplayer(Context.get().game.getDictionary());
+		addTitledComponent(rightColumn, I18N.get("possible.moves"), this.possibleMovesDisplayer.createComponent());
+		this.historyComponent = new HistoryComponent();
+		addTitledComponent(rightColumn, I18N.get("moves"), this.historyComponent);
 		addTitledComponent(rightColumn, I18N.get("server.configuration"), new Label());
 		rightColumn.add(new Button(I18N.get("rollback"))); // fixme: migrate into history panel
 
@@ -116,16 +97,46 @@ public class ScrabbleView extends HorizontalLayout
 		add(rightColumn);
 		rightColumn.setPadding(false);
 		rightColumn.setHeight(centerColumn.getHeight());
+
+		//
+		// start a thread for watching the game
+		//
+
+		final BlockingQueue<Long> listener = new LinkedBlockingQueue<>();
+		Context.get().game.addListener(listener);
+		final Thread th = new Thread(() -> {
+			while (true) // todo: quit if client disconnects
+				try {
+					listener.take();
+					update();
+				} catch (InterruptedException | ScrabbleException ex) {
+					LOGGER.error("Error occurred", ex);
+				}
+		});
+		th.setDaemon(true);
+		th.start();
+	}
+
+	@Override
+	protected void onAttach(final AttachEvent attachEvent) {
+		LOGGER.info("Attaching UI: " + attachEvent);
+		ui = attachEvent.getUI();
+		try {
+			update();
+		} catch (ScrabbleException e) {
+			LOGGER.error(e.toString(), e);
+		}
 	}
 
 	private void play() {
+		final Context ctx = Context.get();
 		final oscrabble.data.Action action = oscrabble.data.Action.builder()
-				.player(this.player)
+				.player(ctx.player)
 				.turnId(UUID.randomUUID()) //TODO: the game should give the id
 				.notation(this.inputTextField.getValue().toUpperCase())
 				.build();
 		try {
-			final PlayActionResponse response = this.server.play(this.game.getId(), action);
+			final PlayActionResponse response = ctx.server.play(ctx.game.getId(), action);
 			LOGGER.info(response.message);
 			if (response.success) {
 				this.inputTextField.clear();
@@ -136,14 +147,12 @@ public class ScrabbleView extends HorizontalLayout
 		} catch (ScrabbleException | InterruptedException e) {
 			LOGGER.error(e.toString(), e);
 			this.inputTextField.setHelperText(e.toString());
-		} finally {
-			this.grid.actualize();
 		}
 	}
 
 	private String createGridHTML() {
 		final String encoded = Base64.getEncoder().encodeToString(
-				JGrid.createImage(this.game.getGrid())
+				JGrid.createImage(Context.get().game.getGrid())
 		);
 		return String.format(
 				"<img style='display:block' id='base64image' src='data:image/png;base64,%s' />",
@@ -152,7 +161,8 @@ public class ScrabbleView extends HorizontalLayout
 	}
 
 	private String createRackHTML() throws ScrabbleException {
-		final Bag rack = server.getRack(game.getId(), player);
+		final Context ctx = Context.get();
+		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.player);
 		final String encoded = Base64.getEncoder().encodeToString(
 				JRack.createImage(rack.getTiles())
 		);
@@ -172,6 +182,33 @@ public class ScrabbleView extends HorizontalLayout
 		parent.getElement().appendChild(fs);
 	}
 
+	private void update() throws ScrabbleException {
+		final Context ctx = Context.get();
+		final GameState state = ctx.game.getGameState();
+		final VaadinSession session = this.ui.getSession();
+		session.lock();
+		try {
+			this.historyComponent.setItems(state.playedActions);
+			this.playerComponent.playerOnTurn.set(state.playerOnTurn);
+			this.playerComponent.setItems(state.players);
+			this.rackComponent.getElement().setProperty("innerHTML", createRackHTML());
+			this.grid.actualize();
+
+			final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.game.getPlayerOnTurnUUID());
+			this.possibleMovesDisplayer.refresh(
+					ctx.server,
+					ctx.game.getGameState(),
+					rack.getChars()
+			);
+			this.possibleMovesDisplayer.strategyComboBox.setItems(this.possibleMovesDisplayer.strategies.keySet());
+			this.possibleMovesDisplayer.setListData(List.of(
+					Score.builder().score(100).notation("A14").build()
+			));
+		} finally {
+			session.unlock();
+		}
+	}
+
 	class GridComponent extends Div {
 		GridComponent() {
 			actualize();
@@ -182,12 +219,10 @@ public class ScrabbleView extends HorizontalLayout
 		}
 	}
 
-	class RackComponent extends Div {
-		RackComponent() throws ScrabbleException {
-			getElement().setProperty("innerHTML", createRackHTML());
+	static class RackComponent extends Div {
+		RackComponent() {
 		}
 	}
-
 
 	private static void setThemeVariants(Grid<?> grid) {
 		grid.addThemeVariants(GridVariant.LUMO_COMPACT);
@@ -213,9 +248,11 @@ public class ScrabbleView extends HorizontalLayout
 	}
 
 	static class PlayerComponent extends Grid<Player> {
-		PlayerComponent(Collection<Player> players, final UUID onTurnUUID) {
+		private final AtomicReference<UUID> playerOnTurn = new AtomicReference<>();
+
+		PlayerComponent() {
 			final ItemLabelGenerator<Player> onTurn =
-					player -> player.getId().equals(onTurnUUID)
+					player -> player.getId().equals(this.playerOnTurn.get())
 							? "\u27A4"
 							: "";
 
@@ -232,16 +269,16 @@ public class ScrabbleView extends HorizontalLayout
 			setThemeVariants(this);
 			setDefaultFont(this);
 
-			setItems(players);
 		}
 	}
 
-	private class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
+	private static class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
 		final Grid<Score> grid;
 		private final Select<Strategy> strategyComboBox;
+		private final LinkedHashMap<Strategy, String> strategies;
 		private Strategy selectedStrategy = null;
 
-		public PossibleMovesDisplayer(IDictionary dictionary) throws ScrabbleException {
+		public PossibleMovesDisplayer(IDictionary dictionary) {
 			super(dictionary);
 
 			this.grid = new Grid<>();
@@ -251,24 +288,15 @@ public class ScrabbleView extends HorizontalLayout
 			setThemeVariants(this.grid);
 			setMonospacedFont(this.grid);
 
-			final Bag rack = ScrabbleView.this.server.getRack(ScrabbleView.this.game.getId(), ScrabbleView.this.game.getPlayerOnTurnUUID());
-			final LinkedHashMap<Strategy, String> strategies = getStrategyList();
-			refresh(
-					ScrabbleView.this.server,
-					ScrabbleView.this.game.getGameState(),
-					rack.getChars()
-			);
+			this.strategies = getStrategyList();
+
 			this.strategyComboBox = new Select<>();
-			final ItemLabelGenerator<Strategy> labelGenerator = item -> strategies.get(item);
+			final ItemLabelGenerator<Strategy> labelGenerator = item -> this.strategies.get(item);
 			this.strategyComboBox.setRenderer(new TextRenderer<>(labelGenerator));
-			this.strategyComboBox.setItems(strategies.keySet());
 			this.strategyComboBox.addValueChangeListener(a -> {
 				this.selectedStrategy = a.getValue();
 				refresh();
 			});
-			setListData(List.of(
-					Score.builder().score(100).notation("A14").build()
-			));
 		}
 
 		public Component createComponent() {
@@ -289,12 +317,11 @@ public class ScrabbleView extends HorizontalLayout
 	}
 
 	private static class HistoryComponent extends Grid<Action> {
-		public HistoryComponent(final List<Action> history) {
+		public HistoryComponent() {
 			addColumn(Action::getNotation);
 			addColumn(ACTION_RENDERER);
 			setHeight("150px");
 			setMonospacedFont(this);
-			setItems(history);
 		}
 	}
 

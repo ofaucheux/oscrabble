@@ -42,7 +42,7 @@ public abstract class Action {
 		} else if (PLAY_TILES.matcher(notation).matches()) {
 			action = new PlayTiles(player, notation);
 		} else {
-			throw new ScrabbleException.NotParsableException("Illegal move notation: \"" + notation + "\"");
+			throw new ScrabbleException.NotParsableException(notation);
 		}
 
 		return action;
