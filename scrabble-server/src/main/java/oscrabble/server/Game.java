@@ -73,7 +73,7 @@ public class Game {
 	/**
 	 * Listeners to awake after the game state has changed
 	 */
-	private final Set<Object> listener = new HashSet<>();
+	private final Set<Queue<Long>> listener = new HashSet<>();
 
 	protected final ScrabbleRules scrabbleRules;
 
@@ -264,7 +264,7 @@ public class Game {
 		return found;
 	}
 
-	public void addListener(final Object listener) {
+	public void addListener(final Queue listener) {
 		this.listener.add(listener);
 	}
 
@@ -332,7 +332,7 @@ public class Game {
 	 * Inform all listeners
 	 */
 	private void notifyListeners() {
-		this.listener.forEach(l -> l.notifyAll());
+		this.listener.forEach(l -> l.offer(System.currentTimeMillis()));
 	}
 
 	synchronized void updatePlayer(final PlayerUpdateRequest request) throws ScrabbleException {
