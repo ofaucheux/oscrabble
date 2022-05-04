@@ -64,6 +64,12 @@ public class Game {
 	 * List of the users, the first to play at head
 	 */
 	final LinkedList<PlayerInformation> toPlay = new LinkedList<>();
+
+	/**
+	 * Listeners to awake after the game state has changed
+	 */
+	private final Set<Object> listener = new HashSet<>();
+
 	protected final ScrabbleRules scrabbleRules;
 
 	protected final Grid grid;
@@ -253,6 +259,10 @@ public class Game {
 		return found;
 	}
 
+	public void addListener(final Object listener) {
+		this.listener.add(listener);
+	}
+
 //	/**
 //	 * Save the configuration of this game
 //	 */
@@ -309,7 +319,15 @@ public class Game {
 			throw new ScrabbleException("Player ID already registered");
 		}
 		pi.setName(jsonPlayer.name);
+		notifyListeners();
 		return pi;
+	}
+
+	/**
+	 * Inform all listeners
+	 */
+	private void notifyListeners() {
+		this.listener.forEach(l -> l.notifyAll());
 	}
 
 	synchronized void updatePlayer(final PlayerUpdateRequest request) throws ScrabbleException {
@@ -458,6 +476,7 @@ public class Game {
 //			this.changing.notify();
 //		}
 //
+//		notifyListeners();
 	}
 
 	public synchronized UUID getPlayerOnTurnUUID() {
@@ -495,16 +514,6 @@ public class Game {
 					}
 				});
 		setState(GameState.State.ENDED);
-	}
-
-
-	/**
-	 * Send a message to each listener.
-	 *
-	 * @param message message to dispatch
-	 */
-	private void dispatchMessage(final String message) {
-//		dispatch(l -> l.onDispatchMessage(message));
 	}
 
 	/**
@@ -564,6 +573,7 @@ public class Game {
 
 		setState(GameState.State.STARTED);
 		LOGGER.info("Game " + this.id + " started");
+		notifyListeners();
 	}
 
 
@@ -628,19 +638,12 @@ public class Game {
 	private void detachPlayer(final PlayerInformation player) {
 		final String msg = MessageFormat.format(MESSAGES.getString("player.0.quits.with.message.1"), player, null);
 		LOGGER.info(msg);
-		dispatchMessage(msg);
 		player.isAttached = false;
 
 		if (this.players.values().stream().noneMatch(e -> (e.isAttached || e.isRobot))) {
 			setState(GameState.State.ENDED);
 		}
-	}
-
-	/**
-	 * Quit the game. All listeners are informed through {@code GameListener#afterGameEnd}.
-	 */
-	void quitGame() {
-//		dispatch(player -> player.afterGameEnd());
+		notifyListeners();
 	}
 
 	public Configuration getConfiguration() {
@@ -654,6 +657,7 @@ public class Game {
 	public void setState(final GameState.State state) {
 		if (this.state != state) {
 			this.state = state;
+			notifyListeners();
 		}
 	}
 
@@ -779,12 +783,9 @@ public class Game {
 				}
 
 				LOGGER.info(player.uuid + " skips its turn");
-				this.dispatchMessage(MessageFormat.format(MESSAGES.getString("0.skips.its.turn"), player.uuid));
 			} else {
 				throw new AssertionError("Command not treated: " + action);
 			}
-
-			messages.forEach(message -> dispatchMessage(message));
 
 			if (player != null) {
 				player.score += action.score;
@@ -824,6 +825,7 @@ public class Game {
 						.stream()
 						.filter(pi -> pi.isAttached)
 						.forEach(pi -> this.acknowledgesToWaitAfter.add(pi.uuid));
+				notifyListeners();
 			}
 		}
 	}
