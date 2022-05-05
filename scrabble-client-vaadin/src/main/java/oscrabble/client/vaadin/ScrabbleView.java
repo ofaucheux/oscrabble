@@ -94,8 +94,6 @@ public class ScrabbleView extends HorizontalLayout
 		addTitledComponent(rightColumn, I18N.get("possible.moves"), this.possibleMovesDisplayer.createComponent());
 		this.historyComponent = new HistoryComponent();
 		addTitledComponent(rightColumn, I18N.get("moves"), this.historyComponent);
-		addTitledComponent(rightColumn, I18N.get("server.configuration"), new Label());
-		rightColumn.add(new Button(I18N.get("rollback"))); // fixme: migrate into history panel
 
 		rightColumn.add(new VersionLabel());
 
@@ -277,7 +275,7 @@ public class ScrabbleView extends HorizontalLayout
 		}
 	}
 
-	private static class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
+	private class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
 		final Grid<Score> grid;
 		private final Select<Strategy> strategyComboBox;
 		private final LinkedHashMap<Strategy, String> strategies;
@@ -289,6 +287,9 @@ public class ScrabbleView extends HorizontalLayout
 			this.grid = new Grid<>();
 			this.grid.setHeight("150px");
 			this.grid.addColumn(SCORE_RENDERER);
+			this.grid.addItemDoubleClickListener(
+					event -> inputTextField.setValue(event.getItem().getNotation())
+			);
 			setThemeVariants(this.grid);
 			setMonospacedFont(this.grid);
 
