@@ -3,6 +3,7 @@ package oscrabble.client.vaadin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
+import oscrabble.client.utils.NameUtils;
 import oscrabble.data.Player;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
@@ -12,10 +13,7 @@ import oscrabble.server.Game;
 import oscrabble.server.Server;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Context {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
@@ -40,8 +38,11 @@ public class Context {
 			this.game = new Game(this.server, Dictionary.getDictionary(Language.FRENCH), 2);
 
 			List<Player> players = new ArrayList<>();
-			for (String n : Arrays.asList("Eleonore", "Kevin", "Charlotte")) {
-				final Player player = Player.builder().name(n).id(UUID.randomUUID()).build();
+			final Random random = new Random();
+			final ArrayList<String> firstNames = NameUtils.getFrenchFirstNames();
+			for (int i = 0; i < 3; i++) {
+				final String name = firstNames.get(random.nextInt(firstNames.size()));
+				final Player player = Player.builder().name(name).id(UUID.randomUUID()).build();
 				final AIPlayer ai = new AIPlayer(
 						new BruteForceMethod(this.game.getDictionary()),
 						this.game.getId(),
