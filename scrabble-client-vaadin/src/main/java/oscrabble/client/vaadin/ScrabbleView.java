@@ -131,7 +131,7 @@ public class ScrabbleView extends HorizontalLayout
 	private void play() {
 		final Context ctx = Context.get();
 		final oscrabble.data.Action action = oscrabble.data.Action.builder()
-				.player(ctx.player)
+				.player(ctx.humanPlayer)
 				.turnId(UUID.randomUUID()) //TODO: the game should give the id
 				.notation(this.inputTextField.getValue().toUpperCase())
 				.build();
@@ -168,7 +168,7 @@ public class ScrabbleView extends HorizontalLayout
 
 	private String createRackHTML() throws ScrabbleException {
 		final Context ctx = Context.get();
-		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.player);
+		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.humanPlayer);
 		return createHtmlImgCode(JRack.createImage(rack.getTiles()));
 	}
 
@@ -195,6 +195,8 @@ public class ScrabbleView extends HorizontalLayout
 			this.rackComponent.getElement().setProperty("innerHTML", createRackHTML());
 			this.grid.actualize();
 
+			this.inputTextField.setEnabled(state.playerOnTurn == ctx.humanPlayer);
+
 			final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.game.getPlayerOnTurnUUID());
 			this.possibleMovesDisplayer.refresh(
 					ctx.server,
@@ -202,9 +204,6 @@ public class ScrabbleView extends HorizontalLayout
 					rack.getChars()
 			);
 			this.possibleMovesDisplayer.strategyComboBox.setItems(this.possibleMovesDisplayer.strategies.keySet());
-			this.possibleMovesDisplayer.setListData(List.of(
-					Score.builder().score(100).notation("A14").build()
-			));
 		} finally {
 			session.unlock();
 		}
@@ -284,7 +283,6 @@ public class ScrabbleView extends HorizontalLayout
 
 			this.grid = new Grid<>();
 			this.grid.setHeight("150px");
-			this.grid.setItems(Score.builder().score(12).notation("A 34").build());
 			this.grid.addColumn(SCORE_RENDERER);
 			setThemeVariants(this.grid);
 			setMonospacedFont(this.grid);
