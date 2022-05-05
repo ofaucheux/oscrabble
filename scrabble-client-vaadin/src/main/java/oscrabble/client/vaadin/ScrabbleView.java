@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
@@ -188,6 +189,7 @@ public class ScrabbleView extends HorizontalLayout
 		session.lock();
 		try {
 			this.historyComponent.setItems(state.playedActions);
+			this.historyComponent.scrollToEnd();
 			this.playerComponent.playerOnTurn.set(state.playerOnTurn);
 			this.playerComponent.setItems(state.players);
 			this.rackComponent.getElement().setProperty("innerHTML", createRackHTML());
@@ -321,6 +323,24 @@ public class ScrabbleView extends HorizontalLayout
 			addColumn(ACTION_RENDERER);
 			setHeight("150px");
 			setMonospacedFont(this);
+			setFontSize(this, "small");
+			setItemDetailsRenderer(new ComponentRenderer<>(
+					action -> {
+						final VerticalLayout layout = new VerticalLayout();
+						layout.add(action.getNotation());
+						layout.add(" (" + getPlayerName(action.getPlayer()) + ")");
+						return layout;
+					}
+			));
+		}
+
+		private String getPlayerName(UUID id) {
+			for (final Player p : Context.get().game.getGameState().getPlayers()) {
+				if (p.id == id) {
+					return p.getName();
+				}
+			}
+			throw new IllegalArgumentException("No player found with id " + id);
 		}
 	}
 
