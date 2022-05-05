@@ -22,7 +22,7 @@ public class Context {
 	private static Context SINGLETON;
 
 	final Game game;
-	final UUID player;
+	final UUID humanPlayer;
 	final Server server;
 
 	public synchronized static Context get() {
@@ -39,9 +39,12 @@ public class Context {
 			this.game = new Game(this.server, Dictionary.getDictionary(Language.FRENCH), 2);
 
 			List<Player> players = new ArrayList<>();
+			players.add(Player.builder().name("Human").id(UUID.randomUUID()).build());
+			this.humanPlayer = players.get(0).id;
+
 			final Random random = new Random();
 			final ArrayList<String> firstNames = NameUtils.getFrenchFirstNames();
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 2; i++) {
 				final String name = firstNames.get(random.nextInt(firstNames.size()));
 				final Player player = Player.builder().name(name).id(UUID.randomUUID()).build();
 				final AIPlayer ai = new AIPlayer(
@@ -54,7 +57,6 @@ public class Context {
 				ai.startDaemonThread();
 				players.add(player);
 			}
-			this.player = players.get(0).id;
 
 			for (Player p : players) {
 				this.game.addPlayer(p);

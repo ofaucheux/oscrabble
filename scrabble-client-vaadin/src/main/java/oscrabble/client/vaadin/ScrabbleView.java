@@ -13,11 +13,13 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+import elemental.json.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +75,7 @@ public class ScrabbleView extends HorizontalLayout
 		this.grid = new GridComponent();
 		centerColumn.add(this.grid);
 		this.inputTextField = new TextField();
-		centerColumn.add(this.inputTextField);
+		addTitledComponent(centerColumn, I18N.get("your.move"), this.inputTextField);
 		this.inputTextField.addValueChangeListener(
 			ev -> play()
 		);
@@ -94,8 +96,6 @@ public class ScrabbleView extends HorizontalLayout
 		addTitledComponent(rightColumn, I18N.get("possible.moves"), this.possibleMovesDisplayer.createComponent());
 		this.historyComponent = new HistoryComponent();
 		addTitledComponent(rightColumn, I18N.get("moves"), this.historyComponent);
-		addTitledComponent(rightColumn, I18N.get("server.configuration"), new Label());
-		rightColumn.add(new Button(I18N.get("rollback"))); // fixme: migrate into history panel
 
 		rightColumn.add(new VersionLabel());
 
@@ -126,12 +126,17 @@ public class ScrabbleView extends HorizontalLayout
 	protected void onAttach(final AttachEvent attachEvent) {
 		LOGGER.info("Attaching UI: " + attachEvent);
 		this.ui = attachEvent.getUI();
+		try {
+			update();
+		} catch (ScrabbleException e) {
+			LOGGER.error(e.getLocalizedMessage(), e);
+		}
 	}
 
 	private void play() {
 		final Context ctx = Context.get();
 		final oscrabble.data.Action action = oscrabble.data.Action.builder()
-				.player(ctx.player)
+				.player(ctx.humanPlayer)
 				.turnId(UUID.randomUUID()) //TODO: the game should give the id
 				.notation(this.inputTextField.getValue().toUpperCase())
 				.build();
@@ -159,7 +164,7 @@ public class ScrabbleView extends HorizontalLayout
 		final String encoded = Base64.getEncoder().encodeToString(pair.getRight());
 		final Dimension dimension = pair.getLeft();
 		return String.format(
-				"<img style='display:block' width=%d height=%d id='base64image' src='data:image/png;base64,%s' />",
+				"<img style='display:block pointer-events:none' width=%d height=%d id='base64image' src='data:image/png;base64,%s' />",
 				((int) dimension.getWidth()),
 				((int) dimension.getHeight()),
 				encoded
@@ -168,7 +173,7 @@ public class ScrabbleView extends HorizontalLayout
 
 	private String createRackHTML() throws ScrabbleException {
 		final Context ctx = Context.get();
-		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.player);
+		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.humanPlayer);
 		return createHtmlImgCode(JRack.createImage(rack.getTiles()));
 	}
 
@@ -195,6 +200,8 @@ public class ScrabbleView extends HorizontalLayout
 			this.rackComponent.getElement().setProperty("innerHTML", createRackHTML());
 			this.grid.actualize();
 
+			this.inputTextField.setEnabled(state.playerOnTurn == ctx.humanPlayer);
+
 			final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.game.getPlayerOnTurnUUID());
 			this.possibleMovesDisplayer.refresh(
 					ctx.server,
@@ -202,9 +209,6 @@ public class ScrabbleView extends HorizontalLayout
 					rack.getChars()
 			);
 			this.possibleMovesDisplayer.strategyComboBox.setItems(this.possibleMovesDisplayer.strategies.keySet());
-			this.possibleMovesDisplayer.setListData(List.of(
-					Score.builder().score(100).notation("A14").build()
-			));
 		} finally {
 			session.unlock();
 		}
@@ -213,6 +217,31 @@ public class ScrabbleView extends HorizontalLayout
 	class GridComponent extends Div {
 		GridComponent() {
 			actualize();
+			getElement().addEventListener("click", this::handleClick)
+					.addEventData("event.offsetX")
+					.addEventData("event.offsetY")
+					.addEventData("element.clientWidth")
+					.addEventData("element.clientHeight");
+		}
+
+		private void handleClick(DomEvent event) {
+			JsonObject eventData = event.getEventData();
+			double x = eventData.getNumber("event.offsetX");
+			double y = eventData.getNumber("event.offsetY");
+			double w = eventData.getNumber("element.clientWidth");
+			double h = eventData.getNumber("element.clientHeight");
+
+			char column = (char) ('A' + (int) (x * 17 / w) - 1);
+			int row = (int) (y * 17 / h);
+
+			if ('A' <= column && column <= 'O' && 1 <= row && row <= 15) {
+				inputTextField.setValue(String.format("%s%s", column, row));
+				// todo: don't send the value to the vaadin server
+				// or send it and receive the new image.
+
+				// todo: swap column / row if clicked twice
+				// todo: use already tipped word. Perhaps reuse code of swing.
+			}
 		}
 
 		private void actualize() {
@@ -273,7 +302,7 @@ public class ScrabbleView extends HorizontalLayout
 		}
 	}
 
-	private static class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
+	private class PossibleMovesDisplayer extends AbstractPossibleMoveDisplayer {
 		final Grid<Score> grid;
 		private final Select<Strategy> strategyComboBox;
 		private final LinkedHashMap<Strategy, String> strategies;
@@ -284,8 +313,10 @@ public class ScrabbleView extends HorizontalLayout
 
 			this.grid = new Grid<>();
 			this.grid.setHeight("150px");
-			this.grid.setItems(Score.builder().score(12).notation("A 34").build());
 			this.grid.addColumn(SCORE_RENDERER);
+			this.grid.addItemDoubleClickListener(
+					event -> inputTextField.setValue(event.getItem().getNotation())
+			);
 			setThemeVariants(this.grid);
 			setMonospacedFont(this.grid);
 
