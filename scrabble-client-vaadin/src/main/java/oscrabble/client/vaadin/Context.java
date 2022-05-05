@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.utils.NameUtils;
+import oscrabble.data.GameState;
 import oscrabble.data.Player;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
@@ -25,7 +26,7 @@ public class Context {
 	final Server server;
 
 	public synchronized static Context get() {
-		if (SINGLETON == null) {
+		if (SINGLETON == null || SINGLETON.game.getGameState().state == GameState.State.ENDED) {
 			SINGLETON = new Context();
 		}
 
@@ -49,7 +50,7 @@ public class Context {
 						player.getId(),
 						this.server
 				);
-				ai.setThrottle(Duration.ofSeconds(3));
+				ai.setThrottle(Duration.ofSeconds(1));
 				ai.startDaemonThread();
 				players.add(player);
 			}

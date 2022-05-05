@@ -776,12 +776,14 @@ public class Game {
 				}
 
 				Collections.shuffle(this.bag, this.random);
+				action.score = 0;
 				LOGGER.info(player.uuid + " exchanges " + exchange.toExchange.length + " stones");
 			} else if (action instanceof Action.SkipTurn) {
 				if (player == null) {
-					throw new IllegalStateException("Player requiered");
+					throw new IllegalStateException("Player required");
 				}
 
+				action.score = 0;
 				LOGGER.info(player.uuid + " skips its turn");
 			} else {
 				throw new AssertionError("Command not treated: " + action);

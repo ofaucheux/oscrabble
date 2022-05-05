@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import org.apache.commons.lang3.tuple.Pair;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.Tile;
 
@@ -20,7 +21,7 @@ public class JRack extends JPanel {
 	 * @param tiles
 	 * @return
 	 */
-	public static byte[] createImage(List<Tile> tiles) {
+	public static Pair<Dimension, byte[]> createImage(List<Tile> tiles) {
 		final JRack jRack = new JRack();
 		jRack.setTiles(tiles);
 		return SwingUtils.getImage(jRack, null);

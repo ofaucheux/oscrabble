@@ -31,7 +31,7 @@ class JTileTest {
 		stone = new JTile('c', 0, true);
 		grid.add(stone);
 
-		final byte[] png = SwingUtils.getImage(grid, new Dimension(600, 600));
+		final byte[] png = SwingUtils.getImage(grid, new Dimension(600, 600)).getRight();
 		FileUtils.writeByteArrayToFile(
 				new File("C:/temp/2022-04-22/" + System.currentTimeMillis() + ".png"),
 				png
