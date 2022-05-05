@@ -1,6 +1,7 @@
 package oscrabble.client.vaadin;
 
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -16,6 +17,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -27,7 +29,9 @@ import oscrabble.client.utils.I18N;
 import oscrabble.data.*;
 import oscrabble.player.ai.Strategy;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -120,12 +124,7 @@ public class ScrabbleView extends HorizontalLayout
 	@Override
 	protected void onAttach(final AttachEvent attachEvent) {
 		LOGGER.info("Attaching UI: " + attachEvent);
-		ui = attachEvent.getUI();
-		try {
-			update();
-		} catch (ScrabbleException e) {
-			LOGGER.error(e.toString(), e);
-		}
+		this.ui = attachEvent.getUI();
 	}
 
 	private void play() {
@@ -151,11 +150,17 @@ public class ScrabbleView extends HorizontalLayout
 	}
 
 	private String createGridHTML() {
-		final String encoded = Base64.getEncoder().encodeToString(
-				JGrid.createImage(Context.get().game.getGrid())
-		);
+		final oscrabble.data.objects.Grid comp = Context.get().game.getGrid();
+		return createHtmlImgCode(JGrid.createImage(comp));
+	}
+
+	private String createHtmlImgCode(final Pair<Dimension, byte[]> pair) {
+		final String encoded = Base64.getEncoder().encodeToString(pair.getRight());
+		final Dimension dimension = pair.getLeft();
 		return String.format(
-				"<img style='display:block' id='base64image' src='data:image/png;base64,%s' />",
+				"<img style='display:block' width=%d height=%d id='base64image' src='data:image/png;base64,%s' />",
+				((int) dimension.getWidth()),
+				((int) dimension.getHeight()),
 				encoded
 		);
 	}
@@ -163,13 +168,7 @@ public class ScrabbleView extends HorizontalLayout
 	private String createRackHTML() throws ScrabbleException {
 		final Context ctx = Context.get();
 		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.player);
-		final String encoded = Base64.getEncoder().encodeToString(
-				JRack.createImage(rack.getTiles())
-		);
-		return String.format(
-				"<img style='display:block' id='base64image' src='data:image/png;base64,%s' />",
-				encoded
-		);
+		return createHtmlImgCode(JRack.createImage(rack.getTiles()));
 	}
 
 	private void addTitledComponent(final HasComponents parent, final String title, final Component child) {

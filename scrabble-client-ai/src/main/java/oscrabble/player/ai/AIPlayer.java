@@ -138,7 +138,7 @@ public class AIPlayer extends AbstractPlayer {
 		try {
 			final Set<String> legalMoves = this.bruteForceMethod.getLegalMoves(letters);
 			final TreeMap<Integer, List<String>> valuedWords = this.strategy.sort(legalMoves);
-			if (valuedWords == null) {
+			if (valuedWords.isEmpty()) {
 				notation = Action.PASS_TURN_NOTATION;
 			} else {
 				Integer selectedValue = (int) (valuedWords.lastKey() * this.level.factor);

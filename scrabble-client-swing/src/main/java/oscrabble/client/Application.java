@@ -5,12 +5,12 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Data;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.ConnectionParameterPanel;
 import oscrabble.client.utils.I18N;
+import oscrabble.client.utils.NameUtils;
 import oscrabble.controller.ScrabbleServerInterface;
 import oscrabble.data.IDictionary;
 import oscrabble.dictionary.Dictionary;
@@ -21,7 +21,6 @@ import oscrabble.server.Server;
 
 import javax.swing.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.List;
@@ -108,20 +107,6 @@ public class Application {
 		StatusPrinter.printInCaseOfErrorsOrWarnings(context);
 	}
 
-	@SneakyThrows
-	static ArrayList<String> getFrenchFirstNames() {
-		final ArrayList<String> names = new ArrayList<>();
-		final BufferedReader is = new BufferedReader(new InputStreamReader(
-				Application.class.getResourceAsStream("frenchFirstNames.txt"),
-				StandardCharsets.UTF_8
-		));
-		String line;
-		while ((line = is.readLine()) != null) {
-			names.add(line);
-		}
-		return names;
-	}
-
 	public static UUID getGameId() {
 		return singleton == null ? null : singleton.gameId;
 	}
@@ -143,7 +128,7 @@ public class Application {
 		final String humanName = System.getProperty("user.name");
 		final UUID humanPlayer = this.server.addPlayer(gameId, humanName);
 
-		final List<String> names = getFrenchFirstNames();
+		final List<String> names = NameUtils.getFrenchFirstNames();
 		names.remove(humanName);
 		final HashSet<AIPlayer> aiPlayers = new HashSet<>();
 		for (int i = 0; i < (Integer.parseInt((String) this.properties.get("players.number"))) - 1; i++) {

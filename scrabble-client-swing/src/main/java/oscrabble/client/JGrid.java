@@ -62,7 +62,7 @@ public class JGrid extends JPanel {
 	 * @param grid
 	 * @return
 	 */
-	public static byte[] createImage(Grid grid) {
+	public static Pair<Dimension, byte[]> createImage(Grid grid) {
 		final JGrid jGrid = new JGrid();
 		jGrid.setGrid(grid);
 		return SwingUtils.getImage(jGrid, null);
