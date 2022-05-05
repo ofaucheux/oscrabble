@@ -73,7 +73,7 @@ public class ScrabbleView extends HorizontalLayout
 		this.grid = new GridComponent();
 		centerColumn.add(this.grid);
 		this.inputTextField = new TextField();
-		centerColumn.add(this.inputTextField);
+		addTitledComponent(centerColumn, I18N.get("your.move"), this.inputTextField);
 		this.inputTextField.addValueChangeListener(
 			ev -> play()
 		);
@@ -126,6 +126,11 @@ public class ScrabbleView extends HorizontalLayout
 	protected void onAttach(final AttachEvent attachEvent) {
 		LOGGER.info("Attaching UI: " + attachEvent);
 		this.ui = attachEvent.getUI();
+		try {
+			update();
+		} catch (ScrabbleException e) {
+			LOGGER.error(e.getLocalizedMessage(), e);
+		}
 	}
 
 	private void play() {
