@@ -70,7 +70,9 @@ public abstract class AbstractPossibleMoveDisplayer {
 		this.state = state;
 		this.rack = rack;
 
-		invokeListeners("game", state.gameId);
+		if (state != null) {
+			invokeListeners("game", state.gameId);
+		}
 		invokeListeners("server", server);
 		refresh();
 	}
