@@ -2,6 +2,7 @@ package oscrabble.client;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.Nullable;
+import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.controller.Action;
 import oscrabble.data.ScrabbleRules;
@@ -41,9 +42,9 @@ public class JGrid extends JPanel {
 	private final HashMap<JSquare, MatteBorder> specialBorders = new HashMap<>();
 
 	/**
-	 * Set to let the new stones flash
+	 * Arrow marking a square
 	 */
-	boolean hideNewStones;
+	private final StartWordArrow arrow = new StartWordArrow();
 
 	/**
 	 * Turn number of the tiles to hide (for blinking)
@@ -82,6 +83,22 @@ public class JGrid extends JPanel {
 
 	public void setGrid(oscrabble.data.Grid grid) {
 		setGrid(new Grid(grid));
+	}
+
+	public void positionArrow(final Action.PlayTiles playAction) {
+		final Pair<Point, Dimension> squarePosition = getFirstSquarePosition(playAction);
+		this.arrow.setDirection(playAction.getDirection());
+		this.arrow.setLocation(squarePosition.getLeft());
+		this.arrow.setSize(squarePosition.getRight());
+		repaint();
+	}
+
+	@Override
+	public void paint(final Graphics g) {
+		super.paint(g);
+		g.translate(this.arrow.getX(), this.arrow.getY());
+		this.arrow.paint(g);
+		g.translate(-this.arrow.getX(), -this.arrow.getY());
 	}
 
 	/**
@@ -261,7 +278,7 @@ public class JGrid extends JPanel {
 		int y = action.startSquare.y;
 		for (int i = 0; i < action.word.length(); i++) {
 			if (x > 15 || y > 15) {
-				// word runs outside of the grid.
+				// word runs outside the grid.
 				return null;
 			}
 

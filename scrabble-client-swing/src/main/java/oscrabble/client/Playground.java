@@ -1,16 +1,14 @@
 package oscrabble.client;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.ui.CursorImage;
 import oscrabble.client.ui.JScoreboard;
 import oscrabble.client.ui.ServerConfigPanel;
-import oscrabble.client.ui.StartWordArrow;
-import oscrabble.client.utils.StateUtils;
 import oscrabble.client.utils.I18N;
+import oscrabble.client.utils.StateUtils;
 import oscrabble.controller.Action;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.GameState;
@@ -51,11 +49,6 @@ class Playground {
 	 * Image following the mouse cursor
 	 */
 	private final CursorImage cursorImage;
-
-	/**
-	 * Arrow marking a square
-	 */
-	private final StartWordArrow arrow = new StartWordArrow();
 
 	/**
 	 * Filter, das alles Eingetragene Uppercase schreibt
@@ -189,7 +182,6 @@ class Playground {
 			this.pmd = null;
 		} else {
 			this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
-			this.pmd.refresh(this.client.server, null, null);
 			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, getRules()));
 			this.pmd.setFont(MONOSPACED);
 			this.pmd.getMoveList().addMouseListener(new MouseAdapter() {
@@ -291,7 +283,6 @@ class Playground {
 		this.gridFrame.setResizable(false);
 		this.gridFrame.setVisible(true);
 
-		this.gridFrame.getLayeredPane().add(this.arrow, JLayeredPane.DRAG_LAYER);
 		this.commandPrompt.requestFocus();
 	}
 
@@ -325,6 +316,7 @@ class Playground {
 	 * Update the UI to reflect the changes in the game.
 	 * <li>update scoreboard and history list
 	 * <li>display some information if required, p.ex. « end of game »
+	 *
 	 * @param state
 	 * @param rack
 	 */
@@ -546,16 +538,7 @@ class Playground {
 		}
 
 		final PlayTiles playAction = ((PlayTiles) action);
-		this.arrow.setDirection(playAction.getDirection());
-		final Pair<Point, Dimension> squarePosition = Playground.this.jGrid.getFirstSquarePosition(playAction);
-		this.arrow.setLocation(
-				SwingUtilities.convertPoint(
-						this.jGrid,
-						squarePosition.getLeft(),
-						this.gridFrame.getLayeredPane()
-				)
-		);
-		this.arrow.setSize(squarePosition.getRight());
+		this.jGrid.positionArrow(playAction);
 		this.jGrid.highlightPreparedAction(
 				playAction,
 				getRules()
