@@ -59,6 +59,10 @@ public class SwingUtils {
 					layoutComponent(child);
 				}
 			}
+
+			if (component instanceof LayoutChangeListener) {
+				((LayoutChangeListener) component).afterLayoutChange();
+			}
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package oscrabble.client.ui;
 
+import oscrabble.client.JGrid;
 import oscrabble.data.objects.Grid;
 
 import javax.swing.*;
@@ -10,15 +11,8 @@ import java.awt.*;
  */
 public class StartWordArrow extends JComponent {
 
+	private JGrid.JSquare square;
 	private Grid.Direction direction;
-
-	/**
-	 *
-	 * @param direction direction of the word which is marked.
-	 */
-	public void setDirection(final Grid.Direction direction) {
-		this.direction = direction;
-	}
 
 	@Override
 	public void paintComponent(final Graphics g) {
@@ -48,5 +42,22 @@ public class StartWordArrow extends JComponent {
 				throw new IllegalStateException("Unexpected value: " + this.direction);
 		}
 		g2.fillPolygon(p);
+	}
+
+	public void setPosition(final JGrid.JSquare square, final Grid.Direction direction) {
+		this.square = square;
+		this.direction = direction;
+		relocate();
+	}
+
+	/**
+	 * Calculate the location relative to the parent grid
+	 */
+	public void relocate() {
+		if (this.square == null) {
+			return;
+		}
+		setLocation(this.square.getX(), this.square.getY());
+		setSize(this.square.getSize());
 	}
 }
