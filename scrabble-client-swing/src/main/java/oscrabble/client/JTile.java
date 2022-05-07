@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * Darstellung eines Spielsteins.
  */
-class JTile extends JComponent {
+public class JTile extends JComponent {
 
 	final static int CELL_SIZE = 40;
 	final static Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);

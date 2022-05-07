@@ -1,6 +1,5 @@
 package oscrabble.client;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.Nullable;
 import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.LayoutChangeListener;
@@ -64,13 +63,13 @@ public class JGrid extends JPanel implements LayoutChangeListener {
 	 * @param grid
 	 * @return
 	 */
-	public static Pair<Dimension, byte[]> createImage(Grid grid, Action.PlayTiles preparedAction) {
+	public static byte[] createImage(Grid grid, Dimension size, Action.PlayTiles preparedAction) {
 		final JGrid jGrid = new JGrid();
 		jGrid.setGrid(grid);
 		if (preparedAction != null) {
 			jGrid.positionArrow(preparedAction);
 		}
-		return SwingUtils.getImage(jGrid, null);
+		return SwingUtils.getImage(jGrid, size);
 	}
 
 	/**

@@ -18,7 +18,7 @@ public class SwingUtils {
 	 * @param size In null, the preferred size of the component is used
 	 * @return the image of the component as a PNG
 	 */
-	public static Pair<Dimension, byte[]> getImage(Component component, Dimension size) {
+	public static byte[] getImage(Component component, Dimension size) {
 		if (size == null) {
 			size = component.getPreferredSize();
 		}
@@ -29,7 +29,7 @@ public class SwingUtils {
 		BufferedImage image = new BufferedImage(
 				component.getWidth(),
 				component.getHeight(),
-				BufferedImage.TYPE_INT_RGB);
+				BufferedImage.TYPE_INT_ARGB);
 		Graphics2D cg = (Graphics2D) image.getGraphics();
 		component.print(cg);
 		image.flush();
@@ -37,10 +37,7 @@ public class SwingUtils {
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
 			ImageIO.write(image, "png", os);
 			os.flush();
-			return Pair.of(
-					size,
-					os.toByteArray()
-			);
+			return os.toByteArray();
 		} catch (IOException e) {
 			throw new IOError(e);
 		}
