@@ -1,8 +1,9 @@
 package oscrabble.client;
 
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.SneakyThrows;
 import org.springframework.lang.Nullable;
 import oscrabble.client.ui.StartWordArrow;
+import oscrabble.client.utils.LayoutChangeListener;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.controller.Action;
 import oscrabble.data.ScrabbleRules;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Darstellung der Spielfläche
  */
-public class JGrid extends JPanel {
+public class JGrid extends JPanel implements LayoutChangeListener {
 	private static final int CELL_SIZE = 40;
 	private static final Color SCRABBLE_GREEN = Color.green.darker().darker();
 
@@ -58,15 +59,21 @@ public class JGrid extends JPanel {
 	 */
 	private Playground playground;
 
+	private static byte[] PNG = null;
+
 	/**
 	 * Create the image of a grid
-	 * @param grid
 	 * @return
 	 */
-	public static Pair<Dimension, byte[]> createImage(Grid grid) {
-		final JGrid jGrid = new JGrid();
-		jGrid.setGrid(grid);
-		return SwingUtils.getImage(jGrid, null);
+	@SneakyThrows
+	public static byte[] getPNG() {
+		if (PNG == null) {
+			final JGrid jGrid = new JGrid();
+			jGrid.setGrid(new Grid().toData());
+			PNG = SwingUtils.getImage(jGrid, SwingClientConstants.GRID_DIMENSION);
+		}
+
+		return PNG;
 	}
 
 	/**
@@ -81,15 +88,20 @@ public class JGrid extends JPanel {
 		setSize(dimension);
 	}
 
+	@Override
+	public void afterLayoutChange() {
+		this.arrow.relocate();
+	}
+
 	public void setGrid(oscrabble.data.Grid grid) {
 		setGrid(new Grid(grid));
 	}
 
 	public void positionArrow(final Action.PlayTiles playAction) {
-		final Pair<Point, Dimension> squarePosition = getFirstSquarePosition(playAction);
-		this.arrow.setDirection(playAction.getDirection());
-		this.arrow.setLocation(squarePosition.getLeft());
-		this.arrow.setSize(squarePosition.getRight());
+		this.arrow.setPosition(
+				getFirstSquare(playAction),
+				playAction.getDirection()
+		);
 		repaint();
 	}
 
@@ -255,15 +267,14 @@ public class JGrid extends JPanel {
 	}
 
 	/**
-	 * Retrieve information about the first square of a played word.
+	 * Retrieve the first square of a played word.
 	 * @param action
-	 * @return position and size of the square.
+	 * @return
 	 */
-	public Pair<Point, Dimension> getFirstSquarePosition(final Action.PlayTiles action) {
+	public JSquare getFirstSquare(final Action.PlayTiles action) {
 		int x = action.startSquare.x;
 		int y = action.startSquare.y;
-		final JSquare square = this.jSquares[x][y];
-		return Pair.of(square.getLocation(), square.getSize());
+		return this.jSquares[x][y];
 	}
 
 	/**
@@ -349,7 +360,7 @@ public class JGrid extends JPanel {
 	/**
 	 * A cell of the scrabble field.
 	 */
-	class JSquare extends JPanel {
+	public class JSquare extends JPanel { // todo move JGrid in ui-package and remove this public
 		final Square square;
 
 		JSquare(final Square square) {

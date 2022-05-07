@@ -1,23 +1,34 @@
 package oscrabble.client.ui;
 
+import oscrabble.client.JGrid;
+import oscrabble.client.SwingClientConstants;
+import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.objects.Grid;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Small arrow to mark the beginning of the current played word.
  */
-public class StartWordArrow extends JComponent {
+public class StartWordArrow extends JComponent implements SwingClientConstants {
 
+	private JGrid.JSquare square;
 	private Grid.Direction direction;
 
-	/**
-	 *
-	 * @param direction direction of the word which is marked.
-	 */
-	public void setDirection(final Grid.Direction direction) {
-		this.direction = direction;
+	private static Map<Grid.Direction, byte[]> pngs = new HashMap<>();
+
+	public static byte[] getPNG(final Grid.Direction direction) {
+		return pngs.computeIfAbsent(
+				direction,
+				d -> {
+					final StartWordArrow arrow = new StartWordArrow();
+					arrow.direction = direction;
+					return SwingUtils.getImage(arrow, CELL_DIMENSION);
+				}
+		);
 	}
 
 	@Override
@@ -48,5 +59,22 @@ public class StartWordArrow extends JComponent {
 				throw new IllegalStateException("Unexpected value: " + this.direction);
 		}
 		g2.fillPolygon(p);
+	}
+
+	public void setPosition(final JGrid.JSquare square, final Grid.Direction direction) {
+		this.square = square;
+		this.direction = direction;
+		relocate();
+	}
+
+	/**
+	 * Calculate the location relative to the parent grid
+	 */
+	public void relocate() {
+		if (this.square == null) {
+			return;
+		}
+		setLocation(this.square.getX(), this.square.getY());
+		setSize(this.square.getSize());
 	}
 }

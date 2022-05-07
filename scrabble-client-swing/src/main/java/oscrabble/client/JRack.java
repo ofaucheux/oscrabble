@@ -1,6 +1,6 @@
 package oscrabble.client;
 
-import org.apache.commons.lang3.tuple.Pair;
+import oscrabble.ScrabbleConstants;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.Tile;
 
@@ -9,10 +9,9 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Rack of an player.
+ * Rack of a player.
  */
 public class JRack extends JPanel {
-	static final int RACK_SIZE = 7;
 
 	final JRackCell[] cells = new JRackCell[7];
 
@@ -21,25 +20,25 @@ public class JRack extends JPanel {
 	 * @param tiles
 	 * @return
 	 */
-	public static Pair<Dimension, byte[]> createImage(List<Tile> tiles) {
+	public static byte[] createImage(int cellSize, List<Tile> tiles) {
 		final JRack jRack = new JRack();
 		jRack.setTiles(tiles);
-		return SwingUtils.getImage(jRack, null);
+		return SwingUtils.getImage(jRack, new Dimension(ScrabbleConstants.RACK_SIZE * cellSize, cellSize));
 	}
 
 	/**
 	 *
 	 */
 	JRack() {
-		this.setLayout(new GridLayout(1, 7));
-		for (int i = 0; i < RACK_SIZE; i++) {
+		this.setLayout(new GridLayout(1, ScrabbleConstants.RACK_SIZE));
+		for (int i = 0; i < ScrabbleConstants.RACK_SIZE; i++) {
 			this.cells[i] = new JRackCell();
 			add(this.cells[i]);
 		}
 	}
 
 	void setTiles(List<Tile> tiles) {
-		for (int i = 0; i < RACK_SIZE; i++) {
+		for (int i = 0; i < ScrabbleConstants.RACK_SIZE; i++) {
 			this.cells[i].setTile(
 					i >= tiles.size() ? null : new JTile(tiles.get(i)));
 		}

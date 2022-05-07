@@ -1,8 +1,7 @@
 package oscrabble.client.vaadin;
 
-import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -10,6 +9,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.Autocapitalize;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
@@ -20,17 +20,17 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import elemental.json.JsonObject;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
-import oscrabble.client.AbstractPossibleMoveDisplayer;
+import oscrabble.client.*;
 import oscrabble.client.Application;
-import oscrabble.client.JGrid;
-import oscrabble.client.JRack;
 import oscrabble.client.utils.I18N;
+import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.*;
+import oscrabble.data.objects.Square;
 import oscrabble.player.ai.Strategy;
+import oscrabble.server.Game;
 
 import java.awt.*;
 import java.util.*;
@@ -43,6 +43,11 @@ import java.util.concurrent.atomic.AtomicReference;
 @PageTitle("Scrabble | By Olivier")
 public class ScrabbleView extends HorizontalLayout
 {
+	private static final int CELL_SIZE = 36;
+	public static final Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);
+	public static final Dimension GRID_DIMENSION = new Dimension(17 * CELL_SIZE, 17 * CELL_SIZE);
+	private static final int CELL_BORDER = 1;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(ScrabbleView.class);
 
 	private static final TextRenderer<Action> ACTION_RENDERER = new TextRenderer<>(a -> a.getScore() + " pts");
@@ -54,6 +59,7 @@ public class ScrabbleView extends HorizontalLayout
 	private final HistoryComponent historyComponent;
 	private final RackComponent rackComponent;
 	private final PossibleMovesDisplayer possibleMovesDisplayer;
+	private final ImageGenerator imageFactory = new ImageGenerator();
 	private UI ui;
 
 	public ScrabbleView() {
@@ -72,9 +78,10 @@ public class ScrabbleView extends HorizontalLayout
 		final VerticalLayout centerColumn = new VerticalLayout();
 		centerColumn.setAlignItems(Alignment.STRETCH);
 
+		this.inputTextField = new TextField();
+		this.inputTextField.setAutocapitalize(Autocapitalize.CHARACTERS);
 		this.grid = new GridComponent();
 		centerColumn.add(this.grid);
-		this.inputTextField = new TextField();
 		addTitledComponent(centerColumn, I18N.get("your.move"), this.inputTextField);
 		this.inputTextField.addValueChangeListener(
 			ev -> play()
@@ -153,28 +160,108 @@ public class ScrabbleView extends HorizontalLayout
 			LOGGER.error(e.toString(), e);
 			this.inputTextField.setHelperText(e.toString());
 		}
+
+		this.grid.actualize();
 	}
 
 	private String createGridHTML() {
-		final oscrabble.data.objects.Grid comp = Context.get().game.getGrid();
-		return createHtmlImgCode(JGrid.createImage(comp));
+		final Game game = Context.get().game;
+		final oscrabble.data.objects.Grid grid = game.getGrid();
+
+		// prepare action
+		PlayTiles preparedAction;
+		try {
+			final String notation = this.inputTextField.getValue();
+			final oscrabble.controller.Action action = PlayTiles.parse(Context.get().humanPlayer, notation);
+			preparedAction = action instanceof PlayTiles ? ((PlayTiles) action) : null;
+		} catch (ScrabbleException.NotParsableException e) {
+			// ok
+			preparedAction = null;
+		}
+
+		final StringBuilder html = new StringBuilder();
+
+		// grid
+		html.append(createHtmlImgCode(GRID_DIMENSION, ImageServlet.urlForGrid(), ""));
+
+		// letters
+		final List<Action> playedActions = game.getGameState().getPlayedActions();
+		final UUID lastTurnId = playedActions.isEmpty() ? null : playedActions.get(playedActions.size() - 1).turnId;
+		for (final Square square : grid.getAllSquares()) {
+			if (square.tile != null) {
+				html.append("\n");
+				html.append(
+						getHtmlPositionedImgCode(
+								square.getX(),
+								square.getY(),
+								this.imageFactory.generateTileImage(square.tile, square.tile.turn == lastTurnId)
+						));
+			}
+		}
+
+		if (preparedAction != null) {
+			html.append("\n");
+			html.append(
+					getHtmlPositionedImgCode(
+							preparedAction.startSquare.x,
+							preparedAction.startSquare.y,
+							this.imageFactory.generateDirectionArrowImage(preparedAction.getDirection())
+					)
+			);
+		}
+
+		return html.toString();
 	}
 
-	private String createHtmlImgCode(final Pair<Dimension, byte[]> pair) {
-		final String encoded = Base64.getEncoder().encodeToString(pair.getRight());
-		final Dimension dimension = pair.getLeft();
+	private String getHtmlPositionedImgCode(final int squareX, final int squareY, final byte[] png) {
+		return createHtmlEmbeddedImgCode(
+				CELL_DIMENSION,
+				png,
+				String.format(
+						"position:absolute; top:%spx; left:%spx; height:%spx; width:%spx",
+						CELL_SIZE * squareY + CELL_BORDER,
+						CELL_SIZE * squareX + CELL_BORDER,
+						CELL_SIZE - 2 * CELL_BORDER,
+						CELL_SIZE - 2 * CELL_BORDER
+				)
+		);
+	}
+
+	private String createHtmlEmbeddedImgCode(final Dimension dimension, final byte[] png, final String cssStyle) {
+		return createHtmlImgCode(
+				dimension,
+				"data:image/png;base64," + Base64.getEncoder().encodeToString(png),
+				cssStyle
+		);
+	}
+
+	private String createHtmlImgCode(final Dimension dimension, String url, final String cssStyle) {
 		return String.format(
-				"<img style='display:block pointer-events:none' width=%d height=%d id='base64image' src='data:image/png;base64,%s' />",
+				"<img style='display:block pointer-events:none; %s' width=%d height=%d id='base64image' src='%s' />",
+				cssStyle,
 				((int) dimension.getWidth()),
 				((int) dimension.getHeight()),
-				encoded
+				url
 		);
 	}
 
 	private String createRackHTML() throws ScrabbleException {
 		final Context ctx = Context.get();
 		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.humanPlayer);
-		return createHtmlImgCode(JRack.createImage(rack.getTiles()));
+
+		final StringBuilder html = new StringBuilder();
+		for (int i = 0; i < rack.tiles.size(); i++) {
+			html.append("\n");
+			html.append(
+					createHtmlEmbeddedImgCode(
+							CELL_DIMENSION,
+							this.imageFactory.generateTileImage(rack.tiles.get(i), false),
+							""
+					)
+			);
+		}
+
+		return html.toString();
 	}
 
 	private void addTitledComponent(final HasComponents parent, final String title, final Component child) {
@@ -222,6 +309,7 @@ public class ScrabbleView extends HorizontalLayout
 					.addEventData("event.offsetY")
 					.addEventData("element.clientWidth")
 					.addEventData("element.clientHeight");
+			getElement().setAttribute("style", "position:relative");
 		}
 
 		private void handleClick(DomEvent event) {
@@ -235,7 +323,7 @@ public class ScrabbleView extends HorizontalLayout
 			int row = (int) (y * 17 / h);
 
 			if ('A' <= column && column <= 'O' && 1 <= row && row <= 15) {
-				inputTextField.setValue(String.format("%s%s", column, row));
+				ScrabbleView.this.inputTextField.setValue(String.format("%s%s ", column, row));
 				// todo: don't send the value to the vaadin server
 				// or send it and receive the new image.
 
@@ -251,6 +339,9 @@ public class ScrabbleView extends HorizontalLayout
 
 	static class RackComponent extends Div {
 		RackComponent() {
+			final Style style = getElement().getStyle();
+			style.set("position", "relative");
+			style.set("height", CELL_SIZE + "px");
 		}
 	}
 
@@ -273,6 +364,7 @@ public class ScrabbleView extends HorizontalLayout
 
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static void setFontSize(HasStyle component, String size) {
 		component.getStyle().set("font-size", size);
 	}
@@ -315,7 +407,7 @@ public class ScrabbleView extends HorizontalLayout
 			this.grid.setHeight("150px");
 			this.grid.addColumn(SCORE_RENDERER);
 			this.grid.addItemDoubleClickListener(
-					event -> inputTextField.setValue(event.getItem().getNotation())
+					event -> ScrabbleView.this.inputTextField.setValue(event.getItem().getNotation())
 			);
 			setThemeVariants(this.grid);
 			setMonospacedFont(this.grid);

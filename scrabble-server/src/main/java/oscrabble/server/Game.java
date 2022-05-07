@@ -6,6 +6,7 @@ import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.ScrabbleConstants;
 import oscrabble.ScrabbleException;
 import oscrabble.configuration.Parameter;
 import oscrabble.controller.Action;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Game {
+public class Game implements ScrabbleConstants {
 	/**
 	 * This value always leads to the last created game.
 	 */
@@ -34,7 +35,6 @@ public class Game {
 	 * Resource Bundle
 	 */
 	public final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages", new Locale("fr_FR"));
-	public final static int RACK_SIZE = 7;
 	public static final File DEFAULT_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".scrabble.properties");
 	private final static Logger LOGGER = LoggerFactory.getLogger(Game.class);
 	private static final String SCRABBLE_MESSAGE = "Scrabble!";
@@ -403,25 +403,6 @@ public class Game {
 		));
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
 
-		final oscrabble.data.Grid grid = new oscrabble.data.Grid();
-		grid.squares = new ArrayList<>();
-		this.grid.getAllSquares().forEach(s ->
-				{
-					if (s.isBorder) {
-						return;
-					}
-
-					final oscrabble.data.Square square = oscrabble.data.Square.builder()
-							.settingPlay(s.action)
-							.wordBonus(s.wordBonus)
-							.letterBonus(s.letterBonus)
-							.coordinate(s.getCoordinate())
-							.tile(s.tile)
-							.build();
-					grid.squares.add(square);
-				}
-		);
-
 		final PlayerInformation onTurn = this.toPlay.peekFirst();
 		final GameState state = GameState
 				.builder()
@@ -430,7 +411,7 @@ public class Game {
 				.players(players)
 				.playerOnTurn(onTurn == null ? null : onTurn.uuid)
 				.playedActions(playedActions)
-				.grid(grid)
+				.grid(this.grid.toData())
 				.bag(bag)
 				.build();
 
