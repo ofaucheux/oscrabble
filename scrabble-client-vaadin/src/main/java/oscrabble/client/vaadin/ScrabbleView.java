@@ -1,8 +1,7 @@
 package oscrabble.client.vaadin;
 
-import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -29,12 +28,12 @@ import oscrabble.client.Application;
 import oscrabble.client.JGrid;
 import oscrabble.client.JRack;
 import oscrabble.client.utils.I18N;
+import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.*;
 import oscrabble.player.ai.Strategy;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,9 +71,9 @@ public class ScrabbleView extends HorizontalLayout
 		final VerticalLayout centerColumn = new VerticalLayout();
 		centerColumn.setAlignItems(Alignment.STRETCH);
 
+		this.inputTextField = new TextField();
 		this.grid = new GridComponent();
 		centerColumn.add(this.grid);
-		this.inputTextField = new TextField();
 		addTitledComponent(centerColumn, I18N.get("your.move"), this.inputTextField);
 		this.inputTextField.addValueChangeListener(
 			ev -> play()
@@ -153,11 +152,23 @@ public class ScrabbleView extends HorizontalLayout
 			LOGGER.error(e.toString(), e);
 			this.inputTextField.setHelperText(e.toString());
 		}
+
+		grid.actualize();
 	}
 
 	private String createGridHTML() {
 		final oscrabble.data.objects.Grid comp = Context.get().game.getGrid();
-		return createHtmlImgCode(JGrid.createImage(comp));
+
+		PlayTiles preparedAction;
+		try {
+			final String notation = this.inputTextField.getValue();
+			final oscrabble.controller.Action action = PlayTiles.parse(Context.get().humanPlayer, notation);
+			preparedAction = action instanceof PlayTiles ? ((PlayTiles) action) : null;
+		} catch (ScrabbleException.NotParsableException e) {
+			// ok
+			preparedAction = null;
+		}
+		return createHtmlImgCode(JGrid.createImage(comp, preparedAction));
 	}
 
 	private String createHtmlImgCode(final Pair<Dimension, byte[]> pair) {
@@ -235,7 +246,7 @@ public class ScrabbleView extends HorizontalLayout
 			int row = (int) (y * 17 / h);
 
 			if ('A' <= column && column <= 'O' && 1 <= row && row <= 15) {
-				inputTextField.setValue(String.format("%s%s", column, row));
+				ScrabbleView.this.inputTextField.setValue(String.format("%s%s ", column, row));
 				// todo: don't send the value to the vaadin server
 				// or send it and receive the new image.
 
@@ -315,7 +326,7 @@ public class ScrabbleView extends HorizontalLayout
 			this.grid.setHeight("150px");
 			this.grid.addColumn(SCORE_RENDERER);
 			this.grid.addItemDoubleClickListener(
-					event -> inputTextField.setValue(event.getItem().getNotation())
+					event -> ScrabbleView.this.inputTextField.setValue(event.getItem().getNotation())
 			);
 			setThemeVariants(this.grid);
 			setMonospacedFont(this.grid);

@@ -64,9 +64,12 @@ public class JGrid extends JPanel implements LayoutChangeListener {
 	 * @param grid
 	 * @return
 	 */
-	public static Pair<Dimension, byte[]> createImage(Grid grid) {
+	public static Pair<Dimension, byte[]> createImage(Grid grid, Action.PlayTiles preparedAction) {
 		final JGrid jGrid = new JGrid();
 		jGrid.setGrid(grid);
+		if (preparedAction != null) {
+			jGrid.positionArrow(preparedAction);
+		}
 		return SwingUtils.getImage(jGrid, null);
 	}
 
