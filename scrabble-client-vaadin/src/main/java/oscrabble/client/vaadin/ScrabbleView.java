@@ -25,9 +25,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.*;
 import oscrabble.client.Application;
-import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.I18N;
-import oscrabble.client.utils.SwingUtils;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.*;
 import oscrabble.data.objects.Square;
@@ -181,14 +179,19 @@ public class ScrabbleView extends HorizontalLayout
 		final StringBuilder html = new StringBuilder();
 
 		// grid
-		html.append(createHtmlImgCode(GRID_DIMENSION, JGrid.getPNG(), ""));
+		html.append(createHtmlImgCode(GRID_DIMENSION, ImageServlet.urlForGrid(), ""));
 
 		// letters
 		for (final Square square : grid.getAllSquares()) {
 			if (square.tile != null) {
-				final byte[] tilePNG = SwingUtils.getImage(new JTile(square.tile), CELL_DIMENSION);
 				html.append("\n");
-				html.append(getHtmlPositionedImgCode(square.getX(), square.getY(), tilePNG));
+				html.append(
+						getHtmlPositionedImgCode(
+								square.getX(),
+								square.getY(),
+								ImageServlet.urlForTile(square.tile)
+						)
+				);
 			}
 		}
 
@@ -198,17 +201,18 @@ public class ScrabbleView extends HorizontalLayout
 					getHtmlPositionedImgCode(
 							preparedAction.startSquare.x,
 							preparedAction.startSquare.y,
-							StartWordArrow.getPNG(preparedAction.getDirection()))
+							ImageServlet.urlForStartWordArrow(preparedAction.getDirection())
+					)
 			);
 		}
 
 		return html.toString();
 	}
 
-	private String getHtmlPositionedImgCode(final int squareX, final int squareY, final byte[] tilePNG) {
+	private String getHtmlPositionedImgCode(final int squareX, final int squareY, final String imgUrl) {
 		return createHtmlImgCode(
 				CELL_DIMENSION,
-				tilePNG,
+				imgUrl,
 				String.format(
 						"position:absolute; top:%spx; left:%spx; height:%spx; width:%spx",
 						CELL_SIZE * squareY + CELL_BORDER,
@@ -219,22 +223,33 @@ public class ScrabbleView extends HorizontalLayout
 		);
 	}
 
-	private String createHtmlImgCode(final Dimension dimension, byte[] png, final String cssStyle) {
-		final String encoded = Base64.getEncoder().encodeToString(png);
+	private String createHtmlImgCode(final Dimension dimension, String url, final String cssStyle) {
 		return String.format(
-				"<img style='display:block pointer-events:none; %s' width=%d height=%d id='base64image' src='data:image/png;base64,%s' />",
+				"<img style='display:block pointer-events:none; %s' width=%d height=%d id='base64image' src='%s' />",
 				cssStyle,
 				((int) dimension.getWidth()),
 				((int) dimension.getHeight()),
-				encoded
+				url
 		);
 	}
 
 	private String createRackHTML() throws ScrabbleException {
 		final Context ctx = Context.get();
 		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.humanPlayer);
-		final byte[] image = JRack.createImage(CELL_SIZE, rack.getTiles());
-		return createHtmlImgCode(new Dimension(Game.RACK_SIZE * CELL_SIZE, CELL_SIZE), image, "");
+
+		final StringBuilder html = new StringBuilder();
+		for (int i = 0; i < rack.tiles.size(); i++) {
+			html.append("\n");
+			html.append(
+					getHtmlPositionedImgCode(
+							i,
+							0,
+							ImageServlet.urlForTile(rack.tiles.get(i))
+					)
+			);
+		}
+
+		return html.toString();
 	}
 
 	private void addTitledComponent(final HasComponents parent, final String title, final Component child) {
@@ -312,6 +327,9 @@ public class ScrabbleView extends HorizontalLayout
 
 	static class RackComponent extends Div {
 		RackComponent() {
+			final Style style = getElement().getStyle();
+			style.set("position", "relative");
+			style.set("height", CELL_SIZE + "px");
 		}
 	}
 
