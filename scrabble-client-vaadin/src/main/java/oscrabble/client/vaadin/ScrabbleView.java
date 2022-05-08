@@ -9,6 +9,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.Autocapitalize;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
@@ -78,6 +79,7 @@ public class ScrabbleView extends HorizontalLayout
 		centerColumn.setAlignItems(Alignment.STRETCH);
 
 		this.inputTextField = new TextField();
+		this.inputTextField.setAutocapitalize(Autocapitalize.CHARACTERS);
 		this.grid = new GridComponent();
 		centerColumn.add(this.grid);
 		addTitledComponent(centerColumn, I18N.get("your.move"), this.inputTextField);
