@@ -10,11 +10,7 @@ import java.util.UUID;
 /**
  * Darstellung eines Spielsteins.
  */
-public class JTile extends JComponent {
-
-	final static int CELL_SIZE = 40;
-	final static Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);
-
+public class JTile extends JComponent implements SwingClientConstants {
 	/**
 	 * Grid this tile belongs to
 	 */

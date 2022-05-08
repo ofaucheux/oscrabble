@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.*;
 import oscrabble.client.Application;
+import oscrabble.client.ui.StartWordArrow;
 import oscrabble.client.utils.I18N;
 import oscrabble.client.utils.SwingUtils;
 import oscrabble.controller.Action.PlayTiles;
@@ -43,6 +44,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ScrabbleView extends HorizontalLayout
 {
 	private static final int CELL_SIZE = 36;
+	public static final Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);
+	public static final Dimension GRID_DIMENSION = new Dimension(17 * CELL_SIZE, 17 * CELL_SIZE);
 	private static final int CELL_BORDER = 1;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ScrabbleView.class);
@@ -162,6 +165,7 @@ public class ScrabbleView extends HorizontalLayout
 	private String createGridHTML() {
 		final oscrabble.data.objects.Grid grid = Context.get().game.getGrid();
 
+		// prepare action
 		PlayTiles preparedAction;
 		try {
 			final String notation = this.inputTextField.getValue();
@@ -171,31 +175,46 @@ public class ScrabbleView extends HorizontalLayout
 			// ok
 			preparedAction = null;
 		}
-		final Dimension gridDimension = new Dimension(17 * CELL_SIZE, 17 * CELL_SIZE);
-		final Dimension cellDimension = new Dimension(CELL_SIZE, CELL_SIZE);
-		final byte[] gridPNG = JGrid.createImage(new oscrabble.data.objects.Grid(), gridDimension, preparedAction);
 
 		final StringBuilder html = new StringBuilder();
-		html.append(createHtmlImgCode(gridDimension, gridPNG, ""));
+
+		// grid
+		html.append(createHtmlImgCode(GRID_DIMENSION, JGrid.getPNG(), ""));
+
+		// letters
 		for (final Square square : grid.getAllSquares()) {
 			if (square.tile != null) {
-				final byte[] tilePNG = SwingUtils.getImage(new JTile(square.tile), cellDimension);
+				final byte[] tilePNG = SwingUtils.getImage(new JTile(square.tile), CELL_DIMENSION);
 				html.append("\n");
-				html.append(createHtmlImgCode(
-						cellDimension,
-						tilePNG,
-						String.format(
-								"position:absolute; top:%spx; left:%spx; height:%spx; width:%spx",
-								CELL_SIZE * square.getY() + CELL_BORDER,
-								CELL_SIZE * square.getX() + CELL_BORDER,
-								CELL_SIZE - 2 * CELL_BORDER,
-								CELL_SIZE - 2 * CELL_BORDER
-						)
-				));
+				html.append(getHtmlPositionedImgCode(square.getX(), square.getY(), tilePNG));
 			}
 		}
 
+		if (preparedAction != null) {
+			html.append("\n");
+			html.append(
+					getHtmlPositionedImgCode(
+							preparedAction.startSquare.x,
+							preparedAction.startSquare.y,
+							StartWordArrow.getPNG(preparedAction.getDirection()))
+			);
+		}
+
 		return html.toString();
+	}
+
+	private String getHtmlPositionedImgCode(final int squareX, final int squareY, final byte[] tilePNG) {
+		return createHtmlImgCode(
+				CELL_DIMENSION,
+				tilePNG,
+				String.format(
+						"position:absolute; top:%spx; left:%spx; height:%spx; width:%spx",
+						CELL_SIZE * squareY + CELL_BORDER,
+						CELL_SIZE * squareX + CELL_BORDER,
+						CELL_SIZE - 2 * CELL_BORDER,
+						CELL_SIZE - 2 * CELL_BORDER
+				)
+		);
 	}
 
 	private String createHtmlImgCode(final Dimension dimension, byte[] png, final String cssStyle) {
@@ -313,6 +332,7 @@ public class ScrabbleView extends HorizontalLayout
 
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static void setFontSize(HasStyle component, String size) {
 		component.getStyle().set("font-size", size);
 	}

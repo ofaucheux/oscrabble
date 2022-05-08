@@ -398,25 +398,6 @@ public class Game implements ScrabbleConstants {
 		));
 		final oscrabble.data.Bag bag = oscrabble.data.Bag.builder().tiles(new ArrayList<>(this.bag)).build();
 
-		final oscrabble.data.Grid grid = new oscrabble.data.Grid();
-		grid.squares = new ArrayList<>();
-		this.grid.getAllSquares().forEach(s ->
-				{
-					if (s.isBorder) {
-						return;
-					}
-
-					final oscrabble.data.Square square = oscrabble.data.Square.builder()
-							.settingPlay(s.action)
-							.wordBonus(s.wordBonus)
-							.letterBonus(s.letterBonus)
-							.coordinate(s.getCoordinate())
-							.tile(s.tile)
-							.build();
-					grid.squares.add(square);
-				}
-		);
-
 		final PlayerInformation onTurn = this.toPlay.peekFirst();
 		final GameState state = GameState
 				.builder()
@@ -425,7 +406,7 @@ public class Game implements ScrabbleConstants {
 				.players(players)
 				.playerOnTurn(onTurn == null ? null : onTurn.uuid)
 				.playedActions(playedActions)
-				.grid(grid)
+				.grid(this.grid.toData())
 				.bag(bag)
 				.build();
 

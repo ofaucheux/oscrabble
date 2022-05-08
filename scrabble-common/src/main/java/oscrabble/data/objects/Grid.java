@@ -63,7 +63,6 @@ public class Grid {
 				this.squares[i] = new Square(i / GRID_SIZE_PLUS_2, i % GRID_SIZE_PLUS_2);
 			}
 		}
-
 	}
 
 	/**
@@ -113,6 +112,28 @@ public class Grid {
 				x = 0;
 			}
 		}
+		return grid;
+	}
+
+	public oscrabble.data.Grid toData() {
+		final oscrabble.data.Grid grid = new oscrabble.data.Grid();
+		grid.squares = new ArrayList<>();
+		getAllSquares().forEach(s ->
+				{
+					if (s.isBorder) {
+						return;
+					}
+
+					final oscrabble.data.Square square = oscrabble.data.Square.builder()
+							.settingPlay(s.action)
+							.wordBonus(s.wordBonus)
+							.letterBonus(s.letterBonus)
+							.coordinate(s.getCoordinate())
+							.tile(s.tile)
+							.build();
+					grid.squares.add(square);
+				}
+		);
 		return grid;
 	}
 

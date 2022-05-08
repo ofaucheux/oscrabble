@@ -1,18 +1,35 @@
 package oscrabble.client.ui;
 
 import oscrabble.client.JGrid;
+import oscrabble.client.SwingClientConstants;
+import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.objects.Grid;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Small arrow to mark the beginning of the current played word.
  */
-public class StartWordArrow extends JComponent {
+public class StartWordArrow extends JComponent implements SwingClientConstants {
 
 	private JGrid.JSquare square;
 	private Grid.Direction direction;
+
+	private static Map<Grid.Direction, byte[]> pngs = new HashMap<>();
+
+	public static byte[] getPNG(final Grid.Direction direction) {
+		return pngs.computeIfAbsent(
+				direction,
+				d -> {
+					final StartWordArrow arrow = new StartWordArrow();
+					arrow.direction = direction;
+					return SwingUtils.getImage(arrow, CELL_DIMENSION);
+				}
+		);
+	}
 
 	@Override
 	public void paintComponent(final Graphics g) {
