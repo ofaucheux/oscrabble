@@ -34,6 +34,7 @@ import oscrabble.server.Game;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,6 +59,7 @@ public class ScrabbleView extends HorizontalLayout
 	private final HistoryComponent historyComponent;
 	private final RackComponent rackComponent;
 	private final PossibleMovesDisplayer possibleMovesDisplayer;
+	private final ImageGenerator imageFactory = new ImageGenerator();
 	private UI ui;
 
 	public ScrabbleView() {
@@ -163,7 +165,8 @@ public class ScrabbleView extends HorizontalLayout
 	}
 
 	private String createGridHTML() {
-		final oscrabble.data.objects.Grid grid = Context.get().game.getGrid();
+		final Game game = Context.get().game;
+		final oscrabble.data.objects.Grid grid = game.getGrid();
 
 		// prepare action
 		PlayTiles preparedAction;
@@ -182,6 +185,8 @@ public class ScrabbleView extends HorizontalLayout
 		html.append(createHtmlImgCode(GRID_DIMENSION, ImageServlet.urlForGrid(), ""));
 
 		// letters
+		final List<Action> playedActions = game.getGameState().getPlayedActions();
+		final UUID lastTurnId = playedActions.isEmpty() ? null : playedActions.get(playedActions.size() - 1).turnId;
 		for (final Square square : grid.getAllSquares()) {
 			if (square.tile != null) {
 				html.append("\n");
@@ -189,9 +194,8 @@ public class ScrabbleView extends HorizontalLayout
 						getHtmlPositionedImgCode(
 								square.getX(),
 								square.getY(),
-								ImageServlet.urlForTile(square.tile)
-						)
-				);
+								this.imageFactory.generateTileImage(square.tile, square.tile.turn == lastTurnId)
+						));
 			}
 		}
 
@@ -201,7 +205,7 @@ public class ScrabbleView extends HorizontalLayout
 					getHtmlPositionedImgCode(
 							preparedAction.startSquare.x,
 							preparedAction.startSquare.y,
-							ImageServlet.urlForStartWordArrow(preparedAction.getDirection())
+							this.imageFactory.generateDirectionArrowImage(preparedAction.getDirection())
 					)
 			);
 		}
@@ -209,10 +213,10 @@ public class ScrabbleView extends HorizontalLayout
 		return html.toString();
 	}
 
-	private String getHtmlPositionedImgCode(final int squareX, final int squareY, final String imgUrl) {
-		return createHtmlImgCode(
+	private String getHtmlPositionedImgCode(final int squareX, final int squareY, final byte[] png) {
+		return createHtmlEmbeddedImgCode(
 				CELL_DIMENSION,
-				imgUrl,
+				png,
 				String.format(
 						"position:absolute; top:%spx; left:%spx; height:%spx; width:%spx",
 						CELL_SIZE * squareY + CELL_BORDER,
@@ -220,6 +224,14 @@ public class ScrabbleView extends HorizontalLayout
 						CELL_SIZE - 2 * CELL_BORDER,
 						CELL_SIZE - 2 * CELL_BORDER
 				)
+		);
+	}
+
+	private String createHtmlEmbeddedImgCode(final Dimension dimension, final byte[] png, final String cssStyle) {
+		return createHtmlImgCode(
+				dimension,
+				"data:image/png;base64," + Base64.getEncoder().encodeToString(png),
+				cssStyle
 		);
 	}
 
@@ -241,10 +253,10 @@ public class ScrabbleView extends HorizontalLayout
 		for (int i = 0; i < rack.tiles.size(); i++) {
 			html.append("\n");
 			html.append(
-					getHtmlPositionedImgCode(
-							i,
-							0,
-							ImageServlet.urlForTile(rack.tiles.get(i))
+					createHtmlEmbeddedImgCode(
+							CELL_DIMENSION,
+							this.imageFactory.generateTileImage(rack.tiles.get(i), false),
+							""
 					)
 			);
 		}

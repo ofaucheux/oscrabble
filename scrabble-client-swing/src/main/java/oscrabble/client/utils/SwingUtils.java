@@ -1,7 +1,5 @@
 package oscrabble.client.utils;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -22,16 +20,20 @@ public class SwingUtils {
 		if (size == null) {
 			size = component.getPreferredSize();
 		}
-		component.setVisible(true);
-		component.setSize(size);
-		layoutComponent(component);
+		if (component != null) {
+			component.setVisible(true);
+			component.setSize(size);
+			layoutComponent(component);
+		}
 
 		BufferedImage image = new BufferedImage(
-				component.getWidth(),
-				component.getHeight(),
+				(int) size.getWidth(),
+				(int) size.getHeight(),
 				BufferedImage.TYPE_INT_ARGB);
 		Graphics2D cg = (Graphics2D) image.getGraphics();
-		component.print(cg);
+		if (component != null) {
+			component.print(cg);
+		}
 		image.flush();
 		try {
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
