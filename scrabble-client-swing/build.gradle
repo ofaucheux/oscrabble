@@ -11,14 +11,14 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    implementation 'org.slf4j:slf4j-api:1.7.+'
-    implementation 'org.apache.commons:commons-collections4:4.+'
-    implementation 'org.apache.commons:commons-lang3:3.12.+'
-    implementation 'commons-io:commons-io:2.+'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.swinglabs.swingx:swingx-all:1.6.5-1'
-    implementation 'com.github.lgooddatepicker:LGoodDatePicker:11.2.+'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.+'
-    implementation group: 'org.springframework', name: 'spring-core', version: '5.3.+'
+    implementation 'com.github.lgooddatepicker:LGoodDatePicker:11.2.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
+    implementation group: 'org.springframework', name: 'spring-core', version: '5.3.19'
 
     implementation(project(":scrabble-common"))
 
@@ -26,11 +26,11 @@ dependencies {
     implementation(project(":scrabble-dictionary"))
     implementation(project(":scrabble-client-ai"))
 
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.+'
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.+'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.4'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.4'
 
-    testImplementation 'org.mockito:mockito-inline:3.12.+'
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.12.+'
+    testImplementation 'org.mockito:mockito-inline:3.12.4'
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
 }
 
 jar {
