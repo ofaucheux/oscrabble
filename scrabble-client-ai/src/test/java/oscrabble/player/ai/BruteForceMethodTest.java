@@ -94,7 +94,13 @@ public class BruteForceMethodTest {
 		MatcherAssert.assertThat(grid.toString(), moves, CoreMatchers.hasItems(testParams.movesToFind.toArray(new String[0])));
 
 		final TreeSet<String> foundWords = new TreeSet<>();
-		moves.forEach(m -> foundWords.add(Action.parsePlayNotation(m).getRight()));
+		moves.forEach(m -> {
+			try {
+				foundWords.add(Action.parsePlayNotation(m).getRight());
+			} catch (ScrabbleException.NotParsableException e) {
+				throw new Error(e);
+			}
+		});
 		MatcherAssert.assertThat(DICTIONARY.getAdmissibleWords(), CoreMatchers.hasItems(foundWords.toArray(new String[0])));
 	}
 

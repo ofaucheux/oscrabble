@@ -1,6 +1,6 @@
 //file:noinspection HardCodedStringLiteral
 plugins {
-    id 'com.vaadin' version '23.0.6'
+    id 'com.vaadin' version '23.0.8'
     id 'org.springframework.boot' version '2.2.6.RELEASE'
     id "io.freefair.lombok" version "5.0.0"
     id 'application'
@@ -17,7 +17,7 @@ dependencies {
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'org.apache.commons:commons-lang3:3.12.+'
     implementation 'commons-io:commons-io:2.11.0'
-    implementation 'com.vaadin:vaadin-spring-boot-starter:23.0.8'
+    implementation 'com.vaadin:vaadin-spring-boot-starter:23.0.9'
 
     implementation 'org.springframework.boot:spring-boot-starter-web:2.2.6'
     implementation 'org.springframework.boot:spring-boot-starter-web:2.6.6'
