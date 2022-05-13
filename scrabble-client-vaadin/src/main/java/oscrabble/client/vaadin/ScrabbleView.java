@@ -2,6 +2,7 @@ package oscrabble.client.vaadin;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
+@CssImport("./scrabble.css")
 public class ScrabbleView extends HorizontalLayout
 {
 	private static final int CELL_SIZE = 36;
