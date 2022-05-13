@@ -173,7 +173,7 @@ public class ScrabbleView extends HorizontalLayout
 		// prepare action
 		PlayTiles preparedAction;
 		try {
-			final String notation = this.inputTextField.getValue();
+			final String notation = this.inputTextField.getValue().toUpperCase();
 			final oscrabble.controller.Action action = PlayTiles.parse(Context.get().humanPlayer, notation);
 			preparedAction = action instanceof PlayTiles ? ((PlayTiles) action) : null;
 		} catch (ScrabbleException.NotParsableException e) {

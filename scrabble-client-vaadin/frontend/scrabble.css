@@ -10,3 +10,7 @@ p {
 .back-button {
   background-color: var(--lumo-shade-90pct);
 }
+
+input.uppercase {
+    text-transform: uppercase
+}
