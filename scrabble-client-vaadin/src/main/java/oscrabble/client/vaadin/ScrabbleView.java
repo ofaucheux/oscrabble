@@ -212,6 +212,7 @@ public class ScrabbleView extends HorizontalLayout
 			}
 		}
 
+		// arrow for the currently played move
 		if (preparedAction != null) {
 			html.append("\n");
 			html.append(
@@ -223,6 +224,8 @@ public class ScrabbleView extends HorizontalLayout
 							this.imageFactory.generateDirectionArrowImage(preparedAction.getDirection())
 					)
 			);
+
+			// highlight currently played move
 			if (preparedAction.word.length() > 0) {
 				html.append("\n");
 				html.append(
@@ -279,13 +282,13 @@ public class ScrabbleView extends HorizontalLayout
 		);
 	}
 
-	private String createHtmlImgCode(final Dimension dimension, String url, final String cssStyle) {
+	private String createHtmlImgCode(final Dimension dimension, String imageUrl, final String cssStyle) {
 		return String.format(
 				"<img style='display:block pointer-events:none; %s' width=%d height=%d id='base64image' src='%s' />",
 				cssStyle,
 				((int) dimension.getWidth()),
 				((int) dimension.getHeight()),
-				url
+				imageUrl
 		);
 	}
 
