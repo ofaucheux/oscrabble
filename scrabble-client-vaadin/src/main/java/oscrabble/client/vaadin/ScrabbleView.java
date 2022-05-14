@@ -372,6 +372,7 @@ public class ScrabbleView extends HorizontalLayout
 			);
 			this.possibleMovesDisplayer.strategyComboBox.setItems(this.possibleMovesDisplayer.strategies.keySet());
 		} finally {
+			this.inputTextField.focus();
 			session.unlock();
 		}
 	}
