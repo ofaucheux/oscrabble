@@ -1,5 +1,6 @@
 package oscrabble.controller;
 
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
 import oscrabble.ScrabbleException;
 import oscrabble.data.objects.Coordinate;
@@ -52,12 +53,12 @@ public abstract class Action {
 	 * Parse a notation
 	 *
 	 * @param notation
-	 * @return Tuplet (coordinate, word)
+	 * @return (coordinate, word)
 	 */
-	public static Pair<Coordinate, String> parsePlayNotation(final String notation) {
+	public static Pair<Coordinate, String> parsePlayNotation(final String notation) throws ScrabbleException.NotParsableException {
 		final Matcher m = PLAY_TILES.matcher(notation);
 		if (!m.matches()) {
-			throw new AssertionError();
+			throw new ScrabbleException.NotParsableException(notation);
 		}
 		return Pair.of(Coordinate.parse(m.group(1)), m.group(2));
 	}
@@ -100,6 +101,7 @@ public abstract class Action {
 		/**
 		 * Die Blanks (mindesten neugespielt) werden durch klein-buchstaben dargestellt.
 		 */
+		@SneakyThrows
 		private PlayTiles(final UUID player, String notation) {
 			super(player, notation);
 			final Pair<Coordinate, String> parsed = parsePlayNotation(notation);

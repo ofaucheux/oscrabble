@@ -15,6 +15,22 @@ public class Coordinate {
 	public Grid.Direction direction;
 	public int x, y;
 
+	public Coordinate(char column, int row, Grid.Direction direction) {
+		this.x = column - '@';
+		this.y = row;
+		this.direction = direction;
+	}
+
+	public char getColumn() {
+		return (char) ('@' + this.x);
+	}
+
+	public int getRow() {
+		return this.y;
+	}
+
+	private Coordinate() {
+	}
 	public static Coordinate parse(final String notation) throws IllegalCoordinate {
 		final Grid.Direction direction;
 		final int groupX, groupY;

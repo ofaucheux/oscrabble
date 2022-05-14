@@ -22,6 +22,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import elemental.json.JsonObject;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -30,7 +31,9 @@ import oscrabble.client.Application;
 import oscrabble.client.utils.I18N;
 import oscrabble.controller.Action.PlayTiles;
 import oscrabble.data.*;
+import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Square;
+import oscrabble.exception.IllegalCoordinate;
 import oscrabble.player.ai.Strategy;
 import oscrabble.server.Game;
 
@@ -286,7 +289,9 @@ public class ScrabbleView extends HorizontalLayout
 				CELL_DIMENSION,
 				png,
 				String.format(
-						"position:absolute; top:%spx; left:%spx; height:%spx; width:%spx",
+						// "pointer-event:none" makes this code transparent to input events, wherefore the parent one becomes them
+						// and the coordinates of the event are related to the parent (grid) component and not this code.
+						"position:absolute; top:%spx; left:%spx; height:%spx; width:%spx; pointer-events:none",
 						CELL_SIZE * squareY + CELL_BORDER,
 						CELL_SIZE * squareX + CELL_BORDER,
 						(CELL_SIZE * height) - 2 * CELL_BORDER,
@@ -391,12 +396,31 @@ public class ScrabbleView extends HorizontalLayout
 			int row = (int) (y * 17 / h);
 
 			if ('A' <= column && column <= 'O' && 1 <= row && row <= 15) {
-				ScrabbleView.this.inputTextField.setValue(String.format("%s%s ", column, row));
-				// todo: don't send the value to the vaadin server
-				// or send it and receive the new image.
+				Pair<Coordinate, String> oldValues = null;
+				try {
+					oldValues = oscrabble.controller.Action.parsePlayNotation(ScrabbleView.this.inputTextField.getValue());
+				} catch (ScrabbleException.NotParsableException | ClassCastException | IllegalCoordinate e) {
+					// ok
+				}
 
-				// todo: swap column / row if clicked twice
-				// todo: use already tipped word. Perhaps reuse code of swing.
+				final oscrabble.data.objects.Grid.Direction direction;
+				if (oldValues != null) {
+					final Coordinate oldCoordinate = oldValues.getLeft();
+					if (oldCoordinate.getColumn() == column && oldCoordinate.getRow() == row) {
+						direction = oldCoordinate.direction.other();
+					} else {
+						direction = oldCoordinate.direction;
+					}
+				} else {
+					direction = oscrabble.data.objects.Grid.Direction.HORIZONTAL;
+				}
+				final StringBuilder sb = new StringBuilder();
+				sb.append(new Coordinate(column, row, direction).getNotation());
+				sb.append(" ");
+				if (oldValues != null) {
+					sb.append(oldValues.getRight());
+				}
+				ScrabbleView.this.inputTextField.setValue(sb.toString());
 			}
 		}
 
