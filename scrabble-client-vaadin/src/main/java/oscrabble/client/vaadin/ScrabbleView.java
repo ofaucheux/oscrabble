@@ -64,6 +64,7 @@ public class ScrabbleView extends HorizontalLayout
 	private final PossibleMovesDisplayer possibleMovesDisplayer;
 	private final ImageGenerator imageFactory = new ImageGenerator();
 	private UI ui;
+	private boolean hasInputTextFieldChanged;
 
 	public ScrabbleView() {
 		final Style style = getElement().getStyle();
@@ -88,14 +89,14 @@ public class ScrabbleView extends HorizontalLayout
 		addTitledComponent(centerColumn, I18N.get("your.move"), this.inputTextField);
 		this.inputTextField.setValueChangeMode(ValueChangeMode.EAGER);
 		this.inputTextField.addValueChangeListener(
-			ev -> this.grid.actualize()
+				ev -> {
+					this.hasInputTextFieldChanged = true;
+					this.grid.actualize();
+				}
 		);
 		this.inputTextField.addKeyPressListener(
-				ev -> {
-					if (ev.getKey() == Key.ENTER) {
-						play();
-					}
-				}
+				Key.ENTER,
+				ev -> play()
 		);
 		add(centerColumn);
 		centerColumn.setWidth(this.grid.getWidth());
@@ -164,8 +165,9 @@ public class ScrabbleView extends HorizontalLayout
 			if (response.success) {
 				this.inputTextField.clear();
 				this.inputTextField.setHelperText("");
+				this.hasInputTextFieldChanged = false;
 			} else {
-				this.inputTextField.setHelperText(response.message);
+				this.inputTextField.setErrorMessage(response.message);
 			}
 		} catch (ScrabbleException | InterruptedException e) {
 			LOGGER.error(e.toString(), e);
@@ -201,13 +203,14 @@ public class ScrabbleView extends HorizontalLayout
 		for (final Square square : grid.getAllSquares()) {
 			if (square.tile != null) {
 				html.append("\n");
+				final boolean flash = !this.hasInputTextFieldChanged && square.tile.turn == lastTurnId;
 				html.append(
 						getHtmlPositionedImgCode(
 								square.getX(),
 								square.getY(),
 								1,
 								1,
-								this.imageFactory.generateTileImage(square.tile, square.tile.turn == lastTurnId)
+								this.imageFactory.generateTileImage(square.tile, flash)
 						));
 			}
 		}
@@ -224,6 +227,24 @@ public class ScrabbleView extends HorizontalLayout
 							this.imageFactory.generateDirectionArrowImage(preparedAction.getDirection())
 					)
 			);
+
+			// add currently played letters
+			final boolean isPreparedMoveHorizontal = preparedAction.getDirection() == oscrabble.data.objects.Grid.Direction.HORIZONTAL;
+			for (int i = 0; i < preparedAction.word.length(); i++) {
+				final char c = preparedAction.word.charAt(i);
+				final int points = game.getDictionary().getScrabbleRules().getPoints(c);
+				final Tile build = Tile.builder().c(c).points(points).build();
+				html.append("\n");
+				html.append(
+						getHtmlPositionedImgCode(
+								preparedAction.startSquare.x + (isPreparedMoveHorizontal ? i : 0),
+								preparedAction.startSquare.y + (isPreparedMoveHorizontal ? 0 : i),
+								1,
+								1,
+								this.imageFactory.generateTileImage(build, false)
+						)
+				);
+			}
 
 			// highlight currently played move
 			if (preparedAction.word.length() > 0) {

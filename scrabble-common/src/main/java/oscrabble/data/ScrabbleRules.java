@@ -22,6 +22,18 @@ public class ScrabbleRules {
 	public int requiredTilesInBagForExchange = 7;
 
 	/**
+	 * @param character
+	 * @return number of points for this character
+	 */
+	public int getPoints(final char character) {
+		final Letter letter = this.letters.get(character);
+		if (letter == null) {
+			throw new IllegalArgumentException("No such letter in the scrabble: " + character);
+		}
+		return letter.getPoints();
+	}
+
+	/**
 	 * Information about the prevalence of a letter.
 	 */
 	@Data

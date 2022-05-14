@@ -46,6 +46,7 @@ public class Dictionary implements IDictionary {
 	public final String md5;
 	private final Language language;
 	private WordMetainformationProvider metainformationProvider;
+	private ScrabbleRules scrabbleRules;
 
 	private Dictionary(final Language language) {
 		this.language = language;
@@ -268,7 +269,10 @@ public class Dictionary implements IDictionary {
 
 	@Override
 	public ScrabbleRules getScrabbleRules() {
-		return ScrabbleRulesFactory.create(this.language);
+		if (this.scrabbleRules == null) {
+			this.scrabbleRules = ScrabbleRulesFactory.create(this.language);
+		}
+		return this.scrabbleRules;
 	}
 
 	@Override
