@@ -142,6 +142,8 @@ public class ScrabbleView extends HorizontalLayout
 		});
 		th.setDaemon(true);
 		th.start();
+
+		this.inputTextField.focus();
 	}
 
 	@Override
@@ -170,11 +172,11 @@ public class ScrabbleView extends HorizontalLayout
 				this.inputTextField.setHelperText("");
 				this.hasInputTextFieldChanged = false;
 			} else {
-				this.inputTextField.setErrorMessage(response.message);
+				this.inputTextField.setHelperText(response.message);
 			}
 		} catch (ScrabbleException | InterruptedException e) {
 			LOGGER.error(e.toString(), e);
-			this.inputTextField.setErrorMessage(e.toString());
+			this.inputTextField.setHelperText(e.toString());
 		}
 
 		this.grid.actualize();
@@ -421,6 +423,7 @@ public class ScrabbleView extends HorizontalLayout
 					sb.append(oldValues.getRight());
 				}
 				ScrabbleView.this.inputTextField.setValue(sb.toString());
+				ScrabbleView.this.inputTextField.focus();
 			}
 		}
 
@@ -499,7 +502,10 @@ public class ScrabbleView extends HorizontalLayout
 			this.grid.setHeight("150px");
 			this.grid.addColumn(SCORE_RENDERER);
 			this.grid.addItemDoubleClickListener(
-					event -> ScrabbleView.this.inputTextField.setValue(event.getItem().getNotation())
+					event -> {
+						ScrabbleView.this.inputTextField.setValue(event.getItem().getNotation());
+						play();
+					}
 			);
 			setThemeVariants(this.grid);
 			setMonospacedFont(this.grid);
