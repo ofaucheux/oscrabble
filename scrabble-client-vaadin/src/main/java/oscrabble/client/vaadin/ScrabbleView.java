@@ -14,6 +14,7 @@ import com.vaadin.flow.component.textfield.Autocapitalize;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
@@ -85,8 +86,16 @@ public class ScrabbleView extends HorizontalLayout
 		this.grid = new GridComponent();
 		centerColumn.add(this.grid);
 		addTitledComponent(centerColumn, I18N.get("your.move"), this.inputTextField);
+		this.inputTextField.setValueChangeMode(ValueChangeMode.EAGER);
 		this.inputTextField.addValueChangeListener(
-			ev -> play()
+			ev -> this.grid.actualize()
+		);
+		this.inputTextField.addKeyPressListener(
+				ev -> {
+					if (ev.getKey() == Key.ENTER) {
+						play();
+					}
+				}
 		);
 		add(centerColumn);
 		centerColumn.setWidth(this.grid.getWidth());
@@ -160,7 +169,7 @@ public class ScrabbleView extends HorizontalLayout
 			}
 		} catch (ScrabbleException | InterruptedException e) {
 			LOGGER.error(e.toString(), e);
-			this.inputTextField.setHelperText(e.toString());
+			this.inputTextField.setErrorMessage(e.toString());
 		}
 
 		this.grid.actualize();
@@ -196,6 +205,8 @@ public class ScrabbleView extends HorizontalLayout
 						getHtmlPositionedImgCode(
 								square.getX(),
 								square.getY(),
+								1,
+								1,
 								this.imageFactory.generateTileImage(square.tile, square.tile.turn == lastTurnId)
 						));
 			}
@@ -207,15 +218,46 @@ public class ScrabbleView extends HorizontalLayout
 					getHtmlPositionedImgCode(
 							preparedAction.startSquare.x,
 							preparedAction.startSquare.y,
+							1,
+							1,
 							this.imageFactory.generateDirectionArrowImage(preparedAction.getDirection())
 					)
 			);
+			if (preparedAction.word.length() > 0) {
+				html.append("\n");
+				html.append(
+						getHtmlPositionedImgCode(
+								preparedAction.startSquare.x,
+								preparedAction.startSquare.y,
+								preparedAction.getWidth(),
+								preparedAction.getHeight(),
+								this.imageFactory.generateCellBox(
+										preparedAction.getWidth(),
+										preparedAction.getHeight()
+								)
+						)
+				);
+			}
 		}
 
 		return html.toString();
 	}
 
-	private String getHtmlPositionedImgCode(final int squareX, final int squareY, final byte[] png) {
+	/**
+	 * @param squareX
+	 * @param squareY
+	 * @param width in number of cells
+	 * @param height in number of cells
+	 * @param png
+	 * @return
+	 */
+	private String getHtmlPositionedImgCode(
+			final int squareX,
+			final int squareY,
+			final int width,
+			final int height,
+			final byte[] png
+	) {
 		return createHtmlEmbeddedImgCode(
 				CELL_DIMENSION,
 				png,
@@ -223,8 +265,8 @@ public class ScrabbleView extends HorizontalLayout
 						"position:absolute; top:%spx; left:%spx; height:%spx; width:%spx",
 						CELL_SIZE * squareY + CELL_BORDER,
 						CELL_SIZE * squareX + CELL_BORDER,
-						CELL_SIZE - 2 * CELL_BORDER,
-						CELL_SIZE - 2 * CELL_BORDER
+						(CELL_SIZE * height) - 2 * CELL_BORDER,
+						(CELL_SIZE * width) - 2 * CELL_BORDER
 				)
 		);
 	}

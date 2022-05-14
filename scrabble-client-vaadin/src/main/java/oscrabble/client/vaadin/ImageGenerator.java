@@ -10,17 +10,45 @@ import oscrabble.client.utils.SwingUtils;
 import oscrabble.data.Tile;
 import oscrabble.data.objects.Grid;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.zip.CRC32;
 
 public class ImageGenerator {
 	static final String GRID_FILENAME = "grid";
 	static final String ARROW_FILENAME = "arrow";
 	private static final ConcurrentHashMap<Integer, byte[]> imageCache = new ConcurrentHashMap<>();
 	private static final Random RANDOM = new Random();
+
+	/**
+	 * Generate a border to hightlight a range of cells.
+	 * @param width in number of cells
+	 * @param height in number of cells
+	 * @return
+	 */
+	public byte[] generateCellBox(final int width, final int height) {
+		final int pxWidth = width * ScrabbleView.CELL_DIMENSION.width;
+		final int pxHeight = height * ScrabbleView.CELL_DIMENSION.height;
+		final JComponent component = new JComponent() {
+			@Override
+			protected void paintComponent(final Graphics g) {
+				final Graphics2D g2 = (Graphics2D) g;
+				g2.setColor(Color.RED);
+				final int stroke = 3;
+				g2.setStroke(new BasicStroke(stroke));
+				g2.drawRect(
+						+stroke / 2,
+						+stroke / 2,
+						pxWidth -stroke,
+						pxHeight -stroke);
+			}
+		};
+		return SwingUtils.getImage(component, new Dimension(pxWidth, pxHeight));
+	}
+
 	public byte[] generateDirectionArrowImage(final Grid.Direction direction) {
 		return StartWordArrow.getPNG(direction);
 	}

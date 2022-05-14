@@ -90,7 +90,6 @@ public abstract class Action {
 	}
 
 	public static class PlayTiles extends Action {
-
 		public final Coordinate startSquare;
 
 		/**
@@ -110,6 +109,20 @@ public abstract class Action {
 
 		public Grid.Direction getDirection() {
 			return this.startSquare.direction;
+		}
+
+		/**
+		 * @return the number of columns the word will use
+		 */
+		public int getWidth() {
+			return getDirection() == Grid.Direction.HORIZONTAL ? this.word.length() : 1;
+		}
+
+		/**
+		 * @return the number of rows the word will use
+		 */
+		public int getHeight() {
+			return getDirection() == Grid.Direction.VERTICAL ? this.word.length() : 1;
 		}
 	}
 }
