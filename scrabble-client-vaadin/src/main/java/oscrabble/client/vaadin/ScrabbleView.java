@@ -47,29 +47,29 @@ import java.util.concurrent.atomic.AtomicReference;
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
 @CssImport("./scrabble.css")
-public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserver
-{
+public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserver {
 	private static final int CELL_SIZE = 36;
 	public static final Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);
 	public static final Dimension GRID_DIMENSION = new Dimension(17 * CELL_SIZE, 17 * CELL_SIZE);
 	private static final int CELL_BORDER = 1;
+	private final static ImageGenerator imageFactory = new ImageGenerator();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ScrabbleView.class);
 
 	private static final TextRenderer<Action> ACTION_RENDERER = new TextRenderer<>(a -> a.getScore() + " pts");
 	private static final TextRenderer<Score> SCORE_RENDERER = new TextRenderer<>(score -> score.getNotation() + " " + score.getScore() + " pts");
 
-	private final TextField inputTextField;
-	private final GridComponent grid;
-	private final PlayerComponent playerComponent;
-	private final HistoryComponent historyComponent;
-	private final RackComponent rackComponent;
-	private final PossibleMovesDisplayer possibleMovesDisplayer;
-	private final ImageGenerator imageFactory = new ImageGenerator();
+	private TextField inputTextField;
+	private GridComponent grid;
+	private PlayerComponent playerComponent;
+	private HistoryComponent historyComponent;
+	private RackComponent rackComponent;
+	private PossibleMovesDisplayer possibleMovesDisplayer;
 	private UI ui;
 	private boolean hasInputTextFieldChanged;
+	private Context ctx;
 
-	public ScrabbleView() {
+	private void build() {
 		final Style style = getElement().getStyle();
 		style.set(
 				"background-color",
@@ -114,7 +114,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 		addTitledComponent(rightColumn, I18N.get("border.title.score"), this.playerComponent);
 		this.rackComponent = new RackComponent();
 		rightColumn.add(this.rackComponent);
-		this.possibleMovesDisplayer = new PossibleMovesDisplayer(Context.get().game.getDictionary());
+		this.possibleMovesDisplayer = new PossibleMovesDisplayer(this.ctx.game.getDictionary());
 		addTitledComponent(rightColumn, I18N.get("possible.moves"), this.possibleMovesDisplayer.createComponent());
 		this.historyComponent = new HistoryComponent();
 		addTitledComponent(rightColumn, I18N.get("moves"), this.historyComponent);
@@ -130,7 +130,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 		//
 
 		final BlockingQueue<Long> listener = new LinkedBlockingQueue<>();
-		Context.get().game.addListener(listener);
+		this.ctx.game.addListener(listener);
 		final Thread th = new Thread(() -> {
 			while (true) // todo: quit if client disconnects
 				try {
@@ -152,12 +152,20 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 		final Map<String, List<String>> parameters = event.getLocation().getQueryParameters().getParameters();
 		final List<String> gameList = parameters.get("game");
 		// assert the url contains a game UUID, otherwise redirect to a random one.
-		if (gameList == null || gameList.size() !=1) {
-			final QueryParameters queryParameters = new QueryParameters(
-					Map.of("game", List.of(UUID.randomUUID().toString()))
-			);
-			UI.getCurrent().navigate("scrabble", queryParameters);
+		final UUID gameId;
+		if (gameList == null || gameList.isEmpty()) {
+			gameId = UUID.randomUUID();
+			UI.getCurrent().navigate(
+					"scrabble",
+					new QueryParameters(
+							Map.of("game", List.of(gameId.toString()))
+					));
+		} else {
+			gameId = UUID.fromString(gameList.get(0));
 		}
+
+		this.ctx = Context.get(gameId);
+		build();
 	}
 
 	@Override
@@ -172,14 +180,13 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 	}
 
 	private void play() {
-		final Context ctx = Context.get();
 		final oscrabble.data.Action action = oscrabble.data.Action.builder()
-				.player(ctx.humanPlayer)
+				.player(this.ctx.humanPlayer)
 				.turnId(UUID.randomUUID()) //TODO: the game should give the id
 				.notation(this.inputTextField.getValue().toUpperCase())
 				.build();
 		try {
-			final PlayActionResponse response = ctx.server.play(ctx.game.getId(), action);
+			final PlayActionResponse response = this.ctx.server.play(this.ctx.game.getId(), action);
 			LOGGER.info(response.message);
 			if (response.success) {
 				this.inputTextField.clear();
@@ -197,14 +204,14 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 	}
 
 	private String createGridHTML() {
-		final Game game = Context.get().game;
+		final Game game = this.ctx.game;
 		final oscrabble.data.objects.Grid grid = game.getGrid();
 
 		// prepare action
 		PlayTiles preparedAction;
 		try {
 			final String notation = this.inputTextField.getValue().toUpperCase();
-			final oscrabble.controller.Action action = PlayTiles.parse(Context.get().humanPlayer, notation);
+			final oscrabble.controller.Action action = PlayTiles.parse(this.ctx.humanPlayer, notation);
 			preparedAction = action instanceof PlayTiles ? ((PlayTiles) action) : null;
 		} catch (ScrabbleException.NotParsableException e) {
 			// ok
@@ -306,8 +313,8 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 	/**
 	 * @param squareX
 	 * @param squareY
-	 * @param width in number of cells
-	 * @param height in number of cells
+	 * @param width   in number of cells
+	 * @param height  in number of cells
 	 * @param png
 	 * @return
 	 */
@@ -353,8 +360,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 	}
 
 	private String createRackHTML() throws ScrabbleException {
-		final Context ctx = Context.get();
-		final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.humanPlayer);
+		final Bag rack = this.ctx.server.getRack(this.ctx.game.getId(), this.ctx.humanPlayer);
 
 		final StringBuilder html = new StringBuilder();
 		for (int i = 0; i < rack.tiles.size(); i++) {
@@ -382,8 +388,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 	}
 
 	private void update() throws ScrabbleException {
-		final Context ctx = Context.get();
-		final GameState state = ctx.game.getGameState();
+		final GameState state = this.ctx.game.getGameState();
 		final VaadinSession session = this.ui.getSession();
 		session.lock();
 		try {
@@ -394,12 +399,12 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 			this.rackComponent.getElement().setProperty("innerHTML", createRackHTML());
 			this.grid.actualize();
 
-			this.inputTextField.setEnabled(state.playerOnTurn == ctx.humanPlayer);
+			this.inputTextField.setEnabled(state.playerOnTurn == this.ctx.humanPlayer);
 
-			final Bag rack = ctx.server.getRack(ctx.game.getId(), ctx.game.getPlayerOnTurnUUID());
+			final Bag rack = this.ctx.server.getRack(this.ctx.game.getId(), this.ctx.game.getPlayerOnTurnUUID());
 			this.possibleMovesDisplayer.refresh(
-					ctx.server,
-					ctx.game.getGameState(),
+					this.ctx.server,
+					this.ctx.game.getGameState(),
 					rack.getChars()
 			);
 			this.possibleMovesDisplayer.strategyComboBox.setItems(this.possibleMovesDisplayer.strategies.keySet());
@@ -499,6 +504,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 
 	static class PlayerComponent extends Grid<Player> {
 		private final AtomicReference<UUID> playerOnTurn = new AtomicReference<>();
+
 		PlayerComponent() {
 			final ItemLabelGenerator<Player> onTurn =
 					player -> player.getId().equals(this.playerOnTurn.get())
@@ -569,7 +575,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 		}
 	}
 
-	private static class HistoryComponent extends Grid<Action> {
+	private class HistoryComponent extends Grid<Action> {
 		public HistoryComponent() {
 			addColumn(Action::getNotation);
 			addColumn(ACTION_RENDERER);
@@ -587,7 +593,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 		}
 
 		private String getPlayerName(UUID id) {
-			for (final Player p : Context.get().game.getGameState().getPlayers()) {
+			for (final Player p : ScrabbleView.this.ctx.game.getGameState().getPlayers()) {
 				if (p.id == id) {
 					return p.getName();
 				}

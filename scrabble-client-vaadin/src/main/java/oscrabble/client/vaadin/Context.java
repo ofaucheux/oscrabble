@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
 import oscrabble.client.utils.NameUtils;
-import oscrabble.data.GameState;
 import oscrabble.data.Player;
 import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
@@ -19,24 +18,21 @@ import java.util.*;
 public class Context {
 	public static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
 
-	private static Context SINGLETON;
+	private static final Map<UUID, Context> contexts = new HashMap<>();
+	public static final Random RANDOM = new Random();
 
 	final Game game;
 	final UUID humanPlayer;
 	final Server server;
 
-	public synchronized static Context get() {
-		if (SINGLETON == null || SINGLETON.game.getGameState().state == GameState.State.ENDED) {
-			SINGLETON = new Context();
-		}
-
-		return SINGLETON;
+	public synchronized static Context get(UUID contextId) {
+		return contexts.computeIfAbsent(contextId, (key) -> new Context());
 	}
 
 	private Context() {
 		try {
 			this.server = new Server();
-			this.game = new Game(this.server, Dictionary.getDictionary(Language.FRENCH), 2);
+			this.game = new Game(this.server, Dictionary.getDictionary(Language.FRENCH), RANDOM.nextInt());
 
 			List<Player> players = new ArrayList<>();
 			players.add(Player.builder().name("Human").id(UUID.randomUUID()).build());
