@@ -14,14 +14,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ImageGenerator {
 	static final String GRID_FILENAME = "grid";
 	static final String ARROW_FILENAME = "arrow";
 	private static final ConcurrentHashMap<Integer, byte[]> imageCache = new ConcurrentHashMap<>();
-	private static final Random RANDOM = new Random();
+	private int differentiator = 0;
 
 	/**
 	 * Generate a border to hightlight a range of cells.
@@ -73,9 +72,10 @@ public class ImageGenerator {
 				// once (it's the case if the same letter already have been played at a previous turn). I suppose the browsers
 			    // synchronize the display of the same image, what make problems in our fall because the first flashing occurrence
 				// (from a previous turn) is not flashing anymore.
-				// As solution: we use a random algorithm, so the image is not 100 % the same. The user won't remark anything,
-				// but the tiles will flash.
-				final int lastFrameDuration = 32767 /* maximal value the apng accepts */ - RANDOM.nextInt(1000);
+				// As solution: we use a little difference in the duration of last frame. The produced image is therefore
+				// different of the previous ones.
+				this.differentiator = (this.differentiator + 1) % 1000;
+				final int lastFrameDuration = 32767 /* maximal value the apng accepts */ - this.differentiator;
 				apng.addFrame(new ByteArrayInputStream(tileImage), lastFrameDuration);
 
 				//noinspection SpellCheckingInspection
