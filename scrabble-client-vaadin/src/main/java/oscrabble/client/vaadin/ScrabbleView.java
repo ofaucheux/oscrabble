@@ -23,6 +23,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import elemental.json.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -199,7 +200,7 @@ public class ScrabbleView extends HorizontalLayout
 
 		final StringBuilder html = new StringBuilder();
 
-		// grid
+		// grid background
 		html.append(createHtmlImgCode(GRID_DIMENSION, ImageServlet.urlForGrid(), ""));
 
 		// letters
@@ -220,39 +221,44 @@ public class ScrabbleView extends HorizontalLayout
 			}
 		}
 
-		// arrow for the currently played move
 		if (preparedAction != null) {
-			html.append("\n");
-			html.append(
-					getHtmlPositionedImgCode(
-							preparedAction.startSquare.x,
-							preparedAction.startSquare.y,
-							1,
-							1,
-							this.imageFactory.generateDirectionArrowImage(preparedAction.getDirection())
-					)
-			);
-
-			// add currently played letters
+			// compute currently played tiles list
 			final boolean isPreparedMoveHorizontal = preparedAction.getDirection() == oscrabble.data.objects.Grid.Direction.HORIZONTAL;
+			final ArrayList<Triple<Integer, Integer, Tile>> preparedTiles = new ArrayList<>();
 			for (int i = 0; i < preparedAction.word.length(); i++) {
 				final char c = preparedAction.word.charAt(i);
+				final int x = preparedAction.startSquare.x + (isPreparedMoveHorizontal ? i : 0);
+				final int y = preparedAction.startSquare.y + (isPreparedMoveHorizontal ? 0 : i);
+				final Square actual = grid.get(x, y);
+				if (actual.isBorder || (actual.tile != null && actual.tile.getC() != c)) {
+					// word cannot be played
+					preparedTiles.clear();
+					break;
+				}
 				final int points = game.getDictionary().getScrabbleRules().getPoints(c);
-				final Tile build = Tile.builder().c(c).points(points).build();
+				preparedTiles.add(Triple.of(
+						x,
+						y,
+						Tile.builder().c(c).points(points).build()
+				));
+			}
+
+			// display currently played tiles
+			for (final Triple<Integer, Integer, Tile> t : preparedTiles) {
 				html.append("\n");
 				html.append(
 						getHtmlPositionedImgCode(
-								preparedAction.startSquare.x + (isPreparedMoveHorizontal ? i : 0),
-								preparedAction.startSquare.y + (isPreparedMoveHorizontal ? 0 : i),
+								t.getLeft(),
+								t.getMiddle(),
 								1,
 								1,
-								this.imageFactory.generateTileImage(build, false)
+								this.imageFactory.generateTileImage(t.getRight(), false)
 						)
 				);
 			}
 
 			// highlight currently played move
-			if (preparedAction.word.length() > 0) {
+			if (!preparedTiles.isEmpty()) {
 				html.append("\n");
 				html.append(
 						getHtmlPositionedImgCode(
@@ -267,6 +273,18 @@ public class ScrabbleView extends HorizontalLayout
 						)
 				);
 			}
+
+			// arrow for the currently played move
+			html.append("\n");
+			html.append(
+					getHtmlPositionedImgCode(
+							preparedAction.startSquare.x,
+							preparedAction.startSquare.y,
+							1,
+							1,
+							this.imageFactory.generateDirectionArrowImage(preparedAction.getDirection())
+					)
+			);
 		}
 
 		return html.toString();
@@ -467,7 +485,6 @@ public class ScrabbleView extends HorizontalLayout
 
 	static class PlayerComponent extends Grid<Player> {
 		private final AtomicReference<UUID> playerOnTurn = new AtomicReference<>();
-
 		PlayerComponent() {
 			final ItemLabelGenerator<Player> onTurn =
 					player -> player.getId().equals(this.playerOnTurn.get())
@@ -486,7 +503,6 @@ public class ScrabbleView extends HorizontalLayout
 			it.next().setWidth("50px");
 			setThemeVariants(this);
 			setDefaultFont(this);
-
 		}
 	}
 
