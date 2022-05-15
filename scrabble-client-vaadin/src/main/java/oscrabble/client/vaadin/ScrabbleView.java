@@ -18,8 +18,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinSession;
 import elemental.json.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,7 +26,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
-import oscrabble.client.*;
+import oscrabble.client.AbstractPossibleMoveDisplayer;
 import oscrabble.client.Application;
 import oscrabble.client.utils.I18N;
 import oscrabble.controller.Action.PlayTiles;
@@ -39,8 +38,8 @@ import oscrabble.player.ai.Strategy;
 import oscrabble.server.Game;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
 @CssImport("./scrabble.css")
-public class ScrabbleView extends HorizontalLayout
+public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserver
 {
 	private static final int CELL_SIZE = 36;
 	public static final Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);
@@ -145,6 +144,20 @@ public class ScrabbleView extends HorizontalLayout
 		th.start();
 
 		this.inputTextField.focus();
+
+	}
+
+	@Override
+	public void beforeEnter(final BeforeEnterEvent event) {
+		final Map<String, List<String>> parameters = event.getLocation().getQueryParameters().getParameters();
+		final List<String> gameList = parameters.get("game");
+		// assert the url contains a game UUID, otherwise redirect to a random one.
+		if (gameList == null || gameList.size() !=1) {
+			final QueryParameters queryParameters = new QueryParameters(
+					Map.of("game", List.of(UUID.randomUUID().toString()))
+			);
+			UI.getCurrent().navigate("scrabble", queryParameters);
+		}
 	}
 
 	@Override
@@ -320,6 +333,7 @@ public class ScrabbleView extends HorizontalLayout
 		);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private String createHtmlEmbeddedImgCode(final Dimension dimension, final byte[] png, final String cssStyle) {
 		return createHtmlImgCode(
 				dimension,
