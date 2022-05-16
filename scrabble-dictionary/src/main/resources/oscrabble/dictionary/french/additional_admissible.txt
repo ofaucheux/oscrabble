@@ -7,3 +7,4 @@ oyez
 quad
 quads
 swahélies
+huns
