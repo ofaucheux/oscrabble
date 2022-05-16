@@ -148,10 +148,8 @@ public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver 
 		this.historyComponent = new HistoryComponent();
 		addTitledComponent(rightColumn, I18N.get("moves"), this.historyComponent);
 
-		rightColumn.add(new VersionLabel());
-
 		mainPanel.add(rightColumn);
-		rightColumn.setPadding(false);
+		rightColumn.setPadding(true);
 		rightColumn.setHeight(centerColumn.getHeight());
 
 		//
@@ -412,10 +410,16 @@ public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver 
 
 	private void addTitledComponent(final HasComponents parent, final String title, final Component child) {
 		final Element fs = new Element("fieldset");
+		fs.getStyle().set("width", "100%");
 		Element legend = new Element("legend").setText(title);
 		fs.appendChild(legend);
+
 		final Div div = new Div(child);
-		div.setWidth("220px");
+		if (child instanceof HasSize) {
+			((HasSize) child).setWidth("100%");
+		}
+
+		div.setWidth("100%");
 		fs.appendChild(div.getElement());
 		parent.getElement().appendChild(fs);
 	}
@@ -551,6 +555,7 @@ public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver 
 			addColumn(Player::getName);
 			addColumn(Player::getScore);
 
+			setTabIndex(-1);
 			setSelectionMode(SelectionMode.NONE);
 			setHeight("120px");
 			final Iterator<Column<Player>> it = getColumns().iterator();
@@ -580,6 +585,7 @@ public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver 
 						play();
 					}
 			);
+			this.grid.setTabIndex(-1);
 			setThemeVariants(this.grid);
 			setMonospacedFont(this.grid);
 
@@ -592,11 +598,13 @@ public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver 
 				this.selectedStrategy = a.getValue();
 				refresh();
 			});
+			this.strategyComboBox.setWidth("100%");
 		}
 
 		public Component createComponent() {
 			final VerticalLayout verticalLayout = new VerticalLayout(this.strategyComboBox, this.grid);
 			verticalLayout.getStyle().set("padding", "0px");
+			verticalLayout.setSpacing(false);
 			return verticalLayout;
 		}
 
@@ -626,6 +634,7 @@ public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver 
 						return layout;
 					}
 			));
+			setTabIndex(-1);
 		}
 
 		private String getPlayerName(UUID id) {
