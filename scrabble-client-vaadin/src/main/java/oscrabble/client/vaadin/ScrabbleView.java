@@ -2,11 +2,14 @@ package oscrabble.client.vaadin;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -47,7 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Route(value = "scrabble")
 @PageTitle("Scrabble | By Olivier")
 @CssImport("./scrabble.css")
-public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserver {
+public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver {
 	private static final int CELL_SIZE = 36;
 	public static final Dimension CELL_DIMENSION = new Dimension(CELL_SIZE, CELL_SIZE);
 	public static final Dimension GRID_DIMENSION = new Dimension(17 * CELL_SIZE, 17 * CELL_SIZE);
@@ -69,7 +72,12 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 	private boolean hasInputTextFieldChanged;
 	private Context ctx;
 
+	/**
+	 * Create the components of this view.
+	 */
 	private void build() {
+		this.removeAll();
+
 		final Style style = getElement().getStyle();
 		style.set(
 				"background-color",
@@ -80,8 +88,29 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 		style.set("font-size", "12px");
 
 		//
+		// Menu
+		//
+
+		MenuBar menuBar = new MenuBar();
+		MenuItem item = menuBar.addItem(I18N.get("menu.game"));
+		SubMenu subMenu = item.getSubMenu();
+		subMenu.addItem(I18N.get("menu.entry.new.game"), e -> {
+			try {
+				startNewGame();
+				update();
+			} catch (ScrabbleException ex) {
+				LOGGER.error(ex.toString(), ex);
+			}
+		});
+		add(menuBar);
+
+		final HorizontalLayout mainPanel = new HorizontalLayout();
+		this.add(mainPanel);
+
+		//
 		// Center column
 		//
+
 		final VerticalLayout centerColumn = new VerticalLayout();
 		centerColumn.setAlignItems(Alignment.STRETCH);
 
@@ -101,7 +130,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 				Key.ENTER,
 				ev -> play()
 		);
-		add(centerColumn);
+		mainPanel.add(centerColumn);
 		centerColumn.setWidth(this.grid.getWidth());
 
 		//
@@ -121,7 +150,7 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 
 		rightColumn.add(new VersionLabel());
 
-		add(rightColumn);
+		mainPanel.add(rightColumn);
 		rightColumn.setPadding(false);
 		rightColumn.setHeight(centerColumn.getHeight());
 
@@ -152,20 +181,24 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 		final Map<String, List<String>> parameters = event.getLocation().getQueryParameters().getParameters();
 		final List<String> gameList = parameters.get("game");
 		// assert the url contains a game UUID, otherwise redirect to a random one.
-		final UUID gameId;
 		if (gameList == null || gameList.isEmpty()) {
-			gameId = UUID.randomUUID();
-			UI.getCurrent().navigate(
-					"scrabble",
-					new QueryParameters(
-							Map.of("game", List.of(gameId.toString()))
-					));
+			this.ctx = startNewGame();
 		} else {
-			gameId = UUID.fromString(gameList.get(0));
+			this.ctx = Context.get(UUID.fromString(gameList.get(0)));
 		}
 
-		this.ctx = Context.get(gameId);
 		build();
+	}
+
+	private Context startNewGame() {
+		final UUID gameId;
+		gameId = UUID.randomUUID();
+		UI.getCurrent().navigate(
+				"scrabble",
+				new QueryParameters(
+						Map.of("game", List.of(gameId.toString()))
+				));
+		return Context.get(gameId);
 	}
 
 	@Override
@@ -387,6 +420,9 @@ public class ScrabbleView extends HorizontalLayout implements BeforeEnterObserve
 		parent.getElement().appendChild(fs);
 	}
 
+	/**
+	 * Update the content of the component with the actual state of the game, but without recreating them.
+	 */
 	private void update() throws ScrabbleException {
 		final GameState state = this.ctx.game.getGameState();
 		final VaadinSession session = this.ui.getSession();
