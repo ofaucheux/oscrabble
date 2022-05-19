@@ -12,6 +12,8 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -107,6 +109,7 @@ public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver 
 			}
 		});
 		subMenu.addItem(I18N.get("search.in.dictionary"), e -> setModus(Modus.DICTIONARY));
+		subMenu.addItem(I18N.get("save.game"), e -> saveGame());
 		add(menuBar);
 
 		final HorizontalLayout mainPanel = new HorizontalLayout();
@@ -180,6 +183,31 @@ public class ScrabbleView extends VerticalLayout implements BeforeEnterObserver 
 		// Prepare modal dialogs
 		this.dictionaryEntriesDialog = new DictionaryDialog();
 		add(this.dictionaryEntriesDialog);
+	}
+
+	private void saveGame() {
+		final Notification notification = new Notification();
+		SaveGameResponse response;
+		try {
+			response = this.ctx.server.saveGame(this.ctx.game.getId());
+			notification.setText(
+					response.success
+							? I18N.get("game.saved.success.0", response.getFilename())
+							: I18N.get("game.saved.error.0", response.getErrorMessage()
+				)
+			);
+		} catch (ScrabbleException e) {
+			response = null;
+			notification.setText(I18N.get("game.saved.error.0", e.getLocalizedMessage()));
+		}
+		notification.addThemeVariants(
+				response != null && response.isSuccess()
+						? NotificationVariant.LUMO_SUCCESS
+						: NotificationVariant.LUMO_ERROR
+		);
+		notification.setPosition(Notification.Position.TOP_END);
+		notification.setDuration(3000);
+		notification.open();
 	}
 
 	private void setModus(Modus modus) {

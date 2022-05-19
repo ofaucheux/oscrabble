@@ -113,4 +113,9 @@ public class Controller {
 	public void updatePlayer(@PathVariable UUID game, @RequestBody PlayerUpdateRequest request) throws ScrabbleException {
 		Server.getGame(game).updatePlayer(request);
 	}
+
+	@RequestMapping(value = "/{game}/saveGame", method = {RequestMethod.POST}, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<SaveGameResponse> saveGame(@PathVariable UUID game, @RequestBody PlayerUpdateRequest request) throws ScrabbleException {
+		return ResponseEntity.ok(Server.getGame(game).save());
+	}
 }

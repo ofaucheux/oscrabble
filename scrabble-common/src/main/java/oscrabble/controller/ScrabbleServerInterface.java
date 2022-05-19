@@ -105,4 +105,9 @@ public interface ScrabbleServerInterface {
 	 * @return the list of word the server would refuse.
 	 */
 	Set<String> getAdditionalRefusedWords(UUID game);
+
+	/**
+	 * Save the game on the server.
+	 */
+	SaveGameResponse saveGame(UUID game) throws ScrabbleException;
 }

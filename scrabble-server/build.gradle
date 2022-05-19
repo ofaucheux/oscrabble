@@ -21,8 +21,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-configuration2', version: '2.+'
     implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.+'
     implementation group: 'com.github.lgooddatepicker', name: 'LGoodDatePicker', version: '10.3.+'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
 
     testImplementation(testFixtures(project(":scrabble-common")))
-    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.10.+'
-
 }

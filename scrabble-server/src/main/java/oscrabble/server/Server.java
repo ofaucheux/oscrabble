@@ -78,6 +78,11 @@ public class Server implements ScrabbleServerInterface {
 	}
 
 	@Override
+	public SaveGameResponse saveGame(final UUID game) throws ScrabbleException {
+		return getGame(game).save();
+	}
+
+	@Override
 	public ScrabbleRules getRules(final UUID game) throws ScrabbleException {
 		return getGame(game).getScrabbleRules();
 	}

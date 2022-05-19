@@ -1,8 +1,11 @@
 package oscrabble.server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Getter;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.map.LinkedMap;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +20,10 @@ import oscrabble.dictionary.Dictionary;
 import oscrabble.dictionary.Language;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -349,6 +355,34 @@ public class Game implements ScrabbleConstants {
 				}
 			}
 		}
+	}
+
+	synchronized SaveGameResponse save() {
+		final SaveGameResponse.SaveGameResponseBuilder builder = SaveGameResponse.builder();
+		try {
+			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+			String filename = String.format(
+					"%s--%s.json",
+					OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+					this.id.toString().substring(0, 6)
+			);
+			filename = filename.replaceAll(":", "_");
+			final File file = new File(FileUtils.getTempDirectory(), filename);
+
+			builder.filename(file.getName());
+			FileUtils.writeStringToFile(
+					file,
+					ow.writeValueAsString(this.getGameState()),
+					StandardCharsets.UTF_8
+			);
+			builder.success(true);
+		} catch (Throwable e) {
+			LOGGER.error(e.getMessage(), e);
+			builder.success(false);
+			builder.errorMessage(e.getLocalizedMessage());
+		}
+
+		return builder.build();
 	}
 
 	/**
