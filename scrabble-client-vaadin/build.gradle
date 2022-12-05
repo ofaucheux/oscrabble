@@ -30,6 +30,7 @@ dependencies {
 
     implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.11'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.11'
+    implementation files('libs/japng.jar') // for the production of APNG-pictures
 
     testImplementation 'org.mockito:mockito-inline:3.12.4'
     testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
