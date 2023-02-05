@@ -345,7 +345,12 @@ public class Client {
 			final List<Player> players = new ArrayList<>(state.getPlayers());
 			players.sort(Comparator.comparingInt(Player::getScore).reversed());
 			final int bestScore = players.get(0).score;
-			final Set<Player> winners = players.stream().filter(p -> p.score == bestScore).collect(Collectors.toSet());
+			final String delimiter = " " + I18N.get("and") + " ";
+			final Set<String> winners = players.stream()
+					.filter(p -> p.score == bestScore)
+					.map(Player::getName)
+					.collect(Collectors.toSet());
+
 			final StringBuilder sb = new StringBuilder();
 			sb.append("<html>")
 					.append(I18N.get("end.of.game"))
@@ -353,14 +358,12 @@ public class Client {
 					.append(
 							winners.size() == 1
 									? I18N.get("winner.is")
-									: I18N.get("winners.are"));
-			for (final Player winner : winners) {
-				sb.append(winner.getName())
-						.append(' ')
-						.append(I18N.get("and"))
-						.append(' ');
-			}
-			sb.setLength(sb.length() - 5);
+									: I18N.get("winners.are"))
+					.append(" ")
+					.append(String.join(
+							delimiter,
+							winners));
+
 			JOptionPane.showMessageDialog(Client.this.playground.gridFrame, sb.toString());
 
 			LOGGER.debug("Thread ends"); //NON-NLS
