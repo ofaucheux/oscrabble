@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>scrabble-rest-server</artifactId>
+
+    <parent>
+        <artifactId>oscrabble</artifactId>
+        <groupId>org.faucheux</groupId>
+        <version>1.0-snapshot</version>
+    </parent>
+
+    <dependencies>
+<!--        implementation 'org.springframework.boot:spring-boot-starter-web:2.2.6.RELEASE'-->
+<!--        implementation 'org.springframework.boot:spring-boot-starter-test:2.2.6.RELEASE'-->
+<!--        implementation 'org.springframework.boot:spring-boot-starter-actuator:2.2.6.RELEASE'-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>2.2.6.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>2.2.6.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>2.2.6.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.faucheux</groupId>
+            <artifactId>scrabble-common</artifactId>
+            <version>1.0-snapshot</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.faucheux</groupId>
+            <artifactId>scrabble-server</artifactId>
+            <version>1.0-snapshot</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+</project>

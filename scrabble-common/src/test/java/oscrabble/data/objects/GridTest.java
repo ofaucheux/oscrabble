@@ -3,7 +3,6 @@ package oscrabble.data.objects;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import oscrabble.ScrabbleException;
-import oscrabble.data.fixtures.PrecompiledGameStates;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -97,8 +96,4 @@ class GridTest {
 //		assertEquals(g, Grid.fromAsciiArt(rules, generated));
 //	}
 
-	@Test
-	void getFixtures() {
-		PrecompiledGameStates.game1();
-	}
 }
