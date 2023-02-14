@@ -143,6 +143,7 @@
                                 <internalName>Scrabble</internalName>
                                 <originalFilename>scrabble.exe</originalFilename>
                             </versionInfo>
+                            <icon>src/main/resources/oscrabble/client/oscrabble-icon.ico</icon>
                         </configuration>
                     </execution>
                 </executions>
