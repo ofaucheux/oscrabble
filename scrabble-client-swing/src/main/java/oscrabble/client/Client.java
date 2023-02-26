@@ -33,7 +33,7 @@ public class Client {
 
 	final UUID game;
 	final UUID player;
-	final Set<Listener> listeners = new HashSet<>();
+	final private Set<Listener> listeners = new HashSet<>();
 
 	final Playground playground;
 	private final JRack rack;
@@ -72,6 +72,10 @@ public class Client {
 
 	private final Set<Object> waitingTokens = new HashSet<>();
 	private final Object waitingAfterOtherPlayToken = new Object();
+
+	public void addListener(Listener listener) {
+		this.listeners.add(listener);
+	}
 
 	/**
 	 * Display the components
@@ -182,7 +186,7 @@ public class Client {
 	/**
 	 * Execute a command
 	 */
-	void executeCommand(final String command) {
+	public void executeCommand(final String command) {
 		if (command == null) {
 			return;
 		}
@@ -249,7 +253,7 @@ public class Client {
 
 	void treatNewState(final GameState state) throws ScrabbleException {
 		refreshUI(state);
-		this.listeners.forEach(l -> l.onNewTurn());
+		this.listeners.forEach(l -> l.onNewState());
 		this.server.acknowledgeState(this.game, this.player, state);
 	}
 
@@ -310,8 +314,8 @@ public class Client {
 //
 //	}
 
-	interface Listener {
-		void onNewTurn();
+	public interface Listener {
+		void onNewState();
 	}
 
 	/**

@@ -3,7 +3,9 @@ package oscrabble.client;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 import oscrabble.ScrabbleException;
+import oscrabble.client.ui.CommandPrompt;
 import oscrabble.client.ui.CursorImage;
 import oscrabble.client.ui.JScoreboard;
 import oscrabble.client.ui.ServerConfigPanel;
@@ -20,17 +22,10 @@ import oscrabble.exception.IllegalCoordinate;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOError;
 import java.io.InputStream;
-import java.text.Normalizer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,36 +45,6 @@ class Playground {
 	 */
 	private final CursorImage cursorImage;
 
-	/**
-	 * Filter, das alles Eingetragene Uppercase schreibt
-	 */
-	private final static DocumentFilter UPPER_CASE_DOCUMENT_FILTER = new DocumentFilter() {
-		public void insertString(DocumentFilter.FilterBypass fb, int offset,
-								 String text, AttributeSet attr
-		) throws BadLocationException {
-
-			fb.insertString(offset, toUpperCase(text), attr);
-		}
-
-		public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
-							String text, AttributeSet attrs
-		) throws BadLocationException {
-
-			fb.replace(offset, length, toUpperCase(text), attrs);
-		}
-
-		/**
-		 * Entfernt die Umlaute und liefert alles Uppercase.
-		 * TODO: für Frz. sinnvoll, für Deutsch aber sicherlich nicht..
-		 */
-		private String toUpperCase(String text) {
-			text = Normalizer.normalize(text, Normalizer.Form.NFD);
-			text = text.replaceAll("[^\\p{ASCII}]", ""); //NON-NLS
-			text = text.replaceAll("\\p{M}", ""); //NON-NLS
-			return text.toUpperCase();
-		}
-	};
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(Playground.class);
 
 	/**
@@ -90,7 +55,7 @@ class Playground {
 	/**
 	 * Command prompt
 	 */
-	private final JTextField commandPrompt;
+	private final CommandPrompt commandPrompt;
 
 	/**
 	 * Score board
@@ -129,18 +94,23 @@ class Playground {
 	}
 
 	Playground(final Client client) {
+
+		Assert.notNull(client, "Client");
+
 		this.client = client;
 		this.jGrid = new JGrid();
 		this.jGrid.setPlayground(this);
 		this.jScoreboard = new JScoreboard();
 		this.jScoreboard.setFocusable(false);
-		this.commandPrompt = new JTextField();
-		final CommandPromptAction promptListener = new CommandPromptAction();
-		this.commandPrompt.addActionListener(promptListener);
-		this.commandPrompt.setFont(this.commandPrompt.getFont().deriveFont(20f));
-		final AbstractDocument document = (AbstractDocument) this.commandPrompt.getDocument();
-		document.addDocumentListener(promptListener);
-		document.setDocumentFilter(UPPER_CASE_DOCUMENT_FILTER);
+		this.commandPrompt = new CommandPrompt(client);
+		this.commandPrompt.addChangeListener(() -> {
+			try {
+				displayPreparedMove();
+			} catch (final ScrabbleException ignored) {
+			}
+
+			this.jGrid.repaint();
+		});
 
 		this.gridFrame = new JFrame();
 		final WindowAdapter frameAdapter = new WindowAdapter() {
@@ -148,16 +118,12 @@ class Playground {
 			public void windowClosing(final WindowEvent e) {
 				final int confirm = JOptionPane.showConfirmDialog(Playground.this.gridFrame, I18N.get("quit.the.game"), I18N.get("confirm.quit"), JOptionPane.YES_NO_OPTION);
 				if (confirm == JOptionPane.YES_OPTION) {
-					if (client != null) {
-						Playground.this.client.quitGame();
-					} else {
-						Playground.this.dispose();
-					}
+					Playground.this.client.quitGame();
 				}
 			}
 		};
 		this.gridFrame.setFocusTraversalPolicyProvider(true);
-		this.gridFrame.setFocusTraversalPolicy(new SingleComponentFocusTransversalPolicy(this.commandPrompt));
+		this.gridFrame.setFocusTraversalPolicy(new SingleComponentFocusTransversalPolicy(this.commandPrompt.getComponent()));
 		this.gridFrame.addWindowListener(frameAdapter);
 		this.gridFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.gridFrame.setLayout(new BorderLayout());
@@ -167,7 +133,7 @@ class Playground {
 		final JPanel mainPanel_01 = new JPanel();
 		mainPanel_01.setLayout(new BoxLayout(mainPanel_01, BoxLayout.PAGE_AXIS));
 		mainPanel_01.add(this.jGrid);
-		mainPanel_01.add(this.commandPrompt);
+		mainPanel_01.add(this.commandPrompt.getComponent());
 		this.gridFrame.add(mainPanel_01);
 
 		final JPanel eastPanel = new JPanel(new BorderLayout());
@@ -177,24 +143,19 @@ class Playground {
 		panel1.add(this.jScoreboard);
 		panel1.add(Box.createVerticalGlue());
 
-		if (client == null) {
-			panel1.add(new JTextField("Place for PossibleMoveDisplayer")); //NON-NLS
-			this.pmd = null;
-		} else {
-			this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
-			this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, getRules()));
-			this.pmd.setFont(MONOSPACED);
-			this.pmd.getMoveList().addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(final MouseEvent e) {
-					if (e.getClickCount() == 2) {
-						client.executeCommand(Playground.this.pmd.getSelectedAction());
-					}
+		this.pmd = new PossibleMoveDisplayer(this.client.getDictionary());
+		this.pmd.addSelectionListener(l -> this.jGrid.highlightPreparedAction((PlayTiles) l, getRules()));
+		this.pmd.setFont(MONOSPACED);
+		this.pmd.getMoveList().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(final MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					client.executeCommand(Playground.this.pmd.getSelectedAction());
 				}
-			});
-			this.client.listeners.add(() -> this.pmd.reset());
-			panel1.add(this.pmd.mainPanel);
-		}
+			}
+		});
+		this.client.addListener(() -> this.pmd.reset());
+		panel1.add(this.pmd.mainPanel);
 
 		final JPanel historyPanel = new JPanel(new BorderLayout());
 		historyPanel.setBorder(new TitledBorder(I18N.get("moves")));
@@ -221,18 +182,16 @@ class Playground {
 		);
 
 		final JPopupMenu popup = new JPopupMenu();
-		if (client != null) {
-			DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
-				PlayTiles action = getSelectedHistoryAction();
-				return action == null ? null : Collections.singleton(action.word);
-			});
-			final Object waitToken = new Object();
-			dda.beforeActionListeners.add(() -> client.addWaitToken(waitToken, false));
-			dda.afterActionListeners.add(() -> client.addWaitToken(waitToken, true));
+		DisplayDefinitionAction dda = new DisplayDefinitionAction(client.getDictionary(), () -> {
+			PlayTiles action = getSelectedHistoryAction();
+			return action == null ? null : Collections.singleton(action.word);
+		});
+		final Object waitToken = new Object();
+		dda.beforeActionListeners.add(() -> client.addWaitToken(waitToken, false));
+		dda.afterActionListeners.add(() -> client.addWaitToken(waitToken, true));
 
-			dda.setRelativeComponentPosition(this.gridFrame);
-			popup.add(dda);
-		}
+		dda.setRelativeComponentPosition(this.gridFrame);
+		popup.add(dda);
 		this.historyList.setComponentPopupMenu(popup);
 
 		this.historyList.addListSelectionListener(event -> {
@@ -283,7 +242,7 @@ class Playground {
 		this.gridFrame.setResizable(false);
 		this.gridFrame.setVisible(true);
 
-		this.commandPrompt.requestFocus();
+		this.commandPrompt.getComponent().requestFocus();
 	}
 
 
@@ -325,7 +284,7 @@ class Playground {
 		this.jScoreboard.updateDisplay(state.players, state.playerOnTurn);
 		this.historyList.setListData(state.playedActions.toArray(new oscrabble.data.Action[0]));
 		if (this.pmd != null) {
-			this.pmd.refresh(client.server, state, rack);
+			this.pmd.refresh(this.client.server, state, rack);
 		}
 
 		final Player onTurn = StateUtils.getPlayerOnTurn(state);
@@ -335,8 +294,10 @@ class Playground {
 				&& !this.client.player.equals(onTurn.id)
 		) {
 			this.cursorImage.setText(I18N.get("0.on.turn", onTurn.name));
+			this.commandPrompt.clear(false);
 		} else {
 			this.cursorImage.setText(null);
+			this.commandPrompt.clear(true);
 		}
 
 		if (state.state == GameState.State.ENDED) {
@@ -353,10 +314,6 @@ class Playground {
 			glassPane.setVisible(true);
 			this.gridFrame.pack();
 		}
-	}
-
-	public String getCommand() {
-		return this.commandPrompt.getText();
 	}
 
 	public void setScoreboardPlayerAdditionalComponent(final Map<UUID, JComponent> components) {
@@ -376,7 +333,7 @@ class Playground {
 //				throw new IllegalStateException("Player is not current one");
 //			}
 
-		String command = Playground.this.getCommand();
+		String command = this.commandPrompt.getCommand();
 		final StringBuilder sb = new StringBuilder();
 
 		boolean joker = false;
@@ -480,7 +437,7 @@ class Playground {
 	void setStartCell(final JGrid.JSquare click) {
 		String newPrompt = null;
 		try {
-			final String currentPrompt = this.getCommand();
+			final String currentPrompt = this.commandPrompt.getCommand();
 			if (currentPrompt.isEmpty()) {
 				newPrompt = click.square.getNotation(Grid.Direction.HORIZONTAL) + " ";
 			} else {
@@ -507,24 +464,8 @@ class Playground {
 		}
 
 		if (newPrompt != null) {
-			this.commandPrompt.setText(newPrompt);
+			this.commandPrompt.setCommand(newPrompt);
 		}
-	}
-
-	/**
-	 * Execute the command contained in the command prompt
-	 */
-	void executeCommand() {
-		if (this.client == null) {
-			JOptionPane.showMessageDialog(Playground.this.gridFrame, I18N.get("this.playground.has.no.client"));
-			return;
-		}
-
-		SwingUtilities.invokeLater(() ->
-		{
-			this.client.executeCommand(getCommand());
-			this.commandPrompt.setText("");
-		});
 	}
 
 	/**
@@ -551,37 +492,5 @@ class Playground {
 	 */
 	private ScrabbleRules getRules() {
 		return this.client == null ? null : this.client.scrabbleRules;
-	}
-
-	private class CommandPromptAction extends AbstractAction implements DocumentListener {
-
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			SwingUtilities.invokeLater(() -> executeCommand());
-		}
-
-		@Override
-		public void insertUpdate(final DocumentEvent e) {
-			changedUpdate(e);
-		}
-
-		@Override
-		public void removeUpdate(final DocumentEvent e) {
-			changedUpdate(e);
-		}
-
-		@Override
-		public void changedUpdate(final DocumentEvent e) {
-//			if (Playground.this.client == null) {
-//				return;
-//			}
-
-			try {
-				displayPreparedMove();
-			} catch (final ScrabbleException ignored) {
-			}
-
-			Playground.this.jGrid.repaint();
-		}
 	}
 }
