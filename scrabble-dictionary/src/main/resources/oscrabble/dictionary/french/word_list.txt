@@ -1,5 +1,6 @@
-a
-à
+# Liste « Gutmberg » trouvée sur http://www.3zsoftware.com/fr/listes.php
+# http://www.lexique.org/databases/Liste-de-mots-francais-Gutenberg/ propose
+# aussi cette liste, mais avec des fautes et des manques.
 abaissa
 abaissable
 abaissables
@@ -29843,6 +29844,8 @@ biaisez
 biaisiez
 biaisions
 biaisons
+biathlon
+biathlons
 bibelot
 bibelota
 bibelotai
@@ -158748,7 +158751,6 @@ franc
 français
 française
 françaises
-Francais-GUTenberg
 franc-alleu
 franc-bord
 franc-bourgeois
@@ -171667,7 +171669,6 @@ gustative
 gustatives
 gustométrie
 gustométries
-GUTenberg
 gutta-percha
 guttas-perchas
 guttural
@@ -189125,7 +189126,6 @@ isotope
 isotopes
 isotopique
 isotopiques
-ISPELL
 israélien
 israélienne
 israéliennes
@@ -220607,7 +220607,7 @@ occurrents
 océan
 océanaute
 océanautes
-océanideLMS
+océanide
 océanien
 océanienne
 océaniennes
@@ -271596,8 +271596,8 @@ remakes
 rémanence
 rémanences
 rémanent
-rémanentE
-rémanentES
+rémanente
+rémanentes
 rémanents
 remange
 remangé
@@ -272709,8 +272709,8 @@ remîtes
 rémittence
 rémittences
 rémittent
-rémittentE
-rémittentES
+rémittente
+rémittentes
 rémittents
 rémiz
 remmailla
@@ -287281,7 +287281,7 @@ roturière
 roturières
 roturiers
 roua
-rouableS
+rouables
 rouage
 rouages
 rouai
@@ -304183,8 +304183,8 @@ stratifiions
 stratifions
 stratigraphie
 stratigraphies
-stratigraphiqu
-stratigraphiqus
+stratigraphique
+stratigraphiques
 stratiome
 stratiomes
 stratiomys
@@ -306538,7 +306538,7 @@ sulfations
 sulfatons
 sulfhémoglobine
 sulfhémoglobines
-sulfhydriqueS
+sulfhydriques
 sulfinisation
 sulfinisations
 sulfita
