@@ -1,6 +1,7 @@
 package oscrabble.client.utils;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -62,6 +63,22 @@ public class SwingUtils {
 			if (component instanceof LayoutChangeListener) {
 				((LayoutChangeListener) component).afterLayoutChange();
 			}
+		}
+	}
+
+	/** Display a new Frame */
+	public static void displayInNewFrame(final Component component) {
+		final JFrame f = new JFrame();
+		f.add(component);
+		f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		f.setVisible(true);
+		f.pack();
+		f.setLocationRelativeTo(null);
+
+		try {
+			Thread.sleep(30000);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
