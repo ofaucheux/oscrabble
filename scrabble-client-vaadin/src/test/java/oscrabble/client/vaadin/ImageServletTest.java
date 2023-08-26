@@ -14,6 +14,9 @@ class ImageServletTest {
 	void getImage() {
 		final String url = ImageServlet.urlForTile(true, Tile.builder().c('A').points(1).build(), true);
 		final byte[] image = ImageServlet.getImage(Paths.get(url).getFileName().toString());
-		FileUtils.writeByteArrayToFile(new File("C:/temp/test_a.png"), image);
+		final File outputFile = new File(FileUtils.getTempDirectory(), "test_a.png");
+		FileUtils.deleteQuietly(outputFile);
+		FileUtils.writeByteArrayToFile(outputFile, image);
+		System.out.println("Bild generiert in " + outputFile.getAbsolutePath());
 	}
 }
