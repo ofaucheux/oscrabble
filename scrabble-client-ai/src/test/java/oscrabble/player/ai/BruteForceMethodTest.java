@@ -20,7 +20,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings("HardCodedStringLiteral")
+@SuppressWarnings({"HardCodedStringLiteral", "SpellCheckingInspection"})
 public class BruteForceMethodTest {
 
 	private BruteForceMethod instance;
@@ -30,8 +30,8 @@ public class BruteForceMethodTest {
 	@SuppressWarnings("unused")
 	private static List<TestData> findMoveParameterProvider() {
 		return Arrays.asList(
-				new TestData("grid_1.grid", "EDPWMES", new HashSet<>(Collections.singleton("15J")), new HashSet<>(Collections.singleton(("15H MES")))),
-				new TestData("grid_2.grid", "EDPWMES", new HashSet<>(Collections.singleton("14J")), new HashSet<>(Collections.singleton(("14H MES"))))
+				new TestData("grid_1.grid", "EDPWMES", Collections.singleton("15J"), Set.of("15H MES")),
+				new TestData("grid_2.grid", "EDPWMES", Collections.singleton("14J"), new HashSet<>(Collections.singleton(("14H MES"))))
 		);
 	}
 
@@ -68,6 +68,7 @@ public class BruteForceMethodTest {
 	@ParameterizedTest
 	@MethodSource("findMoveParameterProvider")
 	void getLegalMoves(final TestData testParams) throws IOException {
+		//noinspection DataFlowIssue
 		final String asciiArt = IOUtils.toString(
 				BruteForceMethodTest.class.getResourceAsStream(testParams.filename),
 				Charset.defaultCharset()
@@ -101,6 +102,8 @@ public class BruteForceMethodTest {
 				throw new Error(e);
 			}
 		});
+		MatcherAssert.assertThat(foundWords, CoreMatchers.hasItem("-"));
+		foundWords.remove("-");
 		MatcherAssert.assertThat(DICTIONARY.getAdmissibleWords(), CoreMatchers.hasItems(foundWords.toArray(new String[0])));
 	}
 

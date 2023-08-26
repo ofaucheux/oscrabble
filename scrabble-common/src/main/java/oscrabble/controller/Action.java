@@ -10,10 +10,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static oscrabble.data.Action.PASS_TURN_NOTATION;
+
 public abstract class Action {
-	private static final Pattern PASS_TURN = Pattern.compile(
-			Pattern.quote(oscrabble.data.Action.PASS_TURN_NOTATION)
-	);
 	private static final Pattern EXCHANGE = Pattern.compile("-\\s+(\\S+)");
 	private static final Pattern PLAY_TILES = Pattern.compile("(\\S*)\\s+(\\S*)");
 
@@ -36,7 +35,7 @@ public abstract class Action {
 
 	public static Action parse(final UUID player, final String notation) throws ScrabbleException.NotParsableException {
 		final Action action;
-		if (PASS_TURN.matcher(notation).matches()) {
+		if (PASS_TURN_NOTATION.equals(notation)) {
 			action = new SkipTurn(player, notation);
 		} else if (EXCHANGE.matcher(notation).matches()) {
 			action = new Exchange(player, notation);
@@ -56,6 +55,9 @@ public abstract class Action {
 	 * @return (coordinate, word)
 	 */
 	public static Pair<Coordinate, String> parsePlayNotation(final String notation) throws ScrabbleException.NotParsableException {
+		if (PASS_TURN_NOTATION.equals(notation)) {
+			return Pair.of(null, PASS_TURN_NOTATION);
+		}
 		final Matcher m = PLAY_TILES.matcher(notation);
 		if (!m.matches()) {
 			throw new ScrabbleException.NotParsableException(notation);

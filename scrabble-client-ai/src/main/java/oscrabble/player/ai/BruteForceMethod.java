@@ -6,6 +6,7 @@ import org.quinto.dawg.DAWGNode;
 import org.quinto.dawg.ModifiableDAWGSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oscrabble.data.Action;
 import oscrabble.data.IDictionary;
 import oscrabble.data.objects.Coordinate;
 import oscrabble.data.objects.Grid;
@@ -99,13 +100,14 @@ public class BruteForceMethod {
 	 */
 	public Set<String> getLegalMoves(final Collection<Character> rack) {
 		if (this.grid.isEmpty()) {
-			return getLegalWordOnEmptyGrid(rack);
+			return getLegalMovesOnEmptyGrid(rack);
 		}
 
 		final CalculateCtx ctx = new CalculateCtx();
 		ctx.grid = this.grid;
 		ctx.rack = new LinkedList<>();
 		ctx.rack.addAll(rack);
+		ctx.legalPlayTiles.add(Action.PASS_TURN_NOTATION);
 
 		final Set<Square> anchors = getAnchors();
 		for (final Square anchor : anchors) {
@@ -136,11 +138,11 @@ public class BruteForceMethod {
 			}
 		}
 
-		LOGGER.debug("" + ctx.legalPlayTiles.size() + " legal moves calculated");
+		LOGGER.debug(ctx.legalPlayTiles.size() + " legal moves calculated");
 		return ctx.legalPlayTiles;
 	}
 
-	private Set<String> getLegalWordOnEmptyGrid(final Collection<Character> rack) {
+	private Set<String> getLegalMovesOnEmptyGrid(final Collection<Character> rack) {
 		if (!this.grid.isEmpty()) {
 			throw new IllegalStateException();
 		}
@@ -165,6 +167,8 @@ public class BruteForceMethod {
 				}
 			}
 		}
+
+		moves.add(Action.PASS_TURN_NOTATION);
 		return moves;
 	}
 
