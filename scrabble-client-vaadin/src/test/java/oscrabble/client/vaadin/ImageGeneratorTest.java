@@ -15,9 +15,6 @@ class ImageGeneratorTest {
 				1,
 				3
 		);
-		FileUtils.writeByteArrayToFile(
-				new File("C:\\temp\\testGenerateCellBox.png"),
-				bytes
-		);
+		ImageServletTest.saveInTempDirectory(bytes, "testGenerateCellBox.png");
 	}
 }
