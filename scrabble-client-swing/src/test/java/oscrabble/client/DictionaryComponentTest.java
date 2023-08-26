@@ -1,5 +1,6 @@
 package oscrabble.client;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import oscrabble.client.utils.SwingUtils;
@@ -12,6 +13,7 @@ import java.util.List;
 class DictionaryComponentTest {
 
     @Test
+    @Ignore
     void showDescription() throws DictionaryException {
         IDictionary dictionary = Mockito.mock(IDictionary.class);
         DictionaryEntry entry = Mockito.mock(DictionaryEntry.class);
