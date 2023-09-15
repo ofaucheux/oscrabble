@@ -911,17 +911,17 @@ public class Game implements ScrabbleConstants {
 		final ArrayList<Score> scores = new ArrayList<>(notations.size());
 		for (final String notation : notations) {
 			final Action action = Action.parse(null, notation);
-			final Score score;
+			int points;
 			if (action instanceof Action.PlayTiles) {
 				final ScoreCalculator.MoveMetaInformation mi = ScoreCalculator.getMetaInformation(this.grid, this.scrabbleRules, ((Action.PlayTiles) action));
-                score = Score.builder()
-                        .notation(notation)
-                        .score(mi.score)
-                        .build();
-            } else {
-				score = Score.builder().notation(action.notation).score(0).build();
+				points = mi.score;
+			} else {
+				points = 0;
 			}
-
+			final Score score = Score.builder()
+					.notation(notation)
+					.score(points)
+					.build();
 			scores.add(score);
 		}
 		return scores;
