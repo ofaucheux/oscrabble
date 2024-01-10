@@ -3,6 +3,7 @@ package oscrabble.server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.io.FileUtils;
@@ -27,8 +28,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Game implements ScrabbleConstants {
 	/**
@@ -89,6 +88,7 @@ public class Game implements ScrabbleConstants {
 	/**
 	 * Configuration of the game
 	 */
+	@Getter
 	private final Configuration configuration;
 
 	/**
@@ -106,6 +106,7 @@ public class Game implements ScrabbleConstants {
 	/**
 	 * State of the game
 	 */
+	@Getter
 	private GameState.State state;
 
 	/**
@@ -122,6 +123,7 @@ public class Game implements ScrabbleConstants {
 	private final Set<UUID> acknowledgesToWaitAfter = new HashSet<>();
 
 
+	@Setter
 	private boolean testModus;
 
 	/**
@@ -511,24 +513,21 @@ public class Game implements ScrabbleConstants {
 		} else {
 			message.append(MessageFormat.format(MESSAGES.getString("0.has.cleared.its.rack"), firstEndingPlayer.uuid)).append('\n');
 		}
-		this.players.forEach(
-				(dummy, player) ->
-				{
-					if (player != firstEndingPlayer) {
-						final AtomicInteger remainingLettersValue = new AtomicInteger();
-						player.rack.tiles.forEach(tile -> remainingLettersValue.addAndGet(tile.points));
-						player.score -= remainingLettersValue.get();
-						if (firstEndingPlayer != null) {
-							firstEndingPlayer.score += remainingLettersValue.get();
-						}
-						message.append(MessageFormat.format(
-								MESSAGES.getString("0.gives.1.points"),
-								player.uuid,
-								remainingLettersValue.get())
-						).append("\n");
-					}
-				});
+		this.players.values().forEach(p -> givePoints(p, firstEndingPlayer));
 		setState(GameState.State.ENDED);
+	}
+
+	private void givePoints(final PlayerInformation giver, final PlayerInformation receiver) {
+		if (giver == receiver) {
+			return;
+		}
+
+		int remainingValue = giver.rack.tiles.stream().mapToInt(Tile::getPoints).sum();
+		giver.score -= remainingValue;
+		this.history.add(new Action.ExchangePoints(giver.uuid, giver.name, remainingValue));
+		if (receiver != null) {
+			receiver.score += remainingValue;
+		}
 	}
 
 	/**
@@ -661,14 +660,6 @@ public class Game implements ScrabbleConstants {
 		notifyListeners();
 	}
 
-	public Configuration getConfiguration() {
-		return this.configuration;
-	}
-
-	GameState.State getState() {
-		return this.state;
-	}
-
 	public void setState(final GameState.State state) {
 		if (this.state != state) {
 			this.state = state;
@@ -783,7 +774,7 @@ public class Game implements ScrabbleConstants {
 				final HashBag<Tile> newRack = new HashBag<>(player.rack.tiles);
 				for (final char ex : exchange.toExchange) {
 					final Optional<Tile> toRemove = newRack.stream().filter(t -> t.c == ex).findFirst();
-					if (!toRemove.isPresent()) {
+					if (toRemove.isEmpty()) {
 						throw new ScrabbleException.ForbiddenPlayException("No (or not enough) character " + ex + " to exchange it");
 					}
 					player.rack.tiles.remove(toRemove.get());
@@ -816,24 +807,15 @@ public class Game implements ScrabbleConstants {
 			if (done) {
 				this.history.add(action);
 				if (player != null) {
-					refillRack(player);
 					player.lastAction = action;
+					refillRack(player);
 					this.toPlay.pop();
 					this.toPlay.add(player);
 
 					if (player.rack.tiles.isEmpty()) {
 						endGame(player);
-					} else if (action instanceof Action.SkipTurn) {
-						// Quit if nobody can play
-						final AtomicBoolean canPlay = new AtomicBoolean(false);
-						this.players.forEach((p, mi) -> {
-							if (mi.lastAction instanceof Action.SkipTurn) {
-								canPlay.set(true);
-							}
-						});
-						if (!canPlay.get()) {
-							endGame(null);
-						}
+					} else if (allPlayerHavePassed()) {
+						endGame(null);
 					}
 				}
 
@@ -845,6 +827,10 @@ public class Game implements ScrabbleConstants {
 				notifyListeners();
 			}
 		}
+	}
+
+	private boolean allPlayerHavePassed() {
+		return players.values().stream().allMatch(pi -> pi.lastAction.isSkipTurn());
 	}
 
 	void play(final ScoreCalculator.MoveMetaInformation moveMI) throws ScrabbleException.ForbiddenPlayException {
@@ -925,19 +911,20 @@ public class Game implements ScrabbleConstants {
 		final ArrayList<Score> scores = new ArrayList<>(notations.size());
 		for (final String notation : notations) {
 			final Action action = Action.parse(null, notation);
+			final Score score;
+			if (action instanceof Action.PlayTiles) {
+				final ScoreCalculator.MoveMetaInformation mi = ScoreCalculator.getMetaInformation(this.grid, this.scrabbleRules, ((Action.PlayTiles) action));
+                score = Score.builder()
+                        .notation(notation)
+                        .score(mi.score)
+                        .build();
+            } else {
+				score = Score.builder().notation(action.notation).score(0).build();
+			}
 
-			final ScoreCalculator.MoveMetaInformation mi = ScoreCalculator.getMetaInformation(this.grid, this.scrabbleRules, ((Action.PlayTiles) action));
-			final Score score = Score.builder()
-					.notation(notation)
-					.score(mi.score)
-					.build();
 			scores.add(score);
 		}
 		return scores;
-	}
-
-	public void setTestModus(final boolean testModus) {
-		this.testModus = testModus;
 	}
 
 	/**

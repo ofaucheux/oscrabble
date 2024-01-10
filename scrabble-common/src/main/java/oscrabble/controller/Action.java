@@ -72,9 +72,18 @@ public abstract class Action {
 				'}';
 	}
 
+	public boolean isSkipTurn() {
+		return false;
+	}
+
 	public static class SkipTurn extends Action {
 		public SkipTurn(final UUID player, final String notation) {
 			super(player, notation);
+		}
+
+		@Override
+		public boolean isSkipTurn() {
+			return true;
 		}
 	}
 
@@ -127,6 +136,12 @@ public abstract class Action {
 		 */
 		public int getHeight() {
 			return getDirection() == Grid.Direction.VERTICAL ? this.word.length() : 1;
+		}
+	}
+
+	public static class ExchangePoints extends Action {
+		public ExchangePoints(final UUID giverPlayer, final String giverPlayerName, final int value) {
+			super(giverPlayer, String.format("%s gives %s points", giverPlayerName, value));
 		}
 	}
 }
