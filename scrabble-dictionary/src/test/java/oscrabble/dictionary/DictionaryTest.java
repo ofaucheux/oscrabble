@@ -28,6 +28,7 @@ class DictionaryTest {
 		assertFalse(this.french.containUpperCaseWord("MEN"));
 		assertTrue(this.french.getAdmissibleWords().contains("WU"));
 		assertTrue(this.french.containUpperCaseWord("WU"));
+		assertTrue(this.french.getAdmissibleWords().contains("KOPS"));
 	}
 
 	@Test

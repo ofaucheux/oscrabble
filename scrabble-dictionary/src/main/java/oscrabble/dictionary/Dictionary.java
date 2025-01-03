@@ -6,6 +6,7 @@ import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.data.DictionaryEntry;
@@ -51,7 +52,7 @@ public class Dictionary implements IDictionary {
 	private Dictionary(final Language language) {
 		this.language = language;
 		this.name = language.directoryName;
-		LOGGER.info("Create dictionary " + this.name);
+        LOGGER.info("Create dictionary {}", this.name);
 
 		Properties properties;
 		try {
@@ -110,7 +111,8 @@ public class Dictionary implements IDictionary {
 					if (reader == null) {
 						continue;
 					}
-					LOGGER.debug("Read Admissible for " + wordLength + " characters");
+					StopWatch stopWatch = StopWatch.createStarted();
+					LOGGER.debug("Read Admissible for {} characters...", wordLength);
 					final LinkedList<String> admissibleWords = new LinkedList<>(IOUtils.readLines(reader));
 					{
 						final ListIterator<String> it = admissibleWords.listIterator();
@@ -123,7 +125,9 @@ public class Dictionary implements IDictionary {
 							}
 						}
 					}
+					LOGGER.debug("Admissible for {} characters read ín {}.", wordLength, stopWatch.formatTime());
 
+					stopWatch.reset();
 					final SortedMap<String, UpperCaseWord> sameLengthEntries = this.words.subMap(
 							StringUtils.repeat('A', wordLength),
 							StringUtils.repeat('A', wordLength + 1)
@@ -136,6 +140,7 @@ public class Dictionary implements IDictionary {
 								}
 							}
 					);
+					LOGGER.debug("Known but not allowed words removed ín {}.", stopWatch.formatTime());
 				}
 
 			}
@@ -220,7 +225,7 @@ public class Dictionary implements IDictionary {
 
 	public boolean containUpperCaseWord(final String word) {
 		final boolean contains = this.getAdmissibleWords().contains(word);
-		LOGGER.trace("is contained " + word + ": " + contains);
+        LOGGER.trace("is contained {}: {}", word, contains);
 		return contains;
 	}
 

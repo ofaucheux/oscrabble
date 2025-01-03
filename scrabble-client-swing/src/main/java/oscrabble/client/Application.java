@@ -5,6 +5,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Data;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oscrabble.ScrabbleException;
@@ -128,6 +129,7 @@ public class Application {
 		final String humanName = System.getProperty("user.name");
 		final UUID humanPlayer = this.server.addPlayer(gameId, humanName);
 
+		StopWatch stopWatch = StopWatch.createStarted();
 		final List<String> names = NameUtils.getFrenchFirstNames();
 		names.remove(humanName);
 		final HashSet<AIPlayer> aiPlayers = new HashSet<>();
@@ -141,6 +143,7 @@ public class Application {
 			ai.startDaemonThread();
 			aiPlayers.add(ai);
 		}
+		LOGGER.trace("AI players created in {}.", stopWatch.getMessage());
 
 		final Client client = new Client(this.server, this.dictionary, gameId, humanPlayer);
 		client.setAIPlayers(aiPlayers);
