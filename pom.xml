@@ -37,7 +37,6 @@
         <module>scrabble-common</module>
         <module>scrabble-client-ai</module>
         <module>scrabble-client-swing</module>
-        <module>scrabble-client-vaadin</module>
         <module>scrabble-dictionary</module>
         <module>scrabble-rest-common</module>
         <module>scrabble-rest-dictionary</module>
